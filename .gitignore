@@ -13,6 +13,7 @@
 *.molden
 *.am
 *.cmap
+*.log
 
 !orbkit*.hx
 !h2o.md
