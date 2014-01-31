@@ -1,0 +1,35 @@
+# generic files to ignore
+# backup files (*~) and vim swap file (.swp), MacOS dir file (.DS_Store)
+*~
+*.lock
+*.DS_Store
+.*.swp
+
+*.pyc
+*.h5
+*.cb
+*.hx
+*.md
+*.molden
+*.am
+*.cmap
+
+!orbkit*.hx
+!h2o.md
+!MO_List.tab
+!MO_List_int.tab
+!Tab.csv
+
+
+# IDE files to ignore (Netbeans, Eclipse)
+nbproject/private/
+.classpath
+.project
+.settings
+
+# ignore generated .class files
+*.class
+
+# except this file
+!.gitignore
+

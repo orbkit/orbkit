@@ -1,0 +1,364 @@
+%% LyX 2.0.5.1 created this file.  For more info, see http://www.lyx.org/.
+%% Do not edit unless you really know what you are doing.
+\documentclass[english]{article}
+\usepackage[T1]{fontenc}
+\usepackage[latin9]{inputenc}
+\usepackage{listings}
+\usepackage{geometry}
+\geometry{verbose,tmargin=2cm,bmargin=2.5cm,rmargin=2.5cm}
+\usepackage{color}
+\usepackage{babel}
+\usepackage{url}
+\usepackage[unicode=true,pdfusetitle,
+ bookmarks=true,bookmarksnumbered=false,bookmarksopen=false,
+ breaklinks=true,pdfborder={0 0 0},backref=false,colorlinks=true]
+ {hyperref}
+\begin{document}
+
+\title{Tutorial - orbkit}
+
+\maketitle
+\textbf{orbkit} is a Python program package
+for the generation of molecular orbitals and densities from output
+files of MOLPRO, TURBOMOLE, Gamess US, and Gaussian. A list of currently
+implemented features (and limitations) can be found in the Overview
+to check the suitability of the orbkit for your problem. An instruction
+for the easy usage of the orbkit and the functional principles are described
+in the Manual section. The several functions can be separately used
+and can be easily implemented in your own program. 
+
+The orbkit Support Team, Axel, Gunter, and Vincent, welcomes every new
+user and will be available to answer your questions. For any change
+requests, do not hesitate to contact the orbkit Support Team.
+
+
+\section{Overview}
+
+
+\subsection{Features of the orbkit}
+
+The orbkit enables the user the calculation of atomic orbitals, molecular
+orbitals and densities on an arbitrary regular grid. The Grid creator
+function generates a user defined grid which can be specified in different
+ways. The grid can be centered to a selected atom and the origin. 
+
+By default, the orbkit loads the required data from Molden files which
+can be created with MOLPRO or TURBOMOLE. Other readable output formats
+are Gaussian (.fchk or .log) or Gamess US output files.
+
+The centerpiece of the orbkit, the orbkit\_core.py Python module, offers
+a variety of calculation options. The user can choose the computation
+and the storage of all or just selected molecular orbitals. The storage
+of all atomic orbitals is also a possible feature. The density can
+be calculated from all or just from several molecular orbitals. The
+selection of the molecular orbitals is realized by an external file.
+Example files, for the usage of the major features of the orbkit, are
+available in the program package. 
+
+The orbkit can construct different types of output files with the help
+of the Output Creator (orbkit\_output.py). The output formats include
+cube files, HDF5 files, and ZIBAmira Mesh files. The orbkit can create
+a ZIBAmira network which enables the easy depiction of the densities
+or molecular orbitals with ZIBAmira. 
+
+For an easy handling of the orbkit, a graphical version with the most
+important characteristics exists. 
+
+A detailed description of the Python modules of the orbkit are listed
+in the Function Reference section.
+
+
+\subsection{Limitations of the orbkit}
+
+One limitation of the orbkit is the ability to calculate only \emph{s},
+\emph{p}, \emph{d}, \emph{f} and \emph{g} atomic orbitals (Molden
+file limitation).
+
+For the calculation of the atomic orbitals and molecular orbitals,
+the orbkit requires Cartesian Gaussians. The usage of spherical Gaussian
+functions is not yet possible. The usage of Cartesian Gaussian functions
+is standard for the Molden file format, the Gaussian Formatted Checkpoint
+File (.fchk), and the Gamess US output. For Gaussian standard output
+(.log), this has to be specified in the route section with: \texttt{6D
+10F}
+
+
+\section{Manual}
+
+The orbkit can be very easily operated via the terminal. For advanced
+users, it is recommended to use the orbkit as a Python function.
+
+
+\subsection{Usage via the Terminal}
+
+For an overview of the available features, a general help text is
+shown in the terminal by using the command:
+
+\begin{lstlisting}
+python orbkit_main.py -h
+\end{lstlisting}
+
+
+For the normal calculation of the density from all molecular orbitals
+on the standard grid, the following command must be entered in the
+console: 
+
+\begin{lstlisting}
+python orbkit_main.py -i inputfile.molden -o outputfile --no_display
+\end{lstlisting}
+
+
+The first two terms start the Python program orbkit\_main.py. This module
+requires an input file defined with \texttt{-i} and the filename and
+needs an output file which can be specified by \texttt{-o} followed
+by the filename. The file extension of the output will be automatically
+created by the program and does not need to be defined. The command
+\texttt{-{}-no\_display} suppresses the execution of the graphical
+interface.
+
+By default, the orbkit divides the 3-dimensional grid in 2-dimensional
+slices. The atomic orbitals, the molecular orbitals, and the density
+are calculated for each slice. At the end of the calculation, the
+density is reassembled and stored in an output file. In the default
+setting, the orbkit performs the density calculation by starting four
+subprocesses, which are distributed over the existing CPUs. The number
+of subprocesses can be modified with the subsequent command: 
+\begin{lstlisting}
+--numproc=4
+\end{lstlisting}
+
+
+For the modification of the grid, one can transfer the modified grid
+to the program via an external file and add a special related command
+in the terminal: 
+
+\begin{lstlisting}
+python orbkit_main.py -i inputname -o outputname --read_grid=new_grid.csv --no_display
+\end{lstlisting}
+
+
+An example of such an external text file can be found in the program
+package and has to be constructed as follows: 
+
+\begin{lstlisting}
+xmin=,-7.5,xmax=,7.5,Nx=,151
+ymin=,-7.5,ymax=,7.5,Ny=,151
+zmin=,-7.5,zmax=,7.5,Nz=,151
+\end{lstlisting}
+
+
+A special feature of the grid creator is the centering of the grid
+to a specific atom and the origin which can be performed by adding
+the two commands seen below: 
+
+\begin{lstlisting}
+-c --atom=A_NUM
+\end{lstlisting}
+
+
+The A\_NUM defines the number of the atom to which the grid is centered
+and corresponds to the numbering in output file of the respective
+quantum chemistry program. 
+
+For the calculation of the density, the orbkit takes only into account
+the occupied molecular orbitals by default. To perform the density
+calculation with a selected set of molecular orbitals, the command: 
+
+\begin{lstlisting}
+--mo_list=MO_List
+\end{lstlisting}
+
+
+can be used. The selection can be specified by an external list \texttt{MO\_List}
+with the structure: 
+\begin{lstlisting}
+1.1 2.1 1.3
+1.1 4.1
+4.1 2.3 2.1
+\end{lstlisting}
+
+
+or 
+
+\begin{lstlisting}
+1 2 3
+3 4
+\end{lstlisting}
+
+
+
+
+Every row signifies a new calculation of the density from the molecular
+orbitals specified in this row. On the one hand, the orbitals can
+be defined by the symmetry and on the other, by the order in the respective
+output file. In the same manner, the computation and storage of a
+selected set of molecular orbitals can be invoked by
+
+\begin{lstlisting}
+--calc_mo=MO_List
+\end{lstlisting}
+
+
+Here, the density computation is omitted.
+
+In the orbkit, the output can be issued as standard Gaussian cube files,
+HDF5 files or ZIBAmira Mesh files. Additionally, the orbkit can directly
+create a ZIBAmira network for the easy depiction in ZIBAmira. The
+network is called as follows 
+
+\begin{lstlisting}
+--hx_network
+\end{lstlisting}
+
+
+and includes a simple color map creator. The cube file (file extension:
+.cb) which is a normal text file and contains the important informations
+of the calculation is generated by default. For large systems, the
+cube file requires a lot of space on the hard drive and plenty of
+time for its creation. In contrast, the HDF5 file format (file extension:
+.h5) which is a hierarchical data format can store and organize large
+amounts of numerical data. More informations about this file format
+can be found at:
+
+\url{http://en.wikipedia.org/wiki/Hierarchical_Data_Format}
+
+Another advantage of this file format is the easy readability with
+Matlab or Python. Example files for loading HDF5 files via Matlab
+or Python are available in the program package. With the JAVA program,
+HDFVIEW, the user can easily load and read the HDF5 files. The command
+for the creation of HDF5 files reads as follows
+
+\begin{lstlisting}
+--hdf5
+\end{lstlisting}
+
+
+The last available data format are the ZIBAmira Mesh files (file extension:
+.am) which can be directly loaded in ZIBAmira and is generated with
+the subsequent command 
+
+\begin{lstlisting}
+--amira
+\end{lstlisting}
+
+
+
+\subsection{Usage as Python Function}
+
+The first step of the usage of the orbkit as a Python function is the
+import of the orbkit\_main.py program as a Python module with the subsequent
+Python code line:
+
+\begin{lstlisting}
+import orbkit_main
+\end{lstlisting}
+
+
+An example program code where the orbkit is called as a function can
+be found in the orbkit\_run\_from\_fcn.py file in the program package.
+Again, an exemplary calculation of a water molecule with a HDF5 output
+file serves for the explanation of the program code.
+
+The name of the input file and the output file have to be defined
+with:
+
+\begin{lstlisting}
+in_fid = 'h2o.md'
+out_fid = 'h2o'
+\end{lstlisting}
+
+
+After the initialization of the orbkit with the following code line:
+
+\begin{lstlisting}
+orbkit_main.init()
+\end{lstlisting}
+
+
+the user can modify the settings for the investigated system. For
+the water molecule, the input file, the output file and the output
+file format have been selected, and the grid has been modified by
+an external file. The following code lines perform these changes:
+
+\begin{lstlisting}
+orbkit_main.options.hdf5 = True
+orbkit_main.options.csv_grid = './Tab.csv'
+orbkit_main.options.filename = in_fid
+orbkit_main.options.outputname = out_fid
+\end{lstlisting}
+All available features can be found in orbkit\_main.py in the class cOptions.
+In the last step, the user has just to run the orbkit as follows
+
+\begin{lstlisting}
+orbkit_main.main()
+\end{lstlisting}
+
+
+Other example files can be found in the orbkit\_module\_example.py file
+and orbkit\_derivative\_example.py file in the program package.
+
+
+\section{Required Python Modules for the orbkit}
+
+For a proper execution of the orbkit, the following Python modules are
+required:
+
+
+\subsection{General Modules}
+\begin{itemize}
+\item os - Miscellaneous operating system interfaces (\url{http://docs.python.org/2/library/os.html})
+\item sys - System-specific parameters and functions (\url{http://docs.python.org/2/library/sys.html})
+\item re - Regular expression operations (\url{http://docs.python.org/2/library/re.html})
+\item time - Time access and conversions (\url{http://docs.python.org/2/library/time.html})
+\item copy - Shallow and deep copy operations (\url{http://docs.python.org/2/library/copy.html})
+\item optparse - Parser for command line options (\url{http://docs.python.org/2/library/optparse.html})
+\item csv - CSV File Reading and Writing (\url{http://docs.python.org/2/library/csv.html})
+\item multiprocessing - Process-based \textquotedblleft{}threading\textquotedblright{}
+interface (\url{http://docs.python.org/2/library/multiprocessing.html})
+\end{itemize}
+
+\subsection{Special Modules}
+\begin{itemize}
+\item scipy - Library of algorithms and mathematical tools (\url{http://en.wikipedia.org/wiki/SciPy})
+\item gtk - GTK+ graphical user interface library (\url{http://en.wikipedia.org/wiki/PyGTK})
+\item h5py - Interface to the HDF5 binary data format (\url{https://code.google.com/p/h5py/})
+\item numpy - Library of high-level mathematical functions (\url{http://en.wikipedia.org/wiki/NumPy})
+\end{itemize}
+
+\section{Variables}
+
+geo\_info => only required for creation of output file. python list
+(strings); dimensionality: (number of atoms x 3)
+\begin{itemize}
+\item 1st element: atom symbol
+\item 2nd element: atom number (according to output file, i.e., starting
+from 1)
+\item 3rd element: nuclear charge of atom
+\end{itemize}
+geo\_spec => python list (floates); dimensionality: (number of atoms
+x 3)\\
+ao\_spec => python list of python dictionaries (number of dictionaries
+corresponds to number of contracted Gaussians):
+\begin{itemize}
+\item 'coeffs': numpy array, 0th element: coefficient, 1st element: exponent;
+dimensionality: (number of primitives x 2)
+\item 'pnum': number of primitives (integer)
+\item 'type': type of the atomic orbital (string)
+\item 'atom': atom number (according to output file, i.e., starting from
+1) (integer)
+\end{itemize}
+mo\_spec => python list of python dictionaries (number of dictionaries
+corresponds to number of molecular orbitals):
+\begin{itemize}
+\item 'coeffs': numpy array (vector); dimensionality: (number of atomic
+orbitals x 1)
+\item 'energy': energy of molecular orbital (float)
+\item 'occ\_num': occupation of molecular orbital (float)
+\item 'sym': symmetry of molecular orbital (string)
+\end{itemize}
+ao\_list => numpy array containing all atomic orbitals on the specified
+grid\\
+mo\_list => numpy array containing all molecular orbitals on the specified
+grid\\
+rho => global numpy array in orbkit\_main.py containing the density
+\end{document}
