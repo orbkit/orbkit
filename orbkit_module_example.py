@@ -46,7 +46,7 @@ orbkit_main.init()
 orbkit_main.grid.N_   		= [  100,   100,   100]
 orbkit_main.grid.max_ 		= [ 10.0,  10.0,   10.0]
 orbkit_main.grid.min_ 		= [-10.0, -10.0,  -10.0]
-orbkit_main.options.hdf5		= True
+orbkit_main.options.hdf5	= True
 orbkit_main.options.filename	= in_fid 
 orbkit_main.options.outputname	= out_fid
 

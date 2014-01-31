@@ -55,7 +55,7 @@ class cOptions:
     self.filename	= None
     self.outputname	= None
     self.no_display	= True
-    self.numproc	= 4
+    self.numproc	= 1
     self.all_MO		= False
     self.hx_network	= None
     self.hdf5		= None

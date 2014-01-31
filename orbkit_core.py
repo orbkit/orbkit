@@ -77,8 +77,8 @@ def init_parser():
                       default=False,action="store_true", 
                       help="suppress output of a <outputname>.log file")  
   parser.add_option("-p", "--numProc",dest="numproc",
-                      default=4, type="int",
-                      help="number of processes started during the execution (default=4)")
+                      default=1, type="int",
+                      help="number of subprocesses started during the execution (default=1)")
   parser.add_option("--hdf5",dest="hdf5",
                       action="store_true", 
                       help="store Hierarchical Data Format file (.h5)")  
@@ -88,19 +88,6 @@ def init_parser():
   parser.add_option("--hx_network",dest="hx_network",
                       action="store_true", 
                       help="create ZIBAmira network (.hx)") 
-  #parser.add_option("--save_ao",dest="save_ao",
-                      #action="store_true", 
-                      #help="write and read AOs (ao_<output_file>_0.p) ")     
-  parser.add_option("--discard_ao",dest="discard_ao",
-                      action="store_true", 
-                      help="compute and discard AOs during the MO calculation") 
-  parser.add_option("-c",dest="center",
-                      action="store_true", help="center grid...") 
-  parser.add_option("--atom",dest="a_num",
-                      type="int", help="\tto atom number and the origin")  
-  parser.add_option("--read_grid",dest="csv_grid",
-                      default=False, type="string", 
-                      help="Read a .csv file containing information about the grid (delimiter=',')")   
   parser.add_option("--mo_list",dest="mo_list",
                       default=False, type="string", 
                       help="Read a file containing row vectors with the index of the selcted MOs (delimiter=' ')")  
@@ -108,12 +95,25 @@ def init_parser():
                       default=False, type="string", 
                       help="Calculate and save the MOs specified by the indices in their selected file (delimiter=' ')"+
                       ". Type 'ALL_MO' to store all the orbitals")
+  parser.add_option("--reduced_density",dest="reduced_density",
+                      default=False, action="store_true", 
+                      help="Reduce the density with respect to the z-axis")             
+  #parser.add_option("--save_ao",dest="save_ao",
+                      #action="store_true", 
+                      #help="write and read AOs (ao_<output_file>_0.p) ")     
+  parser.add_option("--discard_ao",dest="discard_ao",
+                      action="store_true", 
+                      help="compute and discard AOs during the MO calculation") 
   parser.add_option("--all_MO",dest="all_MO",
                       default=False, action="store_true", 
                       help="Calculate all (occupied and virtual) MOs")
-  parser.add_option("--reduced_density",dest="reduced_density",
-                      default=False, action="store_true", 
-                      help="Reduce the density with respect to the z-axis")                      
+  parser.add_option("-c",dest="center",
+                      action="store_true", help="center grid...") 
+  parser.add_option("--atom",dest="a_num",
+                      type="int", help="\tto atom number and the origin")  
+  parser.add_option("--read_grid",dest="csv_grid",
+                      default=False, type="string", 
+                      help="Read a .csv file containing information about the grid (delimiter=',')")           
   parser.add_option("--vector",dest="vector_grid",
                       default=False,action="store_true",
                       help="Under construction...")
@@ -1664,7 +1664,11 @@ def rho_compute(geo_spec,geo_info,ao_spec,mo_spec,calc_mo=False):
   #--- Print information regarding the density calculation ---
   orbkit_output.display("\nStarting the density calculation...")
   orbkit_output.display("The grid has been seperated in 2d slices and the")
-  orbkit_output.display("calculation will be carried out with %d subprocesses." 
+  if options.numproc == 1:
+    orbkit_output.display("calculation will be carried out with 1 subprocess.\n" + 
+    "\n\tThe number of subprocesses can be changed with -p\n")
+  else:
+    orbkit_output.display("calculation will be carried out with %d subprocesses." 
 		  % options.numproc)
   orbkit_output.display("\nThere are %d contracted AOs and %d MOs to be calculated."
 		  % (len(mo_spec[0]['coeffs']), len(mo_spec)))

@@ -53,7 +53,6 @@ orbkit_main.init()
 orbkit_main.grid.N_   		= [  300,   450,   275]
 orbkit_main.grid.max_ 		= [ 18.0,  10.0,   8.0]
 orbkit_main.grid.min_ 		= [-18.0, -10.0,  -8.0]
-orbkit_main.options.numproc	= 2
 orbkit_main.options.hdf5	= True
 orbkit_main.options.filename	= in_fid 
 orbkit_main.options.outputname	= out_fid
@@ -83,6 +82,7 @@ orbkit_main.grid.N_   		= [  300,   450,   275]
 orbkit_main.grid.max_ 		= [ 18.0,  10.0,   8.0]
 orbkit_main.grid.min_ 		= [-18.0, -10.0,  -8.0]
 orbkit_main.options.quiet	= False
+orbkit_main.options.numproc	= 2
 orbkit_main.options.hdf5	= True
 orbkit_main.options.reduced_density = True
 orbkit_main.options.csv_grid	= './Tab.csv'
