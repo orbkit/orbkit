@@ -25,7 +25,7 @@ License along with orbkit.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
 '''
-Example file for the execution of the MAGIC DENSITY CREATOR
+Example file for the execution of orbkit
 as ...
 '''
 

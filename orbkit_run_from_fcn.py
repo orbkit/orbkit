@@ -39,7 +39,7 @@ import orbkit_main
 #---- First scenario ----
 '''
 Calculate the electron density, 
-work with 2 parallel processes (default = 4)
+work with 2 parallel processes (default = 1)
 Set the grid by hand, and save the data to a HDF5 file.
 Print out again the number of electrons externally.
 '''
