@@ -45,8 +45,8 @@ def display(string):
   except AttributeError:
     print(string)
 
-def rm_log():
-  if not core.options.no_log:
+def rm_log(no_log=False):
+  if not no_log:
     try:
 	os.remove('%s.log' % core.options.outputname)
     except OSError:

@@ -46,9 +46,8 @@ import orbkit_grid as grid
 import orbkit_output 
 
 def init_parser():
-  #--- FUNCTION init_parser ----------------------------------------------------
-  #--- Initialize parser and process the options -------------------------------
-  #-----------------------------------------------------------------------------
+  '''Initialize parser and process the options
+  '''
   
   global parser, options, args
   default_fid='';default_oid='';
@@ -119,7 +118,7 @@ def init_parser():
                       help="Under construction...")
   (options, args) = parser.parse_args()                                                  
   
-  #--- The following parser options are temporarily hidden: 
+  #--- The following parser options are hidden: 
   options.save_ao 	= False
   options.gaussian 	= None
   options.no_slice 	= False
@@ -148,7 +147,7 @@ def init_parser():
     if options.outputname=='':
       options.outputname = raw_input('Insert name of the output file: ')
 
-  # Check if h5py is installed
+  #--- Check if h5py is installed --- 
   if options.hdf5 or options.save_ao:
     global h5py
     try: 
@@ -161,9 +160,20 @@ def init_parser():
   #--- init_parser ---
   
 def read_molden(filename, all_MO=False):
-  #--- FUNCTION read_molden ----------------------------------------------------
-  #--- Load all information desired from a molden file -------------------------
-  #-----------------------------------------------------------------------------
+  '''Load all information desired from a molden file
+  
+  Parameters
+  ----------
+  filename: str
+	    Filename for the molden input file.
+  all_MO:   bool, optional
+	    If True, all molecular orbitals are returned.
+  
+  Returns
+  -------
+  geo_spec, geo_info, ao_spec, mo_spec	  
+	    See the manual for details.
+  '''
   
   fid    = open(filename,'r')		# Open the file
   flines = fid.readlines()		# Read the WHOLE file into RAM
@@ -300,10 +310,24 @@ def read_molden(filename, all_MO=False):
   return geo_spec, geo_info, ao_spec, mo_spec
   #--- read_molden ---
 
-def read_gamess(filename, all_MO=False, loc='', ex_atom=''):
-  #--- FUNCTION read_molden ----------------------------------------------------
-  #--- Load all information desired from a molden file -------------------------
-  #-----------------------------------------------------------------------------
+def read_gamess(filename, all_MO=False, ex_atom=''):
+  '''Load all information desired from a gamess output file
+  
+  Parameters
+  ----------
+  filename: str
+	    Filename for the molden input file.
+  all_MO:   bool, optional
+	    If True, all molecular orbitals are returned.
+  ex_atom:  str, optional
+	    If not empty, the reading of this atom is ommited.
+  
+  Returns
+  -------
+  geo_spec, geo_info, ao_spec, mo_spec	  
+	    See the manual for details.
+  '''
+  
   #--- Initialize the variables ---
   geo_info = []			# Information about atoms
   geo_spec = []			# Atom postitions
@@ -345,14 +369,11 @@ def read_gamess(filename, all_MO=False, loc='', ex_atom=''):
 	ao_skip = 6
 	at_type = []
       ##elif '          EIGENVECTORS' in line:
-      elif LOC[loc.lower()] in line:
+      elif '          EIGENVECTORS' in line:
 	#--- The section containing information about ---
 	#--- the molecular orbitals begins ---
 	sec_flag = 3
-	if loc == '':
-	  mo_skip = 1
-	else:
-	  mo_skip = 0
+	mo_skip = 1
 	init_mo = False			# Initialize new MO section
 	mo_new = False			# Indication for start of new MO section
 	ene = False
@@ -374,14 +395,10 @@ def read_gamess(filename, all_MO=False, loc='', ex_atom=''):
 	    if line == '\n':
 	      sec_flag = 0
 	      a = numpy.array(geo_info)
-	      #for jj in range(len(element_list)):
-		#element_list[element_list.items()[jj][0]] = numpy.sum(a==element_list.items()[jj][0])
 	    else:
-	      if thisline[0] != ex_atom: 
-	      #element_list[thisline[0]] = 0
-		geo_info.append([thisline[0],atom_count,thisline[1]])
-		geo_spec.append([float(ii)*aa_to_au for ii in thisline[2:]])
-		atom_count += 1
+	      geo_info.append([thisline[0],atom_count,thisline[1]])
+	      geo_spec.append([float(ii)*aa_to_au for ii in thisline[2:]])
+	      atom_count += 1
 	  elif geo_skip:
 	    geo_skip -= 1
 	    
@@ -393,12 +410,11 @@ def read_gamess(filename, all_MO=False, loc='', ex_atom=''):
 	      if len(thisline) == 1:
 		#--- Read atom type ---#
 		at_type = thisline[0]
-		if thisline[0] != ex_atom:
-		  AO.append([])
-		  new_ao = False
-	      elif len(thisline) == 0 and new_ao == False and at_type != ex_atom:
+		AO.append([])
+		new_ao = False
+	      elif len(thisline) == 0 and new_ao == False:
 		new_ao = True
-	      elif len(thisline) == 5 and new_ao == True and at_type != ex_atom:
+	      elif len(thisline) == 5 and new_ao == True:
 		AO[-1].append({'atom_type': at_type,
 		'type': '',
 		'pnum': 0,
@@ -407,7 +423,7 @@ def read_gamess(filename, all_MO=False, loc='', ex_atom=''):
 		AO[-1][-1]['coeffs'].append([float(ii) for ii in thisline[3:]])
 		AO[-1][-1]['type'] = thisline[1].lower()
 		AO[-1][-1]['pnum'] += 1
-	      elif len(thisline) == 5 and new_ao == False and at_type != ex_atom:
+	      elif len(thisline) == 5 and new_ao == False:
 		AO[-1][-1]['coeffs'].append([float(ii) for ii in thisline[3:]])
 		AO[-1][-1]['type'] = thisline[1].lower()
 		AO[-1][-1]['pnum'] += 1
@@ -417,7 +433,7 @@ def read_gamess(filename, all_MO=False, loc='', ex_atom=''):
 	
 	if sec_flag == 3:
 	  if not mo_skip:
-	    if END_LOC[loc.lower()] in line:
+	    if '...... END OF RHF CALCULATION ......' in line:
 	      sec_flag = 0
 	    else:
 	      if thisline == []:
@@ -437,12 +453,6 @@ def read_gamess(filename, all_MO=False, loc='', ex_atom=''):
 		    'occ_num': 0.0,
 		    'sym': ''
 		  })
-		  if loc != '':
-		    #mo_spec[-1]['sym'] = '%d.%s' % (len_mo-1, flines[il+2].split()[ii])
-		    #
-		    #mo_skip = 2
-		    mo_spec[-1]['sym'] = '%d.A1' % (len_mo-1)
-		    mo_skip = 1
 		init_mo = False
 		mo_new = True
 		blast = False
@@ -455,9 +465,8 @@ def read_gamess(filename, all_MO=False, loc='', ex_atom=''):
 		  len_mo += 1
 		  mo_spec[-ii]['sym'] = '%d.%s' % (len_mo-1, thisline[init_len-ii])
 	      elif thisline != [] and not init_mo and mo_new:
-		if ex_atom not in line[:16] or ex_atom == '':
-		  for ii in range(init_len,0,-1):
-		    mo_spec[-ii]['coeffs'].append(float(line[16:].split()[init_len-ii]))
+		for ii in range(init_len,0,-1):
+		  mo_spec[-ii]['coeffs'].append(float(line[16:].split()[init_len-ii]))
 	  elif mo_skip:
 	    mo_skip -= 1
 
@@ -504,12 +513,23 @@ def read_gamess(filename, all_MO=False, loc='', ex_atom=''):
       occ[0] -= 1
     
   return geo_spec, geo_info, ao_spec, mo_spec
-
+  #--- read_gamess ---
 
 def read_gaussian_fchk(filename, all_MO=False):
-  #--- FUNCTION read_gaussian_fchk ---------------------------------------------
-  #--- Load all information desired from a gaussian FChk file ------------------
-  #-----------------------------------------------------------------------------
+  '''Load all information desired from a gaussian FChk file 
+
+  Parameters
+  ----------
+  filename: str
+	    Filename for the molden input file.
+  all_MO:   bool, optional
+	    If True, all molecular orbitals are returned.
+  
+  Returns
+  -------
+  geo_spec, geo_info, ao_spec, mo_spec	  
+	    See the manual for details.
+  '''
 
   fid    = open(filename,'r')		# Open the file
   flines = fid.readlines()		# Read the WHOLE file into RAM
@@ -701,9 +721,25 @@ def read_gaussian_fchk(filename, all_MO=False):
   #--- read_gaussian_fchk ---
 
 def read_gaussian_log(filename):
-  #--- FUNCTION read_gaussian_log ----------------------------------------------
-  #--- Load all information desired from a gaussian log file -------------------
-  #-----------------------------------------------------------------------------
+  '''FUNCTION read_gaussian_log
+  Load all information desired from a gaussian log file
+  
+  UNDER CONSTRUCTION! 
+  Please do not use it for unrestricted calculations.
+  (It reads only alpha MOs)
+
+  Parameters
+  ----------
+  filename: str
+	    Filename for the molden input file.
+  all_MO:   bool, optional
+	    If True, all molecular orbitals are returned.
+  
+  Returns
+  -------
+  geo_spec, geo_info, ao_spec, mo_spec	  
+	    See the manual for details.
+  '''
   
   fid    = open(filename,'r')		# Open the file
   flines = fid.readlines()		# Read the WHOLE file into RAM
@@ -780,7 +816,7 @@ def read_gaussian_log(filename):
 	ao_spec.append(dummy_dict)
 	k_flag = 1
       
-  #mo_spec
+  #--- Construct mo_spec ---
   for ij in range(bf_num):
     dummy_dict={}
     dummy_dict['coeffs'] = numpy.array(mo_coeff[ij])
@@ -795,11 +831,12 @@ def read_gaussian_log(filename):
 
 def l_creator(geo_spec,ao_spec,sel_ao,exp_list=None,coeff_list=None,
 	      x=None,y=None,z=None,N=None,vector=False):
-  #--- FUNCTION l_creator ------------------------------------------------------
-  #--- Calculate the contracted atomic orbitals of q.n. l ----------------------
-  #--- for the AO: ao_spec[sel_ao] ---------------------------------------------
-  #-----------------------------------------------------------------------------
-  #http://docs.scipy.org/doc/numpy/user/c-info.python-as-glue.html#inline-c-code
+  '''FUNCTION l_creator
+  Calculate the contracted atomic orbitals of q.n. l for the AO: ao_spec[sel_ao]
+  
+  We use scipy.weave.inline to run C++ Code within the python environment.
+  http://docs.scipy.org/doc/numpy/user/c-info.python-as-glue.html#inline-c-code
+  '''
   
   if x == None: x = grid.x
   if y == None: y = grid.y
@@ -929,19 +966,20 @@ def l_creator(geo_spec,ao_spec,sel_ao,exp_list=None,coeff_list=None,
 
 def l_creator_atom(at_pos=None,exp_list=None,coeff_list=None,
 	      pnum_list=None,x=None,y=None,z=None,N=None):
-  #--- FUNCTION l_creator_atom -------------------------------------------------
-  #--- Calculate all contracted atomic orbitals of ONE selected atom -----------
-  #-----------------------------------------------------------------------------
-  #http://docs.scipy.org/doc/numpy/user/c-info.python-as-glue.html#inline-c-code
+  ''' FUNCTION l_creator_atom
+  Calculate all contracted atomic orbitals of ONE selected atom 
+  
+  We use scipy.weave.inline to run C++ Code within the python environment, see
+  http://docs.scipy.org/doc/numpy/user/c-info.python-as-glue.html#inline-c-code
+  '''
   
   if x == None: x = grid.x
   if y == None: y = grid.y
   if z == None: z = grid.z
   if N == None: N = numpy.array(grid.N_)
   
-  #N = numpy.array(grid.N_)
   
-  #--- All AOs from one atom
+  #--- All AOs from one atom ---
   if exp_list == None or coeff_list == None or numpy.shape(at_pos) != (3,):
     orbkit_output.display(
       "If all AOs for one atom are requested, the variables " +
@@ -1025,20 +1063,20 @@ def l_creator_atom(at_pos=None,exp_list=None,coeff_list=None,
 
 def delta_l_creator(geo_spec,ao_spec,sel_ao,exp_list=None,coeff_list=None,
 		    drv='x',x=None,y=None,z=None,N=None):
-  #--- FUNCTION delta_l_creator ------------------------------------------------
-  #--- Calculate the derivative of the contracted atomic orbitals --------------
-  #--- of q.n. l for the AO: ao_spec[sel_ao] -----------------------------------
-  #--- with respect to a specific variable (e.g. drv = 'x' or drv = 0) ---------
-  #-----------------------------------------------------------------------------
-  #http://docs.scipy.org/doc/numpy/user/c-info.python-as-glue.html#inline-c-code
+  ''' FUNCTION delta_l_creator
+  Calculate the derivative of the contracted atomic orbitals
+  of q.n. l for the AO: ao_spec[sel_ao]
+  with respect to a specific variable (e.g. drv = 'x' or drv = 0)
+  
+  We use scipy.weave.inline to run C++ Code within the python environment.
+  http://docs.scipy.org/doc/numpy/user/c-info.python-as-glue.html#inline-c-code
+  '''
   
   if x == None: x = grid.x
   if y == None: y = grid.y
   if z == None: z = grid.z
   if N == None: N = numpy.array(grid.N_)
-  
-  #N = numpy.array(grid.N_)
-  
+    
   if exp_list == None:
     l = lquant[ao_spec[sel_ao]['type']]
     exp_list = numpy.array(exp[l])
@@ -1058,14 +1096,10 @@ def delta_l_creator(geo_spec,ao_spec,sel_ao,exp_list=None,coeff_list=None,
   #ao_list = numpy.zeros((l_deg,len(x),len(y),len(z)))
   #ao_num = numpy.shape(coeff_list)[0]
 
-  # Calculate the derivative with respect to which variable
-  #try: 
-    #drv = int(drv)
-  #except ValueError:
+  #--- With respect to which variable the derivative shall be computed? --- 
   if not isinstance(drv, (int, long)):
     drv = 'xyz'.find(drv)
-  # Was it a valid selection? If not calculate derivative with respect to x...
-  if drv == -1:
+  if drv == -1:		# Was the selection valid? If not drv='x'
     drv = 0
     orbkit_output.display("The selection of the derivative variable was not valid!" +
 		    " (drv = 'x' or 'y' or 'z')")
@@ -1170,28 +1204,24 @@ def delta_l_creator(geo_spec,ao_spec,sel_ao,exp_list=None,coeff_list=None,
 
 def delta_l_creator_atom(at_pos=None,exp_list=None,coeff_list=None,
 		    pnum_list=None,drv='x',x=None,y=None,z=None,N=None):
-  #--- FUNCTION delta_l_creator_atom -------------------------------------------
-  #--- Calculate the derivative of ALL contracted atomic orbitals --------------
-  #--- of ONE selected atom ----------------------------------------------------
-  #--- with respect to a specific variable (e.g. drv = 'x' or drv = 0) ---------
-  #-----------------------------------------------------------------------------
-  #http://docs.scipy.org/doc/numpy/user/c-info.python-as-glue.html#inline-c-code
+  ''' FUNCTION delta_l_creator_atom
+  Calculate the derivative of ALL contracted atomic orbitals
+  of ONE selected atom 
+  with respect to a specific variable (e.g. drv = 'x' or drv = 0)
+  
+  We use scipy.weave.inline to run C++ Code within the python environment.
+  http://docs.scipy.org/doc/numpy/user/c-info.python-as-glue.html#inline-c-code
+  '''
   
   if x == None: x = grid.x
   if y == None: y = grid.y
   if z == None: z = grid.z
   if N == None: N = numpy.array(grid.N_)
   
-  #N = numpy.array(grid.N_)
-
-  # Calculate the derivative with respect to which variable
-  #try: 
-    #drv = int(drv)
-  #except ValueError:
+  #--- With respect to which variable the derivative shall be computed? --- 
   if not isinstance(drv, (int, long)):
     drv = 'xyz'.find(drv)
-  # Was it a valid selection? If not calculate derivative with respect to x...
-  if drv == -1:
+  if drv == -1:		# Was the selection valid? If not drv='x'
     drv = 0
     orbkit_output.display("The selection of the derivative variable was not valid!" +
 		    " (drv = 'x' or 'y' or 'z')")
@@ -1320,9 +1350,11 @@ def delta_l_creator_atom(at_pos=None,exp_list=None,coeff_list=None,
   #--- delta_l_creator_atom ---
 
 ###################################################
+
 def ao_creator(geo_spec,ao_spec,x=None,y=None,z=None,N=None,vector=False,exp_list=False):
-  #--- FUNCTION ao_creator -----------------------------------------------------
-  #--- Calculate the contracted atomic orbitals --------------------------------
+  '''FUNCTION ao_creator
+  Calculate the contracted atomic orbitals
+  '''
   if x == None: x = grid.x
   if y == None: y = grid.y
   if z == None: z = grid.z
@@ -1347,13 +1379,15 @@ def ao_creator(geo_spec,ao_spec,x=None,y=None,z=None,N=None,vector=False,exp_lis
   return ao_list
   #--- ao_creator ---
 
-def delta_ao_creator(geo_spec,ao_spec,drv='x',x=None,y=None,z=None,exp_list=None):
-  #--- FUNCTION delta_ao_creator -----------------------------------------------
-  #--- Calculate the derivative of the contracted atomic orbitals --------------
-  #--- with respect to a specific variable (e.g. drv = 'x' or drv = 0) ---------
+def delta_ao_creator(geo_spec,ao_spec,drv='x',x=None,y=None,z=None,N=None,exp_list=None):
+  '''FUNCTION delta_ao_creator
+  Calculate the derivative of the contracted atomic orbitals
+  with respect to a specific variable (e.g. drv = 'x' or drv = 0)
+  '''
   if x == None: x = grid.x
   if y == None: y = grid.y
   if z == None: z = grid.z
+  if N == None: N = numpy.array(grid.N_)
   
   if not exp_list:
     ii_exp = None
@@ -1386,13 +1420,13 @@ def calc_single_mo(zz):
     return 0
 
 def mo_creator(ao_list,mo_spec,x=None,y=None,z=None,N=None,vector=False,HDF5_save=False,h5py=False,s=0):
-  #--- FUNCTION mo_creator------------------------------------------------------
-  #--- Calculate the molecular orbitals ----------------------------------------
-  #-----------------------------------------------------------------------------
-  #--- If for HDF5_save a string (filenmae) is given the slice s of each -------
-  #--- molecular orbital will be saved to the disk. This module is used by -----
-  #--- orbkit_extras. Here the HDF5 file is initalized ----------------------------
-  #-----------------------------------------------------------------------------
+  '''FUNCTION mo_creator
+  Calculate the molecular orbitals
+  
+  If for the argument HDF5_save a string (filename) is given the slice s of each
+  molecular orbital will be saved to the disk. This module is used by
+  orbkit_extras.py. There, the HDF5 file is initalized.
+  '''
   
   if x == None: x = grid.x
   if y == None: y = grid.y
@@ -1416,7 +1450,7 @@ def mo_creator(ao_list,mo_spec,x=None,y=None,z=None,N=None,vector=False,HDF5_sav
 	mo_list[ii] += mo_spec[ii]['coeffs'][jj] * ao_list[jj]
     return mo_list
   else:
-    
+    #--- Save the MOs directly to an HDF5 file ---
     f = h5py.File(HDF5_save, 'a')
     
     global Spec    
@@ -1434,8 +1468,6 @@ def mo_creator(ao_list,mo_spec,x=None,y=None,z=None,N=None,vector=False,HDF5_sav
     
     it = pool.imap(calc_single_mo, zz)
     
-    
-    
     for ii in range(len(mo_spec)):
       dID = 'MO:%s' % mo_spec[ii]['sym']
       a = it.next()
@@ -1449,8 +1481,20 @@ def mo_creator(ao_list,mo_spec,x=None,y=None,z=None,N=None,vector=False,HDF5_sav
   #--- mo_creator ---
 
 def mo_creator_matrop(ao_list,mo_coeff,AO_Nr,x=None,y=None,z=None,vector=False):
-  #--- FUNCTION mo_creator------------------------------------------------------
-  #--- Calculate the molecular orbitals ----------------------------------------
+  '''FUNCTION mo_creator
+  Calculate the molecular orbitals for MO-coefficient matrix
+
+  Parameters
+  ----------
+  ao_list : numpy array
+	    containing all atomic orbitals on the specified grid
+  mo_coeff: python list of numpy arrays (N_mo x N_ao)
+	    containing all molecular orbital coefficients
+  AO_Nr: python list of python tuples
+	    containing information which element of mo_coeff corresponds to
+	    which atomic orbital
+  '''
+  
   if x == None: x = grid.x
   if y == None: y = grid.y
   if z == None: z = grid.z
@@ -1480,10 +1524,11 @@ def mo_creator_matrop(ao_list,mo_coeff,AO_Nr,x=None,y=None,z=None,vector=False):
 
 ###################################################
 def ao_creator2(geo_spec,ao_spec,fid='tmp',x=None,y=None,z=None):
-  #--- FUNCTION ao_creator2 ----------------------------------------------------
-  #--- The atomic orbital creator for save_ao ----------------------------------
-  #-----------------------------------------------------------------------------
-  #--- save_ao: Save all AOs to disk and reload for every MO calculation -------
+  '''FUNCTION ao_creator2 -> Will be removed/changed in a future release!
+  The atomic orbital creator for save_ao
+  
+  save_ao: Save all AOs to disk and reload for every MO calculation
+  '''
   if x == None: x = grid.x
   if y == None: y = grid.y
   if z == None: z = grid.z
@@ -1509,10 +1554,11 @@ def ao_creator2(geo_spec,ao_spec,fid='tmp',x=None,y=None,z=None):
   #--- ao_creator2 ---
 
 def mo_creator2(ao_num,mo_spec,fid='tmp',x=None,y=None,z=None):
-  #--- FUNCTION mo_creator2 ----------------------------------------------------
-  #--- The molecular orbital creator for save_ao -------------------------------
-  #-----------------------------------------------------------------------------
-  #--- save_ao: Save all AOs to disk and reload for every MO calculation -------
+  '''FUNCTION mo_creator2 -> Will be removed/changed in a future release!
+  The molecular orbital creator for save_ao
+  
+  save_ao: Save all AOs to disk and reload for every MO calculation
+  '''
   if x == None: x = grid.x
   if y == None: y = grid.y
   if z == None: z = grid.z
@@ -1538,10 +1584,12 @@ def mo_creator2(ao_num,mo_spec,fid='tmp',x=None,y=None,z=None):
 
 ###################################################  
 def mo_creator3(geo_spec,ao_spec,mo_spec,x=None,y=None,z=None):
-  #--- FUNCTION mo_creator3 ----------------------------------------------------
-  #--- The molecular orbital creator for discard_ao ----------------------------
-  #-----------------------------------------------------------------------------
-  #--- discard_ao: Calculate MOs without keeping the AOs in the RAM ------------
+  '''FUNCTION mo_creator3
+  The molecular orbital creator for discard_ao
+  
+  discard_ao: Calculate MOs without keeping the AOs in the RAM
+	      Dedicated for huge systems to save RAM
+  '''
   if x == None: x = grid.x
   if y == None: y = grid.y
   if z == None: z = grid.z
@@ -1551,7 +1599,7 @@ def mo_creator3(geo_spec,ao_spec,mo_spec,x=None,y=None,z=None):
     mo_list.append(numpy.zeros((len(x),len(y),len(z))))
 
   mo_count = 0 
-  # Generalized AO creator
+  #--- Generalized AO creator ---
   for ii in range(len(ao_spec)):
     ao_list = l_creator(geo_spec,ao_spec,ii,x=x,y=y,z=z)
     
@@ -1564,10 +1612,13 @@ def mo_creator3(geo_spec,ao_spec,mo_spec,x=None,y=None,z=None):
   #--- mo_creator3 ---
 
 def slice_rho(x):
-  #--- FUNCTION slice_rho ------------------------------------------------------
-  #--- Calculate the density or the derivative of the density with respect -----
-  #--- to Spec['Derivative'] for one slice in x-direction ----------------------
-  #-----------------------------------------------------------------------------
+  '''FUNCTION slice_rho
+  Calculate the density or the derivative of the density with respect
+  to Spec['Derivative'] for one slice (x) in x-direction
+  
+  This function is called with the multiprocessing module by rho_compute an
+  delta_rho_compute
+  '''
   try:
     #--- All desired information is stored in the Global variable Spec ---
     geo_spec = Spec['geo_spec']
@@ -1625,12 +1676,12 @@ def slice_rho(x):
   #--- slice_rho ---
 
 def rho_compute(geo_spec,geo_info,ao_spec,mo_spec,calc_mo=False):
-  #--- FUNCTION rho_compute ----------------------------------------------------
-  #--- Function for the computation of the density -----------------------------
-  #-----------------------------------------------------------------------------
-  #--- The 3D grid is divided into Slices, and the computational tasks ---------
-  #--- are distributed to the worker processes ---------------------------------
-  #-----------------------------------------------------------------------------
+  '''FUNCTION rho_compute
+  Function for computing the density
+  
+  The 3D grid is divided into Slices, and the computational tasks
+  are distributed to the worker processes
+  '''
   
   #--- Specify the global variable containing all desired information needed ---
   #--- by the function slice_rho ---
@@ -1639,9 +1690,6 @@ def rho_compute(geo_spec,geo_info,ao_spec,mo_spec,calc_mo=False):
   Spec = {'geo_spec': geo_spec, 'ao_spec': ao_spec, 
 	      'mo_spec': mo_spec, 'Derivative': None}
   
-    
-  
-  #Spec = {'geo_spec': geo_spec, 'ao_spec': ao_spec, 'mo_spec': mo_spec}
   
   #--- Save the complete initial grid ---
   x = grid.x
@@ -1784,10 +1832,10 @@ def slice_rho_vector(zz):
       return rho, mo_norm
     else:
       #--- Initialize a numpy array for the derivative of the density ---
-      delta_rho = numpy.zeros((3,len(x)))
-      for ii_d in drv:
+      delta_rho = numpy.zeros((len(drv),len(x)))
+      for ii_d, d in enumerate(drv):
 	#--- Calculate the derivatives of the AOs and MOs for this slice ---
-	delta_ao_list = delta_ao_creator(geo_spec,ao_spec,drv=ii_d,x=x,y=y,z=z,vector=True)
+	delta_ao_list = delta_ao_creator(geo_spec,ao_spec,drv=d,x=x,y=y,z=z,vector=True)
 	delta_mo_list = mo_creator(delta_ao_list,mo_spec,x=x,y=y,z=z,vector=True)
 	
 	#--- Calculate the derivative of the density
@@ -1795,7 +1843,6 @@ def slice_rho_vector(zz):
 	  delta_rho[ii_d,:] += (mo_spec[ii_mo]['occ_num'] * 
 			    2 * delta_mo_list[ii_mo]*mo_list[ii_mo])
       #--- Return the derivative of the density ---
-      #print numpy.shape(rho),numpy.shape(mo_norm),numpy.shape(delta_rho)
       return rho, mo_norm, delta_rho
   except KeyboardInterrupt:
     #--- Catch keybord interrupt signal to prevent a hangup of the worker processes ---
@@ -1803,12 +1850,11 @@ def slice_rho_vector(zz):
   #--- slice_rho ---
 
 def rho_compute_vector(geo_spec,geo_info,ao_spec,mo_spec,delta_slice=1e4):
-  #--- FUNCTION rho_compute ----------------------------------------------------
-  #--- Function for the computation of the density -----------------------------
-  #-----------------------------------------------------------------------------
-  #--- The 3D grid is divided into Slices, and the computational tasks ---------
-  #--- are distributed to the worker processes ---------------------------------
-  #-----------------------------------------------------------------------------
+  '''Function for computing the density for a vector grid
+  
+  The 3D grid is divided into Slices, and the computational tasks
+  are distributed to the worker processes
+  '''
   
   #--- Specify the global variable containing all desired information needed ---
   #--- by the function slice_rho ---
@@ -1816,7 +1862,6 @@ def rho_compute_vector(geo_spec,geo_info,ao_spec,mo_spec,delta_slice=1e4):
   
   Spec = {'geo_spec': geo_spec, 'ao_spec': ao_spec, 
 	      'mo_spec': mo_spec, 'Derivative': None}
-  #Spec = {'geo_spec': geo_spec, 'ao_spec': ao_spec, 'mo_spec': mo_spec}
   
   if len(grid.x) != len(grid.y) or len(grid.x) != len(grid.z):
       orbkit_output.display("Dimensions of x-, y-, and z- coordinate differ!")
@@ -1886,12 +1931,10 @@ def rho_compute_vector(geo_spec,geo_info,ao_spec,mo_spec,delta_slice=1e4):
   #--- rho_compute ---
 
 
-####
-
 def rho_compute_no_slice(geo_spec,geo_info,ao_spec,mo_spec,vector=False):
-  #--- FUNCTION rho_compute_no_slice -------------------------------------------
-  #--- Function for the computation of the density without slicing the grid ----
-  #-----------------------------------------------------------------------------
+  '''FUNCTION rho_compute_no_slice
+  Function for computing the density without slicing the grid
+  '''
   
   #--- Calculate the AOs and MOs ---
   if options.save_ao:
@@ -1912,10 +1955,10 @@ def rho_compute_no_slice(geo_spec,geo_info,ao_spec,mo_spec,vector=False):
     else:
       N = (len(grid.x),)
   
-  #--- Initialize a numpy array for the density
+  #--- Initialize a numpy array for the density ---
   rho = numpy.zeros(N)
   
-  #--- Calculate the density and the norm
+  #--- Calculate the density and the norm ---
   for ii_mo in range(len(mo_list)): 
     rho += numpy.square(numpy.abs(mo_list[ii_mo])) * mo_spec[ii_mo]['occ_num']
   
@@ -1932,12 +1975,16 @@ def rho_compute_no_slice(geo_spec,geo_info,ao_spec,mo_spec,vector=False):
   #--- rho_compute_no_slice ---
 
 def delta_rho_compute(geo_spec, geo_info, ao_spec, mo_spec, drv=[0,1,2]):
-  #--- FUNCTION rho_compute ----------------------------------------------------
-  #--- Function for the computation of the density -----------------------------
-  #-----------------------------------------------------------------------------
-  #--- The 3D grid is divided into Slices, and the computational tasks ---------
-  #--- are distributed to the worker processes ---------------------------------
-  #-----------------------------------------------------------------------------
+  '''FUNCTION delta_rho_compute
+  Function for computing the derivative of the density
+  with respect to a specific variable (e.g. drv = ['x','y'] or drv = 0)
+  
+  The 3D grid is divided into Slices, and the computational tasks
+  are distributed to the worker processes
+  '''
+  
+  if not (isinstance(drv,list) or isinstance(drv,numpy.ndarray)):
+    drv = [drv]
   
   #--- Specify the global variable containing all desired information needed ---
   #--- by the function slice_rho ---
@@ -1955,7 +2002,7 @@ def delta_rho_compute(geo_spec, geo_info, ao_spec, mo_spec, drv=[0,1,2]):
   
   #--- Make slices ---
   rho = numpy.zeros((len(grid.x),len(grid.y),len(grid.z)))
-  delta_rho = numpy.zeros((3,len(grid.x),len(grid.y),len(grid.z)))
+  delta_rho = numpy.zeros((len(drv),len(grid.x),len(grid.y),len(grid.z)))
   sDim = 0
   sNum = grid.N_[sDim]
   grid.N_[sDim] = 1
@@ -1993,7 +2040,7 @@ def delta_rho_compute(geo_spec, geo_info, ao_spec, mo_spec, drv=[0,1,2]):
   it = pool.imap(slice_rho, zz)
   for s in range(sNum):
     rho[s,:,:], norm, d_rho = it.next()
-    for ii_d in drv:
+    for ii_d in range(len(drv)):
       delta_rho[ii_d,s,:,:] = d_rho[ii_d,:,:,:]
     mo_norm += norm
     
@@ -2029,10 +2076,15 @@ def delta_rho_compute(geo_spec, geo_info, ao_spec, mo_spec, drv=[0,1,2]):
   return rho, delta_rho
   #--- delta_rho_compute ---
 
-def delta_rho_compute_no_slice(geo_spec, geo_info, ao_spec, mo_spec):
-  #--- FUNCTION rho_compute_no_slice -------------------------------------------
-  #--- Function for the computation of the density without slicing the grid ----
-  #-----------------------------------------------------------------------------
+def delta_rho_compute_no_slice(geo_spec, geo_info, ao_spec, mo_spec, drv=[0,1,2]):
+  '''FUNCTION delta_rho_compute_no_slice
+  Function for computing the derivative of the density
+  with respect to a specific variable (e.g. drv = ['x','y'] or drv = 0)
+  without slicing the grid
+  '''
+  
+  if not (isinstance(drv,list) or isinstance(drv,numpy.ndarray)):
+    drv = [drv]
   
   #--- Initialize a numpy array for the derivative of the density ---
   ao_list = ao_creator(geo_spec,ao_spec)
@@ -2057,14 +2109,13 @@ def delta_rho_compute_no_slice(geo_spec, geo_info, ao_spec, mo_spec):
   
   #--- Print information ---
   orbkit_output.display('\nCalculating the derivative of the density...')
-  delta_rho = numpy.zeros((3,len(grid.x),len(grid.y),len(grid.z)))
+  delta_rho = numpy.zeros((len(drv),len(grid.x),len(grid.y),len(grid.z)))
   
   #--- Loop over spatial directions ---
-  string = ['x', 'y', 'z']
-  for d_ii in range(3):
-    orbkit_output.display('\t...with respect to %s' % string[d_ii])
+  for d_ii in range(len(drv)):
+    orbkit_output.display('\t...with respect to %s' % drv[d_ii])
     #--- Calculate the derivatives of the AOs and MOs ---
-    delta_ao_list = delta_ao_creator(geo_spec,ao_spec,drv=d_ii)
+    delta_ao_list = delta_ao_creator(geo_spec,ao_spec,drv=drv[d_ii])
     delta_mo_list = mo_creator(delta_ao_list,mo_spec)
     
     
@@ -2077,17 +2128,18 @@ def delta_rho_compute_no_slice(geo_spec, geo_info, ao_spec, mo_spec):
   #--- delta_rho_compute_no_slice ---
 
 
-#####################################
+#-------------------#
 #--- Support Code ---
-#####################################
-#--- Assign to every AO symbol (s,p,d,etc.) the quantum number l ---------------
+#-------------------#
+
+#--- Assign the quantum number l to every AO symbol (s,p,d,etc.) ---
 allTheLetters = string.lowercase
 orbit = 'spd%s' % allTheLetters[5:]
 lquant = {}
 for ii in range(len(orbit))[::-1]:
   lquant[orbit[ii]] = ii
 
-#--- MOLPRO AO order ---
+#--- Molden AO order ---
 exp = []
 exp.append([(0,0,0)])			# s orbitals
 
@@ -2107,22 +2159,29 @@ exp.append([(4,0,0), (0,4,0), (0,0,4),
 	    (2,2,0), (2,0,2), (0,2,2),
 	    (2,1,1), (1,2,1), (1,1,2)])	# g orbitals
 
-def l_deg(l=None,ao=None):
-  #--- FUNCTION l_deg ----------------------------------------------------------
-  #--- Calculate the degeneracy of a given atomic orbital ----------------------
-  #-----------------------------------------------------------------------------
-  #--- Works with the molpro out nomenclature for cartesian Harmonics: ---------
-  #---      s->'s', p->['x','y','z'], d-> ['xx','yy', etc.], etc.      ---------
-  #---      e.g., l_deg(ao='xxy')                                      ---------
-  #-----------------------------------------------------------------------------
-  #--- Works with quantum number l for the cartesian Harmonic:         ---------
-  #---      e.g., l_deg(l=1)                                           ---------
-  #-----------------------------------------------------------------------------  
+def l_deg(l=0,ao=None):
+  '''FUNCTION l_deg
+  Calculate the degeneracy of a given atomic orbital
+  
+  Options
+  -------
+  Works with the molpro output nomenclature for cartesian Harmonics:
+        s->'s', p->['x','y','z'], d-> ['xx','yy', etc.], etc.
+        e.g., l_deg(ao='xxy')
+  
+  Works with quantum number l for the cartesian Harmonic:
+        e.g., l_deg(l=1)
+  
+  Works with name of the cartesian Harmonic:
+        e.g., l_deg(l='p')
+  ''' 
   if ao != None:
     if ao == 's':
       return 1
     else:
       l = len(ao)
+  elif isinstance(l,str):
+    l = lquant[l]
   return (l+1)*(l+2)/2
   #--- l_deg ---
 

@@ -253,11 +253,11 @@ def main():
   #---- MAIN LOOP ----
   #---- This function calls all funtions ----
   
-  # Remove old .log file
-  orbkit_output.rm_log()
-  
   # Set the options for the execution
   core.options = options
+  
+  # Remove old .log file
+  orbkit_output.rm_log(no_log=options.no_log)
   
   # Call the main function performing all computations 
   main_calc()

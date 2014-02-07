@@ -36,10 +36,10 @@ import orbkit_grid as grid
 import orbkit_output
 
 def mo_select(geo_spec, geo_info, ao_spec, mo_spec, fid_mo_list, calc_mo=False):
-  #--- FUNCTION mo_select ------------------------------------------------------
-  #--- Calculate and save selected MOs (calc_mo = True) ------------------------
-  #--- or Calculate and save the density only for selected MOs -----------------
-  #-----------------------------------------------------------------------------
+  '''FUNCTION mo_select
+  Calculate and save selected MOs (calc_mo = True)
+  or Calculate and save the density only for selected MOs
+  '''
   File_MO_List = []
   all_MO = []
   Selected_mo_spec = []
@@ -65,7 +65,8 @@ def mo_select(geo_spec, geo_info, ao_spec, mo_spec, fid_mo_list, calc_mo=False):
 		      {'m': fid_mo_list} + '\ne.g.\n\t1\t3\n\t2\t7\t9\n')
       sys.exit(1)
     
-    #--- Check if the MOs are specified by symmetry (e.g. 1.1) or ---
+    #--- Check if the MOs are specified ---
+    #--- by symmetry (e.g. 1.1 in MOLPRO nomenclature) or ---
     #--- by the number in the molden file (e.g. 1) ---
     selected_MO=list(set(all_MO))
     if '.' in selected_MO[0]: sym_select = True
@@ -84,34 +85,44 @@ def mo_select(geo_spec, geo_info, ao_spec, mo_spec, fid_mo_list, calc_mo=False):
 	if str(k+1) in selected_MO:
 	  Selected_mo_spec.append(mo_spec[k])
 	  
-  if calc_mo:
+  if calc_mo and core.options.hdf5:
     save_mo_hdf5(core.options.outputname,geo_info,geo_spec,ao_spec,
 		  Selected_mo_spec)
+    return 0
+  elif calc_mo:
+    #--- Calculate the AOs and MOs ---
+    if options.save_ao:
+      ao_count = core.ao_creator2(geo_spec,ao_spec,
+				  fid=core.options.outputname)
+      mo_list = core.mo_creator2(ao_count,Selected_mo_spec,
+				  fid=core.options.outputname)
+    elif options.discard_ao:
+      mo_list = core.mo_creator3(geo_spec,ao_spec,Selected_mo_spec)
+    else:
+      ao_list = core.ao_creator(geo_spec,ao_spec,vector=False)
+      mo_list = core.mo_creator(ao_list,Selected_mo_spec,vector=False)
+
+    orbkit_output.display("Norm of the MOs:")
+    MO=[]
+    for ij in range(len(selected_MO)):
+      if selected_MO[ij] in File_MO_List[ii]: 
+	if sym_select: ii_MO = numpy.argwhere(Selected_mo_ii==selected_MO[ij])
+	else: ii_MO = ij
+	MO.append(mo_list[ii_MO])
+	orbkit_output.display("\t%(m).6f\tMO %(n)s" 
+	  % {'m':numpy.sum(mo_list[ii_MO]**2)*grid.d3r, 'n':mo_spec[ij]['sym']})
+    #--- Create Output ---
+    for ij in range(len(MO)):
+      outputname = (core.options.outputname + '_MO_' + mo_spec[ij]['sym'])#selected_MO[ij])
+      orbkit_output.main_output(MO[ij],geo_info,geo_spec,Selected_mo_spec,outputname)
     
-    #if core.options.save_ao:
-      #ao_count = core.ao_creator2(geo_spec,ao_spec,fid=core.options.outputname)
-      #mo_list = core.mo_creator2(ao_count,Selected_mo_spec,fid=core.options.outputname)
-    #elif core.options.discard_ao:
-      #mo_list = core.mo_creator3(geo_spec,ao_spec,Selected_mo_spec)
-    #else:
-      #ao_list = core.ao_creator(geo_spec,ao_spec)
-      #mo_list = core.mo_creator(ao_list,Selected_mo_spec)
+    return MO
   else:
     for ii in range(len(File_MO_List)):
       orbkit_output.display('\nStarting with the ' + str(ii+1) + '. element of the MO-List (' 
 		      + fid_mo_list + ')...\n\t' + str(File_MO_List[ii]) + 
 		      '\n\t(Only regarding existing and occupied MOs.)\n')
-      #if calc_mo: 
-	#orbkit_output.display("Norm of the MOs:")
-	#MO=[]
-	#for ij in range(len(selected_MO)):
-	  #if selected_MO[ij] in File_MO_List[ii]: 
-	    #if sym_select: ii_MO = numpy.argwhere(Selected_mo_ii==selected_MO[ij])
-	    #else: ii_MO = ij
-	    #MO.append(mo_list[ii_MO])
-	    #orbkit_output.display("\t%(m).6f\tMO %(n)s" 
-	      #% {'m':numpy.sum(mo_list[ii_MO]**2)*grid.d3r, 'n':mo_spec[ij]['sym']})
-      #else: 
+      
       Spec = []
       for ij in range(len(selected_MO)):
 	if selected_MO[ij] in File_MO_List[ii]: 
@@ -124,18 +135,9 @@ def mo_select(geo_spec, geo_info, ao_spec, mo_spec, fid_mo_list, calc_mo=False):
 	rho = integrate.simps(rho, grid.x, dx=grid.delta_[0], axis=0, even='avg')
 	rho = integrate.simps(rho, grid.y, dx=grid.delta_[1], axis=0, even='avg')
 	
-      #if calc_mo:
-	#if core.options.hdf5:
-	  #outputname = (core.options.outputname + '_MO')
-	  #orbkit_output.HDF5_creator_MO(MO,outputname,geo_info,geo_spec,Selected_mo_spec)
-	#else:
-	  #for ij in range(len(MO)):
-	    #outputname = (core.options.outputname + '_MO_' + mo_spec[ij]['sym'])#selected_MO[ij])
-	    #orbkit_output.main_output(MO[ij],geo_info,geo_spec,Selected_mo_spec,outputname)
-      #else:
       outputname = (core.options.outputname + '_' + str(ii+1))
       orbkit_output.main_output(rho,geo_info,geo_spec,Spec,outputname)
-  return 0
+    return 0
   #--- mo_select ---
 
 def save_mo_hdf5(filename,geo_info,geo_spec,ao_spec,mo_spec,
@@ -207,10 +209,223 @@ def save_mo_hdf5(filename,geo_info,geo_spec,ao_spec,mo_spec,
       zz[sDim][:] = xyz[sDim][ii_z]
       
       ao_list = core.ao_creator(geo_spec,ao_spec,x=zz[0],y=zz[1],z=zz[2],N=N)
-      core.mo_creator(ao_list,mo_spec,x=zz[0],y=zz[1],z=zz[2],N=N,vector=False,HDF5_save=fid,h5py=h5py,s=ii_z)
+      core.mo_creator(ao_list,mo_spec,x=zz[0],y=zz[1],z=zz[2],N=N,
+		      vector=False,HDF5_save=fid,h5py=h5py,s=ii_z)
   
   return 0
   #--- mo_select ---
+
+def atom2index(atom,geo_info=None):
+  if not (isinstance(atom,list) or isinstance(atom,numpy.ndarray)):
+    atom = [atom]
+    
+  index = []
+  
+  if geo_info != None:
+    geo_info = numpy.array(geo_info)[:,1]
+    for a in atom:
+      i = numpy.argwhere(geo_info.astype(int) == a)
+      if len(i) != 1:
+	orbkit_output.display('Error: No or multiple occurence ' + 
+			      'of the atom number %d in geo_info!' % a)
+	return 1
+      index.append(int(i))
+    
+    index = numpy.array(index, dtype=int)
+  
+  else:
+    try:
+      index = numpy.array(atom,dtype=int)
+    except ValueError:
+      orbkit_output.display('Error: Cannot convert atom to integer array!')
+      return 1
+  
+  return atom, index
+
+def atom_projected_density(atom,geo_spec,ao_spec,mo_spec,geo_info=None,
+			    bReturnMO=False,ao_list=None,mo_list=None,
+			    x=None,y=None,z=None,N=None):
+  '''Compute the projected electron density with respect of the selected atoms.
+  
+  Rho^a = \sum_i occ_i * mo_i^a * mo_i
+  
+  NOT TESTED YET!
+  
+  Parameters
+  ----------
+  atom: int or list of int
+	    
+  all_MO:   bool, optional
+	    If True, all molecular orbitals are returned.
+  
+  Returns
+  -------
+  geo_spec, geo_info, ao_spec, mo_spec	  
+	    See the manual for details.
+	    
+  '''  
+  orbkit_output.display('Attention: ' + 
+	'The function atom_projected_density is not fully tested yet!\n')
+  
+  if x == None: x = grid.x
+  if y == None: y = grid.y
+  if z == None: z = grid.z
+  if N == None: N = numpy.array(grid.N_)
+  
+  atom, index = atom2index(atom,geo_info=geo_info)
+  
+  orbkit_output.display('Computing the atom-projected density with respect to '+ 
+			'the atom(s)')
+  outp = '\t['
+  for i,a in enumerate(atom):
+    if not i % 10 and i != 0:
+      outp += '\n\t'
+    outp += '%d,\t' % a
+  orbkit_output.display('%s]\n' % outp[:-2])
+  
+  orbkit_output.display('\tCalculating ao_list & mo_list')
+  if ao_list == None:
+    ao_list = core.ao_creator(geo_spec,ao_spec,x=x,y=y,z=z,N=N)
+  if mo_list == None:
+    mo_list = core.mo_creator(ao_list,mo_spec,x=x,y=y,z=z,N=N)
+    
+  orbkit_output.display('\tCalculating the atom-projected density')
+  
+  if bReturnMO: mo_atom = [[] for a in index]
+  rho_atom = [numpy.zeros(N) for a in index]
+  for i,a in enumerate(index):
+    orbkit_output.display('\t\tFinished %d of %d' % (i+1,len(index)))
+    ao_index = []
+    ao = []
+    ll = 0
+    for ii in ao_spec:
+      for l in range(core.l_deg(l=ii['type'])):
+	if ii['atom'] == a:
+	  ao_index.append(ll)
+	  ao.append(ao_list[ll])
+	ll += 1
+    
+    for ii_mo,spec in enumerate(mo_spec):
+      mo = numpy.zeros(N)
+      for jj in range(len(ao_index)):
+	mo += spec['coeffs'][ao_index[jj]] * ao[jj]
+      rho_atom[i] += spec['occ_num'] * mo_list[ii_mo] * mo
+      if bReturnMO: mo_atom[i].append(mo)
+  
+  if bReturnMO:
+    orbkit_output.display('Returning the atom-projected density and' +
+    '\n\tthe atom-projected molecular orbitals')
+    return rho_atom, mo_atom
+  else:
+    orbkit_output.display('Returning the atom-projected density')
+    return rho_atom
+  #--- atom_projected_density ---
+
+def compute_mulliken_charges(atom,geo_info,geo_spec,ao_spec,mo_spec,
+			    ao_list=None,mo_list=None,
+			    x=None,y=None,z=None,N=None):
+  '''Compute the Mulliken charges of the selected atoms using
+  the respective projected electron densities.
+  
+  Rho^a = \sum_i occ_i * mo_i^a * mo_i
+  
+  NOT TESTED YET!
+  
+  Parameters
+  ----------
+  atom: int or list of int
+	    
+  all_MO:   bool, optional
+	    If True, all molecular orbitals are returned.
+  
+  Returns
+  -------
+  geo_spec, geo_info, ao_spec, mo_spec	  
+	    See the manual for details.
+	    
+  '''
+  orbkit_output.display('Attention: ' + 
+	'The function compute_mulliken_charges is not fully tested yet!\n')
+  
+  if x == None: x = grid.x
+  if y == None: y = grid.y
+  if z == None: z = grid.z
+  if N == None: N = numpy.array(grid.N_)
+  
+  atom, index = atom2index(atom,geo_info=geo_info)
+  
+  rho_atom = atom_projected_density(index,geo_spec,ao_spec,mo_spec,
+			    ao_list=ao_list,mo_list=mo_list,
+			    x=x,y=y,z=z,N=N)
+  
+  orbkit_output.display('Mulliken Charges:')
+  mulliken_charge = []  
+  for i,a in enumerate(index):
+    mulliken_charge.append(core.integration(rho_atom[i]))
+    #--- Print the Mulliken Charges ---
+    orbkit_output.display('\tAtom %s (%s):\t%+0.4f' % 
+		  (geo_info[a][1],geo_info[a][0],mulliken_charge[-1]))
+  
+  return mulliken_charge
+
+
+def mo_transition_flux_density(i,j,geo_spec,ao_spec,mo_spec,drv='x',
+			    ao_list=None,mo_list=None,
+			    delta_ao_list=None,delta_mo_list=None,
+			    x=None,y=None,z=None,N=None):
+  '''Calculate one component (e.g. drv='x') of the 
+  transition electoronic flux density between the 
+  molecular orbitals i and j.
+  
+  MOTEFD_{i,j}(r) = <mo_i|\delta(r-r')\nabla_x|mo_j>
+  
+  NOT TESTED YET!
+  
+  Parameters
+  ----------
+  i: int
+    index of the first MO (Bra)
+  j: int
+    index of the second MO (Ket)
+  drv: {0,1,2,'x','y','z'}
+    The desired component of the vector field of the 
+    transition electoronic flux density
+	    
+  '''
+  orbkit_output.display('Attention: ' + 
+	'The function mo_transition_flux_density is not fully tested yet!\n')
+  
+  if x == None: x = grid.x
+  if y == None: y = grid.y
+  if z == None: z = grid.z
+  if N == None: N = numpy.array(grid.N_)
+  
+  
+  if mo_list == None:
+    if ao_list == None:
+      orbkit_output.display('\tComputing ao_list and ' +
+			    'MO #%d since it is not given.' % i)
+      ao_list = core.ao_creator(geo_spec,ao_spec,x=x,y=y,z=z,N=N)  
+    else:
+      orbkit_output.display('\tComputing MO #%d since it is not given.' % i)
+    mo = core.mo_creator(ao_list,[mo_spec[i]])[0]
+  else:
+    mo = mo_list[i]
+  if delta_mo_list == None:
+    if delta_ao_list == None:
+      orbkit_output.display('\tComputing delta_ao_list and the derivative of ' +
+			    'MO #%d since it is not given.' % j)
+      delta_ao_list = core.delta_ao_creator(geo_spec,ao_spec,drv=drv,
+					  x=x,y=y,z=z,N=N)
+    else:
+      orbkit_output.display('\tComputing MO #%d since it is not given.' % j)
+    delta_mo = core.mo_creator(delta_ao_list,[mo_spec[j]])[0]
+  else:
+    delta_mo = delta_mo_list[i]
+  
+  return mo*delta_mo
+  #--- mo_transition_flux_density ---
+
 
 def colormap_creator(rho,filename,n_peaks=5,start=0.01,stop=0.999,peak_width=0.1):
   #--- FUNCTION colormap_creator -----------------------------------------------
