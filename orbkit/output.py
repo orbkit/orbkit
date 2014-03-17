@@ -595,12 +595,13 @@ def hx_network_creator(rho,filename):
   '''Creates a ZIBAmira hx network file including a .cmap colormap file
   adjusted to the density for the easy depiction of the density.
   '''
+  from orbkit.hx_network_draft import hx_network
   #--- Create a .cmap colormap file using the default values ---
   display('\tCreating ZIBAmira colormap file...\n\t\t%(f)s.cmap' % 
 		      {'f': filename})
   colormap_creator(rho,filename)
   
-  #--- Create a .hx network file based on the file orbkit_hx_network_draft.hx ---
+  #--- Create a .hx network file based on the file orbkit.hx_network_draft.py ---
   display('\tCreating ZIBAmira network file...\n\t\t%(f)s.hx' % 
 		      {'f': filename})
   #--- Open an empty file
@@ -608,9 +609,7 @@ def hx_network_creator(rho,filename):
   
   filename = filename.split('/')[-1]
   #--- Copy the content of the draft file and replace the keywords ---
-  for line in open('orbkit_hx_network_draft.hx'):
-    line = line.replace("FILENAME",filename)
-    fid.write(line) 
+  fid.write(hx_network.replace("FILENAME",filename)) 
   
   #--- Close the file ---
   fid.close()  
