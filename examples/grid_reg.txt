@@ -1,0 +1,9 @@
+# Regular Grid Example File
+# Format:
+# x xmin xmax Nx
+# y ymin ymax Ny
+# z zmin zmax Nz
+
+x -5 5 101
+y -2 2  51
+z  0 0   1 

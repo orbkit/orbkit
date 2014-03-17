@@ -1,0 +1,45 @@
+This is orbkit.
+  Copyright (C) 2014 Gunter Hermann, Vincent Pohl, and Axel Schild
+  This program comes with ABSOLUTELY NO WARRANTY.
+  This is free software, and you are welcome to redistribute it
+  under certain conditions. Type '-l' for details.
+
+Opened 
+	h2o.md
+
+Loading molden file...
+
+Setting up the grid...
+	xmin = -8.00 xmax = 8.00 Nx = 101 dx = 0.160
+	ymin = -8.00 ymax = 8.00 Ny = 101 dy = 0.160
+	zmin = -8.00 zmax = 8.00 Nz = 101 dz = 0.160
+
+The computations will be carried out applying a regular grid...
+
+Starting the density calculation...
+The grid has been seperated into 101 2d-slices and the
+calculation will be carried out with 1 subprocess.
+
+	The number of subprocesses can be changed with -p
+
+
+There are 25 contracted AOs and 5 MOs to be calculated.
+	Finished 20% (21 slices in 0.537s)
+	Finished 40% (20 slices in 0.461s)
+	Finished 60% (21 slices in 0.488s)
+	Finished 80% (20 slices in 0.449s)
+
+Norm of the MOs:
+	1.150827	MO 1.1
+	1.006884	MO 2.1
+	0.999999	MO 1.3
+	1.000451	MO 3.1
+	0.999999	MO 1.2
+We have 10.3163216858 electrons.
+Saving to Hierarchical Data Format file (HDF5)...
+	h2o.h5
+
+The calculation took 5.216s
+and required 36.59 MB of RAM.
+
+Thank you. Good bye.

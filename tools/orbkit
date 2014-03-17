@@ -1,0 +1,12 @@
+#!/usr/bin/env python
+# -*- coding: iso-8859-1 -*-
+
+#try:
+  #from orbkit import main
+#except ImportError:
+  #raise ImportError('No module named orbkit\n\tDid you set the PYTHONPATH variable?')
+
+from orbkit import main
+
+main.run_standalone()
+  

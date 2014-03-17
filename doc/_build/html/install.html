@@ -1,0 +1,216 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Installation Instructions for orbkit &mdash; orbkit 0.2.0 documentation</title>
+  
+
+  
+  
+
+  
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  
+  
+
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:'./',
+        VERSION:'0.2.0',
+        COLLAPSE_INDEX:false,
+        FILE_SUFFIX:'.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+    <link rel="top" title="orbkit 0.2.0 documentation" href="index.html"/>
+        <link rel="next" title="Manual" href="manual.html"/>
+        <link rel="prev" title="Overview" href="index.html"/> 
+
+  <script src="//cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        <a href="toctree.html" class="icon icon-home"> orbkit</a>
+        <form class="wy-form" action="search.html" method="get">
+  <input type="text" name="q" placeholder="Search docs" />
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix">
+        
+        
+            <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="index.html">Overview</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="index.html#citation">Citation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#features-of-orbkit">Features of orbkit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#limitations-of-orbkit">Limitations of orbkit</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Installation Instructions for orbkit</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="manual.html">Manual</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="manual.html#requirements-for-the-input-files">Requirements for the Input Files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="manual.html#usage-via-the-terminal">Usage via the Terminal</a></li>
+<li class="toctree-l2"><a class="reference internal" href="manual.html#usage-within-a-python-program">Usage Within a Python Program</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="funcref.html">Function Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="funcref.html#central-variables">Central Variables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="funcref.html#module-orbkit.main">orbkit.main</a></li>
+<li class="toctree-l2"><a class="reference internal" href="funcref.html#module-orbkit.core">orbkit.core</a></li>
+<li class="toctree-l2"><a class="reference internal" href="funcref.html#module-orbkit.read">orbkit.read</a></li>
+<li class="toctree-l2"><a class="reference internal" href="funcref.html#module-orbkit.output">orbkit.output</a></li>
+<li class="toctree-l2"><a class="reference internal" href="funcref.html#module-orbkit.extras">orbkit.extras</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="licence.html">Licence Note</a></li>
+<li class="toctree-l1"><a class="reference internal" href="impressum.html">Impressum - Legal Notice</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="impressum.html#impressum">Impressum</a></li>
+<li class="toctree-l2"><a class="reference internal" href="impressum.html#haftungsausschluss-disclaimer">Haftungsausschluss - Disclaimer</a></li>
+</ul>
+</li>
+</ul>
+
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top">
+        <i data-toggle="wy-nav-top" class="icon icon-reorder"></i>
+        <a href="/">orbkit</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <ul class="wy-breadcrumbs">
+  <li><a href="toctree.html">Docs</a> &raquo;</li>
+  <li><a href="">Installation Instructions for orbkit</a></li>
+  
+</ul>
+<hr/>
+
+          
+  <div class="section" id="installation-instructions-for-orbkit">
+<h1>Installation Instructions for orbkit<a class="headerlink" href="#installation-instructions-for-orbkit" title="Permalink to this headline">¶</a></h1>
+<p>For a proper execution of orbkit, the following Python modules are
+required:</p>
+<ol class="arabic simple">
+<li><a class="reference external" href="http://www.python.org">Python</a> 2.6 - 2.7</li>
+<li><a class="reference external" href="http://www.scipy.org/">SciPy</a> Library of algorithms and mathematical tools</li>
+<li><a class="reference external" href="http://www.numpy.org/">NumPy</a> Library of high-level mathematical functions</li>
+<li><a class="reference external" href="http://www.h5py.org/">h5py</a> Interface to the HDF5 binary data format</li>
+</ol>
+<p>The package h5py is not mandatory but strongly recommended.</p>
+<div class="section" id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
+<p>Currently no setup.py file is available. So, if you want to use orbkit as
+a standalone program or a python module, you have to install it manually, as
+described for linux using bash in the following.</p>
+<p>Two ways will be described. The installation via git and the installation
+using a tarball provided.</p>
+<p>First choose and navigate the directory, where you want to install orbkit.
+In this example we will use the home directory.</p>
+<ul class="simple">
+<li>Using git:
+Clone the repository and set a path variable for orbkit to that directory:</li>
+</ul>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span><span class="nb">cd</span> <span class="nv">$HOME</span>
+<span class="nv">$ </span>git clone git://git.code.sf.net/p/orbkit/code orbkit
+<span class="nv">$ </span><span class="nb">export </span><span class="nv">ORBKITPATH</span><span class="o">=</span><span class="nv">$HOME</span>/orbkit
+</pre></div>
+</div>
+<ul class="simple">
+<li>Using a tarball:
+Download the latest orbkit release, extract the file (<cite>v0.2.0</cite> has to be replaced
+by your version number), and set a path variable for orbkit to that directory:</li>
+</ul>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span><span class="nb">cd</span> <span class="nv">$HOME</span>
+<span class="nv">$ </span>wget http://sourceforge.net/projects/orbkit/files/latest/download
+<span class="nv">$ </span>tar xzvf orbkit.v0.2.0.tar.gz
+<span class="nv">$ </span><span class="nb">export </span><span class="nv">ORBKITPATH</span><span class="o">=</span><span class="nv">$HOME</span>/orbkit
+</pre></div>
+</div>
+<p><strong>orbkit Modules:</strong></p>
+<p>In order to use orbkit, you add the orbkit directory to your PYTHONPATH
+environment variable either temporarily by typing</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span><span class="nb">export </span><span class="nv">PYTHONPATH</span><span class="o">=</span><span class="nv">$PYHONPATH</span>:<span class="nv">$ORBKITPATH</span>
+</pre></div>
+</div>
+<p>or permanently by adding this line to your ~/.bashrc file.</p>
+<p>To use the orbkit standalone program you have to modify your PATH variable as
+well:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span><span class="nb">export </span><span class="nv">PATH</span><span class="o">=</span><span class="nv">$PATH</span>:<span class="nv">$ORBKITPATH</span>/tools
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          <footer>
+  
+    <div class="rst-footer-buttons">
+      
+        <a href="manual.html" class="btn btn-neutral float-right" title="Manual"/>Next <span class="icon icon-circle-arrow-right"></span></a>
+      
+      
+        <a href="index.html" class="btn btn-neutral" title="Overview"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <p>
+      &copy; Copyright 2014, Gunter Hermann, Vincent Pohl, and Axel Schild.
+  </p>
+
+  <a href="https://www.github.com/snide/sphinx_rtd_theme">Sphinx theme</a> provided by <a href="http://readthedocs.org">Read the Docs</a>
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+</body>
+</html>

@@ -1,0 +1,229 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Overview &mdash; orbkit 0.2.0 documentation</title>
+  
+
+  
+  
+
+  
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  
+  
+
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:'./',
+        VERSION:'0.2.0',
+        COLLAPSE_INDEX:false,
+        FILE_SUFFIX:'.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+    <link rel="top" title="orbkit 0.2.0 documentation" href="#"/>
+        <link rel="next" title="Installation Instructions for orbkit" href="install.html"/>
+        <link rel="prev" title="Welcome to the orbkit Documentation!" href="toctree.html"/> 
+
+  <script src="//cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        <a href="toctree.html" class="icon icon-home"> orbkit</a>
+        <form class="wy-form" action="search.html" method="get">
+  <input type="text" name="q" placeholder="Search docs" />
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix">
+        
+        
+            <ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="">Overview</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#citation">Citation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#features-of-orbkit">Features of orbkit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#limitations-of-orbkit">Limitations of orbkit</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation Instructions for orbkit</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="install.html#installation">Installation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="manual.html">Manual</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="manual.html#requirements-for-the-input-files">Requirements for the Input Files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="manual.html#usage-via-the-terminal">Usage via the Terminal</a></li>
+<li class="toctree-l2"><a class="reference internal" href="manual.html#usage-within-a-python-program">Usage Within a Python Program</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="funcref.html">Function Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="funcref.html#central-variables">Central Variables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="funcref.html#module-orbkit.main">orbkit.main</a></li>
+<li class="toctree-l2"><a class="reference internal" href="funcref.html#module-orbkit.core">orbkit.core</a></li>
+<li class="toctree-l2"><a class="reference internal" href="funcref.html#module-orbkit.read">orbkit.read</a></li>
+<li class="toctree-l2"><a class="reference internal" href="funcref.html#module-orbkit.output">orbkit.output</a></li>
+<li class="toctree-l2"><a class="reference internal" href="funcref.html#module-orbkit.extras">orbkit.extras</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="licence.html">Licence Note</a></li>
+<li class="toctree-l1"><a class="reference internal" href="impressum.html">Impressum - Legal Notice</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="impressum.html#impressum">Impressum</a></li>
+<li class="toctree-l2"><a class="reference internal" href="impressum.html#haftungsausschluss-disclaimer">Haftungsausschluss - Disclaimer</a></li>
+</ul>
+</li>
+</ul>
+
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top">
+        <i data-toggle="wy-nav-top" class="icon icon-reorder"></i>
+        <a href="/">orbkit</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <ul class="wy-breadcrumbs">
+  <li><a href="toctree.html">Docs</a> &raquo;</li>
+  <li><a href="">Overview</a></li>
+  
+</ul>
+<hr/>
+
+          
+  <div class="section" id="overview">
+<h1>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h1>
+<p>orbkit is a parallel Python program package for post-processing
+wavefunction data, i.e., atomic and molecular orbitals, extracted
+from output files of <a class="reference external" href="https://www.molpro.net/">MOLPRO</a> (Molden File Format), <a class="reference external" href="http://www.turbomole.com/">TURBOMOLE</a> (Molden file format),
+<a class="reference external" href="http://www.msg.chem.iastate.edu/gamess/">GAMESS-US</a>, and <a class="reference external" href="http://www.gaussian.com/">Gaussian</a> (.log File and Formatted Checkpoint File).</p>
+<p>Computational capabilities for arbitrary grids:</p>
+<ul class="simple">
+<li>Atomic orbitals, molecular orbitals, electron density, and the spatial derivatives of these quantities</li>
+<li>Reduced electron density</li>
+<li>Electron density for selected molecular orbitals</li>
+<li>Atom-projected electron density</li>
+<li>Molecular orbital transition electronic flux density</li>
+</ul>
+<p>A list of currently
+implemented features (and limitations) can be found in the <a class="reference internal" href="overview.html"><em>Overview</em></a>
+to check the suitability of orbkit for your problem. An instruction
+for the easy usage of orbkit and the functional principles are described
+in the <a class="reference internal" href="manual.html"><em>Manual</em></a> section. The several functions can be separately used
+and can be easily implemented in your own program.</p>
+<p>The orbkit support team, Axel, Gunter, and Vincent, welcomes every new
+user and will be available to answer your questions. For any change
+requests, do not hesitate to contact the orbkit support team.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Website:</th><td class="field-body"><a class="reference external" href="http://sourceforge.net/p/orbkit">http://sourceforge.net/p/orbkit</a></td>
+</tr>
+</tbody>
+</table>
+<div class="section" id="citation">
+<h2>Citation<a class="headerlink" href="#citation" title="Permalink to this headline">¶</a></h2>
+<p>If you use orbkit in your work, please cite it as follows:</p>
+<p>Gunter Hermann, Vincent Pohl, Axel Schild: orbkit: A Toolbox for Post-Processing
+Quantum Chemical Wavefunction Data, available via <a class="reference external" href="http://sourceforge.net/p/orbkit">http://sourceforge.net/p/orbkit</a> (2014).</p>
+</div>
+<div class="section" id="features-of-orbkit">
+<h2>Features of orbkit<a class="headerlink" href="#features-of-orbkit" title="Permalink to this headline">¶</a></h2>
+<p>orbkit enables the user the calculation of atomic orbitals, molecular
+orbitals and densities and derivatives thereof on arbitrary grids.
+This grid can be generated user defined in different
+ways and it can be centered to a selected atom and the origin.</p>
+<p>By default, orbkit loads the required data from Molden files which
+can be created with <a class="reference external" href="https://www.molpro.net/">MOLPRO</a> or <a class="reference external" href="http://www.turbomole.com/">TURBOMOLE</a>. Other readable output formats
+are <a class="reference external" href="http://www.gaussian.com/">Gaussian</a> (.fchk or .log) or <a class="reference external" href="http://www.msg.chem.iastate.edu/gamess/">Gamess-US</a> output files.</p>
+<p>The centerpiece of orbkit, the <a class="reference internal" href="funcref.html#module-orbkit.core" title="orbkit.core"><tt class="xref py py-mod docutils literal"><span class="pre">orbkit.core</span></tt></a> python module, offers
+a variety of calculation options. The user can choose the computation
+and the storage of all or just selected molecular orbitals or derivatives thereof.
+The density or derivatives thereof can be calculated from all or just from several
+molecular orbitals. The selection of the molecular orbitals is realized by an
+external file. Example files, for the usage of the major features of orbkit, are
+available in the program package.</p>
+<p>orbkit can construct different types of output files with the help
+of the output Creator <a class="reference internal" href="funcref.html#module-orbkit.output" title="orbkit.output"><tt class="xref py py-mod docutils literal"><span class="pre">orbkit.output</span></tt></a>. The output formats include
+cube files, HDF5 files, and <a class="reference external" href="http://amira.zib.de/">ZIBAmira</a> Mesh files. orbkit can create
+a <a class="reference external" href="http://amira.zib.de/">ZIBAmira</a> network which enables the easy depiction of the densities
+or molecular orbitals with <a class="reference external" href="http://amira.zib.de/">ZIBAmira</a>.</p>
+</div>
+<div class="section" id="limitations-of-orbkit">
+<h2>Limitations of orbkit<a class="headerlink" href="#limitations-of-orbkit" title="Permalink to this headline">¶</a></h2>
+<p>One limitation of orbkit is the ability to calculate only s, p, d, f and g atomic
+orbitals (Molden file limitation).</p>
+<p>For calculation of the atomic orbitals and Molecular orbitals, orbkit requires
+Cartesian Gaussians. The usage of spherical Gaussian functions is not yet possible.</p>
+</div>
+</div>
+
+
+          <footer>
+  
+    <div class="rst-footer-buttons">
+      
+        <a href="install.html" class="btn btn-neutral float-right" title="Installation Instructions for orbkit"/>Next <span class="icon icon-circle-arrow-right"></span></a>
+      
+      
+        <a href="toctree.html" class="btn btn-neutral" title="Welcome to the orbkit Documentation!"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <p>
+      &copy; Copyright 2014, Gunter Hermann, Vincent Pohl, and Axel Schild.
+  </p>
+
+  <a href="https://www.github.com/snide/sphinx_rtd_theme">Sphinx theme</a> provided by <a href="http://readthedocs.org">Read the Docs</a>
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+</body>
+</html>
