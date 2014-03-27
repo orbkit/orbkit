@@ -35,40 +35,42 @@ from scipy import weave
 from orbkit import cSupportCode
 
 def grid_init(is_vector=False):
-  '''Set up the x-, y-, z-grid 
+  '''Sets up the regular x-, y-, z-grid 
   specified by the global lists: 
 
-    - min_ (minimum values)
-    - max_ (maximum values)
-    - N_ (# of grid points)
+    :min\_: List of minimum grid values
+    :max\_: List of maximum grid values
+    :N\_: List of number of grid points
 
-  :Parameters:
-  is_vector : bool, optional
-	If True convert the regular grid to a vector grid.
+  **Parameters:**
+  
+    is_vector : bool, optional
+      If True, converts the regular grid to a vector grid.
+
   '''
   
-  #--- All grid related variables should be globals ---
+  # All grid related variables should be globals 
   global x, y, z, d3r, min_, max_, N_, delta_, grid, is_initialized
   
   if is_initialized:
     return 0
   
-  #--- Initialize a list for the grid ---
+  # Initialize a list for the grid 
   grid = [[],[],[]]
   delta_ = numpy.zeros((3,1))
   
-  #--- Loop over the three dimensions ---
+  # Loop over the three dimensions 
   for ii in range(3):
     if max_[ii] == min_[ii]:
-      #--- If min-value is equal to max-value, write only min-value to grid --- 
+      # If min-value is equal to max-value, write only min-value to grid  
       grid[ii]   = numpy.array([min_[ii]])
       delta_[ii] = 1
     else:
-      #--- Calculate the grid using the input parameters ---
+      # Calculate the grid using the input parameters 
       delta_[ii] = (max_[ii]-min_[ii]) / float(N_[ii] - 1)
       grid[ii] = min_[ii] + numpy.arange(N_[ii]) * delta_[ii]
   
-  #--- Write grid ---
+  # Write grid 
   x = grid[0]  
   y = grid[1]  
   z = grid[2]
@@ -80,15 +82,10 @@ def grid_init(is_vector=False):
   is_initialized = True
   
   return 0
-  #--- grid_init ---
-
+  # grid_init 
 
 def get_grid(start='\t'):
-  '''Return a string describing the current x-, y-, z-grid.
-  
-  :Parameters:
-  start : str, optional
-	This string is inserted in front of the description.
+  '''Returns a string describing the current x-, y-, z-grid.
   '''
   coord = ['x', 'y', 'z']
   grid = [x,y,z]
@@ -99,22 +96,23 @@ def get_grid(start='\t'):
        'N': len(grid[ii])})
       #{'s': start, 'c': coord[ii], 'min': min_[ii], 'max': max_[ii], 'N': N_[ii]})
     if max_[ii] != min_[ii] and delta_[ii] != 0.:
-      # Print the delta values only if min-value is not equal to max-value ---
+      # Print the delta values only if min-value is not equal to max-value 
       display += 'd%(c)s = %(d).3f' % {'c': coord[ii], 'd': delta_[ii]}
     display += '\n'
   
   return display
-  #--- get_grid ---
+  # get_grid 
 
 
 def grid2vector():
-  '''Convert the regular grid characterized by x-, y-, z-vectors
-  to a (3,(Nx*Ny*Nz)) grid matrix (vector grid).
+  '''Converts the regular grid characterized by x-, y-, z-vectors
+  to a (3, (Nx*Ny*Nz)) grid matrix (vector grid). 
+  Reverse operation: :mod:`orbkit.grid.vector2grid` 
   '''
-  #--- All grid related variables should be globals ---
+  # All grid related variables should be globals 
   global x, y, z
   
-  #--- Initialize a list for the grid ---
+  # Initialize a list for the grid 
   grid = numpy.zeros((3,numpy.product(N_)))
   
   grid_code = """
@@ -136,22 +134,23 @@ def grid2vector():
   """
   weave.inline(grid_code, ['x','y','z','grid'], verbose = 1, support_code = cSupportCode.math)
   
-  #--- Write grid ---
+  # Write grid 
   x = grid[0,:]  
   y = grid[1,:]  
   z = grid[2,:]
   
   return 0
-  #--- grid2vector ---
+  # grid2vector 
   
 def vector2grid():
-  '''Convert the (3,(Nx*Ny*Nz)) grid matrix (vector grid) back to the regular grid 
+  '''Converts the (3, (Nx*Ny*Nz)) grid matrix (vector grid) back to the regular grid 
   characterized by the x-, y-, z-vectors.
+  Reverse operation: :mod:`orbkit.grid.grid2vector`
   '''
-  #--- All grid related variables should be globals ---
+  # All grid related variables should be globals 
   global x, y, z
   
-  #--- Initialize a list for the grid ---
+  # Initialize a list for the grid 
   grid = numpy.zeros((3,numpy.product(N_)))
   
   grid_code = """
@@ -173,24 +172,28 @@ def vector2grid():
   """
   weave.inline(grid_code, ['x','y','z','grid'], verbose = 1, support_code = cSupportCode.math)
   
-  #--- Write grid ---
+  # Write grid 
   x = grid[0,:]  
   y = grid[1,:]  
   z = grid[2,:]
   
   return 0
-  #--- vector2grid ---
+  # vector2grid 
 
 def sph2cart_vector(r,theta,phi):
-  '''Set up the (3,(Nr*Ntheta*Nphi)) grid matrix (vector grid) based on a regular spherical
-  coordinates grid.
+  '''Converts a spherical regular grid matrix (r, theta, phi)
+  to a Cartesian grid matrix (vector grid) with the shape (3, (Nr*Ntheta*Nphi)).
 
-  :Parameters:
-  r : numpy.ndarray, shape=(Nr,)
-  theta : numpy.ndarray, shape=(Ntheta,)
-  phi : numpy.ndarray, shape=(Nphi,)
+  **Parameters:**
+  
+    r : numpy.ndarray, shape=(Nr,)
+      Specifies radial distance.
+    theta : numpy.ndarray, shape=(Ntheta,)
+      Specifies polar angle. 
+    phi : numpy.ndarray, shape=(Nphi,)
+      Specifies azimuth angle. 
   '''
-  #--- All grid related variables should be globals ---
+  # All grid related variables should be globals 
   global x, y, z
   
   grid = numpy.zeros((3,numpy.product([len(r),len(theta),len(phi)])))
@@ -213,39 +216,41 @@ def sph2cart_vector(r,theta,phi):
   """
   weave.inline(grid_code, ['r','theta','phi','grid'], verbose = 1, support_code = cSupportCode.math)
 
-  #--- Write grid ---
+  # Write grid 
   x = grid[0,:]  
   y = grid[1,:]  
   z = grid[2,:]
   
   return 0
-  #--- sph2cart_vector ---
+  # sph2cart_vector 
 
 def random_grid(geo_spec,N=1e6,scale=0.5):
-  '''Create a normally distributed grid around the atom postions (geo_spec).
+  '''Creates a normally distributed grid around the atom postions (geo_spec).
 
-  :Parameters:
-  geo_spec : see manual.
-  N : int
-	Number of points distributed around each atom.
-  scale : float
-	Width of normal distribution.
+  **Parameters:**
+
+	geo_spec : 
+	  See `Central Variables`_ for details.
+	N : int
+	  Number of points distributed around each atom
+	scale : float
+	  Width of normal distribution
   '''
-  #--- All grid related variables should be globals ---
+  # All grid related variables should be globals 
   global x, y, z, is_initialized
   geo_spec = numpy.array(geo_spec)
   at_num = len(geo_spec)
-  #--- Initialize a list for the grid ---
+  # Initialize a list for the grid 
   grid = numpy.zeros((3,at_num,N))
   
-  #--- Loop over the three dimensions ---
+  # Loop over the three dimensions 
   for ii_d in range(3):
     for ii_a in range(at_num):
       grid[ii_d,ii_a,:] = numpy.random.normal(loc=geo_spec[ii_a,ii_d],scale=0.5,size=N)
   
   grid = numpy.reshape(grid,(3,N*at_num))
 
-  #--- Write grid ---
+  # Write grid 
   x = grid[0]  
   y = grid[1]  
   z = grid[2]
@@ -253,42 +258,51 @@ def random_grid(geo_spec,N=1e6,scale=0.5):
   is_initialized = True
   
   return 0
-  #--- random_grid ---
+  # random_grid 
 
 def read(filename, comment='#'):
-  '''Read a grid from a plain text file.
+  '''Reads a grid from a plain text file.
   
-  :Parameters:
-  fid: 	str
-	Filename of the grid file 
+  **Parameters:**
   
-  :Supported Formats:
-  **Regular Grid:**
-    The input has the following format:
-      x xmin xmax Nx
-      y ymin ymax Ny
-      z zmin zmax Nz
+    fid : str
+      Specifies the filename of the grid file. 
   
-    For instance:
-      x -5 5 11
-      y -2 2  5
-      z  0 0  1
+  **Returns:**
   
-  **Vector-Grid:**
-    The input has the following format:
-       x  y  z
-      -5 -5  0
-       2  7  0
-       ...
-  
-  :Returns:
-  is_vector : bool
-	If True, a vector grid is assumed for the computations.
+    is_vector : bool
+      If True, a vector grid is used for the computations.
 
-  **Hint:** If a line starts with '#', it will be skipped. Please, do not use '#' 
-	at the end of a line!
+  **Supported Formats:**
+  
+  :Regular Grid: 
+  
+    |  The input has the following format
+    |
+    |    x xmin xmax Nx
+    |    y ymin ymax Ny
+    |    z zmin zmax Nz
+    |
+    |  E.g.,
+    |
+    |    x -5  5 11
+    |    y -2  2  5
+    |    z  0  0  1
+    |
+  
+  :Vector-Grid:
+  
+    |  The input has the following format
+    |
+    |    x  y  z
+    |    5 -5  0
+    |    2  7  0
+    |    ...
+    |
+  
+  **Hint:** If a line starts with '#', it will be skipped. Please, do not use '#' at the end of a line!
   '''
-  #--- All grid related variables should be globals ---
+  # All grid related variables should be globals 
   global x, y, z, min_, max_, N_, is_initialized
   
   def check(i, is_vector):
@@ -299,7 +313,7 @@ def read(filename, comment='#'):
     else:
       raise IOError('Inconsistency in Grid File in "%s"' % i) 
 
-  #--- Go through the file line by line ---
+  # Go through the file line by line 
   is_vector = None
 
   grid = [[] for i in range(3)]
@@ -321,7 +335,7 @@ def read(filename, comment='#'):
 	else:
 	  grid[dim.find(cl[0].lower())] = cl[1:]
 
-  #--- Convert the variables ---
+  # Convert the variables 
   grid = numpy.array(grid,dtype=numpy.float64)
   if is_vector:
     x = grid[0,:]
@@ -336,9 +350,9 @@ def read(filename, comment='#'):
   return is_vector   
 	
 def center_grid(ac,display=sys.stdout.write):
-  '''Center the grid to the point ac and to the origin (0,0,0).
+  '''Centers the grid to the point ac and to the origin (0,0,0).
   '''
-  #--- All grid related variables should be globals ---
+  # All grid related variables should be globals 
   global x, y, z, d3r, min_, max_, N_, delta_
   
   P=[numpy.zeros((3,1)), numpy.reshape(ac,(3,1))]
@@ -375,17 +389,17 @@ def center_grid(ac,display=sys.stdout.write):
       display('Warning!\n\tAt least one grid point is equal to zero.\n')
   
   return 0
-  #--- center_grid ---
+  # center_grid 
 
-#--- Default values for the grid parameters ---
-min_ = [-8.0, -8.0, -8.0]
-max_ = [ 8.0,  8.0,  8.0]
-N_   = [ 101,  101,  101]
+# Default values for the grid parameters 
+min_ = [-8.0, -8.0, -8.0]	#: Specifies minimum grid values (regular grid).
+max_ = [ 8.0,  8.0,  8.0]	#: Specifies maximum grid values (regular grid).
+N_   = [ 101,  101,  101]	#: Specifies the number of grid points (regular grid).
 
-#--- Initialize some lists ---
-x = [0]
-y = [0]
-z = [0]
-delta_ = numpy.zeros((3,1))
+# Initialize some lists 
+x = [0]	#: Contains the x-coordinates. 
+y = [0]	#: Contains the y-coordinates. 
+z = [0]	#: Contains the z-coordinates. 
+delta_ = numpy.zeros((3,1))	#: Contains the grid spacing.
 
-is_initialized = False
+is_initialized = False	#: If True, the grid is assumed to be initialized.

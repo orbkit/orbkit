@@ -72,8 +72,6 @@
             <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="index.html">Overview</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="index.html#citation">Citation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="index.html#features-of-orbkit">Features of orbkit</a></li>
-<li class="toctree-l2"><a class="reference internal" href="index.html#limitations-of-orbkit">Limitations of orbkit</a></li>
 </ul>
 </li>
 <li class="toctree-l1 current"><a class="current reference internal" href="">Installation Instructions for orbkit</a><ul>
@@ -84,12 +82,15 @@
 <li class="toctree-l2"><a class="reference internal" href="manual.html#requirements-for-the-input-files">Requirements for the Input Files</a></li>
 <li class="toctree-l2"><a class="reference internal" href="manual.html#usage-via-the-terminal">Usage via the Terminal</a></li>
 <li class="toctree-l2"><a class="reference internal" href="manual.html#usage-within-a-python-program">Usage Within a Python Program</a></li>
+<li class="toctree-l2"><a class="reference internal" href="manual.html#limitations-of-orbkit">Limitations of orbkit</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="funcref.html">Function Reference</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="funcref.html#central-variables">Central Variables</a></li>
 <li class="toctree-l2"><a class="reference internal" href="funcref.html#module-orbkit.main">orbkit.main</a></li>
+<li class="toctree-l2"><a class="reference internal" href="funcref.html#id1">orbkit.main</a></li>
 <li class="toctree-l2"><a class="reference internal" href="funcref.html#module-orbkit.core">orbkit.core</a></li>
+<li class="toctree-l2"><a class="reference internal" href="funcref.html#module-orbkit.grid">orbkit.grid</a></li>
 <li class="toctree-l2"><a class="reference internal" href="funcref.html#module-orbkit.read">orbkit.read</a></li>
 <li class="toctree-l2"><a class="reference internal" href="funcref.html#module-orbkit.output">orbkit.output</a></li>
 <li class="toctree-l2"><a class="reference internal" href="funcref.html#module-orbkit.extras">orbkit.extras</a></li>
@@ -141,13 +142,14 @@ required:</p>
 <p>The package h5py is not mandatory but strongly recommended.</p>
 <div class="section" id="installation">
 <h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
-<p>Currently no setup.py file is available. So, if you want to use orbkit as
-a standalone program or a python module, you have to install it manually, as
-described for linux using bash in the following.</p>
-<p>Two ways will be described. The installation via git and the installation
-using a tarball provided.</p>
-<p>First choose and navigate the directory, where you want to install orbkit.
-In this example we will use the home directory.</p>
+<p>Currently, no setup.py file is available. So, if you want to use orbkit as a
+standalone program or a Python module, a manual installation is prerequisite.
+An instruction for linux using bash follows in the subsequent section.</p>
+<p>Two ways will be described: An installation via git and an installation
+using the tarball provided.</p>
+<p>First, choose the directory, where you want to install orbkit.
+In this example we will use the home directory.
+Second, follow the subsequent instructions either for git or for tarball.</p>
 <ul class="simple">
 <li>Using git:
 Clone the repository and set a path variable for orbkit to that directory:</li>
@@ -169,14 +171,14 @@ by your version number), and set a path variable for orbkit to that directory:</
 </pre></div>
 </div>
 <p><strong>orbkit Modules:</strong></p>
-<p>In order to use orbkit, you add the orbkit directory to your PYTHONPATH
+<p>In order to use orbkit, you must add the orbkit directory to your PYTHONPATH
 environment variable either temporarily by typing</p>
 <div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span><span class="nb">export </span><span class="nv">PYTHONPATH</span><span class="o">=</span><span class="nv">$PYHONPATH</span>:<span class="nv">$ORBKITPATH</span>
 </pre></div>
 </div>
 <p>or permanently by adding this line to your ~/.bashrc file.</p>
-<p>To use the orbkit standalone program you have to modify your PATH variable as
-well:</p>
+<p>To use the orbkit standalone program, you have to modify additionally your PATH
+variable in the same way:</p>
 <div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span><span class="nb">export </span><span class="nv">PATH</span><span class="o">=</span><span class="nv">$PATH</span>:<span class="nv">$ORBKITPATH</span>/tools
 </pre></div>
 </div>

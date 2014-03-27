@@ -1,5 +1,5 @@
 # -*- coding: iso-8859-1 -*-
-'''Interface for creating the requested output files.
+'''Module for creating the requested output files.
 '''
 '''
 orbkit
@@ -35,7 +35,7 @@ from orbkit.display import display
 def main_output(data,geo_info,geo_spec,outputname='new',otype='h5',
 		data_id='rho',ao_spec=None,mo_spec=None,no_hdf5=False,
 		is_vector=False,is_mo_output=False,drv=None):
-  '''Function to create the output requested.
+  '''Creates the requested output.
   '''
   print_waring = False
   if drv is not None:
@@ -124,7 +124,7 @@ def output_creator(rho,filename,geo_info,geo_spec):
   #--- output_creator ---
 
 def cube_creator(rho,filename,geo_info,geo_spec):
-  '''Creates a plain text GAUSSIAN cube file.
+  '''Creates a plain text Gaussian cube file.
   '''
   
   #--- Open an empty file ---
@@ -592,7 +592,7 @@ def colormap_creator(rho,filename,n_peaks=5,start=0.01,stop=0.999,peak_width=0.1
   #--- colormap_creator ---
 
 def hx_network_creator(rho,filename):
-  '''Creates a ZIBAmira hx network file including a .cmap colormap file
+  '''Creates a ZIBAmira hx-network file including a colormap file (.cmap)
   adjusted to the density for the easy depiction of the density.
   '''
   from orbkit.hx_network_draft import hx_network

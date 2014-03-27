@@ -19,15 +19,16 @@ The package h5py is not mandatory but strongly recommended.
 Installation
 ------------
 
-Currently no setup.py file is available. So, if you want to use orbkit as
-a standalone program or a python module, you have to install it manually, as
-described for linux using bash in the following.
+Currently, no setup.py file is available. So, if you want to use orbkit as a 
+standalone program or a Python module, a manual installation is prerequisite. 
+An instruction for linux using bash follows in the subsequent section.
 
-Two ways will be described. The installation via git and the installation 
-using a tarball provided.
+Two ways will be described: An installation via git and an installation 
+using the tarball provided.
 
-First choose and navigate the directory, where you want to install orbkit. 
-In this example we will use the home directory. 
+First, choose the directory, where you want to install orbkit. 
+In this example we will use the home directory.
+Second, follow the subsequent instructions either for git or for tarball. 
 
 - Using git:
   Clone the repository and set a path variable for orbkit to that directory:
@@ -51,7 +52,7 @@ In this example we will use the home directory.
 
 **orbkit Modules:**
 
-In order to use orbkit, you add the orbkit directory to your PYTHONPATH 
+In order to use orbkit, you must add the orbkit directory to your PYTHONPATH 
 environment variable either temporarily by typing
 
 .. code-block:: bash
@@ -60,8 +61,8 @@ environment variable either temporarily by typing
 
 or permanently by adding this line to your ~/.bashrc file.
 
-To use the orbkit standalone program you have to modify your PATH variable as
-well:
+To use the orbkit standalone program, you have to modify additionally your PATH 
+variable in the same way:
 
 .. code-block:: bash
 

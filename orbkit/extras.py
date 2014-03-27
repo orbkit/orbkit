@@ -1,5 +1,5 @@
 # -*- coding: iso-8859-1 -*-
-'''Interface for all special features of orbkit.'''
+'''Module for all additional features of orbkit.'''
 '''
 orbkit
 Gunter Hermann, Vincent Pohl, and Axel Schild
@@ -34,19 +34,37 @@ from orbkit import core,grid,output,options
 from orbkit.display import display
 
 def mo_select(mo_spec, fid_mo_list):
-  '''Selecting MOs from an external file.
+  '''Selects  molecular orbitals from an external file.
+
+  **Parameters:**
+   
+    mo_spec :        
+      See `Central Variables`_ for details.
+    fid_mo_list : str
+      Specifies the filename of the molecular orbitals list. 
+      If fid_mo_list is 'all_mo', creates a list containing all molecular orbitals.
 
   **Supported Formats:**
   
-	Integer List:
-	
-	  .. literalinclude:: ../examples/MO_List_int.tab
-		:language: bash
-	
-	List with Symmetry Labels:
-	
-	  .. literalinclude:: ../examples/MO_List.tab
-		:language: bash
+    Integer List:
+    
+      .. literalinclude:: ../examples/MO_List_int.tab
+            :language: bash
+    
+    List with Symmetry Labels:
+    
+      .. literalinclude:: ../examples/MO_List.tab
+            :language: bash
+
+  **Returns:**
+  
+    Dictionary with following Members:
+      :mo: - List of molecular orbital labels.
+      :mo_ii: - List of molecular orbital indices.
+      :mo_spec: - Selected elements of mo_spec. See `Central Variables`_ for details.
+      :mo_in_file: - List of molecular orbital labels within the fid_mo_list file.
+      :sym_select: - If True, symmetry labels have been used. 
+      
   '''
   mo_in_file = []
   all_mo = []
@@ -98,7 +116,36 @@ def mo_select(mo_spec, fid_mo_list):
 
 def calc_mo(geo_spec, geo_info, ao_spec, mo_spec, fid_mo_list, 
 	      drv=None, vector=None, otype=None):
-  '''Calculate and save selected MOs or the derivatives therof.
+  '''Calculates and saves the selected molecular orbitals or the derivatives thereof.
+
+  **Parameters:**
+   
+    geo_spec, geo_info, ao_spec, mo_spec :        
+      See `Central Variables`_ for details.
+    fid_mo_list : str
+      Specifies the filename of the molecular orbitals list. 
+      If fid_mo_list is 'all_mo', creates a list containing all molecular orbitals.
+    otype : str or list of str, optional
+      Specifies output file type. See :data:`otypes` for details.
+    drv : int or string, {None, 'x', 'y', 'z', 0, 1, 2}, optional
+      If not None, a derivative calculation of the atomic orbitals 
+      is requested.
+    vector : None or int, optional
+      If not None, performs the computations on a vectorized grid, i.e., 
+      with x, y, and z as vectors.
+    
+    
+  **Returns:**
+    mo_list :        
+      See `Central Variables`_ for details.
+    mo : dict 
+      Contains information of the selected molecular orbitals and has following Members:
+        :mo: - List of molecular orbital labels.
+        :mo_ii: - List of molecular orbital indices.
+        :mo_spec: - Selected elements of mo_spec. See `Central Variables`_ for details.
+        :mo_in_file: - List of molecular orbital labels within the fid_mo_list file.
+        :sym_select: - If True, symmetry labels have been used. 
+      
   '''
 
   mo = mo_select(mo_spec, fid_mo_list)
@@ -125,8 +172,25 @@ def calc_mo(geo_spec, geo_info, ao_spec, mo_spec, fid_mo_list,
   
 def mo_set(geo_spec, geo_info, ao_spec, mo_spec, fid_mo_list, 
 	      drv=None, vector=None, otype=None):
-  '''Calculate and save the density or the derivative therof 
-  only for selected MOs.
+  '''Calculates and saves the density or the derivative thereof 
+  using selected molecular orbitals.
+  
+  **Parameters:**
+   
+    geo_spec, geo_info, ao_spec, mo_spec :        
+      See `Central Variables`_ for details.
+    fid_mo_list : str
+      Specifies the filename of the molecular orbitals list. 
+      If fid_mo_list is 'all_mo', creates a list containing all molecular orbitals.
+    otype : str or list of str, optional
+      Specifies output file type. See :data:`otypes` for details.
+    drv : int or string, {None, 'x', 'y', 'z', 0, 1, 2}, optional
+      If not None, a derivative calculation of the atomic orbitals 
+      is requested.
+    vector : None or int, optional
+      If not None, performs the computations on a vectorized grid, i.e., 
+      with x, y, and z as vectors.
+    
   '''
 
   mo = mo_select(mo_spec, fid_mo_list)
@@ -263,7 +327,7 @@ def save_mo_hdf5(filename,geo_info,geo_spec,ao_spec,mo_spec,
   return 0
 
 def atom2index(atom,geo_info=None):
-  '''Convert a list of atom numbers to indices of geo_info.'''
+  '''Converts a list of atom numbers to indices of :data:`geo_info`.'''
   if not (isinstance(atom,list) or isinstance(atom,numpy.ndarray)):
     atom = [atom]
     
@@ -291,7 +355,7 @@ def atom2index(atom,geo_info=None):
 def atom_projected_density(atom,geo_spec,ao_spec,mo_spec,geo_info=None,
 			    bReturnmo=False,ao_list=None,mo_list=None,
 			    x=None,y=None,z=None,N=None,is_vector=False):
-  '''Compute the projected electron density with respect of the selected atoms.
+  '''Computes the projected electron density with respect to the selected atoms.
   
   .. math::
   
@@ -300,14 +364,19 @@ def atom_projected_density(atom,geo_spec,ao_spec,mo_spec,geo_info=None,
   
   **Parameters:**
   
-	atom : int or list of int
-	  Compute the projected electron density w.r. to which atom.
-  
+    atom : int or list of int
+      Specifies the atoms to which the projected electron density will be computed.  
+    geo_spec, geo_info, ao_spec, mo_spec :	  
+      See `Central Variables`_ for details.
+    bReturnmo : bool, optional
+      If True, the atom projected molecular orbitals are additionally returned.
+
   **Returns:**
   
-	geo_spec, geo_info, ao_spec, mo_spec :	  
-		  See the `Central Variables`_ in the manual for details.
-	    
+    rho_atom : list of numpy.ndarrays, shape=(len(atoms,) + N)
+      Contains the atom projected electron density on a grid.
+    mo_atom : list of numpy.ndarrays, shape=(len(atoms,NMO) + N)
+      Contains the NMO=len(mo_spec) atom projected molecular orbitals on a grid. 
   '''  
   
   if x is None: x = grid.x

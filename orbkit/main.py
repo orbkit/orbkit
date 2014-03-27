@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: iso-8859-1 -*-
-''''''
+'''Module for controlling all computational tasks.'''
 '''
 orbkit
 Gunter Hermann, Vincent Pohl, and Axel Schild
@@ -42,7 +42,6 @@ from orbkit import core, grid, extras, read, output, integrate
 from orbkit import options,display
 
 def tForm(string,T,extra=''):
-  '''Function for the formating of the time output string.'''
   t_diff = int(round(T))
   tF = {}
   tF['str'] = string
@@ -58,7 +57,7 @@ def tForm(string,T,extra=''):
     else: 
       return ('\n%(str)s took %(min)dmin and %(sec)ds%(extra)s.\n' % tF)
   else: return ('\n%(str)s took %(h)dh, %(min)dmin and %(sec)ds%(extra)s.\n' % tF)
-  #--- tForm ---
+  # tForm 
 
 def good_bye_message(t):
   ram_requirement = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
@@ -67,7 +66,7 @@ def good_bye_message(t):
   display.display('Thank you. Good bye.')
 
 def main():
-  ''' Main loop controlling the execution of all computational tasks.
+  ''' Controls the execution of all computational tasks.
   '''
   # Set some global variables
   global geo_spec, geo_info, ao_spec, mo_spec
@@ -143,7 +142,7 @@ def main():
     elif options.mo_set != False:
       fid_mo_list = options.mo_set
     
-    #--- Call the function for actual calculation ---
+    # Call the function for actual calculation 
     if options.calc_mo != False:
       data = extras.calc_mo(geo_spec, geo_info, ao_spec, mo_spec, fid_mo_list, 
 		    drv=options.drv, vector=options.vector, 
@@ -217,7 +216,7 @@ def main():
   
   t.append(time.time())	# A new time step
   
-  #--- Compute the (derivative of the) electron density ---
+  # Compute the (derivative of the) electron density 
   if options.no_slice:
     data = core.rho_compute_no_slice(geo_spec, ao_spec, mo_spec, 
 				     drv=options.drv,
@@ -233,7 +232,7 @@ def main():
   else:
     rho, delta_rho = data
   
-  #--- Compute the reduced electron density if requested ---
+  # Compute the reduced electron density if requested 
   if options.z_reduced_density:
     if options.vector is not None:
       display.display(
@@ -250,7 +249,7 @@ def main():
   
   t.append(time.time())	# A new time step
 
-  #--- Generate the output requested ---
+  # Generate the output requested 
   if not options.no_output:
     output.main_output(rho,geo_info,geo_spec,
 			      outputname=options.outputname,
@@ -269,23 +268,23 @@ def main():
   
   good_bye_message(t)
     
-  #--- Return the computed data, i.e., rho for standard, and (rho,delta_rho) --- 
-  #--- for derivative calculations ---
+  # Return the computed data, i.e., rho for standard, and (rho,delta_rho)  
+  # for derivative calculations 
   return data
-  #--- main ---
+  # main 
 
 def init():
-  ''' Reset :mod:`orbkit.options`. 
+  ''' Resets all :mod:`orbkit.options`. 
   '''
   reload(options)
 
   return 
-  #--- init ---
+  # init 
   
 
 #if __name__ == '__main__':
 def run_standalone():
-  '''Function for starting orbkit as a standalone program.
+  '''Starts orbkit as a standalone program using parser options (:mod:`orbkit.core.init_parser`).
   '''  
   # Call the parser
   core.init_parser()

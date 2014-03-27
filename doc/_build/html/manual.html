@@ -72,8 +72,6 @@
             <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="index.html">Overview</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="index.html#citation">Citation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="index.html#features-of-orbkit">Features of orbkit</a></li>
-<li class="toctree-l2"><a class="reference internal" href="index.html#limitations-of-orbkit">Limitations of orbkit</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="install.html">Installation Instructions for orbkit</a><ul>
@@ -84,12 +82,15 @@
 <li class="toctree-l2"><a class="reference internal" href="#requirements-for-the-input-files">Requirements for the Input Files</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#usage-via-the-terminal">Usage via the Terminal</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#usage-within-a-python-program">Usage Within a Python Program</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#limitations-of-orbkit">Limitations of orbkit</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="funcref.html">Function Reference</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="funcref.html#central-variables">Central Variables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="funcref.html#module-orbkit.options">orbkit.options</a></li>
 <li class="toctree-l2"><a class="reference internal" href="funcref.html#module-orbkit.main">orbkit.main</a></li>
 <li class="toctree-l2"><a class="reference internal" href="funcref.html#module-orbkit.core">orbkit.core</a></li>
+<li class="toctree-l2"><a class="reference internal" href="funcref.html#module-orbkit.grid">orbkit.grid</a></li>
 <li class="toctree-l2"><a class="reference internal" href="funcref.html#module-orbkit.read">orbkit.read</a></li>
 <li class="toctree-l2"><a class="reference internal" href="funcref.html#module-orbkit.output">orbkit.output</a></li>
 <li class="toctree-l2"><a class="reference internal" href="funcref.html#module-orbkit.extras">orbkit.extras</a></li>
@@ -130,10 +131,8 @@
           
   <div class="section" id="manual">
 <h1>Manual<a class="headerlink" href="#manual" title="Permalink to this headline">¶</a></h1>
-<p>orbkit can be very easily operated via the terminal. For advanced
-users, it is recommended to use orbkit as a Python function. Please
-note that the graphical user interface has been removed for the time being
-and the option <tt class="docutils literal"><span class="pre">--no_display</span></tt> is not necessary anymore.</p>
+<p>orbkit can be easily operated via the terminal or within a Python program.  For
+advanced users, the latter type of usage is recommended.</p>
 <div class="section" id="requirements-for-the-input-files">
 <h2>Requirements for the Input Files<a class="headerlink" href="#requirements-for-the-input-files" title="Permalink to this headline">¶</a></h2>
 <p>orbkit requires Cartesian Harmonic Gaussian basis sets. Unless otherwise
@@ -161,7 +160,7 @@ stated, it assumes the standard molden basis function order for the exponents
 </ul>
 <p><strong>Molden File Format:</strong></p>
 <ul class="simple">
-<li>Contain Cartesian Harmonics by default</li>
+<li>Contains Cartesian Harmonics by default</li>
 <li>Starts with <tt class="docutils literal"><span class="pre">[Molden</span> <span class="pre">Format]</span></tt></li>
 <li>Contains <tt class="docutils literal"><span class="pre">[Atoms]</span></tt>, <tt class="docutils literal"><span class="pre">[GTO]</span></tt>, <tt class="docutils literal"><span class="pre">[MO]</span></tt></li>
 <li>Generation:<ol class="arabic">
@@ -172,22 +171,25 @@ stated, it assumes the standard molden basis function order for the exponents
 </ul>
 <p><strong>GAMESS-US Output File:</strong></p>
 <ul class="simple">
-<li>Please use Cartesian Harmonics. (This is the default choice.)</li>
+<li>Please use Cartesian Harmonics (default)</li>
 </ul>
 <p><strong>GAUSSIAN Formatted Checkpoint File:</strong></p>
 <ul class="simple">
 <li>Contains Cartesian Harmonics by default</li>
-<li>Cannot be used for natural orbitals, since no occupation numbers are printed</li>
-<li>For the creation of a FChk files, add <tt class="docutils literal"><span class="pre">%Chk=chkpt-file</span></tt> to your
-<a class="reference external" href="http://www.gaussian.com/">Gaussian</a> input file and use <tt class="docutils literal"><span class="pre">formchk</span></tt> to convert the chk file:</li>
+<li>Not applicable for natural orbitals =&gt; occupation numbers are not printed</li>
+<li>Creation of a FChk file:<ol class="arabic">
+<li>Add <tt class="docutils literal"><span class="pre">%Chk=chkpt-file</span></tt> to your <a class="reference external" href="http://www.gaussian.com/">Gaussian</a> input file</li>
+<li>Use <tt class="docutils literal"><span class="pre">formchk</span></tt> to convert the chk file:</li>
+</ol>
+</li>
 </ul>
 <div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>formchk chkpt-file formatted-file
 </pre></div>
 </div>
 <p><strong>GAUSSIAN .log File:</strong></p>
 <ul class="simple">
-<li>Spherical Harmonics are chosen by default! You have to set it manually
-(<tt class="docutils literal"><span class="pre">6D</span> <span class="pre">10F</span></tt>)!</li>
+<li>Spherical Harmonics are chosen by default! You have to switch manually
+to Cartesian Harmonics (<tt class="docutils literal"><span class="pre">6D</span> <span class="pre">10F</span></tt>)!</li>
 <li>Use the following parameters in your root section</li>
 </ul>
 <div class="highlight-bash"><div class="highlight"><pre>6D 10F gfinput IOP<span class="o">(</span>6/7<span class="o">=</span>3<span class="o">)</span>
@@ -195,20 +197,22 @@ stated, it assumes the standard molden basis function order for the exponents
 </div>
 <ul class="simple">
 <li>If more than one geometry/atomic orbitals/molecular orbitals sections are present
-in the .log file, orbkit lets you interactively select.</li>
+in the .log file, orbkit provides an interactive selection.</li>
 </ul>
 </div>
 <div class="section" id="usage-via-the-terminal">
 <h2>Usage via the Terminal<a class="headerlink" href="#usage-via-the-terminal" title="Permalink to this headline">¶</a></h2>
-<p>For an overview of the available features, a general help text is
-shown in the terminal by using the command:</p>
+<p>For an overview of all available features, a general help text can be
+called in the terminal by using the command:</p>
 <div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>orbkit -h
 </pre></div>
 </div>
+<p>orbkit creates an logfile (<tt class="docutils literal"><span class="pre">.oklog</span></tt>) containing all information printed
+during the calculation.</p>
 <div class="section" id="input-output">
 <h3>Input/Output<a class="headerlink" href="#input-output" title="Permalink to this headline">¶</a></h3>
-<p>For a normal density calculation from all occupied molecular
-orbitals on the standard grid, the following command must be entered in the
+<p>For the standard density calculation including all occupied molecular
+orbitals on the default grid, the following command must be entered in the
 console:</p>
 <div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>orbkit -i INPUT --itype<span class="o">=</span>ITYPE -o OUTPUTNAME --otype<span class="o">=</span>OTYPE
 </pre></div>
@@ -228,8 +232,8 @@ based on a <a class="reference external" href="http://amira.zib.de/">ZIBAmira</a
 system.</p>
 <p>The <a class="reference external" href="http://www.gaussian.com/">Gaussian</a> cube file (file extension: .cb) is a normal text file containing
 the important informations of the calculation. For large systems,
-the cube file requires a lot of space on the hard drive and plenty of time
-for its creation.</p>
+the cube file requires a lot of space on the hard drive and is very
+time-consuming.</p>
 <p>In contrast, the <a class="reference external" href="http://www.hdfgroup.org/HDF5/">HDF5</a> file format (file extension: .h5) which is a hierarchical
 data format can store and organize large amounts of numerical data. More
 informations about this file format can be found at:</p>
@@ -245,14 +249,14 @@ loaded in <a class="reference external" href="http://amira.zib.de/">ZIBAmira</a>
 </div>
 <div class="section" id="grid-related-options">
 <h3>Grid Related Options<a class="headerlink" href="#grid-related-options" title="Permalink to this headline">¶</a></h3>
-<p>For the modification of the grid, one can specify a modified grid via an external
-plain text file (GRID_FILE):</p>
+<p>For the modification of the grid, one can specify a grid via an external
+plain text file (<tt class="code docutils literal"><span class="pre">GRID_FILE</span></tt>):</p>
 <div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>orbkit -i INPUT --grid<span class="o">=</span>GRID_FILE
 </pre></div>
 </div>
 <p>This file can have two possible formats. (A <tt class="docutils literal"><span class="pre">#</span></tt> at the beginning of
-a line implicate a comment line) It can either represent the boundary
-conditions of a <cite>regular grid</cite>,</p>
+a line implicate a comment line) It can be represented either by the boundary
+conditions of an equidistant rectangular grid (<cite>regular grid</cite>),</p>
 <div class="highlight-bash"><div class="highlight"><pre><span class="c"># Regular Grid Example File</span>
 <span class="c"># Format:</span>
 <span class="c"># x xmin xmax Nx</span>
@@ -264,7 +268,7 @@ y -2 2  51
 z  0 0   1 
 </pre></div>
 </div>
-<p>or contain a list of data points for which the computations shall be performed
+<p>or by a list of data points
 (<cite>vector grid</cite>),</p>
 <div class="highlight-bash"><div class="highlight"><pre><span class="c"># Vectorized Grid Example File</span>
 <span class="c"># The header &#39;x y z&#39; is mandatory!</span>
@@ -281,7 +285,12 @@ x	y	z
 slices or 1-dimensional <cite>vector grids</cite> into 1-dimensional slices of equal length.
 The atomic orbitals, the molecular orbitals, and the density are calculated for
 each slice separately. At the end of the calculation, the data
-is reassembled and stored in an output file. In the default setting, orbkit
+is reassembled and stored in an output file.</p>
+<p>For <cite>vector grids</cite>, the length of the 1-dimensional slices can be defined with</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>orbkit -i INPUT --vector<span class="o">=</span>1e4
+</pre></div>
+</div>
+<p>In the default setting, orbkit
 performs the density calculation by starting only one subprocess.
 The number of subprocesses, which are distributed over the existing CPUs,
 can be modified with the subsequent command:</p>
@@ -293,60 +302,66 @@ can be modified with the subsequent command:</p>
 <h3>Molecular Orbital Selection<a class="headerlink" href="#molecular-orbital-selection" title="Permalink to this headline">¶</a></h3>
 <p>One special capability of orbkit is the computation of the density with a selected
 set of molecular orbitals. This can be invoked by providing an <tt class="docutils literal"><span class="pre">MO_SET</span></tt>:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>orbkit -i INPUT --mo_set<span class="o">=</span>mo_set
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>orbkit -i INPUT --mo_set<span class="o">=</span>MO_SET
 </pre></div>
 </div>
 <p>Such an <tt class="docutils literal"><span class="pre">MO_SET</span></tt> is a plain text file, where every row signifies a new
 calculation of the density from the molecular orbitals specified in this row.</p>
-<p>The molecular orbitals can either be selected via their index (As given in the
+<p>The molecular orbitals can be selected either via their index (As given in the
 output file, i.e., starting from one.)</p>
 <div class="highlight-bash"><div class="highlight"><pre>1	2	3
 </pre></div>
 </div>
 <p>or by using the <a class="reference external" href="https://www.molpro.net/">MOLPRO</a>-like nomenclature,
-e.g., 3.1 for the first orbital in symmetry three.
-(For <a class="reference external" href="http://www.gaussian.com/">Gaussian</a>, the symmetry labels are used, e.g., 3.A1 for the fist orbital in
-symmtry A1.)</p>
+e.g., 3.1 for the third orbital in symmetry one.
+(For <a class="reference external" href="http://www.gaussian.com/">Gaussian</a> and <a class="reference external" href="http://www.msg.chem.iastate.edu/gamess/">Gamess-US</a>, the symmetry labels are used, e.g., 3.A1 for the third orbital in
+symmetry A1.)</p>
 <div class="highlight-bash"><div class="highlight"><pre>1.1	2.1	1.3
 1.1	4.1
 4.1	2.3	2.1
 </pre></div>
 </div>
 <p>In the same manner, the computation and storage of a selected set of molecular
-orbitals can be invoked by</p>
+orbitals can be accomplished by</p>
 <div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>orbkit -i INPUT --calc_mo<span class="o">=</span>CALC_MO
 </pre></div>
 </div>
 <p>Here, the density computation is omitted. The computation and storage of all
-molecular orbitals can be invoked by <tt class="docutils literal"><span class="pre">--calc_mo=all_mo</span></tt>.</p>
+molecular orbitals can be called by</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>orbkit -i INPUT --calc_mo<span class="o">=</span>all_mo
+</pre></div>
+</div>
 </div>
 <div class="section" id="derivative-calculation">
 <h3>Derivative Calculation<a class="headerlink" href="#derivative-calculation" title="Permalink to this headline">¶</a></h3>
-<p>orbkit can compute analytical derivatives with respect to <tt class="docutils literal"><span class="pre">DRV</span></tt>, i.e.,
-<cite>x</cite>, <cite>y</cite>, and/or <cite>z</cite>, of all quantities available in orbkit. This can be invoked
-using the following option (multiple calls are possible):</p>
-<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>orbkit -i INPUT --drv<span class="o">=</span>DRV
+<p>orbkit can compute analytical spatial derivatives with respect to <tt class="docutils literal"><span class="pre">x</span></tt>,
+<tt class="docutils literal"><span class="pre">y</span></tt>, and/or <tt class="docutils literal"><span class="pre">z</span></tt> for the atomic and molecular orbitals, as well
+as for the electron density. E.g., a derivative of the density with respect to
+<tt class="docutils literal"><span class="pre">x</span></tt> can be invoked as follows:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>orbkit -i INPUT --drv<span class="o">=</span>x
 </pre></div>
 </div>
+<p>Multiple calls of the option <tt class="docutils literal"><span class="pre">--drv=DRV</span></tt> are possible.</p>
 </div>
 <div class="section" id="additional-options">
 <h3>Additional Options<a class="headerlink" href="#additional-options" title="Permalink to this headline">¶</a></h3>
-<p>There are some more features available. Of which two shall be highlighted in
-the following. On the one hand side, the atom-projected electron density</p>
+<p>In the following, two additional features are highlighted.
+On the one hand, the atom-projected electron density</p>
 <div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>orbkit -i INPUT --atom_projected_density<span class="o">=</span>INDEX
 </pre></div>
 </div>
-<p>which is the integrand of the Mulliken charges, and on the other hand side, the
-molecular orbital transition electronic flux density (component <tt class="docutils literal"><span class="pre">DRV</span></tt>)
-between the orbitals I and J:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>orbkit -i INPUT --mo_tefd<span class="o">=</span>I J --drv<span class="o">=</span>DRV
+<p>which is the integrand of the Mulliken charges, and on the other hand, the
+molecular orbital transition electronic flux density (components <tt class="docutils literal"><span class="pre">x</span></tt>,
+<tt class="docutils literal"><span class="pre">y</span></tt>, and <tt class="docutils literal"><span class="pre">z</span></tt>)
+between the orbitals <tt class="docutils literal"><span class="pre">I</span></tt> and <tt class="docutils literal"><span class="pre">J</span></tt>:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>orbkit -i INPUT --mo_tefd<span class="o">=</span>I J --drv<span class="o">=</span>x --drv<span class="o">=</span>y --drv<span class="o">=</span>z
 </pre></div>
 </div>
 </div>
 </div>
 <div class="section" id="usage-within-a-python-program">
 <h2>Usage Within a Python Program<a class="headerlink" href="#usage-within-a-python-program" title="Permalink to this headline">¶</a></h2>
-<p>The following examples show exemplary how to use orbkit within your python
+<p>The following examples show exemplary how to use orbkit within your Python
 programs. These and more examples can be found in the <tt class="docutils literal"><span class="pre">orbkit/examples</span></tt>
 folder. Please refer to the function references to get information about
 all modules and functions available.</p>
@@ -546,30 +561,30 @@ all modules and functions available.</p>
 <span class="n">zd</span> <span class="o">=</span> <span class="n">mo_list</span><span class="p">[</span><span class="mi">0</span><span class="p">][:,:,</span><span class="n">ok</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">N_</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">/</span><span class="mi">2</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 
 <span class="c"># plot cuts</span>
-<span class="n">f</span><span class="p">,</span> <span class="p">(</span><span class="n">bild1</span><span class="p">,</span> <span class="n">bild2</span><span class="p">,</span> <span class="n">bild3</span><span class="p">)</span> <span class="o">=</span> \
+<span class="n">f</span><span class="p">,</span> <span class="p">(</span><span class="n">pic1</span><span class="p">,</span> <span class="n">pic2</span><span class="p">,</span> <span class="n">pic3</span><span class="p">)</span> <span class="o">=</span> \
             <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="n">sharex</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span><span class="n">sharey</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span><span class="mi">14</span><span class="p">))</span>
-<span class="n">bild1</span><span class="o">.</span><span class="n">contour</span><span class="p">(</span><span class="n">z</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">xd</span><span class="p">,</span><span class="mi">50</span><span class="p">,</span><span class="n">linewidths</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span><span class="n">colors</span><span class="o">=</span><span class="s">&#39;k&#39;</span><span class="p">)</span>
-<span class="n">bild1</span><span class="o">.</span><span class="n">contourf</span><span class="p">(</span>\
+<span class="n">pic1</span><span class="o">.</span><span class="n">contour</span><span class="p">(</span><span class="n">z</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">xd</span><span class="p">,</span><span class="mi">50</span><span class="p">,</span><span class="n">linewidths</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span><span class="n">colors</span><span class="o">=</span><span class="s">&#39;k&#39;</span><span class="p">)</span>
+<span class="n">pic1</span><span class="o">.</span><span class="n">contourf</span><span class="p">(</span>\
     <span class="n">z</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">xd</span><span class="p">,</span><span class="mi">50</span><span class="p">,</span><span class="n">cmap</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">rainbow</span><span class="p">,</span><span class="n">vmax</span><span class="o">=</span><span class="nb">abs</span><span class="p">(</span><span class="n">xd</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span><span class="n">vmin</span><span class="o">=-</span><span class="nb">abs</span><span class="p">(</span><span class="n">xd</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
-<span class="n">bild1</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s">&#39;z&#39;</span><span class="p">)</span>
-<span class="n">bild1</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s">&#39;y&#39;</span><span class="p">)</span>
+<span class="n">pic1</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s">&#39;z&#39;</span><span class="p">)</span>
+<span class="n">pic1</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s">&#39;y&#39;</span><span class="p">)</span>
 
-<span class="n">bild2</span><span class="o">.</span><span class="n">contour</span><span class="p">(</span><span class="n">z</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="n">yd</span><span class="p">,</span><span class="mi">50</span><span class="p">,</span><span class="n">linewidths</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span><span class="n">colors</span><span class="o">=</span><span class="s">&#39;k&#39;</span><span class="p">)</span>
-<span class="n">bild2</span><span class="o">.</span><span class="n">contourf</span><span class="p">(</span>\
+<span class="n">pic2</span><span class="o">.</span><span class="n">contour</span><span class="p">(</span><span class="n">z</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="n">yd</span><span class="p">,</span><span class="mi">50</span><span class="p">,</span><span class="n">linewidths</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span><span class="n">colors</span><span class="o">=</span><span class="s">&#39;k&#39;</span><span class="p">)</span>
+<span class="n">pic2</span><span class="o">.</span><span class="n">contourf</span><span class="p">(</span>\
     <span class="n">z</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="n">yd</span><span class="p">,</span><span class="mi">50</span><span class="p">,</span><span class="n">cmap</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">rainbow</span><span class="p">,</span><span class="n">vmax</span><span class="o">=</span><span class="nb">abs</span><span class="p">(</span><span class="n">yd</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span><span class="n">vmin</span><span class="o">=-</span><span class="nb">abs</span><span class="p">(</span><span class="n">yd</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>    
-<span class="n">bild2</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s">&#39;z&#39;</span><span class="p">)</span>
-<span class="n">bild2</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s">&#39;x&#39;</span><span class="p">)</span>    
+<span class="n">pic2</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s">&#39;z&#39;</span><span class="p">)</span>
+<span class="n">pic2</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s">&#39;x&#39;</span><span class="p">)</span>    
 
-<span class="n">bild3</span><span class="o">.</span><span class="n">contour</span><span class="p">(</span><span class="n">y</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="n">zd</span><span class="p">,</span><span class="mi">50</span><span class="p">,</span><span class="n">linewidths</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span><span class="n">colors</span><span class="o">=</span><span class="s">&#39;k&#39;</span><span class="p">)</span>
-<span class="n">bild3</span><span class="o">.</span><span class="n">contourf</span><span class="p">(</span>\
+<span class="n">pic3</span><span class="o">.</span><span class="n">contour</span><span class="p">(</span><span class="n">y</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="n">zd</span><span class="p">,</span><span class="mi">50</span><span class="p">,</span><span class="n">linewidths</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span><span class="n">colors</span><span class="o">=</span><span class="s">&#39;k&#39;</span><span class="p">)</span>
+<span class="n">pic3</span><span class="o">.</span><span class="n">contourf</span><span class="p">(</span>\
     <span class="n">y</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="n">zd</span><span class="p">,</span><span class="mi">50</span><span class="p">,</span><span class="n">cmap</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">rainbow</span><span class="p">,</span><span class="n">vmax</span><span class="o">=</span><span class="nb">abs</span><span class="p">(</span><span class="n">zd</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span><span class="n">vmin</span><span class="o">=-</span><span class="nb">abs</span><span class="p">(</span><span class="n">zd</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>  
-<span class="n">bild3</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s">&#39;y&#39;</span><span class="p">)</span>
-<span class="n">bild3</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s">&#39;x&#39;</span><span class="p">)</span>     
+<span class="n">pic3</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s">&#39;y&#39;</span><span class="p">)</span>
+<span class="n">pic3</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s">&#39;x&#39;</span><span class="p">)</span>     
 
 <span class="c"># following options applied for all subplots as they share x- and y-axis</span>
-<span class="n">bild1</span><span class="o">.</span><span class="n">xaxis</span><span class="o">.</span><span class="n">set_ticks</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span><span class="mi">6</span><span class="p">,</span><span class="mi">5</span><span class="p">))</span>
-<span class="n">bild1</span><span class="o">.</span><span class="n">yaxis</span><span class="o">.</span><span class="n">set_ticks</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span><span class="mi">6</span><span class="p">,</span><span class="mi">5</span><span class="p">))</span>
-<span class="n">bild1</span><span class="o">.</span><span class="n">set_aspect</span><span class="p">(</span><span class="s">&#39;equal&#39;</span><span class="p">)</span>
+<span class="n">pic1</span><span class="o">.</span><span class="n">xaxis</span><span class="o">.</span><span class="n">set_ticks</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span><span class="mi">6</span><span class="p">,</span><span class="mi">5</span><span class="p">))</span>
+<span class="n">pic1</span><span class="o">.</span><span class="n">yaxis</span><span class="o">.</span><span class="n">set_ticks</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span><span class="mi">6</span><span class="p">,</span><span class="mi">5</span><span class="p">))</span>
+<span class="n">pic1</span><span class="o">.</span><span class="n">set_aspect</span><span class="p">(</span><span class="s">&#39;equal&#39;</span><span class="p">)</span>
 
 <span class="c"># plot</span>
 <span class="n">f</span><span class="o">.</span><span class="n">subplots_adjust</span><span class="p">(</span><span class="n">left</span><span class="o">=</span><span class="mf">0.15</span><span class="p">,</span><span class="n">bottom</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span><span class="n">top</span><span class="o">=</span><span class="mf">0.95</span><span class="p">,</span><span class="n">right</span><span class="o">=</span><span class="mf">0.95</span><span class="p">)</span>
@@ -616,7 +631,7 @@ all modules and functions available.</p>
 <span class="n">ok</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">itype</span>      <span class="o">=</span> <span class="s">&#39;molden&#39;</span>       <span class="c"># input file type</span>
 <span class="n">ok</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">outputname</span> <span class="o">=</span> <span class="s">&#39;h2o_MO&#39;</span>       <span class="c"># output file (base) name</span>
 <span class="n">ok</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">otype</span>      <span class="o">=</span> <span class="s">&#39;h5&#39;</span>           <span class="c"># output file type</span>
-<span class="n">ok</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">numproc</span>    <span class="o">=</span> <span class="mi">1</span>              <span class="c"># numper of processes for multiprocessing</span>
+<span class="n">ok</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">numproc</span>    <span class="o">=</span> <span class="mi">1</span>              <span class="c"># number of processes for multiprocessing</span>
 <span class="n">ok</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">vector</span>     <span class="o">=</span> <span class="mf">4e4</span>            <span class="c"># number of points per process</span>
 <span class="n">ok</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">calc_mo</span>    <span class="o">=</span> <span class="s">&#39;MO_List.tab&#39;</span>  <span class="c"># list of molecular orbitals to be used</span>
 
@@ -669,6 +684,13 @@ all modules and functions available.</p>
 </pre></div>
 </div>
 </div>
+</div>
+<div class="section" id="limitations-of-orbkit">
+<h2>Limitations of orbkit<a class="headerlink" href="#limitations-of-orbkit" title="Permalink to this headline">¶</a></h2>
+<p>One limitation of orbkit is the ability to calculate only s, p, d, f and g atomic
+orbitals (Molden file limitation).</p>
+<p>For the calculation of atomic and molecular orbitals, orbkit requires
+Cartesian Gaussians. The usage of spherical Gaussian functions is not yet implemented.</p>
 </div>
 </div>
 

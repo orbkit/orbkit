@@ -1,10 +1,8 @@
 Manual
 ======
 
-orbkit can be very easily operated via the terminal. For advanced
-users, it is recommended to use orbkit as a Python function. Please
-note that the graphical user interface has been removed for the time being
-and the option :literal:`--no_display` is not necessary anymore.
+orbkit can be easily operated via the terminal or within a Python program.  For 
+advanced users, the latter type of usage is recommended.
 
 Requirements for the Input Files
 --------------------------------
@@ -34,7 +32,7 @@ stated, it assumes the standard molden basis function order for the exponents
 
 **Molden File Format:**
 
-- Contain Cartesian Harmonics by default
+- Contains Cartesian Harmonics by default
 - Starts with :literal:`[Molden Format]`
 - Contains :literal:`[Atoms]`, :literal:`[GTO]`, :literal:`[MO]`
 - Generation:
@@ -44,14 +42,16 @@ stated, it assumes the standard molden basis function order for the exponents
 
 **GAMESS-US Output File:**
 
-- Please use Cartesian Harmonics. (This is the default choice.)
+- Please use Cartesian Harmonics (default)
 
 **GAUSSIAN Formatted Checkpoint File:**
 
 - Contains Cartesian Harmonics by default
-- Cannot be used for natural orbitals, since no occupation numbers are printed
-- For the creation of a FChk files, add :literal:`%Chk=chkpt-file` to your 
-  Gaussian_ input file and use :literal:`formchk` to convert the chk file:
+- Not applicable for natural orbitals => occupation numbers are not printed
+- Creation of a FChk file:
+
+  1) Add :literal:`%Chk=chkpt-file` to your Gaussian_ input file
+  2) Use :literal:`formchk` to convert the chk file:
 
 .. code-block:: bash
 
@@ -59,8 +59,8 @@ stated, it assumes the standard molden basis function order for the exponents
 
 **GAUSSIAN .log File:**
 
-- Spherical Harmonics are chosen by default! You have to set it manually 
-  (:literal:`6D 10F`)!
+- Spherical Harmonics are chosen by default! You have to switch manually 
+  to Cartesian Harmonics (:literal:`6D 10F`)!
 - Use the following parameters in your root section
 
 .. code-block:: bash
@@ -68,23 +68,25 @@ stated, it assumes the standard molden basis function order for the exponents
     6D 10F gfinput IOP(6/7=3)
 
 - If more than one geometry/atomic orbitals/molecular orbitals sections are present
-  in the .log file, orbkit lets you interactively select.
+  in the .log file, orbkit provides an interactive selection.
 
 Usage via the Terminal
 ----------------------
 
-For an overview of the available features, a general help text is
-shown in the terminal by using the command:
+For an overview of all available features, a general help text can be
+called in the terminal by using the command:
 
 .. code-block:: bash
 
     $ orbkit -h
 
+orbkit creates an logfile (:literal:`.oklog`) containing all information printed
+during the calculation.
+
 Input/Output
 ............
-
-For a normal density calculation from all occupied molecular 
-orbitals on the standard grid, the following command must be entered in the
+For the standard density calculation including all occupied molecular 
+orbitals on the default grid, the following command must be entered in the
 console: 
 
 .. code-block:: bash
@@ -107,8 +109,8 @@ system.
 
 The Gaussian_ cube file (file extension: .cb) is a normal text file containing
 the important informations of the calculation. For large systems,
-the cube file requires a lot of space on the hard drive and plenty of time 
-for its creation. 
+the cube file requires a lot of space on the hard drive and is very 
+time-consuming.
 
 In contrast, the HDF5_ file format (file extension: .h5) which is a hierarchical 
 data format can store and organize large amounts of numerical data. More 
@@ -128,21 +130,21 @@ loaded in ZIBAmira_.
 Grid Related Options
 ....................
 
-For the modification of the grid, one can specify a modified grid via an external 
-plain text file (GRID_FILE):
+For the modification of the grid, one can specify a grid via an external 
+plain text file (:code:`GRID_FILE`):
 
 .. code-block:: bash
 
 	$ orbkit -i INPUT --grid=GRID_FILE
 
 This file can have two possible formats. (A :literal:`#` at the beginning of 
-a line implicate a comment line) It can either represent the boundary
-conditions of a `regular grid`,
+a line implicate a comment line) It can be represented either by the boundary
+conditions of an equidistant rectangular grid (`regular grid`),
 
 .. literalinclude:: ../examples/grid_reg.txt
    :language: bash
 
-or contain a list of data points for which the computations shall be performed
+or by a list of data points
 (`vector grid`),
 
 .. literalinclude:: ../examples/grid_vec.txt
@@ -152,7 +154,15 @@ By default, orbkit divides 3-dimensional `regular grids` into 2-dimensional
 slices or 1-dimensional `vector grids` into 1-dimensional slices of equal length. 
 The atomic orbitals, the molecular orbitals, and the density are calculated for 
 each slice separately. At the end of the calculation, the data
-is reassembled and stored in an output file. In the default setting, orbkit 
+is reassembled and stored in an output file. 
+
+For `vector grids`, the length of the 1-dimensional slices can be defined with
+
+.. code-block:: bash
+
+    $ orbkit -i INPUT --vector=1e4
+
+In the default setting, orbkit 
 performs the density calculation by starting only one subprocess.
 The number of subprocesses, which are distributed over the existing CPUs, 
 can be modified with the subsequent command:
@@ -170,64 +180,72 @@ set of molecular orbitals. This can be invoked by providing an :literal:`MO_SET`
 
 .. code-block:: bash
 
-    $ orbkit -i INPUT --mo_set=mo_set
+    $ orbkit -i INPUT --mo_set=MO_SET
     
 Such an :literal:`MO_SET` is a plain text file, where every row signifies a new 
 calculation of the density from the molecular orbitals specified in this row.
 
-The molecular orbitals can either be selected via their index (As given in the 
+The molecular orbitals can be selected either via their index (As given in the 
 output file, i.e., starting from one.)
 
 .. literalinclude:: ../examples/MO_List_int.tab
    :language: bash
 
 or by using the MOLPRO_-like nomenclature, 
-e.g., 3.1 for the first orbital in symmetry three. 
-(For Gaussian_, the symmetry labels are used, e.g., 3.A1 for the fist orbital in 
-symmtry A1.) 
+e.g., 3.1 for the third orbital in symmetry one. 
+(For Gaussian_ and Gamess-US_, the symmetry labels are used, e.g., 3.A1 for the third orbital in 
+symmetry A1.) 
 
 .. literalinclude:: ../examples/MO_List.tab
    :language: bash
 
 
 In the same manner, the computation and storage of a selected set of molecular
-orbitals can be invoked by
+orbitals can be accomplished by
 
 .. code-block:: bash
 
     $ orbkit -i INPUT --calc_mo=CALC_MO
     
 Here, the density computation is omitted. The computation and storage of all
-molecular orbitals can be invoked by :literal:`--calc_mo=all_mo`.
+molecular orbitals can be called by 
+
+.. code-block:: bash
+
+    $ orbkit -i INPUT --calc_mo=all_mo
     
 Derivative Calculation
 ......................
 
-orbkit can compute analytical derivatives with respect to :literal:`DRV`, i.e., 
-`x`, `y`, and/or `z`, of all quantities available in orbkit. This can be invoked 
-using the following option (multiple calls are possible):
+orbkit can compute analytical spatial derivatives with respect to :literal:`x`,
+:literal:`y`, and/or :literal:`z` for the atomic and molecular orbitals, as well
+as for the electron density. E.g., a derivative of the density with respect to 
+:literal:`x` can be invoked as follows:
 
 .. code-block:: bash
 
-    $ orbkit -i INPUT --drv=DRV
+    $ orbkit -i INPUT --drv=x
+
+Multiple calls of the option :literal:`--drv=DRV` are possible.
 
 Additional Options
 ..................
 
-There are some more features available. Of which two shall be highlighted in 
-the following. On the one hand side, the atom-projected electron density 
+In the following, two additional features are highlighted. 
+On the one hand, the atom-projected electron density 
 
 .. code-block:: bash
 
     $ orbkit -i INPUT --atom_projected_density=INDEX
 
-which is the integrand of the Mulliken charges, and on the other hand side, the 
-molecular orbital transition electronic flux density (component :literal:`DRV`) 
-between the orbitals I and J:
+which is the integrand of the Mulliken charges, and on the other hand, the 
+molecular orbital transition electronic flux density (components :literal:`x`,
+:literal:`y`, and :literal:`z`) 
+between the orbitals :literal:`I` and :literal:`J`:
 
 .. code-block:: bash
 
-    $ orbkit -i INPUT --mo_tefd=I J --drv=DRV
+    $ orbkit -i INPUT --mo_tefd=I J --drv=x --drv=y --drv=z
 
 
 .. _HDF5: http://www.hdfgroup.org/HDF5/
@@ -242,7 +260,7 @@ between the orbitals I and J:
 Usage Within a Python Program
 -----------------------------
 
-The following examples show exemplary how to use orbkit within your python 
+The following examples show exemplary how to use orbkit within your Python 
 programs. These and more examples can be found in the :literal:`orbkit/examples` 
 folder. Please refer to the function references to get information about
 all modules and functions available.
@@ -265,3 +283,13 @@ Using orbkit to Calculate Analytical Derivatives of Molecular Orbitals
 .. literalinclude:: ../examples/calculate_derivatives.py
    :language: python
 
+
+
+Limitations of orbkit
+---------------------
+
+One limitation of orbkit is the ability to calculate only s, p, d, f and g atomic 
+orbitals (Molden file limitation).
+
+For the calculation of atomic and molecular orbitals, orbkit requires 
+Cartesian Gaussians. The usage of spherical Gaussian functions is not yet implemented. 

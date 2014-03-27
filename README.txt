@@ -3,11 +3,10 @@ orbkit
 Copyright (C) 2014, Gunter Hermann, Vincent Pohl, and Axel Schild.
 
 orbkit is a parallel Python program package for post-processing 
-wavefunction data, i.e., atomic and molecular orbitals, extracted from 
-output files of MOLPRO (Molden File Format), TURBOMOLE (Molden file format), 
-GAMESS US, and Gaussian (Formatted Checkpoint File). 
+wavefunction data extracted from output files of MOLPRO (Molden File Format), 
+TURBOMOLE (Molden file format), GAMESS US, and Gaussian (Formatted Checkpoint File). 
 
-Computational capabilities for arbitrary grids:
+Computational capabilities using arbitrary grids:
 
 - Atomic orbitals, molecular orbitals, electron density, 
   and the spatial derivatives of these quantities
@@ -55,9 +54,9 @@ The package h5py is not mandatory but strongly recommanded.
 Installation
 ============
 
-Currently no setup.py file is available. So, if you want to use orbkit as
-a standalone program or a python module, you have to install it manually as
-described for bash in the following.
+Currently, no setup.py file is available. So, if you want to use orbkit as a 
+standalone program or a python module, a manual installation is prerequisite. 
+An instruction for linux using bash follows in the subsequent section.
 
 Two methods will be described. The installation via git and the installation 
 using a tarball provided.

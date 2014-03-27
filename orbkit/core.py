@@ -1,4 +1,5 @@
 # -*- coding: iso-8859-1 -*-
+'''Module performing all computational tasks.'''
 
 lgpl = '''
 orbkit
@@ -53,7 +54,7 @@ from orbkit import options
 dvec = 1e4
 
 def init_parser():
-  '''Initialize parser and process the options
+  '''Initializes parser and processes the options.
   '''
   global parser
   
@@ -102,26 +103,6 @@ def init_parser():
 		      '%s' (ZIBAmiraMesh file), '%s' (ZIBAmira network) '''
 		      % tuple(options.otypes) + "[default: 'h5']")
   parser.add_option_group(group)
-  group = optparse.OptionGroup(parser, "Grid-Related Options")      
-  group.add_option("-v", "--vector",dest="vector",
-                      action="callback",callback=default_if_called,
-                      callback_kwargs={'default': dvec},
-                      help=('''perform the computations for a vectorized grid, 
-                      i.e., with x, y, and z as vectors. Compute successively 
-                      VECTOR points at once per subprocess
-                      [default: --vector=%0.0e]''' % dvec
-                      ).replace('  ','').replace('\n',''))   
-  group.add_option("--grid", dest="grid_file",
-                      type="string",
-                      help='''Read the grid from the plain text file GRID_FILE''')    
-  group.add_option("--center", dest="center_grid",
-                      metavar="ATOM",type="int",
-                      help='''center with respect to the origin and the 
-                      atom number ATOM (input order)''') 
-  group.add_option("--random_grid", dest="random_grid",
-                      default=False, action="store_true",  
-                      help=optparse.SUPPRESS_HELP)
-  parser.add_option_group(group)
   group = optparse.OptionGroup(parser, "Computational Options")
   group.add_option("-p", "--numproc",dest="numproc",
                       default=1, type="int",
@@ -155,6 +136,26 @@ def init_parser():
                       quantities with respect to DRV, i.e., 'x', 'y', and/or 'z' 
                       (multiple calls possible)'''
                       ).replace('  ','').replace('\n',''))
+  parser.add_option_group(group)
+  group = optparse.OptionGroup(parser, "Grid-Related Options")      
+  group.add_option("-v", "--vector",dest="vector",
+                      action="callback",callback=default_if_called,
+                      callback_kwargs={'default': dvec},
+                      help=('''perform the computations for a vectorized grid, 
+                      i.e., with x, y, and z as vectors. Compute successively 
+                      VECTOR points at once per subprocess
+                      [default: --vector=%0.0e]''' % dvec
+                      ).replace('  ','').replace('\n',''))   
+  group.add_option("--grid", dest="grid_file",
+                      type="string",
+                      help='''Read the grid from the plain text file GRID_FILE''')    
+  group.add_option("--center", dest="center_grid",
+                      metavar="ATOM",type="int",
+                      help='''center with respect to the origin and the 
+                      atom number ATOM (input order)''') 
+  group.add_option("--random_grid", dest="random_grid",
+                      default=False, action="store_true",  
+                      help=optparse.SUPPRESS_HELP)
   parser.add_option_group(group)
   group = optparse.OptionGroup(parser, "Additional Options")
   group.add_option("--z_reduced_density",dest="z_reduced_density",
@@ -211,20 +212,21 @@ def init_parser():
 def l_creator(geo_spec,ao_spec,sel_ao,exp_list=None,coeff_list=None,
 	      at_pos=None,is_vector=False,drv=None,
 	      x=None,y=None,z=None,N=None):
-  '''Calculate the contracted atomic orbitals of q.n. l or its
+  '''Calculates the contracted atomic orbitals of quantum number l or its
   derivative with respect to a specific variable (e.g. drv = 'x' or drv = 0)
-  for the atomic orbital: ao_spec[sel_ao]
+  for the atomic orbitals: ao_spec[sel_ao].
   
   **Parameters:**
   
 	geo_spec,ao_spec :
-	  See the `Central Variables`_ in the manual for details.
+	  See `Central Variables`_ for details.
 	sel_ao : int
-	  Index of the requested atomic orbital
+	  Index of the requested atomic orbitals
 	exp_list : array_like, shape=(NDEG, 3), optional
 	  If not None, list of xyz-exponents of the NDEG 
-	  degenrate atomic orbitals,i.e., NDEG=len(exp_list),
-	  else the standard molden exponents (exp) for q.n. l will be used.
+	  degenerate atomic orbitals ,i.e., NDEG=len(exp_list),
+	  else the standard molden exponents (exp) for quantum number l will be 
+	  used.
 	coeff_list : array_like, shape=(PNUM, 2), optional
 	  If not None, list of the PNUM primitive atomic orbital
 	  exponents [:,0] and coefficients [:,1],
@@ -233,22 +235,23 @@ def l_creator(geo_spec,ao_spec,sel_ao,exp_list=None,coeff_list=None,
 	  If not None, xyz-coordinates where the atomic orbital is centered,
 	  else the position geo_spec[ao_spec[sel_ao]['atom']] will be used.
 	is_vector : bool, optional
-	  If True, a vectorized grid will be applied
+	  If True, a vectorized grid will be applied.
 	drv : int or string, {None, 'x', 'y', 'z', 0, 1, 2}, optional
-	  If not None, a derivative calculation of the atomic orbital 
+	  If not None, a derivative calculation of the atomic orbitals 
 	  is requested.
 	compile_only : bool, optional
-	  If True, compile only the C++ code.
+	  If True, compiles only the C++ code.
 	x,y,z : list of floats, optional
-	  If not None, provide a list of Cartesian coordinates, 
-	  else the respective coordintes of grid. will be used
+	  If not None, provides a list of Cartesian coordinates, 
+	  else the respective coordinates of the module :mod:`orbkit.grid` will 
+	  be used.
 	N : tuple
-	  Shape of the grid.
+	  If not None, provides the shape of the grid.
   
   **Returns:**
   
 	ao_list : numpy.ndarray, shape=((NDEG,) + N)
-	  Contains the computed NGED=len(exp_list) atomic orbitals on a grid
+	  Contains the computed NGED=len(exp_list) atomic orbitals on a grid.
   
   **Information:**
   
@@ -324,33 +327,34 @@ def l_creator(geo_spec,ao_spec,sel_ao,exp_list=None,coeff_list=None,
 def ao_creator(geo_spec,ao_spec,exp_list=False,
 	       is_vector=False,drv=None,
 	       x=None,y=None,z=None,N=None):                                                           	
-  '''Calculate all contracted atomic orbitals or its
-  derivative with respect to a specific variable (e.g. drv = 'x' or drv = 0)
+  '''Calculates all contracted atomic orbitals or its
+  derivatives with respect to a specific variable (e.g. drv = 'x' or drv = 0).
   
   **Parameters:**
   
 	geo_spec,ao_spec :
-	  See the `Central Variables`_ in the manual for details.
+	  See `Central Variables`_ in the manual for details.
 	sel_ao : int
 	  Index of the requested atomic orbital
 	exp_list : bool, optional
-	  If True, take the xyz-exponents from ao_spec[i]['Exponents'],
-	  else the the standard molden exponents (exp) for q.n. l will be used.
+	  If True, takes the xyz-exponents from ao_spec[i]['Exponents'],
+	  else the standard molden exponents (exp) for quantum number l will be 
+	  used.
 	is_vector : bool, optional
 	  If True, a vectorized grid will be applied
 	drv : int or string, {None, 'x', 'y', 'z', 0, 1, 2}, optional
-	  If not None, an analytical  derivative calculation of the atomic orbital 
-	  with respect to DRV is requested.
+	  If not None, an analytical  calculation of the derivatives for 
+	  the atomic orbitals with respect to DRV is requested.
 	x,y,z : None or list of floats, optional
-	  If not None, provide a list of Cartesian coordinates, 
-	  else the respective coordintes of grid. will be used
+	  If not None, provides a list of Cartesian coordinates, 
+	  else the respective coordinates of grid. will be used
 	N : None or tuple, optional
-	  If not None, shape of the grid.
+	  If not None, provides the shape of the grid.
   
   **Returns:**
   
 	ao_list : numpy.ndarray, shape=((NAO,) + N)
-	  Contains the computed NAO atomic orbitals on a grid
+	  Contains the computed NAO atomic orbitals on a grid.
   '''
   # Create the grid
   if x is None: x = grid.x
@@ -391,7 +395,7 @@ def ao_creator(geo_spec,ao_spec,exp_list=False,
 def calc_single_mo(xx):
   '''Computes a single molecular orbital. 
   
-  This function is called with the multiprocessing module by mo_creator
+  This function is called by the multiprocessing module in the :mod:`orbkit.core.mo_creator`.
   
   **Parameters:**
   
@@ -399,14 +403,14 @@ def calc_single_mo(xx):
 	  Specifies which molecular orbital shall be computed, i.e., mo_spec[xx].
 	Spec : dict, global
 	  Dictionary containing all required varibles:
-	  'ao_list' : List of atomic orbitals on a grid.
-	  'mo_spec' : List of dictionaries (see manual for details).
-	  'N' : Tuple containing the shape of the grid.
+	    :ao_list: : List of atomic orbitals on a grid.
+	    :mo_spec: : List of dictionaries (see `Central Variables`_ for details).
+	    :N: : Tuple containing the shape of the grid.
 
   **Returns:**
   
 	mo : numpy.ndarray, shape=(N)
-	  Contains the molecular orbital on a grid
+	  Contains the molecular orbitals on a grid.
   '''
   try:
     ao_list = Spec['ao_list']
@@ -423,25 +427,25 @@ def calc_single_mo(xx):
 def mo_creator(ao_list,mo_spec,is_vector=False,
 	       x=None,y=None,z=None,N=None,
 	       HDF5_save=False,h5py=False,s=0):
-  '''Calculate the molecular orbitals
+  '''Calculates the molecular orbitals.
   
-  If for the argument HDF5_save a string (filename) is given the slice s of each
+  If a string (filename) is given for the argument :literal:`HDF5_save`, the slice s of each
   molecular orbital will be saved to the disk. This module is used by
-  orbkit_extras.save_mo_hdf5(). There, the HDF5 file is initalized.
+  :mod:`orbkit.extras.save_mo_hdf5()`, where the HDF5 file is initialized.
   
   **Parameters:**
   
 	ao_list : numpy.ndarray, shape=((NAO,) + N)
-	  Contains the NAO atomic orbitals on a grid
+	  Contains the NAO atomic orbitals on a grid.
 	mo_spec : List of dictionaries
-	  See manual for details.
+	  See `Central Variables`_ for details.
 	is_vector : bool, optional
-	  If True, a vectorized grid will be applied
+	  If True, a vectorized grid will be applied.
 	x,y,z : None or list of floats, optional
 	  If not None, provide a list of Cartesian coordinates, 
-	  else the respective coordintes of grid will be used.
+	  else the respective coordinates of grid will be used.
 	N : None or tuple, optional
-	  If not None, shape of the grid.
+	  If not None, provides the shape of the grid.
 	HDF5_save : False or string, optional
 	  If not False, filename of HDF5 file for storing the molecular orbitals.
 	  (Requires Parameters: h5py and s)
@@ -453,7 +457,7 @@ def mo_creator(ao_list,mo_spec,is_vector=False,
   **Returns:**
   
 	mo_list : numpy.ndarray, shape=((NMO,) + N)
-	  Contains the NMO=len(mo_spec) molecular orbital on a grid.
+	  Contains the NMO=len(mo_spec) molecular orbitals on a grid.
   '''
   
   if x is None: x = grid.x
@@ -509,47 +513,51 @@ def mo_creator(ao_list,mo_spec,is_vector=False,
   # mo_creator 
 
 def slice_rho(xx):
-  '''Calculate the density, the molecular orbitals, or the derivatives thereof
+  '''Calculates the density, the molecular orbitals, or the derivatives thereof
   with respect to Spec['Derivative'] for one slice (xx)
   
-  This function is called with the multiprocessing module by rho_compute.
+  This function is called by the multiprocessing module in the :mod:`orbkit.core.rho_compute`.
   
   **Parameters:**
   
 	xx : [float] or [int, int]
 	  Specifies which slice in x-direction shall be computed.
-	  If not is_vector, one slice in x-direction at x=xx will be computed,
-	  else, one slice, from index xx[0] to xx[1], will be computed.
+	  
+	    | **If not is_vector:** One slice at x=xx will be computed.
+	    | **Else:**  One slice from index xx[0] to xx[1] will be calculated.
+	    
 	Spec : dict, global
 	  Dictionary containing all required varibles:
-	  'geo_spec' : array_like, shape=(3,NATOMS) (see manual for details).
-	  'ao_spec' : List of dictionaries (see manual for details).
-	  'mo_spec' : List of dictionaries (see manual for details).
-	  'calc_mo' : bool if only the molecular orbitals are requested.
-	  'is_vector' : bool if a vectorized grid is used.
-	  'Derivative' : list of strings {'x','y', or 'z'}, derivative calculation?
+	    :geo_spec: List of floats, shape=(NATOMS, 3) (see `Central Variables`_ for details).
+	    :ao_spec: List of dictionaries (see `Central Variables`_ for details).
+	    :mo_spec: List of dictionaries (see `Central Variables`_ for details).
+	    :calc_mo: Bool if only the molecular orbitals are requested.
+	    :is_vector: Bool if a vectorized grid is used.
+	    :Derivative: List of strings, choices={'x','y', or 'z'}. 
+			 If not None, derivative calculation will be carried out.
 	grid : module or class, global
 	  Contains the grid, i.e., grid.x, grid.y, and grid.z.
 
   **Returns:**
   
-	if calc_mo and drv is None : (mo_list)
-	
-	if calc_mo and drv is not None : (delta_mo_list)
-	
-	if not calc_mo and drv is None : (rho, mo_norm)
-	
-	if not calc_mo and drv is not None : (rho, mo_norm, delta_rho)
+	:if calc_mo and drv is None: 
+	  - mo_list
+	:if calc_mo and drv is not None:
+	  - delta_mo_list
+	:if not calc_mo and drv is None: 
+	  - rho, mo_norm
+	:if not calc_mo and drv is not None: 
+	  - rho, mo_norm, delta_rho
 	
 	mo_list : numpy.ndarray, shape=((NMO,) + N)
-	  Contains the NMO=len(mo_spec) molecular orbital on a grid.
+	  Contains the NMO=len(mo_spec) molecular orbitals on a grid.
 	delta_mo_list : numpy.ndarray, shape=((NDRV,NMO) + N)
-	  Contains derivatives with respect to drv (NDRV=len(drv)) of the 
-	  NMO=len(mo_spec) molecular orbital on a grid.
+	  Contains the derivatives with respect to drv (NDRV=len(drv)) of the 
+	  NMO=len(mo_spec) molecular orbitals on a grid.
 	rho : numpy.ndarray, shape=(N)
 	  Contains the density on a grid.
 	delta_rho : numpy.ndarray, shape=((NDRV,) + N)
-	  Contains derivatives with respect to drv (NDRV=len(drv)) of 
+	  Contains the derivatives with respect to drv (NDRV=len(drv)) of 
 	  the density on a grid.
   '''
   try:
@@ -628,43 +636,46 @@ def slice_rho(xx):
 def rho_compute(geo_spec,ao_spec,mo_spec,calc_mo=False,vector=None,drv=None):
   '''Calculate the density, the molecular orbitals, or the derivatives thereof.
   
-  The 3D grid is divided into Slices, and the computational tasks are 
-  distributed to the worker processes.
+  orbkit divides 3-dimensional regular grids into 2-dimensional slices and 
+  1-dimensional vector grids into 1-dimensional slices of equal length. By default,
+  3-dimensional grids are used (:literal:`vector=None`).
+  The computational tasks are distributed to the worker processes.
   
   **Parameters:**
   
 	geo_spec : array_like, shape=(3,NATOMS) 
-	  See manual for details.
+	  See `Central Variables`_ for details.
 	ao_spec : List of dictionaries
-	  See manual for details.
+	  See `Central Variables`_ for details.
 	mo_spec : List of dictionaries
-	  See manual for details.
+	  See `Central Variables`_ for details.
 	calc_mo : bool, optional
-	  If True, the computation of  the molecular orbitals is requested only.
+	  If True, the computation of  the molecular orbitals requested is only
+	  carried out.
 	vector : None or int, optional
-	  If not None, perform the computations for a vectorized grid, i.e., 
-	  with x, y, and z as vectors. Compute successively VECTOR points 
-	  at once per subprocess.
+	  If not None, performs the computations on a vectorized grid, i.e., 
+	  with x, y, and z as vectors.
 	drv : string or list of strings {None,'x','y', or 'z'}, optional
-	  If not None, compute the analytical derivative of the requested quantities with respect to DRV.
+	  If not None, computes the analytical derivative of the requested quantities with respect to DRV.
 	grid : module or class, global
 	  Contains the grid, i.e., grid.x, grid.y, and grid.z.
 
   **Returns:**
   
-	if calc_mo and drv is None : (mo_list)
-	
-	if calc_mo and drv is not None : (delta_mo_list)
-	
-	if not calc_mo and drv is None : (rho)
-	
-	if not calc_mo and drv is not None : (rho, delta_rho)
+	:if calc_mo and drv is None: 
+	  - mo_list
+	:if calc_mo and drv is not None:  
+	  - delta_mo_list
+	:if not calc_mo and drv is None: 
+	  - rho
+	:if not calc_mo and drv is not None: 
+	  - rho, delta_rho
   
 	mo_list : numpy.ndarray, shape=((NMO,) + N)
-	  Contains the NMO=len(mo_spec) molecular orbital on a grid.
+	  Contains the NMO=len(mo_spec) molecular orbitals on a grid.
 	delta_mo_list : numpy.ndarray, shape=((NDRV,NMO) + N)
-	  Contains derivatives with respect to drv (NDRV=len(drv)) of the 
-	  NMO=len(mo_spec) molecular orbital on a grid.
+	  Contains the derivatives with respect to drv (NDRV=len(drv)) of the 
+	  NMO=len(mo_spec) molecular orbitals on a grid.
 	mo_norm : numpy.ndarray, shape=(NMO,)
 	  Contains the numerical norms of the molecular orbitals.
 	rho : numpy.ndarray, shape=(N)
@@ -836,68 +847,73 @@ def rho_compute(geo_spec,ao_spec,mo_spec,calc_mo=False,vector=None,drv=None):
 
 def rho_compute_no_slice(geo_spec,ao_spec,mo_spec,calc_mo=False,
 			 is_vector=False,drv=None,return_components=False):
-  '''Calculate the density, the molecular orbitals, or the derivatives thereof
+  '''Calculates the density, the molecular orbitals, or the derivatives thereof
   without slicing the grid.
   
   **Parameters:**
   
 	geo_spec : array_like, shape=(3,NATOMS) 
-	  See manual for details.
+	  See `Central Variables`_ for details.
 	ao_spec : List of dictionaries
-	  See manual for details.
+	  See `Central Variables`_ for details.
 	mo_spec : List of dictionaries
-	  See manual for details.
+	  See `Central Variables`_ for details.
 	calc_mo : bool, optional
-	  If True, the computation of  the molecular orbitals is requested only.
+	  If True, the computation of  the molecular orbitals requested is only
+	  carried out.
 	is_vector : bool, optional
-	  If True, perform the computations for a vectorized grid, i.e., 
+	  If True, performs the computations for a vectorized grid, i.e., 
 	  with x, y, and z as vectors.
 	drv : string or list of strings {None,'x','y', or 'z'}, optional
-	  If not None, compute the analytical derivative of the requested quantities with respect to DRV.
+	  If not None, computes the analytical derivative of the requested 
+	  quantities with respect to DRV.
 	return_components : bool, optional
-	  If True, return atomic, molecular, and, if requested, the density, 
-	  and/or the derivatives thereof as well.
+	  If True, returns the atomic and molecular orbitals, and the density, 
+	  and if requested, the derivatives thereof as well.
 	grid : module or class, global
 	  Contains the grid, i.e., grid.x, grid.y, and grid.z.
 
   **Returns:**
   
-	if not return_components:
+	:if not return_components:
 	
-	  if calc_mo and drv is None : (mo_list)
-	  
-	  if calc_mo and drv is not None : (delta_mo_list)
-	  
-	  if not calc_mo and drv is None : (rho)
-	  
-	  if not calc_mo and drv is not None : (rho, delta_rho)
-	  
-	else:
+	  :if calc_mo and drv is None: 
+	    - mo_list
+	  :if calc_mo and drv is not None:
+	    - delta_mo_list
+	  :if not calc_mo and drv is None:
+	    - rho
+	  :if not calc_mo and drv is not None: 
+	    - rho, delta_rho
 	
-	  if calc_mo and drv is None : (ao_list,mo_list)
+	:else:
+	  | 
 	  
-	  if calc_mo and drv is not None : (delta_ao_list,delta_mo_list)
-	  
-	  if not calc_mo and drv is None : (ao_list,mo_list,rho)
-	  
-	  if not calc_mo and drv is not None : (ao_list, mo_list, rho, delta_ao_list, delta_mo_list, delta_rho)
+	  :if calc_mo and drv is None:
+	    - ao_list,mo_list
+	  :if calc_mo and drv is not None: 
+	    - delta_ao_list,delta_mo_list
+	  :if not calc_mo and drv is None: 
+	    - ao_list,mo_list,rho
+	  :if not calc_mo and drv is not None: 
+	    - ao_list, mo_list, rho, delta_ao_list, delta_mo_list, delta_rho
 	
 	ao_list : numpy.ndarray, shape=((NAO,) + N)
-	  Contains the NAO=len(ao_spec) atomic orbital on a grid.
+	  Contains the NAO=len(ao_spec) atomic orbitals on a grid.
 	delta_ao_list : numpy.ndarray, shape=((NDRV,NAO) + N)
-	  Contains derivatives with respect to drv (NDRV=len(drv)) of the 
-	  NAO=len(ao_spec) atomic orbital on a grid.
+	  Contains the derivatives with respect to drv (NDRV=len(drv)) of the 
+	  NAO=len(ao_spec) atomic orbitals on a grid.
 	mo_list : numpy.ndarray, shape=((NMO,) + N)
-	  Contains the NMO=len(mo_spec) molecular orbital on a grid.
+	  Contains the NMO=len(mo_spec) molecular orbitals on a grid.
 	delta_mo_list : numpy.ndarray, shape=((NDRV,NMO) + N)
-	  Contains derivatives with respect to drv (NDRV=len(drv)) of the 
-	  NMO=len(mo_spec) molecular orbital on a grid.
+	  Contains the derivatives with respect to drv (NDRV=len(drv)) of the 
+	  NMO=len(mo_spec) molecular orbitals on a grid.
 	mo_norm : numpy.ndarray, shape=(NMO,)
 	  Contains the numerical norms of the molecular orbitals.
 	rho : numpy.ndarray, shape=(N)
 	  Contains the density on a grid.
 	delta_rho : numpy.ndarray, shape=((NDRV,) + N)
-	  Contains derivatives with respect to drv (NDRV=len(drv)) of 
+	  Contains the derivatives with respect to drv (NDRV=len(drv)) of 
 	  the density on a grid.
   '''
   
@@ -1002,19 +1018,18 @@ exp.append([(4,0,0), (0,4,0), (0,0,4),
 	    (2,1,1), (1,2,1), (1,1,2)])	# g orbitals
 
 def l_deg(l=0,ao=None):
-  '''FUNCTION l_deg
-  Calculate the degeneracy of a given atomic orbital
+  '''Calculates the degeneracy of a given atomic orbitals.
   
   **Options:**
   
-	Works with the molpro output nomenclature for cartesian Harmonics:
+	Works with the molpro output nomenclature for Cartesian Harmonics:
 		  s->'s', p->['x','y','z'], d-> ['xx','yy', etc.], etc.
 		  e.g., l_deg(ao='xxy')
 	
-	Works with quantum number l for the cartesian Harmonic:
+	Works with quantum number l for the Cartesian Harmonic:
 		  e.g., l_deg(l=1)
 	
-	Works with name of the cartesian Harmonic:
+	Works with name of the Cartesian Harmonic:
 		  e.g., l_deg(l='p')
   ''' 
   if ao != None:
@@ -1056,16 +1071,16 @@ def integration(matrix,x=None,y=None,z=None):
 
 # C++ Code 
 def ao_code(is_vector=False,is_drv=False):
-  '''Returns the requested C++ code
+  '''Returns the requested C++ code.
   
   **Parameters:**
   
 	is_vector : bool
-	  If True, return the code for the computation of an atomic
-	  orbital on a vecotrized grid_file
+	  If True, returns the code for the computation of an atomic
+	  orbital on a vecotrized grid_file.
 	is_drv : bool
-	  If True, return the code for the computation of the
-	  derivative of an atomic orbital
+	  If True, returns the code for the computation of the
+	  derivative of an atomic orbital.
   '''
   if not is_vector and not is_drv:
     code =  '''
@@ -1361,8 +1376,9 @@ def ao_code(is_vector=False,is_drv=False):
   return code
 
 def is_compiled(code):
-  '''Check if the C++ code is already compiled. 
-  Adaped from :func:`weave.inline_tools`'''
+  '''Checks if the C++ code is already compiled.
+  
+  Adaped from :func:`weave.inline_tools`.'''
   # 1. try local cache
   try:
     weave.inline_tools.function_cache[code]

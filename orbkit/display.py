@@ -3,10 +3,10 @@
 from orbkit import options
 from os import remove,path
 
-is_initiated = False
+is_initiated = False #: If True, logfile is initialized.
 
 def init(name=None):
-  '''Set the name of the .oklog file and remove the old .oklog file.'''
+  '''Sets the name of the .oklog file and removes the old .oklog file.'''
   global log_fid,is_initiated
   if name is None:
     log_fid = '%s.oklog' % options.outputname
@@ -22,7 +22,7 @@ def init(name=None):
   is_initiated = True
 
 def display(string):
-  '''Output `string` to the terminal output and the .oklog file.'''
+  '''Prints :literal:`string` to the terminal output and to the .oklog file.'''
   try:
     if not options.quiet:
       print(string)

@@ -35,7 +35,7 @@ ok.options.filename   = 'h2o.md'       # input file name
 ok.options.itype      = 'molden'       # input file type
 ok.options.outputname = 'h2o_MO'       # output file (base) name
 ok.options.otype      = 'h5'           # output file type
-ok.options.numproc    = 1              # numper of processes for multiprocessing
+ok.options.numproc    = 1              # number of processes for multiprocessing
 ok.options.vector     = 4e4            # number of points per process
 ok.options.calc_mo    = 'MO_List.tab'  # list of molecular orbitals to be used
 

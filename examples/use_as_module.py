@@ -86,30 +86,30 @@ yd = mo_list[0][:,ok.grid.N_[1]/2-1,:]
 zd = mo_list[0][:,:,ok.grid.N_[2]/2-1]
 
 # plot cuts
-f, (bild1, bild2, bild3) = \
+f, (pic1, pic2, pic3) = \
             plt.subplots(3,1,sharex=True,sharey=True,figsize=(6,14))
-bild1.contour(z,y,xd,50,linewidths=0.5,colors='k')
-bild1.contourf(\
+pic1.contour(z,y,xd,50,linewidths=0.5,colors='k')
+pic1.contourf(\
     z,y,xd,50,cmap=plt.cm.rainbow,vmax=abs(xd).max(),vmin=-abs(xd).max())
-bild1.set_xlabel('z')
-bild1.set_ylabel('y')
+pic1.set_xlabel('z')
+pic1.set_ylabel('y')
 
-bild2.contour(z,x,yd,50,linewidths=0.5,colors='k')
-bild2.contourf(\
+pic2.contour(z,x,yd,50,linewidths=0.5,colors='k')
+pic2.contourf(\
     z,x,yd,50,cmap=plt.cm.rainbow,vmax=abs(yd).max(),vmin=-abs(yd).max())    
-bild2.set_xlabel('z')
-bild2.set_ylabel('x')    
+pic2.set_xlabel('z')
+pic2.set_ylabel('x')    
 
-bild3.contour(y,x,zd,50,linewidths=0.5,colors='k')
-bild3.contourf(\
+pic3.contour(y,x,zd,50,linewidths=0.5,colors='k')
+pic3.contourf(\
     y,x,zd,50,cmap=plt.cm.rainbow,vmax=abs(zd).max(),vmin=-abs(zd).max())  
-bild3.set_xlabel('y')
-bild3.set_ylabel('x')     
+pic3.set_xlabel('y')
+pic3.set_ylabel('x')     
 
 # following options applied for all subplots as they share x- and y-axis
-bild1.xaxis.set_ticks(np.arange(-5,6,5))
-bild1.yaxis.set_ticks(np.arange(-5,6,5))
-bild1.set_aspect('equal')
+pic1.xaxis.set_ticks(np.arange(-5,6,5))
+pic1.yaxis.set_ticks(np.arange(-5,6,5))
+pic1.set_aspect('equal')
 
 # plot
 f.subplots_adjust(left=0.15,bottom=0.05,top=0.95,right=0.95)

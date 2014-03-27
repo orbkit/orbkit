@@ -1,5 +1,5 @@
 # -*- coding: iso-8859-1 -*-
-'''Interface for reading the output files of quantum chemical software. 
+'''Module for reading the output files of quantum chemical software. 
 '''
 '''
 orbkit
@@ -30,21 +30,21 @@ from orbkit.core import l_deg, lquant
 from orbkit.display import display
 
 def main_read(filename,itype='molden',all_mo=False):
-  '''Call the correct read function 
+  '''Calls the requested read function.
   
   **Parameters:**
   
-	filename : str
-	  Filename for the input file.
-	itype : stri
-	  Type of the input file.
-	all_mo : bool, optional
-	  If True, all molecular orbitals are returned.
+    filename : str
+      Specifies the filename for the input file.
+    itype : str, choices={'molden', 'gamess', 'gaussian.log', 'gaussian.fchk'}
+      Specifies the type of the input file.
+    all_mo : bool, optional
+      If True, all molecular orbitals are returned.
   
   **Returns:**
   
-	geo_spec, geo_info, ao_spec, mo_spec : :	  
-	  See the `Central Variables`_ in the manual for details.
+	geo_spec, geo_info, ao_spec, mo_spec :	  
+	  See `Central Variables`_ for details.
   '''
   display('Opened \n\t%s\n' % filename)
   
@@ -63,19 +63,19 @@ def main_read(filename,itype='molden',all_mo=False):
   # main_read 
 
 def read_molden(filename, all_mo=False):
-  '''Load all information desired from a molden file
+  '''Reads all information desired from a molden file.
   
   **Parameters:**
   
 	filename : str
-	  Filename for the input file.
+	  Specifies the filename for the input file.
 	all_mo : bool, optional
 	  If True, all molecular orbitals are returned.
   
   **Returns:**
   
-	geo_spec, geo_info, ao_spec, mo_spec : :	  
-	  See the `Central Variables`_ in the manual for details.
+	geo_spec, geo_info, ao_spec, mo_spec :	  
+	  See `Central Variables`_ for details.
   '''
 
   fid    = open(filename,'r')		# Open the file
@@ -215,22 +215,20 @@ def read_molden(filename, all_mo=False):
   return geo_spec, geo_info, ao_spec, mo_spec
   # read_molden 
 
-def read_gamess(filename, all_mo=False, ex_atom=''):
-  '''Load all information desired from a gamess output file
+def read_gamess(filename, all_mo=False):
+  '''Reads all information desired from a Gamess-US output file.
   
   **Parameters:**
   
 	filename: str
-		  Filename for the input file.
+		  Specifies the filename for the input file.
 	all_mo:   bool, optional
 		  If True, all molecular orbitals are returned.
-	ex_atom:  str, optional
-		  If not empty, the reading of this atom is ommited.
   
   **Returns:**
   
 	geo_spec, geo_info, ao_spec, mo_spec :	  
-		  See the `Central Variables`_ in the manual for details.
+		  See `Central Variables`_ for details.
   '''
   
   # Initialize the variables 
@@ -421,19 +419,19 @@ def read_gamess(filename, all_mo=False, ex_atom=''):
   # read_gamess 
 
 def read_gaussian_fchk(filename, all_mo=False):
-  '''Load all information desired from a gaussian FChk file 
+  '''Reads all information desired from a Gaussian FChk file. 
 
   **Parameters:**
   
 	filename: str
-		  Filename for the input file.
+		  Specifies the filename for the input file.
 	all_mo:   bool, optional
 		  If True, all molecular orbitals are returned.
   
   **Returns:**
   
 	geo_spec, geo_info, ao_spec, mo_spec :	  
-		  See the `Central Variables`_ in the manual for details.
+		  See `Central Variables`_ for details.
   '''
 
   fid    = open(filename,'r')		# Open the file
@@ -627,29 +625,29 @@ def read_gaussian_fchk(filename, all_mo=False):
 
 def read_gaussian_log(filename,all_mo=False,orientation='standard',
 		      i_geo=-1,i_ao=-1,i_mo=-1,interactive=True):
-  '''Load all information desired from a gaussian .log file
+  '''Reads all information desired from a Gaussian .log file.
 
   **Parameters:**
   
-	filename : str
-	  Filename for the input file.
-	all_mo :  bool, optional
-	  If True, all molecular orbitals are returned.
-	orientation : string, choices={'input', 'standard'}, optional
-	  Orientation of the molecule in GAUSSIAN nomenclature. [#first]_ 
-	i_geo : int, default=-1
-	  Select the geometry section of the outputi file.
-	i_ao : int, default=-1
-		  Select the atomic orbital section of the output file.
-	i_mo : int, default=-1
-		  Select the molecular orbital section of the output file.
-	interactive : bool
-		  If True, the user is asked to select the different sets.
+    filename : str
+      Specifies the filename for the input file.
+    all_mo :  bool, optional
+      If True, all molecular orbitals are returned.
+    orientation : string, choices={'input', 'standard'}, optional
+      Specifies orientation of the molecule in Gaussian nomenclature. [#first]_ 
+    i_geo : int, default=-1
+      Selects the geometry section of the output file.
+    i_ao : int, default=-1
+      Selects the atomic orbital section of the output file.
+    i_mo : int, default=-1
+      Selects the molecular orbital section of the output file.
+    interactive : bool
+      If True, the user is asked to select the different sets.
   
   **Returns:**
   
 	geo_spec, geo_info, ao_spec, mo_spec :	  
-		  See the `Central Variables`_ in the manual for details.
+		  See `Central Variables`_ for details.
 
 .. [#first] Attention: The MOs in the output are only valid for the standard orientation!
 

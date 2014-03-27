@@ -1,5 +1,5 @@
 # -*- coding: iso-8859-1 -*-
-'''Contains and processes all orbkit options.'''
+'''Module containing and processing all orbkit options.'''
 import os
 import sys
 thismodule = sys.modules[__name__]
@@ -13,35 +13,37 @@ available = ['filename','itype','outputname','otype',
 	     'quiet','no_log','no_output','no_slice','random_grid',
 	     'interactive']
 
-__all__ = ['get_options','check_options','reset_grid',].extend(available)
+#__all__ = ['get_options','check_options','reset_grid',].extend(available)
 
-itypes = ['molden', 'gamess', 'gaussian.log', 'gaussian.fchk']	#:
-otypes = ['h5', 'cb', 'am', 'hx']	#:
-drv_options = ['x','y','z']	#:
+itypes = ['molden', 'gamess', 'gaussian.log', 'gaussian.fchk']	#: Specifies possible input types.
+otypes = ['h5', 'cb', 'am', 'hx']	#: Specifies possible output types.
+drv_options = ['x','y','z']	#: Specifies possible derivative variables.
 
 def get_options():
-  '''Return all possible options and their value'''
+  '''Returns all possible options and their value.'''
   opts = [(i,globals()[i]) for i in available]
   return dict(opts)
 
 def check_options(error=sys.stdout.write,display=sys.stdout.write,
 		  interactive=False,
 		  info=True):
-  '''Check the options for errors
+  '''Checks options for errors.
   
-  :Parameters:
-  options : instance
-	All orbkit options
-  error : function, optional
-	A function or something equivalent to handle the errors
-  interactive : bool, optional
-	If True, the user is ask for the correction of 
-	filenames which do not exist
-  info : bool, optional
-	If True, some additional information is printed
+  **Parameters:**
   
-  Default Error and Exception Handling: 
-	print the error and continue
+    error : function, optional
+      Handles the errors.
+    display :  function, optional
+      Handles the print commands.
+    interactive : bool, optional
+      If True and a file does not exist, asks the user to insert name of 
+      existing file.
+    info : bool, optional
+      If True, some additional information is printed.
+
+    
+  :Default Error and Exception Handling: 
+    Prints the errors and continues.
   '''
   
   #--- Input/Output Options ---#
@@ -154,25 +156,28 @@ def check_options(error=sys.stdout.write,display=sys.stdout.write,
   
   return True
 
-def check_if_exists(fid, what='',interactive=False,error=IOError,
-		    display=sys.stdout.write):
-  '''Checks if a file exists
+def check_if_exists(fid, what='',error=IOError,display=sys.stdout.write,
+		    interactive=False):
+  '''Checks the existence of a file.
   
-  :Parameters:
+  **Parameters:**
   
-  fid : string
-	Filename of the requested file.
-  what : string, optional
-        Description of the file.
-  interactive : string, optional
-        If True, ask for user interaction.
-  error : exception, optional
-        Specifies the error which shall be raised.
+    fid : string
+      Specifies filename of the requested file.
+    what : string, optional
+      Describes the file.
+    error : function, optional
+      Handles the errors.
+    display :  function, optional
+      Handles the print commands.
+    interactive : bool, optional
+      If True and a file does not exist, asks the user to insert name of 
+      existing file.
   
-  :Returns:
+  **Returns:**
   
-  fid : string
-	Filename of the requested file.
+    fid : string
+      Specifies filename of the requested file.
   '''
   
   while not (isinstance(fid,str) and os.path.exists(fid)): 
@@ -187,7 +192,7 @@ def check_if_exists(fid, what='',interactive=False,error=IOError,
 
 
 def reset_grid():
-  '''Reset the grid parameters.'''
+  '''Resets the grid parameters.'''
   grid.is_initialized = False
   grid.min_ = [-8.0, -8.0, -8.0]
   grid.max_ = [ 8.0,  8.0,  8.0]
@@ -197,31 +202,31 @@ def reset_grid():
 # the names are chosen according to core.init_parser()
 
 #--- Input/Output Options ---
-filename	= ''			#:
-itype		= 'molden'		#:
-outputname	= None			#:
-otype		= 'h5'			#:
-#--- Grid-Related Options ---
-vector		= None			#:
-grid_file	= None			#:
-center_grid	= None			#:
+filename        = ''            #: Specifies input file name. (str)
+itype           = 'molden'      #: Specifies input file type. See :data:`itypes` for details. (str) 
+outputname      = None          #: Specifies output file (base) name. (str)
+otype           = 'h5'          #: Specifies output file type. See :data:`otypes` for details. (str or list of str)
 #--- Computational Options ---
-numproc		= 1				#:
-mo_set		= False			#:
-calc_ao		= False			#:
-calc_mo		= False			#:
-all_mo		= False			#:
-drv			= None			#:
+numproc         = 1             #: Specifies number of subprocesses for multiprocessing. (int)
+mo_set          = False         #: Specifies molecular orbitals used for density calculation. (filename)
+calc_ao         = False         #
+calc_mo         = False         #: Specifies which molecular orbitals will be calculated. (filename)
+all_mo          = False         #: If True, all molecular orbitals will be computed. (bool)
+drv             = None          #: Specifies derivative variables. (list of str)
+#--- Grid-Related Options ---
+vector          = None          #: If not None, vector grid is used. Specifies number of points per subprocess. (int)
+grid_file       = None          #: Specifies file to read grid from. (filename)
+center_grid     = None          #: If not None, grid is centered to specified atom and origin. (int) 
+random_grid     = False         #: If True, creates random grid around atom positions. (bool)
 #--- Additional Options ---
-z_reduced_density = False	#:
-atom_projected_density = None #:
-mo_tefd		= None			#:
-#--- Options for developers ---
-quiet		= False			#:
-no_log		= False			#:
-no_output	= False			#:
-no_slice	= False			#:
-random_grid	= False			#:
-interactive	= False			#:
+z_reduced_density = False       #: If True, reduces the density with respect to the z-axis. (bool)
+atom_projected_density = None   #: Computes the atom-projected electron density with respect to specified atom. (int or list of int)
+mo_tefd         = None          #: Computes the molecular orbital transition electronic flux density between the orbitals I and J specify the requested component with :data:`orbkit.options.drv`. (list of [I, J])
+#--- Options for Advanced Users ---
+quiet           = False         #: If True, omits terminal output. (bool)
+no_log          = False         #: If True, omits logfile output. (bool)
+no_output       = False         #: If True, omits creation of output. (bool)
+no_slice        = False         #: If True, omits slicing of the grid. (bool)
+interactive     = False         #: If True, asks user to select unclarified options. (bool)
 #--- Default values for the grid parameters ---
 reset_grid()

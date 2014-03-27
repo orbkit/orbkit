@@ -71,8 +71,6 @@
             <ul>
 <li class="toctree-l1"><a class="reference internal" href="index.html">Overview</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="index.html#citation">Citation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="index.html#features-of-orbkit">Features of orbkit</a></li>
-<li class="toctree-l2"><a class="reference internal" href="index.html#limitations-of-orbkit">Limitations of orbkit</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="install.html">Installation Instructions for orbkit</a><ul>
@@ -83,13 +81,17 @@
 <li class="toctree-l2"><a class="reference internal" href="manual.html#requirements-for-the-input-files">Requirements for the Input Files</a></li>
 <li class="toctree-l2"><a class="reference internal" href="manual.html#usage-via-the-terminal">Usage via the Terminal</a></li>
 <li class="toctree-l2"><a class="reference internal" href="manual.html#usage-within-a-python-program">Usage Within a Python Program</a></li>
+<li class="toctree-l2"><a class="reference internal" href="manual.html#limitations-of-orbkit">Limitations of orbkit</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="funcref.html">Function Reference</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="funcref.html#central-variables">Central Variables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="funcref.html#module-orbkit.options">orbkit.options</a></li>
 <li class="toctree-l2"><a class="reference internal" href="funcref.html#module-orbkit.main">orbkit.main</a></li>
-<li class="toctree-l2"><a class="reference internal" href="funcref.html#module-orbkit.core">orbkit.core</a></li>
 <li class="toctree-l2"><a class="reference internal" href="funcref.html#module-orbkit.read">orbkit.read</a></li>
+<li class="toctree-l2"><a class="reference internal" href="funcref.html#module-orbkit.grid">orbkit.grid</a></li>
+<li class="toctree-l2"><a class="reference internal" href="funcref.html#module-orbkit.core">orbkit.core</a></li>
+<li class="toctree-l2"><a class="reference internal" href="funcref.html#module-orbkit.display">orbkit.display</a></li>
 <li class="toctree-l2"><a class="reference internal" href="funcref.html#module-orbkit.output">orbkit.output</a></li>
 <li class="toctree-l2"><a class="reference internal" href="funcref.html#module-orbkit.extras">orbkit.extras</a></li>
 </ul>
@@ -133,48 +135,55 @@
 <div class="genindex-jumpbox">
  <a href="#A"><strong>A</strong></a>
  | <a href="#C"><strong>C</strong></a>
+ | <a href="#D"><strong>D</strong></a>
+ | <a href="#F"><strong>F</strong></a>
  | <a href="#G"><strong>G</strong></a>
  | <a href="#H"><strong>H</strong></a>
  | <a href="#I"><strong>I</strong></a>
  | <a href="#L"><strong>L</strong></a>
  | <a href="#M"><strong>M</strong></a>
+ | <a href="#N"><strong>N</strong></a>
  | <a href="#O"><strong>O</strong></a>
+ | <a href="#Q"><strong>Q</strong></a>
  | <a href="#R"><strong>R</strong></a>
  | <a href="#S"><strong>S</strong></a>
- | <a href="#T"><strong>T</strong></a>
+ | <a href="#V"><strong>V</strong></a>
+ | <a href="#X"><strong>X</strong></a>
+ | <a href="#Y"><strong>Y</strong></a>
+ | <a href="#Z"><strong>Z</strong></a>
  
 </div>
 <h2 id="A">A</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
+  <dt><a href="funcref.html#orbkit.options.all_mo">all_mo (in module orbkit.options)</a>
+  </dt>
+
+      
   <dt><a href="funcref.html#orbkit.output.amira_creator">amira_creator() (in module orbkit.output)</a>
-  </dt>
-
-      
-  <dt><a href="funcref.html#orbkit.output.amira_creator_rectilinear_coord">amira_creator_rectilinear_coord() (in module orbkit.output)</a>
-  </dt>
-
-      
-  <dt><a href="funcref.html#orbkit.output.amira_creator_vector">amira_creator_vector() (in module orbkit.output)</a>
   </dt>
 
       
   <dt><a href="funcref.html#orbkit.core.ao_code">ao_code() (in module orbkit.core)</a>
   </dt>
 
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="funcref.html#orbkit.core.ao_creator">ao_creator() (in module orbkit.core)</a>
   </dt>
 
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="funcref.html#ao_spec">ao_spec (built-in variable)</a>
   </dt>
 
       
   <dt><a href="funcref.html#orbkit.extras.atom2index">atom2index() (in module orbkit.extras)</a>
+  </dt>
+
+      
+  <dt><a href="funcref.html#orbkit.options.atom_projected_density">atom_projected_density (in module orbkit.options)</a>
   </dt>
 
       
@@ -188,6 +197,10 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
+  <dt><a href="funcref.html#orbkit.options.calc_mo">calc_mo (in module orbkit.options)</a>
+  </dt>
+
+      
   <dt><a href="funcref.html#orbkit.extras.calc_mo">calc_mo() (in module orbkit.extras)</a>
   </dt>
 
@@ -196,17 +209,63 @@
   </dt>
 
       
-  <dt><a href="funcref.html#orbkit.output.colormap_creator">colormap_creator() (in module orbkit.output)</a>
+  <dt><a href="funcref.html#orbkit.options.center_grid">center_grid (in module orbkit.options)</a>
+  </dt>
+
+      
+  <dt><a href="funcref.html#orbkit.grid.center_grid">center_grid() (in module orbkit.grid)</a>
   </dt>
 
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="funcref.html#orbkit.options.check_if_exists">check_if_exists() (in module orbkit.options)</a>
+  </dt>
+
+      
+  <dt><a href="funcref.html#orbkit.options.check_options">check_options() (in module orbkit.options)</a>
+  </dt>
+
       
   <dt><a href="funcref.html#orbkit.extras.compute_mulliken_charges">compute_mulliken_charges() (in module orbkit.extras)</a>
   </dt>
 
       
   <dt><a href="funcref.html#orbkit.output.cube_creator">cube_creator() (in module orbkit.output)</a>
+  </dt>
+
+  </dl></td>
+</tr></table>
+
+<h2 id="D">D</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="funcref.html#orbkit.grid.delta_">delta_ (in module orbkit.grid)</a>
+  </dt>
+
+      
+  <dt><a href="funcref.html#orbkit.display.display">display() (in module orbkit.display)</a>
+  </dt>
+
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="funcref.html#orbkit.options.drv">drv (in module orbkit.options)</a>
+  </dt>
+
+      
+  <dt><a href="funcref.html#orbkit.options.drv_options">drv_options (in module orbkit.options)</a>
+  </dt>
+
+  </dl></td>
+</tr></table>
+
+<h2 id="F">F</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="funcref.html#orbkit.options.filename">filename (in module orbkit.options)</a>
   </dt>
 
   </dl></td>
@@ -219,10 +278,30 @@
   <dt><a href="funcref.html#geo_info">geo_info (built-in variable)</a>
   </dt>
 
+      
+  <dt><a href="funcref.html#geo_spec">geo_spec (built-in variable)</a>
+  </dt>
+
+      
+  <dt><a href="funcref.html#orbkit.grid.get_grid">get_grid() (in module orbkit.grid)</a>
+  </dt>
+
+      
+  <dt><a href="funcref.html#orbkit.options.get_options">get_options() (in module orbkit.options)</a>
+  </dt>
+
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="funcref.html#geo_spec">geo_spec (built-in variable)</a>
+  <dt><a href="funcref.html#orbkit.grid.grid2vector">grid2vector() (in module orbkit.grid)</a>
+  </dt>
+
+      
+  <dt><a href="funcref.html#orbkit.options.grid_file">grid_file (in module orbkit.options)</a>
+  </dt>
+
+      
+  <dt><a href="funcref.html#orbkit.grid.grid_init">grid_init() (in module orbkit.grid)</a>
   </dt>
 
   </dl></td>
@@ -232,31 +311,11 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="funcref.html#orbkit.output.hdf52dict">hdf52dict() (in module orbkit.output)</a>
-  </dt>
-
-      
-  <dt><a href="funcref.html#orbkit.output.hdf5_append">hdf5_append() (in module orbkit.output)</a>
-  </dt>
-
-      
   <dt><a href="funcref.html#orbkit.output.HDF5_creator">HDF5_creator() (in module orbkit.output)</a>
-  </dt>
-
-      
-  <dt><a href="funcref.html#orbkit.output.HDF5_creator_geo">HDF5_creator_geo() (in module orbkit.output)</a>
   </dt>
 
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
-      
-  <dt><a href="funcref.html#orbkit.output.HDF5_creator_MO">HDF5_creator_MO() (in module orbkit.output)</a>
-  </dt>
-
-      
-  <dt><a href="funcref.html#orbkit.output.hdf5_open">hdf5_open() (in module orbkit.output)</a>
-  </dt>
-
       
   <dt><a href="funcref.html#orbkit.output.hx_network_creator">hx_network_creator() (in module orbkit.output)</a>
   </dt>
@@ -268,17 +327,43 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="funcref.html#orbkit.main.init">init() (in module orbkit.main)</a>
+  <dt><a href="funcref.html#orbkit.display.init">init() (in module orbkit.display)</a>
+  </dt>
+
+      <dd><dl>
+        
+  <dt><a href="funcref.html#orbkit.main.init">(in module orbkit.main)</a>
+  </dt>
+
+      </dl></dd>
+      
+  <dt><a href="funcref.html#orbkit.core.init_parser">init_parser() (in module orbkit.core)</a>
   </dt>
 
       
-  <dt><a href="funcref.html#orbkit.core.init_parser">init_parser() (in module orbkit.core)</a>
+  <dt><a href="funcref.html#orbkit.options.interactive">interactive (in module orbkit.options)</a>
+  </dt>
+
+      
+  <dt><a href="funcref.html#orbkit.core.is_compiled">is_compiled() (in module orbkit.core)</a>
   </dt>
 
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="funcref.html#orbkit.core.is_compiled">is_compiled() (in module orbkit.core)</a>
+  <dt><a href="funcref.html#orbkit.grid.is_initialized">is_initialized (in module orbkit.grid)</a>
+  </dt>
+
+      
+  <dt><a href="funcref.html#orbkit.display.is_initiated">is_initiated (in module orbkit.display)</a>
+  </dt>
+
+      
+  <dt><a href="funcref.html#orbkit.options.itype">itype (in module orbkit.options)</a>
+  </dt>
+
+      
+  <dt><a href="funcref.html#orbkit.options.itypes">itypes (in module orbkit.options)</a>
   </dt>
 
   </dl></td>
@@ -316,6 +401,14 @@
   </dt>
 
       
+  <dt><a href="funcref.html#orbkit.grid.max_">max_ (in module orbkit.grid)</a>
+  </dt>
+
+      
+  <dt><a href="funcref.html#orbkit.grid.min_">min_ (in module orbkit.grid)</a>
+  </dt>
+
+      
   <dt><a href="funcref.html#orbkit.core.mo_creator">mo_creator() (in module orbkit.core)</a>
   </dt>
 
@@ -323,6 +416,10 @@
   <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="funcref.html#orbkit.extras.mo_select">mo_select() (in module orbkit.extras)</a>
+  </dt>
+
+      
+  <dt><a href="funcref.html#orbkit.options.mo_set">mo_set (in module orbkit.options)</a>
   </dt>
 
       
@@ -334,7 +431,39 @@
   </dt>
 
       
+  <dt><a href="funcref.html#orbkit.options.mo_tefd">mo_tefd (in module orbkit.options)</a>
+  </dt>
+
+      
   <dt><a href="funcref.html#orbkit.extras.mo_transition_flux_density">mo_transition_flux_density() (in module orbkit.extras)</a>
+  </dt>
+
+  </dl></td>
+</tr></table>
+
+<h2 id="N">N</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="funcref.html#orbkit.grid.N_">N_ (in module orbkit.grid)</a>
+  </dt>
+
+      
+  <dt><a href="funcref.html#orbkit.options.no_log">no_log (in module orbkit.options)</a>
+  </dt>
+
+      
+  <dt><a href="funcref.html#orbkit.options.no_output">no_output (in module orbkit.options)</a>
+  </dt>
+
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="funcref.html#orbkit.options.no_slice">no_slice (in module orbkit.options)</a>
+  </dt>
+
+      
+  <dt><a href="funcref.html#orbkit.options.numproc">numproc (in module orbkit.options)</a>
   </dt>
 
   </dl></td>
@@ -348,11 +477,23 @@
   </dt>
 
       
+  <dt><a href="funcref.html#module-orbkit.display">orbkit.display (module)</a>
+  </dt>
+
+      
   <dt><a href="funcref.html#module-orbkit.extras">orbkit.extras (module)</a>
   </dt>
 
       
+  <dt><a href="funcref.html#module-orbkit.grid">orbkit.grid (module)</a>
+  </dt>
+
+      
   <dt><a href="funcref.html#module-orbkit.main">orbkit.main (module)</a>
+  </dt>
+
+      
+  <dt><a href="funcref.html#module-orbkit.options">orbkit.options (module)</a>
   </dt>
 
   </dl></td>
@@ -366,7 +507,25 @@
   </dt>
 
       
-  <dt><a href="funcref.html#orbkit.output.output_creator">output_creator() (in module orbkit.output)</a>
+  <dt><a href="funcref.html#orbkit.options.otype">otype (in module orbkit.options)</a>
+  </dt>
+
+      
+  <dt><a href="funcref.html#orbkit.options.otypes">otypes (in module orbkit.options)</a>
+  </dt>
+
+      
+  <dt><a href="funcref.html#orbkit.options.outputname">outputname (in module orbkit.options)</a>
+  </dt>
+
+  </dl></td>
+</tr></table>
+
+<h2 id="Q">Q</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="funcref.html#orbkit.options.quiet">quiet (in module orbkit.options)</a>
   </dt>
 
   </dl></td>
@@ -375,6 +534,18 @@
 <h2 id="R">R</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="funcref.html#orbkit.options.random_grid">random_grid (in module orbkit.options)</a>
+  </dt>
+
+      
+  <dt><a href="funcref.html#orbkit.grid.random_grid">random_grid() (in module orbkit.grid)</a>
+  </dt>
+
+      
+  <dt><a href="funcref.html#orbkit.grid.read">read() (in module orbkit.grid)</a>
+  </dt>
+
       
   <dt><a href="funcref.html#orbkit.read.read_gamess">read_gamess() (in module orbkit.read)</a>
   </dt>
@@ -387,12 +558,16 @@
   <dt><a href="funcref.html#orbkit.read.read_gaussian_log">read_gaussian_log() (in module orbkit.read)</a>
   </dt>
 
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="funcref.html#orbkit.read.read_molden">read_molden() (in module orbkit.read)</a>
   </dt>
 
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="funcref.html#orbkit.options.reset_grid">reset_grid() (in module orbkit.options)</a>
+  </dt>
+
       
   <dt><a href="funcref.html#orbkit.core.rho_compute">rho_compute() (in module orbkit.core)</a>
   </dt>
@@ -415,20 +590,66 @@
   <dt><a href="funcref.html#orbkit.extras.save_mo_hdf5">save_mo_hdf5() (in module orbkit.extras)</a>
   </dt>
 
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="funcref.html#orbkit.core.slice_rho">slice_rho() (in module orbkit.core)</a>
   </dt>
 
   </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="funcref.html#orbkit.grid.sph2cart_vector">sph2cart_vector() (in module orbkit.grid)</a>
+  </dt>
+
+  </dl></td>
 </tr></table>
 
-<h2 id="T">T</h2>
+<h2 id="V">V</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="funcref.html#orbkit.main.tForm">tForm() (in module orbkit.main)</a>
+  <dt><a href="funcref.html#orbkit.options.vector">vector (in module orbkit.options)</a>
+  </dt>
+
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="funcref.html#orbkit.grid.vector2grid">vector2grid() (in module orbkit.grid)</a>
+  </dt>
+
+  </dl></td>
+</tr></table>
+
+<h2 id="X">X</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="funcref.html#orbkit.grid.x">x (in module orbkit.grid)</a>
+  </dt>
+
+  </dl></td>
+</tr></table>
+
+<h2 id="Y">Y</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="funcref.html#orbkit.grid.y">y (in module orbkit.grid)</a>
+  </dt>
+
+  </dl></td>
+</tr></table>
+
+<h2 id="Z">Z</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="funcref.html#orbkit.grid.z">z (in module orbkit.grid)</a>
+  </dt>
+
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="funcref.html#orbkit.options.z_reduced_density">z_reduced_density (in module orbkit.options)</a>
   </dt>
 
   </dl></td>
