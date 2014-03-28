@@ -848,16 +848,18 @@ def read_gaussian_log(filename,all_mo=False,orientation='standard',
 	  ao_type = thisline[0].lower()	# Which type of atomic orbital do we have
 	  pnum = int(thisline[1])	# Number of primatives
 	  # Calculate the degeneracy of this AO and increase basis_count 
-	  basis_count += l_deg(lquant[ao_type])
-	  ao_spec.append({'atom': at_num,
-			  'type': ao_type,
-			  'pnum': pnum,
-			  'coeffs': numpy.zeros((pnum, 2))
-			  })
+	  for i_ao in ao_type:
+		basis_count += l_deg(lquant[i_ao])
+		ao_spec.append({'atom': at_num,
+				'type': i_ao,
+				'pnum': pnum,
+				'coeffs': numpy.zeros((pnum, 2))
+				})
 	else:
 	  # Append the AO coefficients 
 	  coeffs = numpy.array(line.replace('D','e').split(), dtype=numpy.float64)
-	  ao_spec[-1]['coeffs'][ao_num,:] = coeffs
+	  for i_ao in range(len(ao_type)):
+		ao_spec[-len(ao_type)+i_ao]['coeffs'][ao_num,:] = [coeffs[0],coeffs[1+i_ao]]
 	  ao_num += 1	
       if sec_flag == 3:
 	if 'The electronic state is' in line:
