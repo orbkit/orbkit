@@ -22,6 +22,8 @@
 !MO_List_int.tab
 !Tab.csv
 
+# Under developement
+interpolation.py
 
 # IDE files to ignore (Netbeans, Eclipse)
 nbproject/private/
