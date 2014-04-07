@@ -806,7 +806,10 @@ def read_gaussian_log(filename,all_mo=False,orientation='standard',
             add = '(b)'
             orb_sym += ['A1'+add] * basis_count
         for i in range(len(orb_sym)):
-          c = numpy.count_nonzero(numpy.array(orb_sym[:i+1]) == orb_sym[i])
+          # for numpy version < 1.6 
+          c = ((numpy.array(orb_sym[:i+1]) == orb_sym[i]) != 0).sum()
+          # for numpy version >= 1.6 this could be used:
+          #c = numpy.count_nonzero(numpy.array(orb_sym[:i+1]) == orb_sym[i])
           mo_spec.append({'coeffs': numpy.zeros(basis_count),
                           'energy': 0.,
                           'sym': '%d.%s' % (c,orb_sym[i])})
