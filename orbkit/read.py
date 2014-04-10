@@ -108,9 +108,12 @@ def read_molden(filename, all_mo=False):
       # Initialize the variables 
       geo_info = []                # Information about atoms
       geo_spec = []                # Atom postitions
-      ao_spec = []                 # Information about atomic orbitals
-      mo_spec = []                 # Information about molecular orbitals
+      ao_spec  = []                # Information about atomic orbitals
+      mo_spec  = []                # Information about molecular orbitals
+      etot     = None
       sec_flag = False             # A Flag specifying the current section 
+    elif '_ENERGY=' in line:
+      etot = float(thisline[1])
     elif '[Atoms]' in line:
       # The section containing information about 
       # the molecular geometry begins 
@@ -444,6 +447,7 @@ def read_gaussian_fchk(filename, all_mo=False):
   geo_info = []
   ao_spec = []
   mo_spec = []
+  etot = None
   count_mo = 0
   
   # Set a counter for the AOs 
@@ -477,6 +481,8 @@ def read_gaussian_fchk(filename, all_mo=False):
       if geo_info == []:
         for ii in range(at_num):
           geo_info.append(['',ii,''])	
+    elif 'Total Energy' in line:
+      etot = float(thisline[3])
     elif 'Current cartesian coordinates' in line:
       at_num = int(thisline[-1])/3
       sec_flag = 2
@@ -755,6 +761,7 @@ def read_gaussian_log(filename,all_mo=False,orientation='standard',
   occ = []
   eigen = []
   orb_sym = []
+  etot = None
   index = []
   
   # Go through the file line by line 
@@ -816,6 +823,8 @@ def read_gaussian_log(filename,all_mo=False,orientation='standard',
       if mo_type != 'Beta':
         c_mo += 1
       bNew = True                  # Indication for start of new MO section
+    elif 'E(' in line:
+      etot = float(line.split('=').split()[0])
     else:
       # Check if we are in a specific section 
       if sec_flag == 1:
