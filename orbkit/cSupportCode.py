@@ -17,8 +17,8 @@ norm = '''
     //  FUNCTION ao_norm  calculate normalization of uncontracted AOs --
     double norm;
     norm = pow((2./M_PI),(3./4.)) * (pow(2.,(l+m+n)) * 
-	    pow(*alpha,((2.*l+2.*m+2.*n+3.)/4.))) / (pow((doublefactorial(2.*l-1.)*
-	    doublefactorial(2.*m-1.) * doublefactorial(2.*n-1.)),0.5));
+        pow(*alpha,((2.*l+2.*m+2.*n+3.)/4.))) / (pow((doublefactorial(2.*l-1.)*
+        doublefactorial(2.*m-1.) * doublefactorial(2.*n-1.)),0.5));
     return norm;
   }
 

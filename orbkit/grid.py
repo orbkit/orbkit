@@ -127,7 +127,7 @@ def grid2vector():
         GRID2(0,count) = x[i];
         GRID2(1,count) = y[j];
         GRID2(2,count) = z[k];
-	count += 1;
+        count += 1;
       }
     }
   }
@@ -165,7 +165,7 @@ def vector2grid():
         GRID2(0,count) = x[i];
         GRID2(1,count) = y[j];
         GRID2(2,count) = z[k];
-	count += 1;
+        count += 1;
       }
     }
   }
@@ -206,10 +206,10 @@ def sph2cart_vector(r,theta,phi):
     {
       for (int k=0; k<Nphi[0]; k++)
       {
-	GRID2(0,count) = r[i] * sin(theta[j]) * cos(phi[k]);
-	GRID2(1,count) = r[i] * sin(theta[j]) * sin(phi[k]);
-	GRID2(2,count) = r[i] * cos(theta[j]);
-	count += 1;
+        GRID2(0,count) = r[i] * sin(theta[j]) * cos(phi[k]);
+        GRID2(1,count) = r[i] * sin(theta[j]) * sin(phi[k]);
+        GRID2(2,count) = r[i] * cos(theta[j]);
+        count += 1;
       }
     }
   }
@@ -229,12 +229,12 @@ def random_grid(geo_spec,N=1e6,scale=0.5):
 
   **Parameters:**
 
-	geo_spec : 
-	  See `Central Variables`_ for details.
-	N : int
-	  Number of points distributed around each atom
-	scale : float
-	  Width of normal distribution
+    geo_spec : 
+        See `Central Variables`_ for details.
+    N : int
+        Number of points distributed around each atom
+    scale : float
+        Width of normal distribution
   '''
   # All grid related variables should be globals 
   global x, y, z, is_initialized
@@ -322,18 +322,18 @@ def read(filename, comment='#'):
 
   with open(filename) as fileobject:
     for l,line in enumerate(fileobject):
-      cl = line.split()		# The Current Line split into segments
+      cl = line.split()                 # The Current Line split into segments
       
-      if not (cl == [] or cl[0] == comment):
-	is_vector = check(cl, is_vector)
-	if is_vector:
-	  for i,j in enumerate(cl):
-	    if index[i] == []:
-	      index[i] = dim.find(j)
-	    else:
-	      grid[index[i]].append(j)
-	else:
-	  grid[dim.find(cl[0].lower())] = cl[1:]
+      if not (cl == [] or cl[0] == comment): 
+        is_vector = check(cl, is_vector)
+        if is_vector:
+          for i,j in enumerate(cl):
+            if index[i] == []: 
+              index[i] = dim.find(j)
+            else:              
+              grid[index[i]].append(j)
+        else:                  
+          grid[dim.find(cl[0].lower())] = cl[1:]
 
   # Convert the variables 
   grid = numpy.array(grid,dtype=numpy.float64)
@@ -341,14 +341,14 @@ def read(filename, comment='#'):
     x = grid[0,:]
     y = grid[1,:]
     z = grid[2,:]
-    is_initialized = True	# The grid will be seen as initialized
+    is_initialized = True # The grid will be seen as initialized
   else:
     min_ = grid[:,0]
     max_ = grid[:,1]
     N_   = numpy.array(grid[:,2],dtype=int)
   
   return is_vector   
-	
+
 def center_grid(ac,display=sys.stdout.write):
   '''Centers the grid to the point ac and to the origin (0,0,0).
   '''
@@ -392,14 +392,14 @@ def center_grid(ac,display=sys.stdout.write):
   # center_grid 
 
 # Default values for the grid parameters 
-min_ = [-8.0, -8.0, -8.0]	#: Specifies minimum grid values (regular grid).
-max_ = [ 8.0,  8.0,  8.0]	#: Specifies maximum grid values (regular grid).
-N_   = [ 101,  101,  101]	#: Specifies the number of grid points (regular grid).
+min_ = [-8.0, -8.0, -8.0] #: Specifies minimum grid values (regular grid).
+max_ = [ 8.0,  8.0,  8.0] #: Specifies maximum grid values (regular grid).
+N_   = [ 101,  101,  101] #: Specifies the number of grid points (regular grid).
 
 # Initialize some lists 
-x = [0]	#: Contains the x-coordinates. 
-y = [0]	#: Contains the y-coordinates. 
-z = [0]	#: Contains the z-coordinates. 
-delta_ = numpy.zeros((3,1))	#: Contains the grid spacing.
+x = [0]                     #: Contains the x-coordinates. 
+y = [0]                     #: Contains the y-coordinates. 
+z = [0]                     #: Contains the z-coordinates. 
+delta_ = numpy.zeros((3,1)) #: Contains the grid spacing.
 
-is_initialized = False	#: If True, the grid is assumed to be initialized.
+is_initialized = False      #: If True, the grid is assumed to be initialized.

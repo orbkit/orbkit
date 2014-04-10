@@ -176,7 +176,7 @@ def read_molden(filename, all_mo=False):
       if sec_flag == 3:
         # Molecular orbital section 
         if '=' in line:
-          # MO information section 	  
+          # MO information section 
           if bNew:
             # Create a numpy array for the MO coefficients and 
             # for backward compability create a simple counter for 'sym'
@@ -228,7 +228,7 @@ def read_gamess(filename, all_mo=False):
   
   **Returns:**
   
-    geo_spec, geo_info, ao_spec, mo_spec :	  
+    geo_spec, geo_info, ao_spec, mo_spec :
       See `Central Variables`_ for details.
   '''
   
@@ -429,13 +429,13 @@ def read_gaussian_fchk(filename, all_mo=False):
   
   **Returns:**
   
-    geo_spec, geo_info, ao_spec, mo_spec :	  
+    geo_spec, geo_info, ao_spec, mo_spec :  
       See `Central Variables`_ for details.
   '''
 
-  fid    = open(filename,'r')		# Open the file
-  flines = fid.readlines()		# Read the WHOLE file into RAM
-  fid.close()				# Close the file
+  fid    = open(filename,'r')   # Open the file
+  flines = fid.readlines()      # Read the WHOLE file into RAM
+  fid.close()                   # Close the file
   
   sec_flag = 0
   
@@ -455,8 +455,8 @@ def read_gaussian_fchk(filename, all_mo=False):
   
   # Go through the file line by line 
   for il in range(len(flines)):
-    line = flines[il]			# The current line as string
-    thisline = line.split()		# The current line split into segments
+    line = flines[il]         # The current line as string
+    thisline = line.split()   # The current line split into segments
     
     # Check the file for keywords 
     if 'Number of alpha electrons' in line:
@@ -480,7 +480,7 @@ def read_gaussian_fchk(filename, all_mo=False):
       count = 0
       if geo_info == []:
         for ii in range(at_num):
-          geo_info.append(['',ii,''])	
+          geo_info.append(['',ii,''])
     elif 'Total Energy' in line:
       etot = float(thisline[3])
     elif 'Current cartesian coordinates' in line:
@@ -647,7 +647,7 @@ def read_gaussian_log(filename,all_mo=False,orientation='standard',
   
   **Returns:**
   
-    geo_spec, geo_info, ao_spec, mo_spec :	  
+    geo_spec, geo_info, ao_spec, mo_spec : 
       See `Central Variables`_ for details.
 
 .. [#first] Attention: The MOs in the output are only valid for the standard orientation!
@@ -877,7 +877,7 @@ def read_gaussian_log(filename,all_mo=False,orientation='standard',
           if 'Alpha' in line:
             add = '(a)'
           elif 'Beta' in line:
-            add = '(b)'	 
+            add = '(b)'
           for i in info:
             orb_sym.append(i + add)   
       if sec_flag == 4:

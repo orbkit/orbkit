@@ -33,8 +33,8 @@ from orbkit.display import display
   
 
 def main_output(data,geo_info,geo_spec,outputname='new',otype='h5',
-		data_id='rho',ao_spec=None,mo_spec=None,no_hdf5=False,
-		is_vector=False,is_mo_output=False,drv=None):
+        data_id='rho',ao_spec=None,mo_spec=None,no_hdf5=False,
+        is_vector=False,is_mo_output=False,drv=None):
   '''Creates the requested output.
   '''
   print_waring = False
@@ -52,29 +52,29 @@ def main_output(data,geo_info,geo_spec,outputname='new',otype='h5',
     d = data[i]
     if 'h5' in otype and not no_hdf5:
       display('Saving to Hierarchical Data Format file (HDF5)...' +
-		      '\n\t%(o)s.h5' % {'o': fid % f})
+              '\n\t%(o)s.h5' % {'o': fid % f})
       HDF5_creator(d,(fid % f),geo_info,geo_spec,data_id=data_id,
-		  ao_spec=ao_spec,mo_spec=mo_spec,is_mo_output=is_mo_output)
+              ao_spec=ao_spec,mo_spec=mo_spec,is_mo_output=is_mo_output)
     
     if 'am' in otype or 'hx' in otype and not print_waring:
       if is_vector: print_waring = True
       else: 
-	display('Saving to ZIBAmiraMesh file...' +
-		      '\n\t%(o)s.am' % {'o': fid % f})
-	amira_creator(d,(fid % f))
+        display('Saving to ZIBAmiraMesh file...' +
+                     '\n\t%(o)s.am' % {'o': fid % f})
+        amira_creator(d,(fid % f))
     if 'hx' in otype and not print_waring:
       if is_vector: print_waring = True
       else: 
-	#--- Create Amira network incl. Alphamap ---
-	display('\nCreating ZIBAmira network file...')
-	hx_network_creator(data,(fid % f))
+        #--- Create Amira network incl. Alphamap ---
+        display('\nCreating ZIBAmira network file...')
+        hx_network_creator(data,(fid % f))
     if 'cb' in otype and not print_waring:
       if is_vector: print_waring = True
       else: 
-	display('Saving to .cb file...' +
-			'\n\t%(o)s.cb' % {'o': fid % f})
-	cube_creator(d,(fid % f),geo_info,geo_spec)
-	#else: output_creator(d,(fid % f),geo_info,geo_spec)	# Axel's cube files
+        display('Saving to .cb file...' +
+                      '\n\t%(o)s.cb' % {'o': fid % f})
+        cube_creator(d,(fid % f),geo_info,geo_spec)
+       #else: output_creator(d,(fid % f),geo_info,geo_spec)  # Axel's cube files
   
   if print_waring:
     display('For a vectorized grid only HDF5 is available as output format...')
@@ -143,10 +143,8 @@ def cube_creator(rho,filename,geo_info,geo_spec):
     string += '\n'
     string += ('%(N)d' % {'N': grid.N_[ii]}).rjust(5)
     for jj in range(3):
-      if jj == ii:
-	string += ('%(dr)0.6f' % {'dr': grid.delta_[ii]}).rjust(12)
-      else:
-	string += ('%(dr)0.6f' % {'dr': 0}).rjust(12)
+      if jj == ii: string += ('%(dr)0.6f' % {'dr': grid.delta_[ii]}).rjust(12)
+      else:        string += ('%(dr)0.6f' % {'dr': 0}).rjust(12)
   
   for ii in range(len(geo_info)):
     string += '\n'
@@ -158,9 +156,8 @@ def cube_creator(rho,filename,geo_info,geo_spec):
   for rr in range(len(grid.x)):
     for ss in range(len(grid.y)):
       for tt in range(len(grid.z)):
-	string += ('%(rho).6E' % {'rho': rho[rr,ss,tt]}).rjust(13)
-	if (tt % 6 == 5):
-	  string += '\n'
+        string += ('%(rho).6E' % {'rho': rho[rr,ss,tt]}).rjust(13)
+        if (tt % 6 == 5): string += '\n'
       string += '\n'
   
   
@@ -191,15 +188,15 @@ def amira_creator(rho,filename):
   #--- Write Header ---
   fid.write('# AmiraMesh 3D ASCII 2.0\n\n\n')
   fid.write('define Lattice %(Nx)d %(Ny)d %(Nz)d\n' % 
-	      {'Nx': grid.N_[0],'Ny': grid.N_[1],'Nz': grid.N_[2]})
+                    {'Nx': grid.N_[0],'Ny': grid.N_[1],'Nz': grid.N_[2]})
   fid.write('define Coordinates %(N)d\n\n' % {'N': numpy.sum(grid.N_)})
   fid.write('Parameters {\n')
   fid.write('    Content "%(Nx)dx%(Ny)dx%(Nz)d float, uniform coordinates",\n' %
-	      {'Nx': grid.N_[0],'Ny': grid.N_[1],'Nz': grid.N_[2]})
+                    {'Nx': grid.N_[0],'Ny': grid.N_[1],'Nz': grid.N_[2]})
   fid.write('    BoundingBox %(xmin)f %(xmax)f %(ymin)f %(ymax)f %(zmin)f %(zmax)f,\n' %
-	      {'xmin': grid.min_[0],'xmax': grid.max_[0],
-	       'ymin': grid.min_[1],'ymax': grid.max_[1],
-	       'zmin': grid.min_[2],'zmax': grid.max_[2]})
+            {'xmin': grid.min_[0],'xmax': grid.max_[0],
+             'ymin': grid.min_[1],'ymax': grid.max_[1],
+             'zmin': grid.min_[2],'zmax': grid.max_[2]})
   fid.write('    CoordType "uniform"\n}\n\n')
   fid.write('Lattice { float Data } @1\n')
   fid.write('# Data section follows\n@1\n')
@@ -208,8 +205,8 @@ def amira_creator(rho,filename):
   string = ''
   for tt in range(len(grid.z)):
     for ss in range(len(grid.y)):
-  	  for rr in range(len(grid.x)): 
-	    string += '%g\n' % rho[rr,ss,tt]
+      for rr in range(len(grid.x)): 
+        string += '%g\n' % rho[rr,ss,tt]
   
   fid.write(string)
   
@@ -241,11 +238,11 @@ def amira_creator_vector(rho,filename):
   #--- Write Header ---
   fid.write('# AmiraMesh 3D ASCII 2.0\n\n\n')
   fid.write('define Lattice %(Nx)d %(Ny)d %(Nz)d\n' % 
-	      {'Nx': N,'Ny': N,'Nz': N})
+            {'Nx': N,'Ny': N,'Nz': N})
   fid.write('define Coordinates %(N)d\n\n' % {'N': N})
   fid.write('Parameters {\n')
   fid.write('    Content "%(Nx)dx%(Ny)dx%(Nz)d float, rectilinear coordinates",\n' %
-	      {'Nx': N,'Ny': N,'Nz': N})
+            {'Nx': N,'Ny': N,'Nz': N})
   fid.write('    CoordType "rectilinear"\n}\n\n')
   fid.write('Lattice { float Data } @1\n')
   fid.write('Coordinates { float xyz } @2\n\n')
@@ -255,8 +252,8 @@ def amira_creator_vector(rho,filename):
   string = ''
   #for tt in range(len(grid.z)):
     #for ss in range(len(grid.y)):
-  	  #for rr in range(len(grid.x)): 
-	    #string += '%0.8f\n' % rho[rr,ss,tt]
+      #for rr in range(len(grid.x)): 
+         #string += '%0.8f\n' % rho[rr,ss,tt]
   for ii in range(len(rho)):
     string += '%0.8f\n' % rho[ii]
   string += '\n@2\n'
@@ -295,11 +292,11 @@ def amira_creator_rectilinear_coord(rho,filename):
   #--- Write Header ---
   fid.write('# AmiraMesh 3D ASCII 2.0\n\n\n')
   fid.write('define Lattice %(Nx)d %(Ny)d %(Nz)d\n' % 
-	      {'Nx': grid.N_[0],'Ny': grid.N_[1],'Nz': grid.N_[2]})
+            {'Nx': grid.N_[0],'Ny': grid.N_[1],'Nz': grid.N_[2]})
   fid.write('define Coordinates %(N)d\n\n' % {'N': numpy.sum(grid.N_)})
   fid.write('Parameters {\n')
   fid.write('    Content "%(Nx)dx%(Ny)dx%(Nz)d float, rectilinear coordinates",\n' %
-	      {'Nx': grid.N_[0],'Ny': grid.N_[1],'Nz': grid.N_[2]})
+            {'Nx': grid.N_[0],'Ny': grid.N_[1],'Nz': grid.N_[2]})
   fid.write('    CoordType "rectilinear"\n}\n\n')
   fid.write('Lattice { float Data } @1\n')
   fid.write('Coordinates { float xyz } @2\n\n')
@@ -309,8 +306,8 @@ def amira_creator_rectilinear_coord(rho,filename):
   string = ''
   for tt in range(len(grid.z)):
     for ss in range(len(grid.y)):
-  	  for rr in range(len(grid.x)): 
-	    string += '%0.8f\n' % rho[rr,ss,tt]
+      for rr in range(len(grid.x)): 
+        string += '%0.8f\n' % rho[rr,ss,tt]
   string += '\n@2\n'
   for xx in grid.x: 
     string += '%0.8f\n' % xx
@@ -374,20 +371,20 @@ def hdf52dict(group,HDF5_file):
       members = numpy.array(members, dtype = numpy.int)
       x = []
       for mm in numpy.sort(members):
-	x.append(hdf52dict('%(g)s/%(m)s' % {'g':group, 'm': mm},HDF5_file))
+        x.append(hdf52dict('%(g)s/%(m)s' % {'g':group, 'm': mm},HDF5_file))
     except ValueError:
       x = {}
       for mm in members:
-	x[mm] = hdf52dict('%(g)s/%(m)s' % {'g':group, 'm': mm},HDF5_file)
+        x[mm] = hdf52dict('%(g)s/%(m)s' % {'g':group, 'm': mm},HDF5_file)
       attrs = HDF5_file['%(g)s' % {'g':group}].attrs
       for ii_a in attrs:
-	x[ii_a] = attrs[ii_a]
+        x[ii_a] = attrs[ii_a]
   return x
 
 
 def HDF5_creator(data,outputname,geo_info,geo_spec,data_id='rho',append=None,
-		 data_only=False,ao_spec=None,mo_spec=None,is_mo_output=False,
-		 x=None,y=None,z=None):
+            data_only=False,ao_spec=None,mo_spec=None,is_mo_output=False,
+            x=None,y=None,z=None):
   '''Creates an HDF5 file (Hierarchical Data Format) output.
   '''
   import h5py
@@ -405,9 +402,9 @@ def HDF5_creator(data,outputname,geo_info,geo_spec,data_id='rho',append=None,
     mo_name = []
     for i,j in enumerate(data):
       try:
-	mo_name.append(mo_spec[i]['sym'])
+        mo_name.append(mo_spec[i]['sym'])
       except TypeError:
-	mo_name.append(str(i))
+        mo_name.append(str(i))
       
       #dID = '%s:%s' % (data_id,mo_name[-1])
       #dset = f.create_dataset(dID,numpy.shape(j),data=j)
@@ -550,7 +547,7 @@ def colormap_creator(rho,filename,n_peaks=5,start=0.01,stop=0.999,peak_width=0.1
   
   #--- Initialize a string for the contours ---
   c_str = ('    <Control Opacity="%(o)f" Number="%(c)d" Blue="%(v)f"' + 
-	      ' Red="%(v)f" Green="%(v)f" Value="%(p)f"/>\n' )
+            ' Red="%(v)f" Green="%(v)f" Value="%(p)f"/>\n' )
   
   #--- Write the initial value at zero with zero opacity ---
   fid.write(c_str % {'o': 0, 'c': counter, 'v': 0, 'p': 0})
@@ -598,12 +595,12 @@ def hx_network_creator(rho,filename):
   from orbkit.hx_network_draft import hx_network
   #--- Create a .cmap colormap file using the default values ---
   display('\tCreating ZIBAmira colormap file...\n\t\t%(f)s.cmap' % 
-		      {'f': filename})
+                {'f': filename})
   colormap_creator(rho,filename)
   
   #--- Create a .hx network file based on the file orbkit.hx_network_draft.py ---
   display('\tCreating ZIBAmira network file...\n\t\t%(f)s.hx' % 
-		      {'f': filename})
+                {'f': filename})
   #--- Open an empty file
   fid = open('%(f)s.hx' % {'f': filename},'w')
   
@@ -655,12 +652,12 @@ Lattice { float[4] Data } @1\n
     #line = line.replace('\n', '')
     #column = line.split(" ")
     #if column[1] != str(0):
-	#fid.write('    <Control Opacity="'+ str(0) + '" Number="'+ str(counter) + '" Blue="0" Red="0" Value="' + str(float(column[0])-factor) +'" Green="0"/>\n')
-	#counter += 1;
-	#fid.write('    <Control Opacity="'+ str(column[1]) + '" Number="'+ str(counter) + '" Blue="0" Red="0" Value="' + str(column[0]) +'" Green="0"/>\n')
-	#counter += 1;
-	#fid.write('    <Control Opacity="'+ str(0) + '" Number="'+ str(counter) + '" Blue="0" Red="0" Value="' + str(float(column[0])+factor) +'" Green="0"/>\n')
-	#counter += 1;
+      #fid.write('    <Control Opacity="'+ str(0) + '" Number="'+ str(counter) + '" Blue="0" Red="0" Value="' + str(float(column[0])-factor) +'" Green="0"/>\n')
+      #counter += 1;
+      #fid.write('    <Control Opacity="'+ str(column[1]) + '" Number="'+ str(counter) + '" Blue="0" Red="0" Value="' + str(column[0]) +'" Green="0"/>\n')
+      #counter += 1;
+      #fid.write('    <Control Opacity="'+ str(0) + '" Number="'+ str(counter) + '" Blue="0" Red="0" Value="' + str(float(column[0])+factor) +'" Green="0"/>\n')
+      #counter += 1;
     #else:
       #fid.write('    <Control Opacity="'+ str(column[1]) + '" Number="'+ str(counter) + '" Blue="0" Red="0" Value="' + str(column[0]) +'" Green="0"/>\n')
 
@@ -677,21 +674,21 @@ def h5am_creator(rho,filename):
   f = h5py.File(filename + '.h5am', 'w')
 
   amira = f.create_group('amira')
-  amira.attrs['version'] 	= 2
-  amira.attrs['contenttype'] 	= 'HDF5amiralattice'
-  amira.attrs['numdims'] 	= 3
-  amira.attrs['dims'] 		= [len(grid.x),len(grid.y),len(grid.z)]  
-  amira.attrs['boundingbox'] 	= [grid.x[0],grid.x[-1],grid.y[0],grid.y[-1],grid.z[0],grid.z[-1]]
-  amira.attrs['latticetype'] 	= 'http://amira.zib.de/latticetypes#uniform'
-  #amira.attrs['latticetype'] 	= 'http://amira.zib.de/latticetypes#rectilinear'
-  #amira.attrs['coordX'] 	= grid.x
-  #amira.attrs['coordY'] 	= grid.y  
-  #amira.attrs['coordZ'] 	= grid.z
-  amira.attrs['ndatasets'] 	= 1
+  amira.attrs['version']     = 2
+  amira.attrs['contenttype'] = 'HDF5amiralattice'
+  amira.attrs['numdims']     = 3
+  amira.attrs['dims']        = [len(grid.x),len(grid.y),len(grid.z)]  
+  amira.attrs['boundingbox'] = [grid.x[0],grid.x[-1],grid.y[0],grid.y[-1],grid.z[0],grid.z[-1]]
+  amira.attrs['latticetype'] = 'http://amira.zib.de/latticetypes#uniform'
+  #amira.attrs['latticetype'] = 'http://amira.zib.de/latticetypes#rectilinear'
+  #amira.attrs['coordX'] = grid.x
+  #amira.attrs['coordY'] = grid.y  
+  #amira.attrs['coordZ'] = grid.z
+  amira.attrs['ndatasets'] = 1
 
   dataset0 = amira.create_group('dataset:0')
-  dataset0.attrs['ndatavar'] 	= 0
-  dataset0.attrs['datatype'] 	= 'http://amira.zib.de/types#double'
+  dataset0.attrs['ndatavar'] = 0
+  dataset0.attrs['datatype'] = 'http://amira.zib.de/types#double'
   a=h5py.h5t.array_create(h5py.h5t.IEEE_F64LE, (len(grid.x),len(grid.y),len(grid.z)))
   dset = dataset0.create_dataset('timestep:0',(len(grid.x),len(grid.y),len(grid.z)),data=rho)
   

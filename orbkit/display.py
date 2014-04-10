@@ -28,7 +28,7 @@ def display(string):
       print(string)
     if not options.no_log:
       if not is_initiated:
-	init(name=options.outputname)
+        init(name=options.outputname)
       f = open(log_fid, 'a')
       f.write('%s\n' % string)
       f.close()

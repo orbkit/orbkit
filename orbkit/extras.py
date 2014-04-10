@@ -82,13 +82,12 @@ def mo_select(mo_spec, fid_mo_list):
       flines = fid.readlines()
       fid.close()
       for line in flines:
-	integer = line.split()
-	mo_in_file.append(integer)
-	all_mo = all_mo + integer
-	
+        integer = line.split()
+        mo_in_file.append(integer)
+        all_mo = all_mo + integer
     except:
       raise IOError('The selected mo-list (%(m)s) is not valid!' % 
-		      {'m': fid_mo_list} + '\ne.g.\n\t1\t3\n\t2\t7\t9\n')
+                    {'m': fid_mo_list} + '\ne.g.\n\t1\t3\n\t2\t7\t9\n')
     
     #--- Check if the mos are specified ---
     #--- by symmetry (e.g. 1.1 in moLPRO nomenclature) or ---
@@ -98,24 +97,23 @@ def mo_select(mo_spec, fid_mo_list):
     
     if sym_select:
       for k in range(len(mo_spec)):
-	if mo_spec[k]['sym'] in selected_mo:
-	  selected_mo_spec.append(mo_spec[k])
-	  selected_mo_ii.append(mo_spec[k]['sym'])
+        if mo_spec[k]['sym'] in selected_mo:
+          selected_mo_spec.append(mo_spec[k])
+          selected_mo_ii.append(mo_spec[k]['sym'])
       selected_mo_ii = numpy.array(selected_mo_ii)
     else:
       selected_mo = map(int, selected_mo)            
       selected_mo.sort()
       selected_mo = map(str, selected_mo)
       for k in range(len(mo_spec)):
-	if str(k+1) in selected_mo:
-	  selected_mo_spec.append(mo_spec[k])
+        if str(k+1) in selected_mo: selected_mo_spec.append(mo_spec[k])
   
   return {'mo': selected_mo, 'mo_ii': selected_mo_ii,
-	  'mo_spec': selected_mo_spec, 
-	  'mo_in_file': mo_in_file, 'sym_select': sym_select}
+          'mo_spec': selected_mo_spec, 
+          'mo_in_file': mo_in_file, 'sym_select': sym_select}
 
 def calc_mo(geo_spec, geo_info, ao_spec, mo_spec, fid_mo_list, 
-	      drv=None, vector=None, otype=None):
+            drv=None, vector=None, otype=None):
   '''Calculates and saves the selected molecular orbitals or the derivatives thereof.
 
   **Parameters:**
@@ -152,26 +150,26 @@ def calc_mo(geo_spec, geo_info, ao_spec, mo_spec, fid_mo_list,
   
   #--- Calculate the AOs and MOs ---
   mo_list = core.rho_compute(geo_spec,ao_spec,mo['mo_spec'],
-			      calc_mo=True,drv=drv,vector=vector)
+                        calc_mo=True,drv=drv,vector=vector)
   
   fid = '%s_MO' % (options.outputname)
   
   if not options.no_output:
     if 'h5' in otype:    
       output.main_output(mo_list,geo_info,geo_spec,data_id='MO',
-				outputname=fid,
-				mo_spec=mo['mo_spec'],drv=drv,is_mo_output=True)
+                    outputname=fid,
+                    mo_spec=mo['mo_spec'],drv=drv,is_mo_output=True)
     #--- Create Output ---
     for i,j in enumerate(mo['mo_spec']):   
       index = numpy.index_exp[:,i] if drv is not None else i
       output.main_output(mo_list[index],geo_info,geo_spec,
-			  outputname='%s_%s' % (fid,j['sym']),
-			  otype=otype,no_hdf5=True,drv=drv,
-			  is_vector=(options.vector is not None))
+                      outputname='%s_%s' % (fid,j['sym']),
+                      otype=otype,no_hdf5=True,drv=drv,
+                      is_vector=(options.vector is not None))
   return mo_list, mo
   
 def mo_set(geo_spec, geo_info, ao_spec, mo_spec, fid_mo_list, 
-	      drv=None, vector=None, otype=None):
+            drv=None, vector=None, otype=None):
   '''Calculates and saves the density or the derivative thereof 
   using selected molecular orbitals.
   
@@ -204,8 +202,8 @@ def mo_set(geo_spec, geo_info, ao_spec, mo_spec, fid_mo_list,
   
   for i_file,j_file in enumerate(mo['mo_in_file']):
     display('\nStarting with the %d. element of the mo-List (%s)...\n\t' % 
-			  (i_file+1,fid_mo_list) + str(j_file) + 
-			  '\n\t(Only regarding existing and occupied mos.)\n')
+                (i_file+1,fid_mo_list) + str(j_file) + 
+                '\n\t(Only regarding existing and occupied mos.)\n')
     
     Spec = []
     for i_mo,j_mo in enumerate(mo['mo']):
@@ -322,7 +320,7 @@ def save_mo_hdf5(filename,geo_info,geo_spec,ao_spec,mo_spec,
     
     ao_list = core.ao_creator(geo_spec,ao_spec,x=zz[0],y=zz[1],z=zz[2],N=N)
     core.mo_creator(ao_list,mo_spec,x=zz[0],y=zz[1],z=zz[2],N=N,
-		    vector=False,HDF5_save=fid,h5py=h5py,s=ii_z)
+                    vector=False,HDF5_save=fid,h5py=h5py,s=ii_z)
   
   return 0
 
@@ -338,8 +336,8 @@ def atom2index(atom,geo_info=None):
     for a in atom:
       i = numpy.argwhere(geo_info.astype(int) == a)
       if len(i) != 1:
-	raise ValueError('No or multiple occurence ' + 
-			      'of the atom number %d in geo_info!' % a)
+        raise ValueError('No or multiple occurence ' + 
+                         'of the atom number %d in geo_info!' % a)
       index.append(int(i))
     
     index = numpy.array(index, dtype=int)
@@ -353,20 +351,20 @@ def atom2index(atom,geo_info=None):
   return atom, index
 
 def atom_projected_density(atom,geo_spec,ao_spec,mo_spec,geo_info=None,
-			    bReturnmo=False,ao_list=None,mo_list=None,
-			    x=None,y=None,z=None,N=None,is_vector=False):
+                    bReturnmo=False,ao_list=None,mo_list=None,
+                    x=None,y=None,z=None,N=None,is_vector=False):
   '''Computes the projected electron density with respect to the selected atoms.
   
   .. math::
   
-	\\rho^a(x,y,z) = \sum_i occ_i * mo_i^a * mo_i
+        \\rho^a(x,y,z) = \sum_i occ_i * mo_i^a * mo_i
   
   
   **Parameters:**
   
     atom : int or list of int
       Specifies the atoms to which the projected electron density will be computed.  
-    geo_spec, geo_info, ao_spec, mo_spec :	  
+    geo_spec, geo_info, ao_spec, mo_spec :  
       See `Central Variables`_ for details.
     bReturnmo : bool, optional
       If True, the atom projected molecular orbitals are additionally returned.
@@ -395,7 +393,7 @@ def atom_projected_density(atom,geo_spec,ao_spec,mo_spec,geo_info=None,
   atom, index = atom2index(atom,geo_info=geo_info)
   
   display('Computing the atom-projected density with respect to '+ 
-			'the atom(s) (internal numbering)')
+          'the atom(s) (internal numbering)')
   outp = '\t['
   for i,a in enumerate(atom):
     if not i % 10 and i != 0:
@@ -406,10 +404,10 @@ def atom_projected_density(atom,geo_spec,ao_spec,mo_spec,geo_info=None,
   display('\tCalculating ao_list & mo_list')
   if ao_list is None:
     ao_list = core.ao_creator(geo_spec,ao_spec,x=x,y=y,z=z,N=N,
-			      is_vector=is_vector)
+                    is_vector=is_vector)
   if mo_list is None:
     mo_list = core.mo_creator(ao_list,mo_spec,x=x,y=y,z=z,N=N,
-			      is_vector=is_vector)
+                              is_vector=is_vector)
     
   display('\tCalculating the atom-projected density')
   
@@ -422,15 +420,15 @@ def atom_projected_density(atom,geo_spec,ao_spec,mo_spec,geo_info=None,
     ll = 0
     for ii in ao_spec:
       for l in range(core.l_deg(l=ii['type'])):
-	if ii['atom'] == a:
-	  ao_index.append(ll)
-	  ao.append(ao_list[ll])
-	ll += 1
+        if ii['atom'] == a:
+          ao_index.append(ll)
+          ao.append(ao_list[ll])
+        ll += 1
     
     for ii_mo,spec in enumerate(mo_spec):
       mo = numpy.zeros(N)
       for jj in range(len(ao_index)):
-	mo += spec['coeffs'][ao_index[jj]] * ao[jj]
+        mo += spec['coeffs'][ao_index[jj]] * ao[jj]
       rho_atom[i] += spec['occ_num'] * mo_list[ii_mo] * mo
       if bReturnmo: mo_atom[i].append(mo)
   
@@ -444,25 +442,25 @@ def atom_projected_density(atom,geo_spec,ao_spec,mo_spec,geo_info=None,
   #--- atom_projected_density ---
 
 def compute_mulliken_charges(atom,geo_info,geo_spec,ao_spec,mo_spec,
-			    ao_list=None,mo_list=None,rho_atom=None,
-			    x=None,y=None,z=None,N=None,is_vector=False):
+            ao_list=None,mo_list=None,rho_atom=None,
+            x=None,y=None,z=None,N=None,is_vector=False):
   '''Compute the Mulliken charges of the selected atoms using
   the respective projected electron densities.
   
   .. math::
   
-	P^a = \int \\rho^a(x,y,z) d^3r
+    P^a = \int \\rho^a(x,y,z) d^3r
   
   **Parameters:**
   
-	atom : int or list of int
-	  Compute the numerical Mulliken charges of which atom.	  
+    atom : int or list of int
+      Compute the numerical Mulliken charges of which atom.
   
   **Returns:**
   
-	geo_spec, geo_info, ao_spec, mo_spec :	  
-		  See the `Central Variables`_ in the manual for details.
-	    
+    geo_spec, geo_info, ao_spec, mo_spec :
+      See the `Central Variables`_ in the manual for details.
+        
   '''
   
   if x is None: x = grid.x
@@ -481,8 +479,8 @@ def compute_mulliken_charges(atom,geo_info,geo_spec,ao_spec,mo_spec,
   atom, index = atom2index(atom,geo_info=geo_info)
   
   rho_atom = atom_projected_density(index,geo_spec,ao_spec,mo_spec,
-			    ao_list=ao_list,mo_list=mo_list,
-			    x=x,y=y,z=z,N=N,is_vector=is_vector)
+                    ao_list=ao_list,mo_list=mo_list,
+                    x=x,y=y,z=z,N=N,is_vector=is_vector)
   
   display('\nNumerical Mulliken Charges:')
   if is_vector:
@@ -495,36 +493,36 @@ def compute_mulliken_charges(atom,geo_info,geo_spec,ao_spec,mo_spec,
     #--- Print the Mulliken Charges ---
     a = int(a)
     display('\tAtom %s (%s):\t%+0.4f' % 
-		  (geo_info[a][1],geo_info[a][0],mulliken_charge[-1]))
+            (geo_info[a][1],geo_info[a][0],mulliken_charge[-1]))
   
   return rho_atom, numpy.array(mulliken_charge)
 
 
 def mo_transition_flux_density(i,j,geo_spec,ao_spec,mo_spec,drv='x',
-			    ao_list=None,mo_list=None,
-			    delta_ao_list=None,delta_mo_list=None,
-			    x=None,y=None,z=None,N=None,is_vector=False):
+                    ao_list=None,mo_list=None,
+                    delta_ao_list=None,delta_mo_list=None,
+                    x=None,y=None,z=None,N=None,is_vector=False):
   '''Calculate one component (e.g. drv='x') of the 
   transition electoronic flux density between the 
   molecular orbitals i and j.
   
   .. math::
   
-	moTEFD_{i,j}(r) = <mo_i|\delta(r-r')\\nabla_x|mo_j>
+        moTEFD_{i,j}(r) = <mo_i|\delta(r-r')\\nabla_x|mo_j>
     
   **Parameters:**
   
-	i: int
-	  index of the first mo (Bra)
-	j: int
-	  index of the second mo (Ket)
-	drv: {0,1,2,'x','y','z'}
-	  The desired component of the vector field of the 
-	  transition electoronic flux density
+     i: int
+        index of the first mo (Bra)
+     j: int
+        index of the second mo (Ket)
+     drv: {0,1,2,'x','y','z'}
+        The desired component of the vector field of the 
+        transition electoronic flux density
 
   **Returns:**
   
-	mo_tefd : numpy.ndarray
+     mo_tefd : numpy.ndarray
   '''
   
   if x is None: x = grid.x
@@ -543,25 +541,25 @@ def mo_transition_flux_density(i,j,geo_spec,ao_spec,mo_spec,drv='x',
   if mo_list is None:
     if ao_list is None:
       display('\tComputing ao_list and ' +
-			    'mo #%d, since it is not given.' % i)
+                    'mo #%d, since it is not given.' % i)
       ao_list = core.ao_creator(geo_spec,ao_spec,x=x,y=y,z=z,N=N,
-				is_vector=is_vector)  
+                    is_vector=is_vector)  
     else:
       display('\tComputing mo #%d, since it is not given.' % i)
     mo = core.mo_creator(ao_list,[mo_spec[i]],x=x,y=y,z=z,N=N,
-				is_vector=is_vector)[0]
+                    is_vector=is_vector)[0]
   else:
     mo = mo_list[i]
   if delta_mo_list is None:
     if delta_ao_list is None:
       display('\tComputing delta_ao_list and the derivative of ' +
-			    'mo #%d, since it is not given.' % j)
+                    'mo #%d, since it is not given.' % j)
       delta_ao_list = core.ao_creator(geo_spec,ao_spec,drv=drv,
-					  x=x,y=y,z=z,N=N,is_vector=is_vector)
+                        x=x,y=y,z=z,N=N,is_vector=is_vector)
     else:
       display('\tComputing mo #%d, since it is not given.' % j)
     delta_mo = core.mo_creator(delta_ao_list,[mo_spec[j]],x=x,y=y,z=z,N=N,
-				is_vector=is_vector)[0]
+                    is_vector=is_vector)[0]
   else:
     delta_mo = delta_mo_list[i]
   
