@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: iso-8859-1 -*-
 
-from orbkit.read import main_read
-from orbkit.display import display
 from copy import deepcopy
 import numpy
 import os
+
+from orbkit.read import main_read
+from orbkit.display import display,init_display
 
 def read(fid_list,itype='molden'):
   '''Read a list of input files and construct arrays for the 
@@ -317,6 +318,10 @@ path = '/home/vincpohl/Arbeit/gMDC_work/molden_files'
 for i in range(10):
   fid_list.append('%s/avtz_8-9_mrci_2diss_mcscf.%03d.molden' % (path,i))
  
+init_display(name = 'MO_ordering')  # Specify a filename for the oklog file 
+                                    # (We want a oklog file but we have no 
+                                    # options.outputname here.)
+
 main_order(fid_list)
 
 

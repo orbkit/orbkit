@@ -1,5 +1,35 @@
 # -*- coding: iso-8859-1 -*-
 '''Module containing and processing all orbkit options.'''
+
+lgpl = '''
+orbkit
+Gunter Hermann, Vincent Pohl, and Axel Schild
+
+Institut fuer Chemie und Biochemie, Freie Universitaet Berlin, 14195 Berlin, Germany
+
+This file is part of orbkit.
+
+orbkit is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as 
+published by the Free Software Foundation, either version 3 of 
+the License, or any later version.
+
+orbkit is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public 
+License along with orbkit.  If not, see <http://www.gnu.org/licenses/>.
+'''
+
+lgpl_short = '''This is orbkit.
+Copyright (C) 2014 Gunter Hermann, Vincent Pohl, and Axel Schild. 
+This program comes with ABSOLUTELY NO WARRANTY. 
+This is free software, and you are welcome to redistribute it 
+under certain conditions. Type '-l' for details.
+'''
+
 import os
 import sys
 thismodule = sys.modules[__name__]
@@ -15,14 +45,175 @@ available = ['filename','itype','outputname','otype',
 
 #__all__ = ['get_options','check_options','reset_grid',].extend(available)
 
-itypes = ['molden', 'gamess', 'gaussian.log', 'gaussian.fchk'] #: Specifies possible input types.
-otypes = ['h5', 'cb', 'am', 'hx'] #: Specifies possible output types.
-drv_options = ['x','y','z'] #: Specifies possible derivative variables.
+itypes = ['molden', 
+          'gamess', 
+          'gaussian.log', 
+          'gaussian.fchk']              #: Specifies possible input types.
+otypes = ['h5', 'cb', 'am', 'hx']       #: Specifies possible output types.
+drv_options = ['x','y','z']             #: Specifies possible derivative variables.
 
 def get_options():
   '''Returns all possible options and their value.'''
   opts = [(i,globals()[i]) for i in available]
   return dict(opts)
+
+def init_parser():
+  '''Initializes parser and processes the options.
+  '''
+  import optparse
+  global parser
+  
+  def default_if_called(option, opt, value, parser, default=1e4):
+    try:
+      arg = parser.rargs[0]
+      if ((arg[:2] == "--" and len(arg) > 2) or
+        (arg[:1] == "-" and len(arg) > 1 and arg[1] != "-")):
+        raise ValueError
+      value = int(float(arg))
+    except (IndexError, ValueError):
+      value = int(default)
+    setattr(parser.values, option.dest, value)
+  
+  #optparse.Option.STORE_ACTIONS += ('call_back',)
+  usage = 'Usage: %prog [options] -i INPUT'
+  parser = optparse.OptionParser(usage=usage,description=lgpl_short) 
+  
+  parser.add_option("-l", dest="show_lgpl",
+                      default=False,action="store_true", 
+                      help="show license information and exit")
+  parser.add_option("--quiet",dest="quiet",
+                      default=False,action="store_true", 
+                      help="suppress terminal output")  
+  parser.add_option("--no_log",dest="no_log",
+                      default=False,action="store_true", 
+                      help="suppress output of a INPUT.oklog logfile")
+  group = optparse.OptionGroup(parser, "Input/Output Options", 
+        '''Comment: So far, orbkit can only handle Cartesian Gaussian basis
+        functions. See the manual for details.''')
+  group.add_option("-i", "--input", dest="filename",metavar="INPUT",
+                      default='', type="string",nargs=1,
+                      help="input file")
+  group.add_option("--itype", dest="itype",
+                      default='molden', type="choice",choices=itypes,
+                      help='''input type: ''' + ', '.join(itypes) + 
+                      " [default: '%default']")
+  group.add_option("-o", "--output",dest="outputname",
+                      type="string",
+                      help='''name of the output file 
+                      [default: base name of INPUT]''')
+  group.add_option("-t", "--otype", dest="otype",
+                      type="choice", action="append", choices=otypes,
+                      help='''output formats (multiple calls possible):  
+                      '%s' (HDF5 file), '%s' (Gaussian cube file), 
+                      '%s' (ZIBAmiraMesh file), '%s' (ZIBAmira network) '''
+                      % tuple(otypes) + "[default: 'h5']")
+  parser.add_option_group(group)
+  group = optparse.OptionGroup(parser, "Computational Options")
+  group.add_option("-p", "--numproc",dest="numproc",
+                      default=1, type="int",
+                      help='''number of subprocesses to be started 
+                      during the execution [default: %default]''')
+  group.add_option("--mo_set",dest="mo_set",
+                      default=False, type="string", 
+                      help='''read the plain text file MO_SET containing row 
+                      vectors of molecular orbital indeces (delimiter=' ', 
+                      Integer numbering or MOLPRO's symmetry numbering) 
+                      and compute the electron density 
+                      using exclusively those orbitals'''.replace('  ','').replace('\n',''))  
+  group.add_option("--calc_ao",dest="calc_ao",
+                      default=False, type="string", 
+                      help=optparse.SUPPRESS_HELP)
+                      #="calculate and save the AOs specified by the indices 
+                      #in their selected file (delimiter=' ')") #INCLUDEME  
+  group.add_option("--calc_mo",dest="calc_mo",
+                      default=False, type="string", 
+                      help=('''calculate and save the MOs specified in the 
+                      plain text file CALC_MO by the indices (delimiter=' ') 
+                      (Type 'all_mo' to store all occupied and virtual
+                      orbitals)''').replace('  ','').replace('\n','')) 
+  group.add_option("--all_mo",dest="all_mo",
+                      default=False, action="store_true", 
+                      help='''take into account all (occupied and virtual) MOs 
+                      for all computations''')
+  group.add_option("-d", "--drv",dest="drv",choices=drv_options,
+                      type="choice",action="append",
+                      help=('''compute the analytical derivative of the requested
+                      quantities with respect to DRV, i.e., 'x', 'y', and/or 'z' 
+                      (multiple calls possible)'''
+                      ).replace('  ','').replace('\n',''))
+  parser.add_option_group(group)
+  group = optparse.OptionGroup(parser, "Grid-Related Options")      
+  group.add_option("-v", "--vector",dest="vector",
+                      action="callback",callback=default_if_called,
+                      callback_kwargs={'default': dvec},
+                      help=('''perform the computations for a vectorized grid, 
+                      i.e., with x, y, and z as vectors. Compute successively 
+                      VECTOR points at once per subprocess
+                      [default: --vector=%0.0e]''' % dvec
+                      ).replace('  ','').replace('\n',''))   
+  group.add_option("--grid", dest="grid_file",
+                      type="string",
+                      help='''Read the grid from the plain text file GRID_FILE''')    
+  group.add_option("--center", dest="center_grid",
+                      metavar="ATOM",type="int",
+                      help='''center with respect to the origin and the 
+                      atom number ATOM (input order)''') 
+  group.add_option("--random_grid", dest="random_grid",
+                      default=False, action="store_true",  
+                      help=optparse.SUPPRESS_HELP)
+  parser.add_option_group(group)
+  group = optparse.OptionGroup(parser, "Additional Options")
+  group.add_option("--z_reduced_density",dest="z_reduced_density",
+                      default=False, action="store_true", 
+                      help="reduce the density with respect to the z-axis")
+  group.add_option("--atom_projected_density",dest="atom_projected_density",
+                      metavar="INDEX",action="append",type="int",
+                      help='''compute the atom-projected electron density with
+                      respect to atom INDEX (multiple calls possible)''')
+  group.add_option("--mo_tefd",dest="mo_tefd", 
+                      type="int",nargs=2,action="append",
+                      help=('''compute the molecular orbital transition electronic 
+                      flux density between the orbitals I and J specify the 
+                      requested component with "--drv", e.g., 
+                      --mo_tefd=I J --drv=x (multiple calls possible)'''
+                      ).replace('  ','').replace('\n',''))
+                      
+  # The following parser options are hidden 
+  group.add_option("--no_slice",dest="no_slice",
+                      default=False, action="store_true",
+                      help=optparse.SUPPRESS_HELP)
+  group.add_option("--no_output",dest="no_output",
+                      default=False, action="store_true",
+                      help=optparse.SUPPRESS_HELP)
+  group.add_option("--not_interactive",dest="interactive",
+                      default=True, action="store_false",
+                      help=optparse.SUPPRESS_HELP)
+  parser.add_option_group(group)
+
+  (kwargs, args) = parser.parse_args()
+  
+  # Print the licence, if requested
+  if kwargs.show_lgpl:
+    print(lgpl.replace('\nThis file is part of orbkit.\n',''))
+    sys.exit(0)
+  
+  # Print help if no input file has been set
+  if kwargs.filename == '':
+    parser.print_help()
+    sys.exit(1)
+  
+  for i,j in vars(kwargs).iteritems():
+    setattr(thismodule,i,j)
+    #setattr(options,i,j)
+  
+  # Check the options for compatibility and correctness
+  check_options(error=parser.error,
+                        interactive=interactive,
+                        info=False)
+  
+  return
+  # init_parser 
+
 
 def check_options(error=sys.stdout.write,display=sys.stdout.write,
             interactive=False,
@@ -214,6 +405,7 @@ all_mo          = False         #: If True, all molecular orbitals will be compu
 drv             = None          #: Specifies derivative variables. (list of str)
 #--- Grid-Related Options ---
 vector          = None          #: If not None, vector grid is used. Specifies number of points per subprocess. (int)
+dvec            = 1e4           #(No Option) Specifies the standard value for the points per subprocess. (int)
 grid_file       = None          #: Specifies file to read grid from. (filename)
 center_grid     = None          #: If not None, grid is centered to specified atom and origin. (int) 
 random_grid     = False         #: If True, creates random grid around atom positions. (bool)

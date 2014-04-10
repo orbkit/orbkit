@@ -72,9 +72,6 @@ def main():
   global geo_spec, geo_info, ao_spec, mo_spec
   global rho, delta_rho
   
-  # Remove old .log file
-  display.init()
-  
   # Display program information
   display.display(lgpl_short)
   
@@ -271,11 +268,12 @@ def main():
   return data
   # main 
 
-def init():
-  ''' Resets all :mod:`orbkit.options`. 
+def init():  
+  ''' Resets all :mod:`orbkit.options` and :mod:`orbkit.display`. 
   '''
   reload(options)
-
+  display.is_initiated = False
+  
   return 
   # init 
   
@@ -285,7 +283,10 @@ def run_standalone():
   '''Starts orbkit as a standalone program using parser options (:mod:`orbkit.core.init_parser`).
   '''  
   # Call the parser
-  core.init_parser()
+  options.init_parser()
   
+  # Reset orbkit.display
+  display.is_initiated = False
+
   # Call the main loop
   main()

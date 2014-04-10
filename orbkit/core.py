@@ -1,7 +1,7 @@
 # -*- coding: iso-8859-1 -*-
 '''Module performing all computational tasks.'''
 
-lgpl = '''
+'''
 orbkit
 Gunter Hermann, Vincent Pohl, and Axel Schild
 
@@ -23,17 +23,9 @@ You should have received a copy of the GNU Lesser General Public
 License along with orbkit.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
-lgpl_short = '''This is orbkit.
-Copyright (C) 2014 Gunter Hermann, Vincent Pohl, and Axel Schild. 
-This program comes with ABSOLUTELY NO WARRANTY. 
-This is free software, and you are welcome to redistribute it 
-under certain conditions. Type '-l' for details.
-'''
-
 # Import general modules
 import copy
 import os
-import optparse
 import string
 import sys
 import time
@@ -42,172 +34,12 @@ import numpy
 from scipy import weave
 from scipy import integrate
 
-import multiprocessing as mp
 from multiprocessing import Process
 from multiprocessing import Pool
 
 # Import orbkit modules
 from orbkit import grid,cSupportCode
 from orbkit.display import display
-from orbkit import options
-
-dvec = 1e4
-
-def init_parser():
-  '''Initializes parser and processes the options.
-  '''
-  global parser
-  
-  def default_if_called(option, opt, value, parser, default=1e4):
-    try:
-      arg = parser.rargs[0]
-      if ((arg[:2] == "--" and len(arg) > 2) or
-        (arg[:1] == "-" and len(arg) > 1 and arg[1] != "-")):
-        raise ValueError
-      value = int(float(arg))
-    except (IndexError, ValueError):
-      value = int(default)
-    setattr(parser.values, option.dest, value)
-  
-  #optparse.Option.STORE_ACTIONS += ('call_back',)
-  usage = 'Usage: %prog [options] -i INPUT'
-  parser = optparse.OptionParser(usage=usage,description=lgpl_short) 
-  
-  parser.add_option("-l", dest="show_lgpl",
-                      default=False,action="store_true", 
-                      help="show license information and exit")
-  parser.add_option("--quiet",dest="quiet",
-                      default=False,action="store_true", 
-                      help="suppress terminal output")  
-  parser.add_option("--no_log",dest="no_log",
-                      default=False,action="store_true", 
-                      help="suppress output of a INPUT.oklog logfile")
-  group = optparse.OptionGroup(parser, "Input/Output Options", 
-  '''Comment: So far, orbkit can only handle Cartesian Gaussian basis
-  functions. See the manual for details.''')
-  group.add_option("-i", "--input", dest="filename",metavar="INPUT",
-                      default='', type="string",nargs=1,
-                      help="input file")
-  group.add_option("--itype", dest="itype",
-                      default='molden', type="choice",choices=options.itypes,
-                      help='''input type: ''' + ', '.join(options.itypes) + 
-                      " [default: '%default']")
-  group.add_option("-o", "--output",dest="outputname",
-                      type="string",
-                      help='''name of the output file 
-                      [default: base name of INPUT]''')
-  group.add_option("-t", "--otype", dest="otype",
-                      type="choice", action="append", choices=options.otypes,
-                      help='''output formats (multiple calls possible):  
-                      '%s' (HDF5 file), '%s' (Gaussian cube file), 
-                      '%s' (ZIBAmiraMesh file), '%s' (ZIBAmira network) '''
-                      % tuple(options.otypes) + "[default: 'h5']")
-  parser.add_option_group(group)
-  group = optparse.OptionGroup(parser, "Computational Options")
-  group.add_option("-p", "--numproc",dest="numproc",
-                      default=1, type="int",
-                      help='''number of subprocesses to be started 
-                      during the execution [default: %default]''')
-  group.add_option("--mo_set",dest="mo_set",
-                      default=False, type="string", 
-                      help='''read the plain text file MO_SET containing row 
-                      vectors of molecular orbital indeces (delimiter=' ', 
-                      Integer numbering or MOLPRO's symmetry numbering) 
-                      and compute the electron density 
-                      using exclusively those orbitals'''.replace('  ','').replace('\n',''))  
-  group.add_option("--calc_ao",dest="calc_ao",
-                      default=False, type="string", 
-                      help=optparse.SUPPRESS_HELP)
-                      #="calculate and save the AOs specified by the indices 
-                      #in their selected file (delimiter=' ')") #INCLUDEME  
-  group.add_option("--calc_mo",dest="calc_mo",
-                      default=False, type="string", 
-                      help=('''calculate and save the MOs specified in the 
-                      plain text file CALC_MO by the indices (delimiter=' ') 
-                      (Type 'all_mo' to store all occupied and virtual
-                      orbitals)''').replace('  ','').replace('\n','')) 
-  group.add_option("--all_mo",dest="all_mo",
-                      default=False, action="store_true", 
-                      help='''take into account all (occupied and virtual) MOs 
-                      for all computations''')
-  group.add_option("-d", "--drv",dest="drv",choices=options.drv_options,
-                      type="choice",action="append",
-                      help=('''compute the analytical derivative of the requested
-                      quantities with respect to DRV, i.e., 'x', 'y', and/or 'z' 
-                      (multiple calls possible)'''
-                      ).replace('  ','').replace('\n',''))
-  parser.add_option_group(group)
-  group = optparse.OptionGroup(parser, "Grid-Related Options")      
-  group.add_option("-v", "--vector",dest="vector",
-                      action="callback",callback=default_if_called,
-                      callback_kwargs={'default': dvec},
-                      help=('''perform the computations for a vectorized grid, 
-                      i.e., with x, y, and z as vectors. Compute successively 
-                      VECTOR points at once per subprocess
-                      [default: --vector=%0.0e]''' % dvec
-                      ).replace('  ','').replace('\n',''))   
-  group.add_option("--grid", dest="grid_file",
-                      type="string",
-                      help='''Read the grid from the plain text file GRID_FILE''')    
-  group.add_option("--center", dest="center_grid",
-                      metavar="ATOM",type="int",
-                      help='''center with respect to the origin and the 
-                      atom number ATOM (input order)''') 
-  group.add_option("--random_grid", dest="random_grid",
-                      default=False, action="store_true",  
-                      help=optparse.SUPPRESS_HELP)
-  parser.add_option_group(group)
-  group = optparse.OptionGroup(parser, "Additional Options")
-  group.add_option("--z_reduced_density",dest="z_reduced_density",
-                      default=False, action="store_true", 
-                      help="reduce the density with respect to the z-axis")
-  group.add_option("--atom_projected_density",dest="atom_projected_density",
-                      metavar="INDEX",action="append",type="int",
-                      help='''compute the atom-projected electron density with
-                      respect to atom INDEX (multiple calls possible)''')
-  group.add_option("--mo_tefd",dest="mo_tefd", 
-                type="int",nargs=2,action="append",
-                help=('''compute the molecular orbital transition electronic 
-                flux density between the orbitals I and J specify the 
-                requested component with "--drv", e.g., 
-                --mo_tefd=I J --drv=x (multiple calls possible)'''
-                ).replace('  ','').replace('\n',''))
-                      
-  # The following parser options are hidden 
-  group.add_option("--no_slice",dest="no_slice",
-                      default=False, action="store_true",
-                      help=optparse.SUPPRESS_HELP)
-  group.add_option("--no_output",dest="no_output",
-                      default=False, action="store_true",
-                      help=optparse.SUPPRESS_HELP)
-  group.add_option("--not_interactive",dest="interactive",
-                      default=True, action="store_false",
-                      help=optparse.SUPPRESS_HELP)
-  parser.add_option_group(group)
-
-  (kwargs, args) = parser.parse_args()
-  
-  # Print the licence, if requested
-  if kwargs.show_lgpl:
-    print(lgpl.replace('\nThis file is part of orbkit.\n',''))
-    sys.exit(0)
-  
-  # Print help if no input file has been set
-  if kwargs.filename == '':
-    parser.print_help()
-    sys.exit(1)
-  
-  for i,j in vars(kwargs).iteritems():
-    setattr(options,i,j)
-  
-  # Check the options for compatibility and correctness
-  options.check_options(error=parser.error,
-                    interactive=options.interactive,
-                    info=False)
-      
-  return 0
-  # init_parser 
-
 
 def l_creator(geo_spec,ao_spec,sel_ao,exp_list=None,coeff_list=None,
             at_pos=None,is_vector=False,drv=None,
@@ -426,7 +258,8 @@ def calc_single_mo(xx):
 
 def mo_creator(ao_list,mo_spec,is_vector=False,
             x=None,y=None,z=None,N=None,
-            HDF5_save=False,h5py=False,s=0):
+            HDF5_save=False,h5py=False,
+            numproc=1,s=0):
   '''Calculates the molecular orbitals.
   
   If a string (filename) is given for the argument :literal:`HDF5_save`, the slice s of each
@@ -451,6 +284,8 @@ def mo_creator(ao_list,mo_spec,is_vector=False,
     (Requires Parameters: h5py and s)
   h5py : python module
     required if HDF5_save is not False
+  numproc : int, required if HDF5_save is not False
+    Specifies number of subprocesses for multiprocessing.
   s : int, required if HDF5_save is not False
     Specifies which slice of the molecular orbital has to be computed.
 
@@ -488,10 +323,10 @@ def mo_creator(ao_list,mo_spec,is_vector=False,
     global Spec    
     Spec = {'ao_list': ao_list, 'mo_spec': mo_spec, 'N': N}
     
-    if options.numproc > len(mo_spec): options.numproc = len(mo_spec)
+    if numproc > len(mo_spec): numproc = len(mo_spec)
     
     # Start the worker processes --
-    pool = Pool(processes=options.numproc)
+    pool = Pool(processes=numproc)
     
     # Write the slices in x to an array xx 
     xx=[]
@@ -633,7 +468,8 @@ def slice_rho(xx):
     return 0
   # slice_rho 
 
-def rho_compute(geo_spec,ao_spec,mo_spec,calc_mo=False,vector=None,drv=None):
+def rho_compute(geo_spec,ao_spec,mo_spec,calc_mo=False,vector=None,drv=None,
+                numproc=1):
   '''Calculate the density, the molecular orbitals, or the derivatives thereof.
   
   orbkit divides 3-dimensional regular grids into 2-dimensional slices and 
@@ -656,7 +492,10 @@ def rho_compute(geo_spec,ao_spec,mo_spec,calc_mo=False,vector=None,drv=None):
     If not None, performs the computations on a vectorized grid, i.e., 
     with x, y, and z as vectors.
   drv : string or list of strings {None,'x','y', or 'z'}, optional
-    If not None, computes the analytical derivative of the requested quantities with respect to DRV.
+    If not None, computes the analytical derivative of the requested 
+    quantities with respect to DRV.
+   numproc : int
+     Specifies number of subprocesses for multiprocessing.
   grid : module or class, global
     Contains the grid, i.e., grid.x, grid.y, and grid.z.
 
@@ -719,19 +558,19 @@ def rho_compute(geo_spec,ao_spec,mo_spec,calc_mo=False,vector=None,drv=None):
   
   # The number of worker processes is capped to the number of 
   # grid points in x-direction.  
-  if options.numproc > sNum: options.numproc = sNum
+  if numproc > sNum: numproc = sNum
   
   # Print information regarding the density calculation 
   if not calc_mo:
     display("\nStarting the density calculation...")
   display("The grid has been seperated into %d %sslices and the" % 
                 (sNum, '2d-' if vector is None else ''))
-  if options.numproc == 1:
+  if numproc == 1:
     display("calculation will be carried out with 1 subprocess.\n" + 
     "\n\tThe number of subprocesses can be changed with -p\n")
   else:
     display("calculation will be carried out with %d subprocesses." 
-            % options.numproc)
+            % numproc)
   display("\nThere are %d contracted AOs and %d MOs to be calculated."
             % (len(mo_spec[0]['coeffs']), len(mo_spec)))
   
@@ -752,7 +591,7 @@ def rho_compute(geo_spec,ao_spec,mo_spec,calc_mo=False,vector=None,drv=None):
       delta_rho = numpy.zeros((len(drv),) + N)
 
   # Start the worker processes --
-  pool = Pool(processes=options.numproc)
+  pool = Pool(processes=numproc)
   
   # Write the slices in x to an array xx 
   xx = []

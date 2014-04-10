@@ -28,7 +28,7 @@ import os
 import numpy
 
 # Import orbkit modules
-from orbkit import grid, core
+from orbkit import grid, options
 from orbkit.display import display
   
 
@@ -143,8 +143,10 @@ def cube_creator(rho,filename,geo_info,geo_spec):
     string += '\n'
     string += ('%(N)d' % {'N': grid.N_[ii]}).rjust(5)
     for jj in range(3):
-      if jj == ii: string += ('%(dr)0.6f' % {'dr': grid.delta_[ii]}).rjust(12)
-      else:        string += ('%(dr)0.6f' % {'dr': 0}).rjust(12)
+      if jj == ii: 
+        string += ('%(dr)0.6f' % {'dr': grid.delta_[ii]}).rjust(12)
+      else:
+        string += ('%(dr)0.6f' % {'dr': 0}).rjust(12)
   
   for ii in range(len(geo_info)):
     string += '\n'
@@ -157,7 +159,8 @@ def cube_creator(rho,filename,geo_info,geo_spec):
     for ss in range(len(grid.y)):
       for tt in range(len(grid.z)):
         string += ('%(rho).6E' % {'rho': rho[rr,ss,tt]}).rjust(13)
-        if (tt % 6 == 5): string += '\n'
+        if (tt % 6 == 5): 
+          string += '\n'
       string += '\n'
   
   
@@ -411,7 +414,7 @@ def HDF5_creator(data,outputname,geo_info,geo_spec,data_id='rho',append=None,
     
     dset = f.create_dataset('MO:Content',data=numpy.array(mo_name))
   
-  if core.options.z_reduced_density:
+  if options.z_reduced_density:
     dset = f.create_dataset(data_id,numpy.shape(data),data=data)
   else:
     dset = f.create_dataset(data_id,numpy.shape(data),data=data)
@@ -424,7 +427,7 @@ def HDF5_creator(data,outputname,geo_info,geo_spec,data_id='rho',append=None,
   if y is None: y = grid.y
   if z is None: z = grid.z
   
-  if core.options.z_reduced_density:
+  if options.z_reduced_density:
     dset = f.create_dataset('z',(1,len(z)),data=z)
   else:
     dset = f.create_dataset('x',(1,len(x)),data=x)
@@ -617,7 +620,7 @@ def hx_network_creator(rho,filename):
 #### NOT FINISHED YET ###
 class cmo_display:
   def __init__(self):
-    self.filename = core.options.outputname + '_mo'
+    self.filename = options.outputname + '_mo'
     display("\tCreating ZIBAmira network file for \n\t  the depiction of the mos...\n\t\t" + self.filename + ".hx")    
     fid = open(self.filename + '.hx','w') 
     name = self.filename.split('/')[-1] 
