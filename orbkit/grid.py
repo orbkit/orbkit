@@ -103,6 +103,14 @@ def get_grid(start='\t'):
   return display
   # get_grid 
 
+def reset_grid():
+  '''Resets the grid parameters.'''
+  global is_initialized, min_, max_, N_
+  is_initialized = False
+  min_ = [-8.0, -8.0, -8.0]
+  max_ = [ 8.0,  8.0,  8.0]
+  N_   = [ 101,  101,  101]
+  # reset_grid 
 
 def grid2vector():
   '''Converts the regular grid characterized by x-, y-, z-vectors

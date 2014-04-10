@@ -380,14 +380,6 @@ def check_if_exists(fid, what='',error=IOError,display=sys.stdout.write,
       break 
   return fid
 
-
-def reset_grid():
-  '''Resets the grid parameters.'''
-  grid.is_initialized = False
-  grid.min_ = [-8.0, -8.0, -8.0]
-  grid.max_ = [ 8.0,  8.0,  8.0]
-  grid.N_   = [ 101,  101,  101]
-
 # initiating the parser variables
 # the names are chosen according to core.init_parser()
 
@@ -420,4 +412,4 @@ no_output       = False         #: If True, omits creation of output. (bool)
 no_slice        = False         #: If True, omits slicing of the grid. (bool)
 interactive     = False         #: If True, asks user to select unclarified options. (bool)
 #--- Default values for the grid parameters ---
-reset_grid()
+grid.reset_grid()

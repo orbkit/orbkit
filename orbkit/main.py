@@ -214,14 +214,15 @@ def main():
   # Compute the (derivative of the) electron density 
   if options.no_slice:
     data = core.rho_compute_no_slice(geo_spec, ao_spec, mo_spec, 
-                        drv=options.drv,
-                        is_vector=(options.vector is not None),
-                        return_components = False)
+                                     drv=options.drv,
+                                     is_vector=(options.vector is not None),
+                                     return_components = False)
   
   else:
     data = core.rho_compute(geo_spec, ao_spec, mo_spec, 
-                    drv=options.drv,
-                    vector=options.vector)
+                            drv=options.drv,
+                            vector=options.vector,
+                            numproc=options.numproc)
   if options.drv is None:
     rho = data
   else:

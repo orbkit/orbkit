@@ -15,33 +15,24 @@ to see an isosurface plot of the orbital.
 
 mayavi_yes = False
 
-# name of in- and out-file
-fid_in  = 'h2o.md'
-fid_out = 'h2o_example'
-
 # import the functions of orbkit (import function 
 # ok that imports all other functions)
 from orbkit import ok
 
-# initialize orbkit with default parameters and options
-ok.main.init()
+# name and type of input file
+fid_in  = 'h2o.md'
+itype   = 'molden'
+
+# number of subprocesses
+numproc = 4
 
 # set grid parameters 
 ok.grid.N_   = [  50,   52,   54]
 ok.grid.max_ = [ 6.5,  6.5,   6.5]
 ok.grid.min_ = [-6.5, -6.5,  -6.5]
 
-# set options (see end of options.py for names of all options);
-# [default] indicates that this is the default value anyway
-ok.options.filename     = fid_in            # in-file name
-ok.options.itype        = 'molden'          # in-file type [default]
-ok.options.outputname   = fid_out           # out-file name
-ok.options.otype        = 'h5'              # out-file type [default]
-ok.options.numproc      = 1                 # number of processes [default]
-#ok.options.quiet        = True              # do not print information
-
 # open molden file and read parameters
-geo_spec, geo_info, ao_spec, mo_spec = ok.read.main_read(ok.options.filename)
+geo_spec, geo_info, ao_spec, mo_spec = ok.read.main_read(fid_in,itype=itype)
 
 # initialize grid
 ok.grid.grid_init()
@@ -59,7 +50,8 @@ for k in range(len(mo_spec)):
     Selected_mo_spec.append(mo_spec[k])
 
 # calculate MO
-mo_list = ok.core.rho_compute(geo_spec,ao_spec,Selected_mo_spec,calc_mo=True)    
+mo_list = ok.core.rho_compute(geo_spec,ao_spec,Selected_mo_spec,calc_mo=True,
+                              numproc=numproc)    
 
 # plot the results
 x = ok.grid.x

@@ -150,7 +150,8 @@ def calc_mo(geo_spec, geo_info, ao_spec, mo_spec, fid_mo_list,
   
   #--- Calculate the AOs and MOs ---
   mo_list = core.rho_compute(geo_spec,ao_spec,mo['mo_spec'],
-                        calc_mo=True,drv=drv,vector=vector)
+                             calc_mo=True,drv=drv,vector=vector,
+                             numproc=options.numproc)
   
   fid = '%s_MO' % (options.outputname)
   
@@ -208,14 +209,15 @@ def mo_set(geo_spec, geo_info, ao_spec, mo_spec, fid_mo_list,
     Spec = []
     for i_mo,j_mo in enumerate(mo['mo']):
       if j_mo in j_file: 
-	if mo['sym_select']: 
-	  ii_mo = numpy.argwhere(mo['mo_ii'] == j_mo)
-	else: 
-	  ii_mo = i_mo
-	Spec.append(mo['mo_spec'][int(ii_mo)])
+        if mo['sym_select']: 
+          ii_mo = numpy.argwhere(mo['mo_ii'] == j_mo)
+        else: 
+          ii_mo = i_mo
+        Spec.append(mo['mo_spec'][int(ii_mo)])
     
     data = core.rho_compute(geo_spec, ao_spec, Spec,
-			    drv=drv,vector=vector)
+                            drv=drv,vector=vector,
+                            numproc=options.numproc)
     if drv is None:
       rho = data
     else:
@@ -262,7 +264,7 @@ def mo_set(geo_spec, geo_info, ao_spec, mo_spec, fid_mo_list,
   #--- mo_select ---
 
 def save_mo_hdf5(filename,geo_info,geo_spec,ao_spec,mo_spec,
-		  x=None,y=None,z=None,N=None):
+                 x=None,y=None,z=None,N=None):
   '''Calculate and save selected MOs to an HDF5 File requiering only a
   small amount of the RAM.
   '''
@@ -320,7 +322,8 @@ def save_mo_hdf5(filename,geo_info,geo_spec,ao_spec,mo_spec,
     
     ao_list = core.ao_creator(geo_spec,ao_spec,x=zz[0],y=zz[1],z=zz[2],N=N)
     core.mo_creator(ao_list,mo_spec,x=zz[0],y=zz[1],z=zz[2],N=N,
-                    vector=False,HDF5_save=fid,h5py=h5py,s=ii_z)
+                    vector=False,HDF5_save=fid,h5py=h5py,s=ii_z,
+                    numproc=options.numproc)
   
   return 0
 
