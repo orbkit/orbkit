@@ -3,13 +3,13 @@ from scipy.constants import value as physical_constants
 
 class QCinfo:
   def __init__(self):
-  self.geo_spec = None
-  self.geo_info = None
-  self.ao_spec  = None
-  self.mo_spec  = None
-  self.etot     = None
-  self.com      = None
-  self.coc      = None
+    self.geo_spec = None
+    self.geo_info = None
+    self.ao_spec  = None
+    self.mo_spec  = None
+    self.etot     = None
+    self.com      = None
+    self.coc      = None
 #  self.mo_coeff = None
 #  self.mo_occup = None
 #  self.mo_energ = None

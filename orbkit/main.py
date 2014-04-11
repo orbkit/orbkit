@@ -39,7 +39,8 @@ from scipy import integrate
 
 # Import orbkit modules
 from orbkit import core, grid, extras, read, output, integrate
-from orbkit import options,display
+from orbkit import options, display
+from orbkit.qcinfo import QCinfo
 
 def tForm(string,T,extra=''):
   t_diff = int(round(T))
@@ -69,8 +70,11 @@ def main():
   ''' Controls the execution of all computational tasks.
   '''
   # Set some global variables
-  global geo_spec, geo_info, ao_spec, mo_spec
+  global qc
   global rho, delta_rho
+  
+  # initialize quantum chemical information variable
+  qc = QCinfo()
   
   # Display program information
   display.display(lgpl_short)
@@ -83,10 +87,9 @@ def main():
     options.all_mo = True
   
   # Read the input file
-  geo_spec, geo_info, ao_spec, mo_spec = read.main_read(
-                                options.filename, 
-                                itype=options.itype, 
-                                all_mo=options.all_mo)
+  qc = read.main_read(options.filename,
+                      itype=options.itype,
+                      all_mo=options.all_mo)
 
   display.display('\nSetting up the grid...')
   if options.grid_file is not None: 
@@ -94,7 +97,7 @@ def main():
       options.vector = core.dvec
   
   if options.random_grid:
-    grid.random_grid(geo_spec)
+    grid.random_grid(qc.geo_spec)
     if (options.vector is None):
       options.vector = core.dvec
   else:
@@ -107,17 +110,17 @@ def main():
     raise IOError('The option --center is only supported for regular grids.')
   elif options.center_grid is not None:
     atom = options.center_grid
-    if not((isinstance(atom, int)) and (0 < atom <= len(geo_spec))):
+    if not((isinstance(atom, int)) and (0 < atom <= len(qc.geo_spec))):
       display.display('Not a Valid atom number for centering the grid')
       display.display('Coose a valid index:')
-      for i,j in enumerate(geo_info): display.display('\t%s\t%d' % (i[0], j+1))
+      for i,j in enumerate(qc.geo_info): display.display('\t%s\t%d' % (i[0], j+1))
       if options.interactive:
-        while not((isinstance(atom, int)) and (0 < atom <= len(geo_spec))):
+        while not((isinstance(atom, int)) and (0 < atom <= len(qc.geo_spec))):
           atom = raw_input('Please insert a correct index: ')
       else: raise IOError('Insert a correct filename for the MO list!')
 
     # Center the grid to a specific atom and (0,0,0) if requested
-    grid.center_grid(geo_spec[atom])
+    grid.center_grid(qc.geo_spec[atom])
 
   if options.vector is not None:
     info = 'vectorized'
@@ -139,12 +142,12 @@ def main():
     
     # Call the function for actual calculation 
     if options.calc_mo != False:
-      data = extras.calc_mo(geo_spec, geo_info, ao_spec, mo_spec, fid_mo_list, 
-                drv=options.drv, vector=options.vector, 
+      data = extras.calc_mo(qc.geo_spec, qc.geo_info, qc.ao_spec, qc.mo_spec, 
+                fid_mo_list, drv=options.drv, vector=options.vector, 
                 otype=options.otype)
     elif options.mo_set != False: 
-      data = extras.mo_set(geo_spec, geo_info, ao_spec, mo_spec, fid_mo_list, 
-                drv=options.drv, vector=options.vector, 
+      data = extras.mo_set(qc.geo_spec, qc.geo_info, qc.ao_spec, qc.mo_spec, 
+                fid_mo_list, drv=options.drv, vector=options.vector, 
                 otype=options.otype)
     
     t.append(time.time()) # Final time
@@ -154,8 +157,8 @@ def main():
 
   if options.atom_projected_density is not None:
     atom = options.atom_projected_density
-    rho_atom, mulliken_charge = extras.compute_mulliken_charges(atom,geo_info,
-                        geo_spec,ao_spec,mo_spec,
+    rho_atom, mulliken_charge = extras.compute_mulliken_charges(atom,
+                        qc.geo_info,qc.geo_spec,qc.ao_spec,qc.mo_spec,
                         is_vector=(options.vector is not None))
     
     if not options.no_output:
@@ -164,7 +167,7 @@ def main():
       display.display('\nSaving to Hierarchical Data Format file (HDF5)...' +
                 '\n\t%(o)s' % {'o': fid})
       HDF5_File = output.hdf5_open(fid,mode='w')
-      data = {'geo_info':array(geo_info), 'geo_spec':array(geo_spec),
+      data = {'geo_info':array(qc.geo_info), 'geo_spec':array(qc.geo_spec),
             'atom_projected_density':rho_atom, 'atom':array(atom),
             'mulliken_charge':mulliken_charge,  
             'x':grid.x, 'y':grid.y, 'z':grid.z}
@@ -178,7 +181,7 @@ def main():
   
   if options.mo_tefd is not None:
     mos = options.mo_tefd
-    ao_list = core.ao_creator(geo_spec,ao_spec,
+    ao_list = core.ao_creator(qc.geo_spec,qc.ao_spec,
                               is_vector=(options.vector is not None))
     mo_tefd = []
     index = []
@@ -187,7 +190,8 @@ def main():
       index.append([])
       for ii_d in options.drv:
         display.display('\nMO-TEFD: %s->%s %s-component'%(i,j,ii_d))
-        tefd = extras.mo_transition_flux_density(i,j,geo_spec,ao_spec,mo_spec,
+        tefd = extras.mo_transition_flux_density(i,j,
+                                        qc.geo_spec,qc.ao_spec,qc.mo_spec,
                                         drv=ii_d,ao_list=ao_list,
                                         is_vector=(options.vector is not None))
         mo_tefd[-1].append(tefd)
@@ -199,7 +203,7 @@ def main():
       display.display('\nSaving to Hierarchical Data Format file (HDF5)...' +
                       '\n\t%(o)s' % {'o': fid})
       HDF5_File = output.hdf5_open(fid,mode='w')
-      data = {'geo_info':array(geo_info), 'geo_spec':array(geo_spec),
+      data = {'geo_info':array(qc.geo_info), 'geo_spec':array(qc.geo_spec),
               'mo_tefd:info':array(index), 'mo_tefd':array(mo_tefd), 
               'x':grid.x, 'y':grid.y, 'z':grid.z}
       output.hdf5_append(data,HDF5_File,name='')
@@ -213,13 +217,13 @@ def main():
   
   # Compute the (derivative of the) electron density 
   if options.no_slice:
-    data = core.rho_compute_no_slice(geo_spec, ao_spec, mo_spec, 
+    data = core.rho_compute_no_slice(qc.geo_spec, qc.ao_spec, qc.mo_spec, 
                                      drv=options.drv,
                                      is_vector=(options.vector is not None),
                                      return_components = False)
   
   else:
-    data = core.rho_compute(geo_spec, ao_spec, mo_spec, 
+    data = core.rho_compute(qc.geo_spec, qc.ao_spec, qc.mo_spec, 
                             drv=options.drv,
                             vector=options.vector,
                             numproc=options.numproc)
@@ -247,16 +251,16 @@ def main():
 
   # Generate the output requested 
   if not options.no_output:
-    output.main_output(rho,geo_info,geo_spec,
+    output.main_output(rho,qc.geo_info,qc.geo_spec,
                     outputname=options.outputname,
                     otype=options.otype,
-                    data_id='rho',mo_spec=mo_spec,
+                    data_id='rho',mo_spec=qc.mo_spec,
                     is_vector=(options.vector is not None))
     if options.drv is not None:
-      output.main_output(delta_rho,geo_info,geo_spec,
+      output.main_output(delta_rho,qc.geo_info,qc.geo_spec,
                     outputname=options.outputname,
                     otype=options.otype,
-                    data_id='delta_rho',mo_spec=mo_spec,
+                    data_id='delta_rho',mo_spec=qc.mo_spec,
                     drv=options.drv,
                     is_vector=(options.vector is not None))
       
