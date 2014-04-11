@@ -815,7 +815,7 @@ def read_gaussian_log(filename,all_mo=False,orientation='standard',
         c_mo += 1
       bNew = True                  # Indication for start of new MO section
     elif 'E(' in line:
-      qc.etot = float(line.split('=').split()[0])
+      qc.etot = float(line.split('=')[1].split()[0])
     else:
       # Check if we are in a specific section 
       if sec_flag == 1:
