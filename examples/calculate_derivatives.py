@@ -48,7 +48,7 @@ mo_list,mo = ok.main.main()
 
 # create output: molecular orbital data
 ok.output.HDF5_creator(\
-    mo_list,ok.options.outputname,ok.main.geo_info,ok.main.geo_spec,
+    mo_list,ok.options.outputname,ok.main.qc.geo_info,ok.main.qc.geo_spec,
     data_id='MO',               # name of data set
     append=None,                # create new file [default]
     data_only=False,            # include grid, structure, and MO data [default]
