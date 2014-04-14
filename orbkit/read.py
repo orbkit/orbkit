@@ -427,7 +427,6 @@ def read_gamess(filename, all_mo=False):
           elif tdm_flag == 'transition_info':
             if 'TRANSITION DIPOLE' and 'E*BOHR' in line:
               line_dummy = line.split()
-              print tdm_trans_states
               tdm_tdm[tdm_trans_states[0],tdm_trans_states[1],:] = \
                                  [float(line_dummy[3]),
                                   float(line_dummy[4]),
