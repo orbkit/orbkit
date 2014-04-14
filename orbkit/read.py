@@ -114,7 +114,7 @@ def read_molden(filename, all_mo=False):
     elif '[Atoms]' in line:
       # The section containing information about 
       # the molecular geometry begins 
-      sec_flag = 1
+      sec_flag = 'geo_info'
       if 'Angs' in line:
         # The length are given in Angstroem 
         # and have to be converted to Bohr radii --
@@ -125,12 +125,12 @@ def read_molden(filename, all_mo=False):
     elif '[GTO]' in line:
       # The section containing information about 
       # the atomic orbitals begins 
-      sec_flag = 2
+      sec_flag = 'ao_info'
       bNew = True                  # Indication for start of new AO section
     elif '[MO]' in line:
       # The section containing information about 
       # the molecular orbitals begins 
-      sec_flag = 3
+      sec_flag = 'mo_info'
       bNew = True                  # Indication for start of new MO section
     elif '[STO]' in line:
       # The orbkit does not support Slater type orbitals 
@@ -138,11 +138,11 @@ def read_molden(filename, all_mo=False):
       raise IOError('Not a valid input file')
     else:
       # Check if we are in a specific section 
-      if sec_flag == 1:
+      if sec_flag == 'geo_info':
         # Geometry section 
         qc.geo_info.append(thisline[0:3])
         qc.geo_spec.append([float(ii)*aa_to_au for ii in thisline[3:]])
-      if sec_flag == 2:
+      if sec_flag == 'ao_info':
         # Atomic orbital section 
         if thisline == []:
           # There is a blank line after every AO 
@@ -170,7 +170,7 @@ def read_molden(filename, all_mo=False):
           coeffs = numpy.array(line.replace('D','e').split(), dtype=numpy.float64)
           qc.ao_spec[-1]['coeffs'][ao_num,:] = coeffs
           ao_num += 1
-      if sec_flag == 3:
+      if sec_flag == 'mo_info':
         # Molecular orbital section 
         if '=' in line:
           # MO information section 
@@ -189,7 +189,8 @@ def read_molden(filename, all_mo=False):
             qc.mo_spec[-1][synonyms[info[0]]] = info[1]
         else:
           if ('[' or ']') in line:
-            sec_flag = 0 
+            # start of another section that is not (yet) read
+            sec_flag = 'unknown'
           else:
             # Append the MO coefficients 
             bNew = True            # Reset bNew
@@ -249,7 +250,7 @@ def read_gamess(filename, all_mo=False):
       if ' ATOM      ATOMIC                      COORDINATES' in line:
         # The section containing information about 
         # the molecular geometry begins 
-        sec_flag = 1
+        sec_flag = 'geo_info'
         geo_skip = 1
         atom_count = 1
         if '(BOHR)' in line:
@@ -263,18 +264,33 @@ def read_gamess(filename, all_mo=False):
       elif 'ATOMIC BASIS SET' in line:
         # The section containing information about 
         # the atomic orbitals begins 
-        sec_flag = 2
+        sec_flag = 'ao_info'
         ao_skip = 6
         at_type = []
       elif '          EIGENVECTORS' in line:
         # The section containing information about 
         # the molecular orbitals begins 
-        sec_flag = 3
+        sec_flag = 'mo_info'
         mo_skip = 1
         init_mo = False             # Initialize new MO section
         mo_new = False              # Indication for start of new MO section
         ene = False
         len_mo = 0
+      elif 'CIS TRANSITION DIPOLE MOMENTS AND' in line:
+        # Section containing transition dipole momemts and expectation values
+        # of dipole moments begins (CIS calculation)
+        sec_flag = 'tdm_info'
+        tdm_flag = 'unknown'
+      elif 'NUMBER OF STATES REQUESTED' in line:
+        # get the number of states for the transition dipole moment information
+        tdm_nstates = int(line.split('=')[1])
+        tdm_state_dipole = None
+      elif 'SPIN MULTIPLICITY' in line:
+        # odd way to get gound state multiplicity
+        gs_multi = int(line.split()[3])
+      elif 'FINAL' in line:
+        # get (last) energy
+        qc.etot = float(line.split()[4])
       elif ' NUMBER OF OCCUPIED ORBITALS (ALPHA)          =' in line:
         occ.append(int(thisline[-1]))
       elif ' NUMBER OF OCCUPIED ORBITALS (BETA )          =' in line:
@@ -287,10 +303,10 @@ def read_gamess(filename, all_mo=False):
         occ.append(int(thisline[-1]))
       else:
         # Check if we are in a specific section 
-        if sec_flag == 1:
+        if sec_flag == 'geo_info':
           if not geo_skip:
             if line == '\n':
-              sec_flag = 0
+              sec_flag = 'unknown'
               a = numpy.array(qc.geo_info)
             else:
               qc.geo_info.append([thisline[0],atom_count,thisline[1]])
@@ -299,10 +315,10 @@ def read_gamess(filename, all_mo=False):
           elif geo_skip:
             geo_skip -= 1
         
-        if sec_flag == 2:
+        if sec_flag == 'ao_info':
           if not ao_skip:
             if ' TOTAL NUMBER OF BASIS SET SHELLS' in line:
-              sec_flag = 0
+              sec_flag = 'unknown'
             else:
               if len(thisline) == 1:
                 # Read atom type 
@@ -328,14 +344,14 @@ def read_gamess(filename, all_mo=False):
                     AO[-1][-len(ao_type)+i_ao]['pnum'] += 1
           elif ao_skip:
             ao_skip -= 1
-        if sec_flag == 3:
+        if sec_flag == 'mo_info':
           if not mo_skip:
             if '...... END OF RHF CALCULATION ......' in line:
-              sec_flag = 0
+              sec_flag = 'unknown'
             else:
               if thisline == []:
                 if blast:
-                  sec_flag = 0
+                  sec_flag = 'unknown'
                   blast = False
                 blast = True
                 init_mo = True
@@ -366,8 +382,51 @@ def read_gamess(filename, all_mo=False):
                   qc.mo_spec[-ii]['coeffs'].append(float(line[16:].split()[init_len-ii]))
           elif mo_skip:
             mo_skip -= 1
-
-
+        if sec_flag == 'tdm_info':
+          # instead of giving the output in a useful human and machine readable 
+          # way, gamess output syntax differs for transitions involving the 
+          # ground state compared to transitions between excited states...
+          if tdm_state_dipole == None:
+            # initialize variables
+            tdm_state_dipole = numpy.zeros((tdm_nstates+1,3))
+            tdm_state_multiplicity = numpy.zeros(tdm_nstates+1)
+            tdm_state_energy = numpy.zeros(tdm_nstates+1)
+            tdm_tdm = numpy.zeros((tdm_nstates,tdm_nstates+1,3))
+          if 'GROUND STATE' and 'DIPOLE' in line:
+            tdm_state = 0
+            tdm_flag = 'state_info'
+          if 'EXPECTATION VALUE DIPOLE MOMENT FOR EXCITED STATE' in line:
+            tdm_state = int(line.split('STATE')[1])
+            tdm_flag = 'state_info'
+          if 'TRANSITION FROM THE GROUND STATE TO EXCITED STATE' in line:
+            tdm_trans_states = [0, int(line.split('EXCITED STATE')[1])]
+            tdm_flag = 'transition_info'
+          if 'TRANSITION BETWEEN EXCITED STATES' in line:
+            line_dummy = line.split('STATES')[1]
+            tdm_trans_states = [int(line_dummy.split('AND')[0]), 
+                                int(line_dummy.split('AND')[1])]
+            tdm_flag = 'transition_info'
+          if 'CIS NATURAL ORBITAL OCCUPATION NUMBERS FOR EXCITED STATE' in line:
+            sec_flag = 'unknown'
+            tdm_flag = 'unknown'
+          if tdm_flag == 'state_info':
+            if 'STATE MULTIPLICITY' in line:
+              tdm_state_multiplicity[tdm_state] = int(line.split('=')[1])
+            if 'STATE ENERGY' in line:
+              tdm_state_energy[tdm_state] = float(line.split('=')[1])
+            if 'STATE DIPOLE' and 'E*BOHR' in line:
+              line_dummy = line.split()
+              tdm_state_dipole = [float(line_dummy[3]),
+                                  float(line_dummy[4]),
+                                  float(line_dummy[5])]
+          elif tdm_flag == 'transition info':
+            if 'TRANSITION DIPOLE' and 'E*BOHR' in line:
+              line_dummy = line.split()
+              tdm_tdm[tdm_trans_states[0],tdm_trans_states[1],:] = \
+                                 [float(line_dummy[3]),
+                                  float(line_dummy[4]),
+                                  float(line_dummy[5])]
+         
   # Check usage of same atomic basis sets 
   basis_set = {}
   for ii in range(len(AO)):
@@ -407,7 +466,15 @@ def read_gamess(filename, all_mo=False):
       print 'occ_0'
       qc.mo_spec[ii]['occ_num'] += 1.0
       occ[0] -= 1
-    
+  
+  # save results from a CIS calculation to qc
+  tdm_state_energy[0]           = qc.etot
+  tdm_state_multiplicity[0]     = gs_multi
+  qc.tdm_states['multiplicity'] = tdm_state_multiplicity
+  qc.tdm_states['energy']       = tdm_state_energy
+  qc.tdm_states['dipole']       = tdm_state_dipole
+  qc.tdm_transitions['dipole']  = tdm_tdm
+  
   return qc
   # read_gamess 
 
@@ -431,7 +498,7 @@ def read_gaussian_fchk(filename, all_mo=False):
   flines = fid.readlines()      # Read the WHOLE file into RAM
   fid.close()                   # Close the file
   
-  sec_flag = 0
+  sec_flag = 'unknown'
   
   el_num = [0,0]
   index = 0
@@ -457,7 +524,7 @@ def read_gaussian_fchk(filename, all_mo=False):
     #elif 'Number of basis functions' in line:
       #basis_count = int(thisline[5])
     elif 'Atomic numbers'  in line:
-      sec_flag = 1
+      sec_flag = 'geo_info'
       index = 0
       at_num = int(thisline[-1])
       count = 0
@@ -465,7 +532,7 @@ def read_gaussian_fchk(filename, all_mo=False):
         for ii in range(at_num):
           qc.geo_info.append(['',ii,''])
     elif 'Integer atomic weights' in line:
-      sec_flag = 1
+      sec_flag = 'geo_info'
       index = 2
       at_num = int(thisline[-1])
       count = 0
@@ -476,12 +543,12 @@ def read_gaussian_fchk(filename, all_mo=False):
       qc.etot = float(thisline[3])
     elif 'Current cartesian coordinates' in line:
       at_num = int(thisline[-1])/3
-      sec_flag = 2
+      sec_flag = 'geo_pos'
       qc.geo_spec = []
       count = 0
       xyz = []
     elif 'Shell types' in line:
-      sec_flag = 3
+      sec_flag = 'ao_info'
       index = 'type'
       ao_num = int(thisline[-1])
       count = 0
@@ -489,7 +556,7 @@ def read_gaussian_fchk(filename, all_mo=False):
         for ii in range(ao_num):
           qc.ao_spec.append({})
     elif 'Number of primitives per shell' in line:
-      sec_flag = 3
+      sec_flag = 'ao_info'
       index = 'pnum'
       ao_num = int(thisline[-1])
       count = 0
@@ -497,7 +564,7 @@ def read_gaussian_fchk(filename, all_mo=False):
         for ii in range(ao_num):
           qc.ao_spec.append({})
     elif 'Shell to atom map' in line:
-      sec_flag = 3
+      sec_flag = 'ao_info'
       index = 'atom'
       ao_num = int(thisline[-1])
       count = 0
@@ -505,7 +572,7 @@ def read_gaussian_fchk(filename, all_mo=False):
         for ii in range(ao_num):
           qc.ao_spec.append({})
     elif 'Primitive exponents' in line:
-      sec_flag = 4
+      sec_flag = 'ao_coeffs'
       ao_num = int(thisline[-1])
       count = 0
       switch = 0
@@ -517,7 +584,7 @@ def read_gaussian_fchk(filename, all_mo=False):
           pnum = qc.ao_spec[ii]['pnum']
           qc.ao_spec[ii]['coeffs'] = numpy.zeros((pnum, 2))
     elif 'Contraction coefficients' in line:
-      sec_flag = 4
+      sec_flag = 'ao_coeffs'
       ao_num = int(thisline[-1])
       count = 0
       switch = 1
@@ -529,7 +596,7 @@ def read_gaussian_fchk(filename, all_mo=False):
           pnum = qc.ao_spec[ii]['pnum']
           qc.ao_spec[ii]['coeffs'] = numpy.zeros((pnum, 2))
     elif 'Orbital Energies' in line:
-      sec_flag = 5
+      sec_flag = 'mo_eorb'
       mo_num = int(thisline[-1])
       index = 0
       count = len(qc.mo_spec)
@@ -546,18 +613,18 @@ def read_gaussian_fchk(filename, all_mo=False):
                         })
         qc.mo_spec[-1]['sym'] = '%i.1' % len(qc.mo_spec)
     elif 'MO coefficients' in line:
-      sec_flag = 6
+      sec_flag = 'mo_coeffs'
       count = 0
       mo_num = int(thisline[-1])
     else:
       # Check if we are in a specific section 
-      if sec_flag == 1:
+      if sec_flag == 'geo_info':
         for ii in thisline:
           qc.geo_info[count][index] = ii
           count += 1
           if count == at_num:
-            sec_flag = 0
-      elif sec_flag == 2:
+            sec_flag = 'unknown'
+      elif sec_flag == 'geo_pos':
         for ii in thisline:
           xyz.append(float(ii))
           if len(xyz) == 3:
@@ -565,8 +632,8 @@ def read_gaussian_fchk(filename, all_mo=False):
             xyz = []
             count += 1
             if count == at_num:
-              sec_flag = 0
-      elif sec_flag == 3:
+              sec_flag = 'unknown'
+      elif sec_flag == 'ao_info':
         for ii in thisline:
           ii = int(ii)
           if index is 'type':
@@ -577,8 +644,8 @@ def read_gaussian_fchk(filename, all_mo=False):
           qc.ao_spec[count][index] = ii
           count += 1
           if count == ao_num:
-            sec_flag = 0
-      elif sec_flag == 4:
+            sec_flag = 'unknown'
+      elif sec_flag == 'ao_coeffs':
         for ii in thisline:
           qc.ao_spec[index]['coeffs'][count,switch] = float(ii)
           count += 1
@@ -587,14 +654,14 @@ def read_gaussian_fchk(filename, all_mo=False):
             index += 1
             count = 0
         if not ao_num:
-          sec_flag = 0
-      elif sec_flag == 5:
+          sec_flag = 'unknown'
+      elif sec_flag == 'mo_eorb':
         for ii in thisline:
           qc.mo_spec[count]['energy'] = float(ii)
           count += 1
           if index != 0 and not count % basis_count:
-            sec_flag = 0
-      elif sec_flag == 6:
+            sec_flag = 'unknown'
+      elif sec_flag == 'mo_coeffs':
         for ii in thisline:
           qc.mo_spec[index]['coeffs'][count] = float(ii)
           count += 1
@@ -602,7 +669,7 @@ def read_gaussian_fchk(filename, all_mo=False):
             count = 0
             index += 1
           if index != 0 and not index % basis_count:
-            sec_flag = 0
+            sec_flag = 'unknown'
   
   # Are all MOs requested for the calculation? 
   if not all_mo:
@@ -744,7 +811,7 @@ def read_gaussian_log(filename,all_mo=False,orientation='standard',
   basis_count = 0
   
   # Initialize some variables 
-  sec_flag = 0
+  sec_flag = 'unknown'
   skip = 0
   c_geo = 0
   c_ao = 0
@@ -767,7 +834,7 @@ def read_gaussian_log(filename,all_mo=False,orientation='standard',
       if i_geo == c_geo:
         qc.geo_info = []
         qc.geo_spec = []
-        sec_flag = 1
+        sec_flag = 'geo_info'
       c_geo += 1
       skip = 4
     elif 'Standard basis:' in line:
@@ -779,19 +846,19 @@ def read_gaussian_log(filename,all_mo=False,orientation='standard',
       # the atomic orbitals begins
       if i_ao == c_ao:
         qc.ao_spec = []
-        sec_flag = 2
+        sec_flag = 'ao_info'
       c_ao += 1
       basis_count = 0
       bNew = True                  # Indication for start of new AO section
     elif 'Orbital symmetries:' in line:
-        sec_flag = 3
+        sec_flag = 'mo_sym'
         add = ''
         orb_sym = []
     elif 'Orbital Coefficients:' in line:
       # The section containing information about 
       # the molecular orbitals begins 
       if (i_mo == c_mo):
-        sec_flag = 4
+        sec_flag = 'mo_info'
         mo_type = count['molecular orbitals'][i_mo]
         qc.mo_spec = []
         offset = 0
@@ -818,22 +885,22 @@ def read_gaussian_log(filename,all_mo=False,orientation='standard',
       qc.etot = float(line.split('=')[1].split()[0])
     else:
       # Check if we are in a specific section 
-      if sec_flag == 1:
+      if sec_flag == 'geo_info':
         if not skip:
           qc.geo_info.append([thisline[1],thisline[0],thisline[1]])
           qc.geo_spec.append([aa_to_au*float(ij) for ij in thisline[3:]])
           if '-----------' in flines[il+1]:
-            sec_flag = 0
+            sec_flag = 'unknown'
         else:
           skip -= 1
-      if sec_flag == 2:
+      if sec_flag == 'ao_info':
         # Atomic orbital section 
         if ' ****' in line: 
           # There is a line with stars after every AO 
           bNew = True
           # If there is an additional blank line, the AO section is complete
           if flines[il+1].split() == []:
-            sec_flag = 0
+            sec_flag = 'unknown'
         elif bNew:
           # The following AOs are for which atom? 
           bNew = False
@@ -860,9 +927,9 @@ def read_gaussian_log(filename,all_mo=False,orientation='standard',
             qc.ao_spec[-len(ao_type)+i_ao]['coeffs'][ao_num,:] = [coeffs[0],
                                                                coeffs[1+i_ao]]
           ao_num += 1
-      if sec_flag == 3:
+      if sec_flag == 'mo_sym':
         if 'The electronic state is' in line:
-          sec_flag = 0
+          sec_flag = 'unknown'
         else:
           info = line[18:].replace('(','').replace(')','').split()
           if 'Alpha' in line:
@@ -871,7 +938,7 @@ def read_gaussian_log(filename,all_mo=False,orientation='standard',
             add = '(b)'
           for i in info:
             orb_sym.append(i + add)   
-      if sec_flag == 4:
+      if sec_flag == 'mo_info':
         # Molecular orbital section 
         info = line[:21].split()
         coeffs = line[21:].split()
@@ -898,7 +965,7 @@ def read_gaussian_log(filename,all_mo=False,orientation='standard',
             bNew = True
             offset = index[-1]+1
             if index[-1]+1 == len(orb_sym):
-              sec_flag = 0
+              sec_flag = 'unknown'
               orb_sym = []
   
   # Are all MOs requested for the calculation? 

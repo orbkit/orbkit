@@ -10,6 +10,11 @@ class QCinfo:
     self.etot     = 0.
     self.com      = None
     self.coc      = None
+    # transition dipole information
+    self.tdm_states      = {'multiplicity' : None,
+                            'energy'       : None,
+                            'dipole'       : None}
+    self.tdm_transitions = {'dipole'       : None}
 #  self.mo_coeff = None
 #  self.mo_occup = None
 #  self.mo_energ = None
