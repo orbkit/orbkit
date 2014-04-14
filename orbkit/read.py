@@ -392,9 +392,14 @@ def read_gamess(filename, all_mo=False):
             tdm_state_multiplicity = numpy.zeros(tdm_nstates+1)
             tdm_state_energy = numpy.zeros(tdm_nstates+1)
             tdm_tdm = numpy.zeros((tdm_nstates,tdm_nstates+1,3))
-          if 'GROUND STATE' and 'DIPOLE' in line:
-            tdm_state = 0
-            tdm_flag = 'state_info'
+          if 'GROUND STATE (SCF) DIPOLE=' in line:
+            line_dummy = line.split()
+            # ground state dipole is in debye...convert to atomic units
+            tdm_state_dipole[0,:] = numpy.multiply( 
+                                    [float(line_dummy[4]),
+                                     float(line_dummy[5]),
+                                     float(line_dummy[6])],0.393430307)
+
           if 'EXPECTATION VALUE DIPOLE MOMENT FOR EXCITED STATE' in line:
             tdm_state = int(line.split('STATE')[1])
             tdm_flag = 'state_info'
@@ -416,12 +421,13 @@ def read_gamess(filename, all_mo=False):
               tdm_state_energy[tdm_state] = float(line.split('=')[1])
             if 'STATE DIPOLE' and 'E*BOHR' in line:
               line_dummy = line.split()
-              tdm_state_dipole = [float(line_dummy[3]),
-                                  float(line_dummy[4]),
-                                  float(line_dummy[5])]
-          elif tdm_flag == 'transition info':
+              tdm_state_dipole[tdm_state,:] = [float(line_dummy[3]),
+                                               float(line_dummy[4]),
+                                               float(line_dummy[5])]
+          elif tdm_flag == 'transition_info':
             if 'TRANSITION DIPOLE' and 'E*BOHR' in line:
               line_dummy = line.split()
+              print tdm_trans_states
               tdm_tdm[tdm_trans_states[0],tdm_trans_states[1],:] = \
                                  [float(line_dummy[3]),
                                   float(line_dummy[4]),
