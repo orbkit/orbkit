@@ -92,10 +92,10 @@ class QCinfo:
 #  self.mo_energ = None
 #  self.mo_sym   = None
 
-  def get_com(self,nuc_list=[]):
+  def get_com(self,nuc_list=None):
     self.com   = numpy.zeros(3)
     total_mass = 0.
-    if not nuc_list:
+    if nuc_list is None:
       nuc_list = range(len(self.geo_spec)) # iterate over all nuclei
     for ii in nuc_list:
       nuc_mass    = standard_mass(self.geo_info[ii][0])
