@@ -89,9 +89,10 @@
 <li class="toctree-l2"><a class="reference internal" href="funcref.html#central-variables">Central Variables</a></li>
 <li class="toctree-l2"><a class="reference internal" href="funcref.html#module-orbkit.options">orbkit.options</a></li>
 <li class="toctree-l2"><a class="reference internal" href="funcref.html#module-orbkit.main">orbkit.main</a></li>
-<li class="toctree-l2"><a class="reference internal" href="funcref.html#module-orbkit.core">orbkit.core</a></li>
-<li class="toctree-l2"><a class="reference internal" href="funcref.html#module-orbkit.grid">orbkit.grid</a></li>
 <li class="toctree-l2"><a class="reference internal" href="funcref.html#module-orbkit.read">orbkit.read</a></li>
+<li class="toctree-l2"><a class="reference internal" href="funcref.html#module-orbkit.grid">orbkit.grid</a></li>
+<li class="toctree-l2"><a class="reference internal" href="funcref.html#module-orbkit.core">orbkit.core</a></li>
+<li class="toctree-l2"><a class="reference internal" href="funcref.html#module-orbkit.display">orbkit.display</a></li>
 <li class="toctree-l2"><a class="reference internal" href="funcref.html#module-orbkit.output">orbkit.output</a></li>
 <li class="toctree-l2"><a class="reference internal" href="funcref.html#module-orbkit.extras">orbkit.extras</a></li>
 </ul>
@@ -490,33 +491,27 @@ all modules and functions available.</p>
 
 <span class="n">mayavi_yes</span> <span class="o">=</span> <span class="bp">False</span>
 
-<span class="c"># name of in- and out-file</span>
-<span class="n">fid_in</span>  <span class="o">=</span> <span class="s">&#39;h2o.md&#39;</span>
-<span class="n">fid_out</span> <span class="o">=</span> <span class="s">&#39;h2o_example&#39;</span>
-
 <span class="c"># import the functions of orbkit (import function </span>
 <span class="c"># ok that imports all other functions)</span>
 <span class="kn">from</span> <span class="nn">orbkit</span> <span class="kn">import</span> <span class="n">ok</span>
 
-<span class="c"># initialize orbkit with default parameters and options</span>
-<span class="n">ok</span><span class="o">.</span><span class="n">main</span><span class="o">.</span><span class="n">init</span><span class="p">()</span>
+<span class="c"># name and type of input file</span>
+<span class="n">fid_in</span>  <span class="o">=</span> <span class="s">&#39;h2o.md&#39;</span>
+<span class="n">itype</span>   <span class="o">=</span> <span class="s">&#39;molden&#39;</span>
+
+<span class="c"># number of subprocesses</span>
+<span class="n">numproc</span> <span class="o">=</span> <span class="mi">4</span>
 
 <span class="c"># set grid parameters </span>
 <span class="n">ok</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">N_</span>   <span class="o">=</span> <span class="p">[</span>  <span class="mi">50</span><span class="p">,</span>   <span class="mi">52</span><span class="p">,</span>   <span class="mi">54</span><span class="p">]</span>
 <span class="n">ok</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">max_</span> <span class="o">=</span> <span class="p">[</span> <span class="mf">6.5</span><span class="p">,</span>  <span class="mf">6.5</span><span class="p">,</span>   <span class="mf">6.5</span><span class="p">]</span>
 <span class="n">ok</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">min_</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mf">6.5</span><span class="p">,</span> <span class="o">-</span><span class="mf">6.5</span><span class="p">,</span>  <span class="o">-</span><span class="mf">6.5</span><span class="p">]</span>
 
-<span class="c"># set options (see end of options.py for names of all options);</span>
-<span class="c"># [default] indicates that this is the default value anyway</span>
-<span class="n">ok</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">filename</span>     <span class="o">=</span> <span class="n">fid_in</span>            <span class="c"># in-file name</span>
-<span class="n">ok</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">itype</span>        <span class="o">=</span> <span class="s">&#39;molden&#39;</span>          <span class="c"># in-file type [default]</span>
-<span class="n">ok</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">outputname</span>   <span class="o">=</span> <span class="n">fid_out</span>           <span class="c"># out-file name</span>
-<span class="n">ok</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">otype</span>        <span class="o">=</span> <span class="s">&#39;h5&#39;</span>              <span class="c"># out-file type [default]</span>
-<span class="n">ok</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">numproc</span>      <span class="o">=</span> <span class="mi">1</span>                 <span class="c"># number of processes [default]</span>
-<span class="c">#ok.options.quiet        = True              # do not print information</span>
+<span class="c"># define variable to store quantum chemical information</span>
+<span class="n">qc</span> <span class="o">=</span> <span class="n">ok</span><span class="o">.</span><span class="n">QCinfo</span><span class="p">()</span>
 
 <span class="c"># open molden file and read parameters</span>
-<span class="n">geo_spec</span><span class="p">,</span> <span class="n">geo_info</span><span class="p">,</span> <span class="n">ao_spec</span><span class="p">,</span> <span class="n">mo_spec</span> <span class="o">=</span> <span class="n">ok</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">main_read</span><span class="p">(</span><span class="n">ok</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span>
+<span class="n">qc</span> <span class="o">=</span> <span class="n">ok</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">main_read</span><span class="p">(</span><span class="n">fid_in</span><span class="p">,</span><span class="n">itype</span><span class="o">=</span><span class="n">itype</span><span class="p">)</span>
 
 <span class="c"># initialize grid</span>
 <span class="n">ok</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">grid_init</span><span class="p">()</span>
@@ -529,12 +524,13 @@ all modules and functions available.</p>
 
 <span class="c"># get only the information of selected MO</span>
 <span class="n">Selected_mo_spec</span> <span class="o">=</span> <span class="p">[]</span>
-<span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">mo_spec</span><span class="p">)):</span>
-  <span class="k">if</span> <span class="n">mo_spec</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="s">&#39;sym&#39;</span><span class="p">]</span> <span class="ow">in</span> <span class="n">selected_MO</span><span class="p">:</span>
-    <span class="n">Selected_mo_spec</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mo_spec</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+<span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">qc</span><span class="o">.</span><span class="n">mo_spec</span><span class="p">)):</span>
+  <span class="k">if</span> <span class="n">qc</span><span class="o">.</span><span class="n">mo_spec</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="s">&#39;sym&#39;</span><span class="p">]</span> <span class="ow">in</span> <span class="n">selected_MO</span><span class="p">:</span>
+    <span class="n">Selected_mo_spec</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">qc</span><span class="o">.</span><span class="n">mo_spec</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
 
 <span class="c"># calculate MO</span>
-<span class="n">mo_list</span> <span class="o">=</span> <span class="n">ok</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">rho_compute</span><span class="p">(</span><span class="n">geo_spec</span><span class="p">,</span><span class="n">ao_spec</span><span class="p">,</span><span class="n">Selected_mo_spec</span><span class="p">,</span><span class="n">calc_mo</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>    
+<span class="n">mo_list</span> <span class="o">=</span> <span class="n">ok</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">rho_compute</span><span class="p">(</span><span class="n">qc</span><span class="o">.</span><span class="n">geo_spec</span><span class="p">,</span><span class="n">qc</span><span class="o">.</span><span class="n">ao_spec</span><span class="p">,</span>
+                              <span class="n">Selected_mo_spec</span><span class="p">,</span><span class="n">calc_mo</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span><span class="n">numproc</span><span class="o">=</span><span class="n">numproc</span><span class="p">)</span>    
 
 <span class="c"># plot the results</span>
 <span class="n">x</span> <span class="o">=</span> <span class="n">ok</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">x</span>
@@ -644,7 +640,7 @@ all modules and functions available.</p>
 
 <span class="c"># create output: molecular orbital data</span>
 <span class="n">ok</span><span class="o">.</span><span class="n">output</span><span class="o">.</span><span class="n">HDF5_creator</span><span class="p">(</span>\
-    <span class="n">mo_list</span><span class="p">,</span><span class="n">ok</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">outputname</span><span class="p">,</span><span class="n">ok</span><span class="o">.</span><span class="n">main</span><span class="o">.</span><span class="n">geo_info</span><span class="p">,</span><span class="n">ok</span><span class="o">.</span><span class="n">main</span><span class="o">.</span><span class="n">geo_spec</span><span class="p">,</span>
+    <span class="n">mo_list</span><span class="p">,</span><span class="n">ok</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">outputname</span><span class="p">,</span><span class="n">ok</span><span class="o">.</span><span class="n">main</span><span class="o">.</span><span class="n">qc</span><span class="o">.</span><span class="n">geo_info</span><span class="p">,</span><span class="n">ok</span><span class="o">.</span><span class="n">main</span><span class="o">.</span><span class="n">qc</span><span class="o">.</span><span class="n">geo_spec</span><span class="p">,</span>
     <span class="n">data_id</span><span class="o">=</span><span class="s">&#39;MO&#39;</span><span class="p">,</span>               <span class="c"># name of data set</span>
     <span class="n">append</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>                <span class="c"># create new file [default]</span>
     <span class="n">data_only</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>            <span class="c"># include grid, structure, and MO data [default]</span>

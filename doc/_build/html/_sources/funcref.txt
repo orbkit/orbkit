@@ -129,7 +129,6 @@ Options for developers
 .. autofunction:: orbkit.options.get_options
 .. autofunction:: orbkit.options.check_options
 .. autofunction:: orbkit.options.check_if_exists
-.. autofunction:: orbkit.options.reset_grid
 
 Parameters
 ..........

@@ -494,8 +494,8 @@ def rho_compute(geo_spec,ao_spec,mo_spec,calc_mo=False,vector=None,drv=None,
   drv : string or list of strings {None,'x','y', or 'z'}, optional
     If not None, computes the analytical derivative of the requested 
     quantities with respect to DRV.
-   numproc : int
-     Specifies number of subprocesses for multiprocessing.
+  numproc : int
+    Specifies number of subprocesses for multiprocessing.
   grid : module or class, global
     Contains the grid, i.e., grid.x, grid.y, and grid.z.
 

@@ -30,11 +30,9 @@ import numpy
 # Import orbkit modules
 from orbkit import grid, options
 from orbkit.display import display
-  
 
 def main_output(data,geo_info,geo_spec,outputname='new',otype='h5',
-        data_id='rho',ao_spec=None,mo_spec=None,no_hdf5=False,
-        is_vector=False,is_mo_output=False,drv=None):
+                drv=None,no_hdf5=False,is_vector=False,**kwargs):
   '''Creates the requested output.
   '''
   print_waring = False
@@ -53,8 +51,7 @@ def main_output(data,geo_info,geo_spec,outputname='new',otype='h5',
     if 'h5' in otype and not no_hdf5:
       display('Saving to Hierarchical Data Format file (HDF5)...' +
               '\n\t%(o)s.h5' % {'o': fid % f})
-      HDF5_creator(d,(fid % f),geo_info,geo_spec,data_id=data_id,
-              ao_spec=ao_spec,mo_spec=mo_spec,is_mo_output=is_mo_output)
+      HDF5_creator(d,(fid % f),geo_info,geo_spec,**kwargs)
     
     if 'am' in otype or 'hx' in otype and not print_waring:
       if is_vector: print_waring = True
@@ -82,46 +79,6 @@ def main_output(data,geo_info,geo_spec,outputname='new',otype='h5',
   
   return 0
   #--- main_output ---
-
-def output_creator(rho,filename,geo_info,geo_spec):
-  '''Creates a simple plain text output. (outdated)
-  '''
-  #--- Open an empty file ---
-  fid = open('%(f)s.cb' % {'f': filename}, 'w')
-  
-  #--- Write the type and the position of the atoms in the header ---
-  fid.write('Position of the nuclei (in a_0)\n')
-  string = 'Number of nuclei:\t%d\n' % len(geo_info)
-  for ii in range(len(geo_info)):
-    for geo in geo_info[ii]:
-      string += '%s\t' % geo
-    for geo in geo_spec[ii]:
-      string += '%0.8f\t' % geo
-    string += '\n' 
-  
-  fid.write(string)
-  
-  # Write grid information for grid reconstruction
-  fid.write('Grid data (in a_0)\n')
-  fid.write(grid.grid_display(quiet=True,start=''))
-  
-  # Write density information
-  fid.write('Data section begins (z runs fastest)  \n')
-  
-  string = ''
-  for rr in range(len(grid.x)):
-    for ss in range(len(grid.y)):
-      for tt in range(len(grid.z)):
-        string += '%+g\n' % rho[rr,ss,tt]
-      string += '\n'
-  
-  fid.write(string)
-  
-  #--- Close the file ---
-  fid.close()
-  
-  return 0
-  #--- output_creator ---
 
 def cube_creator(rho,filename,geo_info,geo_spec):
   '''Creates a plain text Gaussian cube file.
@@ -387,7 +344,7 @@ def hdf52dict(group,HDF5_file):
 
 def HDF5_creator(data,outputname,geo_info,geo_spec,data_id='rho',append=None,
             data_only=False,ao_spec=None,mo_spec=None,is_mo_output=False,
-            x=None,y=None,z=None):
+            x=None,y=None,z=None,**kwargs):
   '''Creates an HDF5 file (Hierarchical Data Format) output.
   '''
   import h5py
@@ -518,12 +475,8 @@ def HDF5_creator_MO(MO,filename,geo_info,geo_spec,mo_spec):
   return 0
   #--- HDF5_creator ---
 
-
-def colormap_creator(rho,filename,n_peaks=5,start=0.01,stop=0.999,peak_width=0.1):
-  '''Creates a .cmap colormap for ZIBAmira adjusted to the density.
-
-  **Default:** Isosurface values between 1% and 99.9% of the total density.
-  '''
+def determine_rho_range(rho,start=0.01,stop=0.999):
+  '''Get a range for the isosurface values.'''
   #--- Sort the density values ---
   a=numpy.reshape(rho,-1)
   a=a[numpy.argsort(a)]
@@ -533,6 +486,17 @@ def colormap_creator(rho,filename,n_peaks=5,start=0.01,stop=0.999,peak_width=0.1
   n2=int(stop*len(a))
   rho_min=a[n1]
   rho_max=a[n2]
+  
+  return rho_min, rho_max
+
+def colormap_creator(rho,filename,n_peaks=5,start=0.01,stop=0.999,peak_width=0.1):
+  '''Creates a .cmap colormap for ZIBAmira adjusted to the density.
+
+  **Default:** Isosurface values between 1% and 99.9% of the total density.
+  '''
+  
+  #--- Where do we have the start and stop percentage? ---
+  rho_min, rho_max = determine_rho_range(rho,start=start,stop=stop)
   
   #--- Compute the distance between two isosurface values ---
   delta_peak =(rho_max-rho_min)/(n_peaks-1)
@@ -615,6 +579,46 @@ def hx_network_creator(rho,filename):
   fid.close()  
   
   return 0
+
+def output_creator(rho,filename,geo_info,geo_spec):
+  '''Creates a simple plain text output. (outdated)
+  '''
+  #--- Open an empty file ---
+  fid = open('%(f)s.cb' % {'f': filename}, 'w')
+  
+  #--- Write the type and the position of the atoms in the header ---
+  fid.write('Position of the nuclei (in a_0)\n')
+  string = 'Number of nuclei:\t%d\n' % len(geo_info)
+  for ii in range(len(geo_info)):
+    for geo in geo_info[ii]:
+      string += '%s\t' % geo
+    for geo in geo_spec[ii]:
+      string += '%0.8f\t' % geo
+    string += '\n' 
+  
+  fid.write(string)
+  
+  # Write grid information for grid reconstruction
+  fid.write('Grid data (in a_0)\n')
+  fid.write(grid.grid_display(quiet=True,start=''))
+  
+  # Write density information
+  fid.write('Data section begins (z runs fastest)  \n')
+  
+  string = ''
+  for rr in range(len(grid.x)):
+    for ss in range(len(grid.y)):
+      for tt in range(len(grid.z)):
+        string += '%+g\n' % rho[rr,ss,tt]
+      string += '\n'
+  
+  fid.write(string)
+  
+  #--- Close the file ---
+  fid.close()
+  
+  return 0
+  #--- output_creator ---
 
 #--- Class for the creation of a mo amira network ---
 #### NOT FINISHED YET ###
