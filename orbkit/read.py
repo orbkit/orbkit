@@ -186,6 +186,13 @@ def read_molden(filename, all_mo=False):
           if info[0] in MO_keys: 
             if info[0] != 'Sym':
               info[1] = float(info[1])
+            elif not '.' in info[1]:
+              from re import search
+              a = search(r'\d+', info[1]).group()
+              if a == info[1]:
+                info[1] = '%s.1' % a
+              else:
+                info[1] = info[1].replace(a, '%s.' % a)
             qc.mo_spec[-1][synonyms[info[0]]] = info[1]
         else:
           if ('[' or ']') in line:
@@ -717,7 +724,6 @@ def read_gaussian_log(filename,all_mo=False,orientation='standard',
 
   '''
   
-  
   fid    = open(filename,'r')      # Open the file
   flines = fid.readlines()         # Read the WHOLE file into RAM
   fid.close()                      # Close the file
@@ -755,7 +761,7 @@ def read_gaussian_log(filename,all_mo=False,orientation='standard',
           count['geometry'] += 1
         if 'input orientation:' in line.lower():
           count['geometry_input'] += 1
-      elif 'Standard basis:' in line:
+      elif 'Standard basis:' in line or 'General basis read from cards:' in line:
         # Check if a cartesian basis has been applied
         if '(6D, 10F)' not in line:
           raise IOError('Please apply a Cartesian Gaussian Basis Sets (6D, 10F)!')

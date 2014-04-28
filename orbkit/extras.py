@@ -90,10 +90,23 @@ def mo_select(mo_spec, fid_mo_list):
                     {'m': fid_mo_list} + '\ne.g.\n\t1\t3\n\t2\t7\t9\n')
     
     #--- Check if the mos are specified ---
-    #--- by symmetry (e.g. 1.1 in moLPRO nomenclature) or ---
+    #--- by symmetry (e.g. 1.1 in MOLPRO nomenclature) or ---
     #--- by the number in the molden file (e.g. 1) ---
     selected_mo=list(set(all_mo))
-    if '.' in selected_mo[0]: sym_select = True
+    try: # Try to convert selections into integer
+      for i in selected_mo: 
+        int(i)
+    except ValueError:
+      sym_select = True
+      # Add '.' after molecular orbital number if missing
+      for i in range(len(selected_mo)):
+        if not '.' in selected_mo[i]:
+          from re import search
+          a = search(r'\d+', selected_mo[i]).group()
+          if a == selected_mo[i]:
+            selected_mo[i] = '%s.1' % a
+          else:
+            selected_mo[i] = selected_mo[i].replace(a, '%s.' % a)
     
     if sym_select:
       for k in range(len(mo_spec)):
