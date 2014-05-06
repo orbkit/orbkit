@@ -473,9 +473,9 @@ def read_gamess(filename, all_mo=False):
     if not occ[0] and occ[1]:
       qc.mo_spec[ii]['occ_num'] += 1.0
       occ[1] -= 1
-      print 'occ_1'
+      print('occ_1')
     if not occ[1] and occ[0]:
-      print 'occ_0'
+      print('occ_0')
       qc.mo_spec[ii]['occ_num'] += 1.0
       occ[0] -= 1
   

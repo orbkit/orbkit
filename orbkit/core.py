@@ -792,7 +792,7 @@ def rho_compute_no_slice(geo_spec,ao_spec,mo_spec,calc_mo=False,
   
   # Initialize a numpy array for the density 
   rho = numpy.zeros(N)
-  print N
+  print(N)
   # Calculate the density 
   for ii_mo in range(len(mo_list)): 
     rho += numpy.square(numpy.abs(mo_list[ii_mo])) * mo_spec[ii_mo]['occ_num']
@@ -898,13 +898,13 @@ def integration(matrix,x=None,y=None,z=None):
       r = x
       matrix = matrix[:,0,:]
     else:
-      print 'dim(z) = 1! No cylindrical coordinates...'
+      print('dim(z) = 1! No cylindrical coordinates...')
       return 255
     [Z,R] = numpy.meshgrid(z,r)
     integral = 2*numpy.pi*integrate.simps(R*matrix, r, axis=0, even='avg')
     integral = integrate.simps(integral, z, axis=0, even='avg')
   else: 
-    #print 'Error in integration! ndim is not 3 or 2...'
+    #print('Error in integration! ndim is not 3 or 2...')
     return numpy.sum(matrix)
   return integral
 

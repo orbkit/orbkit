@@ -62,8 +62,21 @@ y = ok.grid.y
 z = ok.grid.z
 
 # if selected, use mayavi2 to make isosurface plot
-if mayavi_yes == True:
+maya = False
+try:
     from enthought.mayavi import mlab
+    maya = True
+except Exception:
+    pass
+try:
+    from mayavi import mlab
+    maya = True
+except Exception:
+    pass
+
+if maya == False and mayavi_yes == True:
+    print('error importing mayavi')
+elif mayavi_yes == True:    
     src = mlab.pipeline.scalar_field(mo_list[0])
     mlab.pipeline.iso_surface(\
         src, contours=[0.001, ], opacity=0.3, color=(0, 0, 0.8))

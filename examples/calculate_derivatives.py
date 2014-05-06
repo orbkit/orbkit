@@ -74,14 +74,26 @@ ok.output.HDF5_creator(delta_mo_list,ok.options.outputname,None,None,
 x = ok.grid.x
 y = ok.grid.y
 z = ok.grid.z
+
+# test if mayavi exists and possibly plot
+maya = False
 try:
     from enthought.mayavi import mlab
+    maya = True
+except ImportError:
+    pass
+try:
+    from mayavi import mlab
+    maya = True
+except Exception:
+    pass
+
+if maya == False:
+    print('mayavi module could not be loaded and vector field cannot be shown')
+    print('load ' + ok.options.outputname + '.' + ok.options.otype + \
+            ' to visualize data yourself.')
+else:
     mo_num = 3
     mlab.quiver3d(x,y,z,delta_mo_list[0,mo_num,:],delta_mo_list[1,mo_num,:],\
                     delta_mo_list[2,mo_num,:],line_width=1.5,scale_factor=0.1)
     mlab.show()
-except ImportError:
-    print('ERROR!!! mayavi2 module is missing...')
-    print('\nYou need mayavi2 to plot the vector field.')
-    print('Load ' + ok.options.outputname + '.' + ok.options.otype + \
-            ' to visualize data yourself.')

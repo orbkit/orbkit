@@ -17,7 +17,7 @@ def init_display(name=None):
     except OSError:
       pass
     if not options.quiet:
-      print 'Writing log to %s\n' % path.relpath(log_fid)
+      print('Writing log to %s\n' % path.relpath(log_fid))
   is_initiated = True
 
 def display(string):
