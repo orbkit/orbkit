@@ -244,8 +244,8 @@ def main():
       'Skipping the reduction...\n')
     else:
       display.display('\nReducing the density with respect to the z-axis.\n')
-      #rho = integrate.simps(rho, grid.x, dx=grid.delta_[0], axis=0, even='avg')
-      #rho = integrate.simps(rho, grid.y, dx=grid.delta_[1], axis=0, even='avg')
+      rho = integrate.simps(rho, grid.x, dx=grid.delta_[0], axis=0, even='avg')
+      rho = integrate.simps(rho, grid.y, dx=grid.delta_[1], axis=0, even='avg')
   
   t.append(time.time()) # A new time step
 
