@@ -35,7 +35,6 @@ lgpl_short = '''This is orbkit.
 import os
 import resource
 import time
-#from scipy import integrate
 
 # Import orbkit modules
 from orbkit import core, grid, extras, read, output, integrate
@@ -243,6 +242,7 @@ def main():
       '\nSo far, reducing the density is not supported for the derivative of the density.\n'+ 
       'Skipping the reduction...\n')
     else:
+      from scipy import integrate
       display.display('\nReducing the density with respect to the z-axis.\n')
       rho = integrate.simps(rho, grid.x, dx=grid.delta_[0], axis=0, even='avg')
       rho = integrate.simps(rho, grid.y, dx=grid.delta_[1], axis=0, even='avg')
