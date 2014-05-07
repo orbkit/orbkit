@@ -1,5 +1,24 @@
 #!/usr/bin/env python
 # -*- coding: iso-8859-1 -*-
+'''Module for reading multiple output files of quantum chemical software with
+a subsequent ordering of the molecular orbital coefficients 
+(e.g. for the preparation of an interpolation). 
+
+Example for the Execution
+-------------------------
+
+# Create a list of input filenames
+fid_list = []
+for i in range(101):
+  fid_list.append('~/molden_files/%03d.molden' % (path,i))
+
+init_display(name = 'MO_ordering')  # Specify a filename for the oklog file 
+                                    # (We want a oklog file but we have no 
+                                    # options.outputname here.)
+
+# Start the read and the subsequent ordering routine.
+main_order(fid_list,itype='molden')
+'''
 
 from copy import deepcopy
 import numpy
@@ -312,16 +331,5 @@ def main_order(fid_list,itype='molden',
     if plt_dir is not None:
       display('\tPlotting ordered molecular orbitals')
       plot(MO_coeff[ii_s],symmetry=s,plt_dir=plt_dir[1],title='Ordered:')
- 
-fid_list = []
-path = '/home/vincpohl/Arbeit/gMDC_work/molden_files'
-for i in range(10):
-  fid_list.append('%s/avtz_8-9_mrci_2diss_mcscf.%03d.molden' % (path,i))
- 
-init_display(name = 'MO_ordering')  # Specify a filename for the oklog file 
-                                    # (We want a oklog file but we have no 
-                                    # options.outputname here.)
-
-main_order(fid_list)
 
 
