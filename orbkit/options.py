@@ -37,11 +37,11 @@ thismodule = sys.modules[__name__]
 from orbkit import grid
 
 available = ['filename','itype','outputname','otype',
-            'vector','grid_file','center_grid',
-            'numproc','mo_set','all_mo','drv',
-            'z_reduced_density','atom_projected_density','mo_tefd',
-            'quiet','no_log','no_output','no_slice','random_grid',
-            'interactive']
+             'vector','grid_file','center_grid',
+             'numproc','mo_set','all_mo','drv',
+             'z_reduced_density','atom_projected_density','mo_tefd',
+             'quiet','no_log','no_output','no_slice','random_grid',
+             'interactive']
 
 #__all__ = ['get_options','check_options','reset_grid',].extend(available)
 
