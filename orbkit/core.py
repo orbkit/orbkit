@@ -341,7 +341,9 @@ def mo_creator(ao_list,mo_spec,is_vector=False,
       f[dID][s,:,:] = a
     
     # Close the worker processes --
+    
     pool.close()
+    pool.join()
     
     f.close()
     return 0
@@ -664,6 +666,7 @@ def rho_compute(qc,calc_mo=False,vector=None,drv=None,numproc=1):
   
   # Close the worker processes --
   pool.close()
+  pool.join()
   
   if (not is_vector and not calc_mo):
     # Print the norm of the MOs 
