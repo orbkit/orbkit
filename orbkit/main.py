@@ -72,9 +72,6 @@ def main():
   global qc
   global rho, delta_rho
   
-  # initialize quantum chemical information variable
-  qc = QCinfo()
-  
   # Display program information
   display.display(lgpl_short)
   

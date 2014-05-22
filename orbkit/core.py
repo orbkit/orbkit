@@ -548,7 +548,7 @@ def rho_compute(qc,calc_mo=False,vector=None,drv=None,numproc=1):
   Spec['Derivative'] = drv
   Spec['is_vector'] = (vector is not None)
   
-  mo_num = len(Spec['mo_spec']
+  mo_num = len(Spec['mo_spec'])
   
   if vector is None:
     is_vector = False
@@ -578,7 +578,7 @@ def rho_compute(qc,calc_mo=False,vector=None,drv=None,numproc=1):
     display("calculation will be carried out with %d subprocesses." 
             % numproc)
   display("\nThere are %d contracted AOs and %d MOs to be calculated."
-            % (len(Spec['mo_spec'][0]['coeffs']), mo_num)))
+            % (len(Spec['mo_spec'][0]['coeffs']), mo_num))
   
   # Initialize some additional user information 
   status_old = 0

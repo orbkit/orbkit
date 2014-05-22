@@ -31,9 +31,6 @@ ok.grid.N_   = [  50,   52,   54]
 ok.grid.max_ = [ 6.5,  6.5,   6.5]
 ok.grid.min_ = [-6.5, -6.5,  -6.5]
 
-# define variable to store quantum chemical information
-qc = ok.QCinfo()
-
 # open molden file and read parameters
 qc = ok.read.main_read(fid_in,itype=itype)
 
@@ -46,15 +43,17 @@ print(ok.grid.get_grid())
 # define the molecular orbital to be calculated
 selected_MO = ['3.1']
 
+# Convert the qc class to a dictionary
+qc_select = qc.todict()
+
 # get only the information of selected MO
-Selected_mo_spec = []
+qc_select['mo_spec'] = []
 for k in range(len(qc.mo_spec)):
   if qc.mo_spec[k]['sym'] in selected_MO:
-    Selected_mo_spec.append(qc.mo_spec[k])
+    qc_select['mo_spec'].append(qc.mo_spec[k])
 
 # calculate MO
-mo_list = ok.core.rho_compute(qc.geo_spec,qc.ao_spec,
-                              Selected_mo_spec,calc_mo=True,numproc=numproc)    
+mo_list = ok.core.rho_compute(qc_select,calc_mo=True,numproc=numproc)    
 
 # plot the results
 x = ok.grid.x

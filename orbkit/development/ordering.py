@@ -69,31 +69,29 @@ def read(fid_list,itype='molden'):
   n_r = len(fid_list)
 
   for i,filename in enumerate(fid_list):
-    geo_spec, geo_info, ao_spec, mo_spec = main_read(filename,
-                                                itype=itype,
-                                                all_mo=True)
+    qc = main_read(filename, itype=itype, all_mo=True)
     # Geo Section
-    if i > 0 and (geo_old != geo_info):
+    if i > 0 and (geo_old != qc.geo_info):
       raise IOError('geo_info has changed!')
     else:
-      geo_old = deepcopy(geo_info)
-    Geo_Spec.append(geo_spec)
+      geo_old = deepcopy(qc.geo_info)
+    Geo_Spec.append(qc.geo_spec)
     # AO Section
     if (i > 0 and not
-        numpy.alltrue([numpy.allclose(ao_old[j]['coeffs'],ao_spec[j]['coeffs']) 
+        numpy.alltrue([numpy.allclose(ao_old[j]['coeffs'],qc.ao_spec[j]['coeffs']) 
                       for j in range(len(ao_old))]
                       )):
-      raise IOError('ao_spec has changed!')
+      raise IOError('qc.ao_spec has changed!')
     else:
-      ao_old = deepcopy(ao_spec)
+      ao_old = deepcopy(qc.ao_spec)
     # MO Section
     sym = {}
-    MO_Spec.append(mo_spec)
-    for mo in mo_spec:
+    MO_Spec.append(qc.mo_spec)
+    for mo in qc.mo_spec:
       key = mo['sym'].split('.')
       if key[1] not in sym.keys():
         sym[key[1]] = 0
-        n_ao[key[1]] = len(mo_spec[0]['coeffs'])
+        n_ao[key[1]] = len(qc.mo_spec[0]['coeffs'])
       sym[key[1]] += 1
     
     for k,it in sym.iteritems():
@@ -127,7 +125,7 @@ def read(fid_list,itype='molden'):
       MO_energy[sym[k]][i,index] = mo['energy']
       MO_occ[sym[k]][i,index] = mo['occ_num']
   
-  return Geo_Spec, geo_info, ao_spec, MO_coeff, MO_energy, MO_occ, sym
+  return Geo_Spec, qc.geo_info, qc.ao_spec, MO_coeff, MO_energy, MO_occ, sym
 
 def plot(mo_matrix,symmetry='1',plt_dir='Plots',title=''):
   '''Plots the all MO coefficients of one symmetry.'''
