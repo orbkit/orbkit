@@ -128,6 +128,52 @@ def cube_creator(rho,filename,geo_info,geo_spec):
   
   return 0
   #--- output_creator ---
+  
+def pdb_creator(filename,qc,c_type='Lowdin'):
+  aa_to_au = 1/0.52917720859
+  fid = open(filename,'w')
+  fid.write('HEADER    %s\n' % filename)
+  fid.write('AUTHOR    orbkit\n') 
+  string = ''
+  for il in range(len(qc.geo_spec)):
+    content = {'num': '%d'.rjust(6) % qc.geo_info[il][1],
+               'type': qc.geo_info[il][0].rjust(3),
+               'id': '1'.rjust(12)
+              }
+    string += 'ATOM  %(num)s%(type)s%(id)s    ' % content
+    for i in reversed(range(3)):
+      string += '%+.3f'.rjust(7)[:7] % (qc.geo_spec[il][i]/aa_to_au)
+    
+    charge = 0 if qc.pop_ana[c_type][il] == None else qc.pop_ana[c_type][il]
+    string += '  1.00  %+.6f\n' % charge
+  
+  string += ('MASTER        0    0    0    0    0    0    0    0 ' + 
+            '%s    0    0    0\nEND' % ('%s'.rjust(4) % len(qc.geo_spec)))
+  fid.write(string)
+  fid.close()
+
+def xyz_creator(filename,qc,c_type='Lowdin'):
+  aa_to_au = 1/0.52917720859
+  fid = open(filename,'w')  
+  if qc.etot == 0.:
+    fid.write('%d\n\n' % len(qc.geo_spec))
+  else:    
+    fid.write('%d\n Energy = %22.15f E_h\n' % (len(qc.geo_spec),qc.etot))
+  
+  string = ''
+  for il in range(len(qc.geo_spec)):
+    string += '%-2s' % qc.geo_info[il][0]
+    for i in range(3):
+      string += ' %22.15f'  % (qc.geo_spec[il][i]/aa_to_au)
+    
+    if qc.pop_ana[c_type][il] is not None:
+      string += ' %22.15f'  % qc.pop_ana[c_type][il]
+    
+    string += '\n'
+    
+  fid.write(string)
+  fid.close()
+  
 
 def amira_creator(rho,filename):
   '''Creates a ZIBAmira mesh file. (plain text)

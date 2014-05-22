@@ -82,11 +82,12 @@ class QCinfo:
     self.etot     = 0.
     self.com      = None
     self.coc      = None
+    self.pop_ana      = {}
     # transition dipole information
-    self.tdm_states      = {'multiplicity' : None,
-                            'energy'       : None,
-                            'dipole'       : None}
-    self.tdm_transitions = {'dipole'       : None}
+    self.states         = {'multiplicity' : None,
+                            'energy'       : None}
+    self.dipole_moments = None
+
 #  self.mo_coeff = None
 #  self.mo_occup = None
 #  self.mo_energ = None

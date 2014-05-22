@@ -239,15 +239,9 @@ def read_gamess(filename, all_mo=False):
   
   # Initialize the variables 
   qc = QCinfo()
-  occ = []
-  AO = []
-  sec_flag = False                 # A Flag specifying the current section
-  element_list = {}
-  element_count = 0
-  geo_skip = 0
-  ao_skip = 0
-  basis_count = 0
-  blast = False
+  sec_flag = None                 # A Flag specifying the current section
+  occ = []                        # occupation number of molecular orbitals
+  is_pop_ana = True               # Flag for population analysis for ground state
 
   # Go through the file line by line 
   with open(filename) as fileobject:
@@ -258,8 +252,8 @@ def read_gamess(filename, all_mo=False):
         # The section containing information about 
         # the molecular geometry begins 
         sec_flag = 'geo_info'
-        geo_skip = 1
-        atom_count = 1
+        geo_skip = 1     # Number of lines to skip
+        atom_count = 0  # Counter for Atoms
         if '(BOHR)' in line:
           # The length are given in Angstroem 
           # and have to be converted to Bohr radii 
@@ -272,8 +266,8 @@ def read_gamess(filename, all_mo=False):
         # The section containing information about 
         # the atomic orbitals begins 
         sec_flag = 'ao_info'
-        ao_skip = 6
-        at_type = []
+        ao_skip = 6                     # Number of lines to skip
+        AO = []                         # Atomic orbitals
       elif '          EIGENVECTORS' in line:
         # The section containing information about 
         # the molecular orbitals begins 
@@ -281,17 +275,24 @@ def read_gamess(filename, all_mo=False):
         mo_skip = 1
         init_mo = False             # Initialize new MO section
         mo_new = False              # Indication for start of new MO section
-        ene = False
+        ene = False                 # Indication to read energies of MOs
         len_mo = 0
-      elif 'CIS TRANSITION DIPOLE MOMENTS AND' in line:
-        # Section containing transition dipole momemts and expectation values
-        # of dipole moments begins (CIS calculation)
-        sec_flag = 'tdm_info'
-        tdm_flag = None
+        blast = False               # 
       elif 'NUMBER OF STATES REQUESTED' in line:
-        # get the number of states for the transition dipole moment information
-        tdm_nstates = int(line.split('=')[1])
-        tdm_state_dipole = None
+        # get the number of excited states and initialize variables for
+        # transition dipole moment and energies
+        exc_states = int(line.split('=')[1])  # Number of excited states
+        # Dipole moments matrix: Diagonal elements -> permanent dipole moments
+        # Off-diagonal elements -> transition dipole moments
+        qc.dipole_moments = numpy.zeros(((exc_states+1),(exc_states+1),3))
+        # Multiplicity of ground and excited states
+        qc.states['multiplicity'] = numpy.zeros(exc_states+1)
+        # Energies of ground and excited states
+        qc.states['energy'] = numpy.zeros(exc_states+1)
+        dm_flag = None                  # Flag specifying the dipole moments section
+      elif 'TRANSITION DIPOLE MOMENTS' in line:
+        # Section containing energies of excited states
+        sec_flag = 'dm_info'
       elif 'SPIN MULTIPLICITY' in line:
         # odd way to get gound state multiplicity
         gs_multi = int(line.split()[3])
@@ -308,15 +309,21 @@ def read_gamess(filename, all_mo=False):
         occ.append(int(thisline[-1]))
       elif ' NUMBER OF OCCUPIED ORBITALS (BETA ) KEPT IS    =' in line:
         occ.append(int(thisline[-1]))
+      elif 'TOTAL MULLIKEN AND LOWDIN ATOMIC POPULATIONS' in line and is_pop_ana == True:
+        # Read Mulliken and Lowdin Atomic Populations
+        sec_flag = 'pop_info'
+        pop_skip = 1
+        is_pop_ana == False
+        qc.pop_ana['Lowdin'] = []
+        qc.pop_ana['Mulliken'] = []
       else:
         # Check if we are in a specific section 
         if sec_flag == 'geo_info':
           if not geo_skip:
             if line == '\n':
               sec_flag = None
-              a = numpy.array(qc.geo_info)
             else:
-              qc.geo_info.append([thisline[0],atom_count,thisline[1]])
+              qc.geo_info.append([thisline[0],atom_count+1,thisline[1]])
               qc.geo_spec.append([float(ii)*aa_to_au for ii in thisline[2:]])
               atom_count += 1
           elif geo_skip:
@@ -367,7 +374,6 @@ def read_gamess(filename, all_mo=False):
               elif init_mo and not mo_new:
                 init_len = len(thisline)
                 for ii in range(len(thisline)):
-                  #len_mo += 1
                   qc.mo_spec.append({'coeffs': [],
                                   'energy': 0.0,
                                   'occ_num': 0.0,
@@ -389,55 +395,56 @@ def read_gamess(filename, all_mo=False):
                   qc.mo_spec[-ii]['coeffs'].append(float(line[16:].split()[init_len-ii]))
           elif mo_skip:
             mo_skip -= 1
-        if sec_flag == 'tdm_info':
+            
+        if sec_flag == 'dm_info':
           # instead of giving the output in a useful human and machine readable 
           # way, gamess output syntax differs for transitions involving the 
           # ground state compared to transitions between excited states...
-          if tdm_state_dipole == None:
-            # initialize variables
-            tdm_state_dipole = numpy.zeros((tdm_nstates+1,3))
-            tdm_state_multiplicity = numpy.zeros(tdm_nstates+1)
-            tdm_state_energy = numpy.zeros(tdm_nstates+1)
-            tdm_tdm = numpy.zeros((tdm_nstates,tdm_nstates+1,3))
           if 'GROUND STATE (SCF) DIPOLE=' in line:
-            line_dummy = line.split()
+            #line_dummy = line.split()
             # ground state dipole is in debye...convert to atomic units
-            tdm_state_dipole[0,:] = numpy.multiply( 
-                                    [float(line_dummy[4]),
-                                     float(line_dummy[5]),
-                                     float(line_dummy[6])],0.393430307)
-
+            for ii in range(3):
+              qc.dipole_moments[0][0][ii] = float(thisline[ii+4])*0.393430307
           if 'EXPECTATION VALUE DIPOLE MOMENT FOR EXCITED STATE' in line:
-            tdm_state = int(line.split('STATE')[1])
-            tdm_flag = 'state_info'
+            state = (int(line.replace('STATE', 'STATE ').split()[7]))
+            dm_flag = 'state_info'
           if 'TRANSITION FROM THE GROUND STATE TO EXCITED STATE' in line:
-            tdm_trans_states = [0, int(line.split('EXCITED STATE')[1])]
-            tdm_flag = 'transition_info'
+            state = [0,
+                     int(line.replace('STATE', 'STATE ').split()[8])]
+            dm_flag = 'transition_info'
           if 'TRANSITION BETWEEN EXCITED STATES' in line:
-            line_dummy = line.split('STATES')[1]
-            tdm_trans_states = [int(line_dummy.split('AND')[0]), 
-                                int(line_dummy.split('AND')[1])]
-            tdm_flag = 'transition_info'
-          if 'CIS NATURAL ORBITAL OCCUPATION NUMBERS FOR EXCITED STATE' in line:
+            state = [int(thisline[4]),
+                     int(line.replace('AND', 'AND ').split()[6])]
+            dm_flag = 'transition_info'
+          if 'NATURAL ORBITAL OCCUPATION NUMBERS FOR EXCITED STATE' in line:
             sec_flag = None
-            tdm_flag = None
-          if tdm_flag == 'state_info':
+            dm_flag = None
+          if dm_flag == 'state_info':
             if 'STATE MULTIPLICITY' in line:
-              tdm_state_multiplicity[tdm_state] = int(line.split('=')[1])
+              qc.states['multiplicity'][state] = int(line.split('=')[1])
             if 'STATE ENERGY' in line:
-              tdm_state_energy[tdm_state] = float(line.split('=')[1])
+              qc.states['energy'][state] = float(line.split('=')[1])
             if 'STATE DIPOLE' and 'E*BOHR' in line:
-              line_dummy = line.split()
-              tdm_state_dipole[tdm_state,:] = [float(line_dummy[3]),
-                                               float(line_dummy[4]),
-                                               float(line_dummy[5])]
-          elif tdm_flag == 'transition_info':
+              for ii in range(3):
+                qc.dipole_moments[state][state][ii] = float(thisline[ii+3])
+          elif dm_flag == 'transition_info':
             if 'TRANSITION DIPOLE' and 'E*BOHR' in line:
-              line_dummy = line.split()
-              tdm_tdm[tdm_trans_states[0],tdm_trans_states[1],:] = \
-                                 [float(line_dummy[3]),
-                                  float(line_dummy[4]),
-                                  float(line_dummy[5])]
+              for ii in range(3):
+                qc.dipole_moments[state[0]][state[1]][ii] = float(thisline[ii+3])
+                qc.dipole_moments[state[1]][state[0]][ii] = float(thisline[ii+3])
+        if sec_flag == 'pop_info':
+          if not pop_skip:
+            if  line == '\n':
+              sec_flag = None
+            else:
+              #if len(thisline) == 6:
+              print 'PENG PENG'
+              qc.pop_ana['Lowdin'].append(float(thisline[5]))
+              qc.pop_ana['Mulliken'].append(float(thisline[3]))
+          elif pop_skip:
+            pop_skip -= 1
+          
+          
          
   # Check usage of same atomic basis sets 
   basis_set = {}
@@ -479,13 +486,9 @@ def read_gamess(filename, all_mo=False):
       qc.mo_spec[ii]['occ_num'] += 1.0
       occ[0] -= 1
   
-  # save results from a CIS calculation to qc
-  tdm_state_energy[0]           = qc.etot
-  tdm_state_multiplicity[0]     = gs_multi
-  qc.tdm_states['multiplicity'] = tdm_state_multiplicity
-  qc.tdm_states['energy']       = tdm_state_energy
-  qc.tdm_states['dipole']       = tdm_state_dipole
-  qc.tdm_transitions['dipole']  = tdm_tdm
+  # Energy and Multiplicity for ground state
+  qc.states['energy'][0]           = qc.etot
+  qc.states['multiplicity'][0]     = gs_multi
   
   return qc
   # read_gamess 
