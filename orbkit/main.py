@@ -141,13 +141,17 @@ def main():
     
     # Call the function for actual calculation 
     if options.calc_mo != False:
-      data = extras.calc_mo(qc.geo_spec, qc.geo_info, qc.ao_spec, qc.mo_spec, 
-                fid_mo_list, drv=options.drv, vector=options.vector, 
-                otype=options.otype)
+      data = extras.calc_mo(qc,
+                            fid_mo_list,
+                            drv=options.drv,
+                            vector=options.vector,
+                            otype=options.otype)
     elif options.mo_set != False: 
-      data = extras.mo_set(qc.geo_spec, qc.geo_info, qc.ao_spec, qc.mo_spec, 
-                fid_mo_list, drv=options.drv, vector=options.vector, 
-                otype=options.otype)
+      data = extras.mo_set(qc,
+                           fid_mo_list,
+                           drv=options.drv,
+                           vector=options.vector,
+                           otype=options.otype)
     
     t.append(time.time()) # Final time
     good_bye_message(t)
@@ -156,9 +160,8 @@ def main():
 
   if options.atom_projected_density is not None:
     atom = options.atom_projected_density
-    rho_atom, mulliken_charge = extras.compute_mulliken_charges(atom,
-                        qc.geo_info,qc.geo_spec,qc.ao_spec,qc.mo_spec,
-                        is_vector=(options.vector is not None))
+    rho_atom, mulliken_charge = extras.compute_mulliken_charges(atom, qc,
+                                         is_vector=(options.vector is not None))
     
     if not options.no_output:
       from numpy import array
@@ -166,10 +169,12 @@ def main():
       display.display('\nSaving to Hierarchical Data Format file (HDF5)...' +
                 '\n\t%(o)s' % {'o': fid})
       HDF5_File = output.hdf5_open(fid,mode='w')
-      data = {'geo_info':array(qc.geo_info), 'geo_spec':array(qc.geo_spec),
-            'atom_projected_density':rho_atom, 'atom':array(atom),
-            'mulliken_charge':mulliken_charge,  
-            'x':grid.x, 'y':grid.y, 'z':grid.z}
+      data = {'geo_info': array(qc.geo_info), 
+              'geo_spec': array(qc.geo_spec),
+              'atom_projected_density': rho_atom, 
+              'atom': array(atom),
+              'mulliken_charge': mulliken_charge,  
+              'x': grid.x, 'y': grid.y, 'z': grid.z}
       output.hdf5_append(data,HDF5_File,name='')
       HDF5_File.close()
     
@@ -180,7 +185,8 @@ def main():
   
   if options.mo_tefd is not None:
     mos = options.mo_tefd
-    ao_list = core.ao_creator(qc.geo_spec,qc.ao_spec,
+    ao_list = core.ao_creator(qc.geo_spec, 
+                              qc.ao_spec, 
                               is_vector=(options.vector is not None))
     mo_tefd = []
     index = []
@@ -189,10 +195,11 @@ def main():
       index.append([])
       for ii_d in options.drv:
         display.display('\nMO-TEFD: %s->%s %s-component'%(i,j,ii_d))
-        tefd = extras.mo_transition_flux_density(i,j,
-                                        qc.geo_spec,qc.ao_spec,qc.mo_spec,
-                                        drv=ii_d,ao_list=ao_list,
-                                        is_vector=(options.vector is not None))
+        tefd = extras.mo_transition_flux_density(i, j,
+                                         qc,
+                                         drv=ii_d,
+                                         ao_list=ao_list,
+                                         is_vector=(options.vector is not None))
         mo_tefd[-1].append(tefd)
         index[-1].append('%s->%s:%s'%(i,j,ii_d))
     
@@ -202,9 +209,11 @@ def main():
       display.display('\nSaving to Hierarchical Data Format file (HDF5)...' +
                       '\n\t%(o)s' % {'o': fid})
       HDF5_File = output.hdf5_open(fid,mode='w')
-      data = {'geo_info':array(qc.geo_info), 'geo_spec':array(qc.geo_spec),
-              'mo_tefd:info':array(index), 'mo_tefd':array(mo_tefd), 
-              'x':grid.x, 'y':grid.y, 'z':grid.z}
+      data = {'geo_info': array(qc.geo_info),
+              'geo_spec': array(qc.geo_spec),
+              'mo_tefd:info': array(index),
+              'mo_tefd': array(mo_tefd),
+              'x': grid.x, 'y': grid.y, 'z': grid.z}
       output.hdf5_append(data,HDF5_File,name='')
       HDF5_File.close()
     
@@ -216,13 +225,13 @@ def main():
   
   # Compute the (derivative of the) electron density 
   if options.no_slice:
-    data = core.rho_compute_no_slice(qc.geo_spec, qc.ao_spec, qc.mo_spec, 
+    data = core.rho_compute_no_slice(qc,
                                      drv=options.drv,
                                      is_vector=(options.vector is not None),
                                      return_components = False)
   
   else:
-    data = core.rho_compute(qc.geo_spec, qc.ao_spec, qc.mo_spec, 
+    data = core.rho_compute(qc,
                             drv=options.drv,
                             vector=options.vector,
                             numproc=options.numproc)
@@ -235,12 +244,12 @@ def main():
   if options.z_reduced_density:
     if options.vector is not None:
       display.display(
-      '\nSo far, reducing the density is not supported for vectorized grids.\n'+ 
-      'Skipping the reduction...\n')
+      '\nSo far, reducing the density is not supported for ' + 
+      'vectorized grids.\nSkipping the reduction...\n')
     elif options.drv is not None:
       display.display(
-      '\nSo far, reducing the density is not supported for the derivative of the density.\n'+ 
-      'Skipping the reduction...\n')
+      '\nSo far, reducing the density is not supported for ' + 
+      'the derivative of the density.\nSkipping the reduction...\n')
     else:
       from scipy import integrate
       display.display('\nReducing the density with respect to the z-axis.\n')
@@ -252,17 +261,19 @@ def main():
   # Generate the output requested 
   if not options.no_output:
     output.main_output(rho,qc.geo_info,qc.geo_spec,
-                    outputname=options.outputname,
-                    otype=options.otype,
-                    data_id='rho',mo_spec=qc.mo_spec,
-                    is_vector=(options.vector is not None))
+                       outputname=options.outputname,
+                       otype=options.otype,
+                       data_id='rho',
+                       mo_spec=qc.mo_spec,
+                       is_vector=(options.vector is not None))
     if options.drv is not None:
       output.main_output(delta_rho,qc.geo_info,qc.geo_spec,
-                    outputname=options.outputname,
-                    otype=options.otype,
-                    data_id='delta_rho',mo_spec=qc.mo_spec,
-                    drv=options.drv,
-                    is_vector=(options.vector is not None))
+                         outputname=options.outputname,
+                         otype=options.otype,
+                         data_id='delta_rho',
+                         mo_spec=qc.mo_spec,
+                         drv=options.drv,
+                         is_vector=(options.vector is not None))
       
   t.append(time.time()) # Final time
   

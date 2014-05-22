@@ -108,4 +108,15 @@ class QCinfo:
   def get_coc(self):
     if self.coc is None: self.coc = 0
     return self.coc
+  
+  def todict(self):
+    dct = {}
+    keys = ['geo_spec',
+            'geo_info',
+            'ao_spec',
+            'mo_spec']
+    for key in keys:
+      dct[key] = getattr(self,key)
+    return dct
+  
 

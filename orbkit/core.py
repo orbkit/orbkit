@@ -42,8 +42,8 @@ from orbkit import grid,cSupportCode
 from orbkit.display import display
 
 def l_creator(geo_spec,ao_spec,sel_ao,exp_list=None,coeff_list=None,
-            at_pos=None,is_vector=False,drv=None,
-            x=None,y=None,z=None,N=None):
+              at_pos=None,is_vector=False,drv=None,
+              x=None,y=None,z=None,N=None):
   '''Calculates the contracted atomic orbitals of quantum number l or its
   derivative with respect to a specific variable (e.g. drv = 'x' or drv = 0)
   for the atomic orbitals: ao_spec[sel_ao].
@@ -157,8 +157,8 @@ def l_creator(geo_spec,ao_spec,sel_ao,exp_list=None,coeff_list=None,
   # l_creator 
 
 def ao_creator(geo_spec,ao_spec,exp_list=False,
-            is_vector=False,drv=None,
-            x=None,y=None,z=None,N=None):
+               is_vector=False,drv=None,
+               x=None,y=None,z=None,N=None):
   '''Calculates all contracted atomic orbitals or its
   derivatives with respect to a specific variable (e.g. drv = 'x' or drv = 0).
   
@@ -470,8 +470,7 @@ def slice_rho(xx):
     return 0
   # slice_rho 
 
-def rho_compute(geo_spec,ao_spec,mo_spec,calc_mo=False,vector=None,drv=None,
-                numproc=1):
+def rho_compute(qc,calc_mo=False,vector=None,drv=None,numproc=1):
   '''Calculate the density, the molecular orbitals, or the derivatives thereof.
   
   orbkit divides 3-dimensional regular grids into 2-dimensional slices and 
@@ -480,12 +479,14 @@ def rho_compute(geo_spec,ao_spec,mo_spec,calc_mo=False,vector=None,drv=None,
   The computational tasks are distributed to the worker processes.
   
   **Parameters:**
-  
-  geo_spec : array_like, shape=(3,NATOMS) 
+  qc : class or dict
+    QCinfo class or dictionary containing the following attributes/keys.
     See `Central Variables`_ for details.
-  ao_spec : List of dictionaries
+  qc.geo_spec : array_like, shape=(3,NATOMS) 
     See `Central Variables`_ for details.
-  mo_spec : List of dictionaries
+  qc.ao_spec : List of dictionaries
+    See `Central Variables`_ for details.
+  qc.mo_spec : List of dictionaries
     See `Central Variables`_ for details.
   calc_mo : bool, optional
     If True, the computation of  the molecular orbitals requested is only
@@ -513,10 +514,10 @@ def rho_compute(geo_spec,ao_spec,mo_spec,calc_mo=False,vector=None,drv=None,
     - rho, delta_rho
   
   mo_list : numpy.ndarray, shape=((NMO,) + N)
-    Contains the NMO=len(mo_spec) molecular orbitals on a grid.
+    Contains the NMO=len(qc.mo_spec) molecular orbitals on a grid.
   delta_mo_list : numpy.ndarray, shape=((NDRV,NMO) + N)
     Contains the derivatives with respect to drv (NDRV=len(drv)) of the 
-    NMO=len(mo_spec) molecular orbitals on a grid.
+    NMO=len(qc.mo_spec) molecular orbitals on a grid.
   mo_norm : numpy.ndarray, shape=(NMO,)
     Contains the numerical norms of the molecular orbitals.
   rho : numpy.ndarray, shape=(N)
@@ -539,12 +540,15 @@ def rho_compute(geo_spec,ao_spec,mo_spec,calc_mo=False,vector=None,drv=None,
   # by the function slice_rho 
   global Spec
   
-  Spec = {'geo_spec': geo_spec, 
-          'ao_spec': ao_spec, 
-          'mo_spec': mo_spec, 
-          'calc_mo': calc_mo, 
-          'Derivative': drv, 
-          'is_vector': (vector is not None)}  
+  if isinstance(qc,dict):
+    Spec = qc
+  else:
+    Spec = qc.todict()
+  Spec['calc_mo'] = calc_mo
+  Spec['Derivative'] = drv
+  Spec['is_vector'] = (vector is not None)
+  
+  mo_num = len(Spec['mo_spec']
   
   if vector is None:
     is_vector = False
@@ -574,7 +578,7 @@ def rho_compute(geo_spec,ao_spec,mo_spec,calc_mo=False,vector=None,drv=None,
     display("calculation will be carried out with %d subprocesses." 
             % numproc)
   display("\nThere are %d contracted AOs and %d MOs to be calculated."
-            % (len(mo_spec[0]['coeffs']), len(mo_spec)))
+            % (len(Spec['mo_spec'][0]['coeffs']), mo_num)))
   
   # Initialize some additional user information 
   status_old = 0
@@ -583,10 +587,10 @@ def rho_compute(geo_spec,ao_spec,mo_spec,calc_mo=False,vector=None,drv=None,
   
   # Make slices 
   # Initialize an array to store the results 
-  mo_norm = numpy.zeros((len(mo_spec),))
+  mo_norm = numpy.zeros((mo_num,))
   if calc_mo:
-    mo_list = numpy.zeros(((len(mo_spec),) if drv is None 
-            else (len(drv),len(mo_spec))) + tuple(N))
+    mo_list = numpy.zeros(((mo_num,) if drv is None 
+            else (len(drv),mo_num)) + tuple(N))
   else:
     rho = numpy.zeros(N)
     if is_drv:
@@ -673,7 +677,7 @@ def rho_compute(geo_spec,ao_spec,mo_spec,calc_mo=False,vector=None,drv=None,
       else:
         norm = mo_norm[ii_mo]*grid.d3r
       display("\t%(m).6f\tMO %(n)s" 
-                % {'m':norm, 'n':mo_spec[ii_mo]['sym']})
+                % {'m':norm, 'n':Spec['mo_spec'][ii_mo]['sym']})
   
   if calc_mo:
     return mo_list
@@ -687,18 +691,21 @@ def rho_compute(geo_spec,ao_spec,mo_spec,calc_mo=False,vector=None,drv=None,
     return rho, delta_rho
   # rho_compute 
 
-def rho_compute_no_slice(geo_spec,ao_spec,mo_spec,calc_mo=False,
-                is_vector=False,drv=None,return_components=False):
+def rho_compute_no_slice(qc,calc_mo=False,is_vector=False,drv=None,
+                         return_components=False):
   '''Calculates the density, the molecular orbitals, or the derivatives thereof
   without slicing the grid.
   
   **Parameters:**
   
-  geo_spec : array_like, shape=(3,NATOMS) 
+  qc : class or dict
+    QCinfo class or dictionary containing the following attributes/keys.
     See `Central Variables`_ for details.
-  ao_spec : List of dictionaries
+  qc.geo_spec : array_like, shape=(3,NATOMS) 
     See `Central Variables`_ for details.
-  mo_spec : List of dictionaries
+  qc.ao_spec : List of dictionaries
+    See `Central Variables`_ for details.
+  qc.mo_spec : List of dictionaries
     See `Central Variables`_ for details.
   calc_mo : bool, optional
     If True, the computation of  the molecular orbitals requested is only
@@ -746,10 +753,10 @@ def rho_compute_no_slice(geo_spec,ao_spec,mo_spec,calc_mo=False,
     Contains the derivatives with respect to drv (NDRV=len(drv)) of the 
     NAO=len(ao_spec) atomic orbitals on a grid.
   mo_list : numpy.ndarray, shape=((NMO,) + N)
-    Contains the NMO=len(mo_spec) molecular orbitals on a grid.
+    Contains the NMO=len(qc.mo_spec) molecular orbitals on a grid.
   delta_mo_list : numpy.ndarray, shape=((NDRV,NMO) + N)
     Contains the derivatives with respect to drv (NDRV=len(drv)) of the 
-    NMO=len(mo_spec) molecular orbitals on a grid.
+    NMO=len(qc.mo_spec) molecular orbitals on a grid.
   mo_norm : numpy.ndarray, shape=(NMO,)
     Contains the numerical norms of the molecular orbitals.
   rho : numpy.ndarray, shape=(N)
@@ -758,6 +765,14 @@ def rho_compute_no_slice(geo_spec,ao_spec,mo_spec,calc_mo=False,
     Contains the derivatives with respect to drv (NDRV=len(drv)) of 
     the density on a grid.
   '''
+  if not isinstance(qc,dict):
+    qc = qc.todict()
+  
+  #FIXME inaccurate implementation
+  geo_spec = qc['geo_spec']
+  ao_spec = qc['ao_spec']
+  mo_spec = qc['mo_spec']
+  
   
   if drv is not None:
     try:
