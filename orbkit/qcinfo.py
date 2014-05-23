@@ -42,6 +42,7 @@ def read_nist():
   f.close()
   
   nist_mass = []
+  nuclear_charge = []
   index = None
   new = True
   
@@ -80,18 +81,18 @@ class QCinfo:
     self.ao_spec  = []
     self.mo_spec  = []
     self.etot     = 0.
-    self.com      = None
-    self.coc      = None
-    self.pop_ana      = {}
+    self.com      = 'Center of mass can be calculated with self.get_com().'
+    self.coc      = 'Center of charge can be calculated with self.get_coc().'
+    self.pop_ana  = {}
     # transition dipole information
     self.states         = {'multiplicity' : None,
-                            'energy'       : None}
+                           'energy'       : None}
     self.dipole_moments = None
-
-#  self.mo_coeff = None
-#  self.mo_occup = None
-#  self.mo_energ = None
-#  self.mo_sym   = None
+    
+#    self.mo_coeff = None
+#    self.mo_occup = None
+#    self.mo_energ = None
+#    self.mo_sym   = None
 
   def get_com(self,nuc_list=None):
     self.com   = numpy.zeros(3)
@@ -106,7 +107,13 @@ class QCinfo:
     return self.com
 
   def get_coc(self):
-    if self.coc is None: self.coc = 0
+    self.coc     = numpy.zeros(3)
+    total_charge = 0.
+    for ii in range(len(self.geo_info)):
+      nuc_charge    = float(self.geo_info[ii][2])
+      self.coc     += numpy.multiply(self.geo_spec[ii],nuc_charge)
+      total_charge += nuc_charge
+    self.coc = self.coc/total_charge
     return self.coc
   
   def todict(self):
@@ -118,5 +125,3 @@ class QCinfo:
     for key in keys:
       dct[key] = getattr(self,key)
     return dct
-  
-
