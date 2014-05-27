@@ -42,7 +42,6 @@ def read_nist():
   f.close()
   
   nist_mass = []
-  nuclear_charge = []
   index = None
   new = True
   
