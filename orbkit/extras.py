@@ -239,11 +239,9 @@ def mo_set(qc, fid_mo_list,
     
     if options.z_reduced_density:
       if vector is not None:
-        display('\nSo far, reducing the density is not 
-                   supported for vectorized grids.\n')
+        display('\nSo far, reducing the density is not supported for vectorized grids.\n')
       elif drv is not None:
-        display('\nSo far, reducing the density is not 
-                   supported for the derivative of the density.\n')
+        display('\nSo far, reducing the density is not supported for the derivative of the density.\n')
       else:
         rho = integrate.simps(rho, grid.x, dx=grid.delta_[0], axis=0, even='avg')
         rho = integrate.simps(rho, grid.y, dx=grid.delta_[1], axis=0, even='avg')

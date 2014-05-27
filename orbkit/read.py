@@ -438,7 +438,7 @@ def read_gamess(filename, all_mo=False):
               sec_flag = None
             else:
               #if len(thisline) == 6:
-              print 'PENG PENG'
+              print('PENG PENG')
               qc.pop_ana['Lowdin'].append(float(thisline[5]))
               qc.pop_ana['Mulliken'].append(float(thisline[3]))
           elif pop_skip:
