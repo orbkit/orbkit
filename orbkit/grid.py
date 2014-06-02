@@ -24,8 +24,6 @@ License along with orbkit.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
 # Import general modules
-import csv 
-import os
 import sys
 
 import numpy

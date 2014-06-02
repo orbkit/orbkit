@@ -44,8 +44,8 @@ within :mod:`orbkit.main`.
 
 	       - Shape: (number of primitives, 2)
 
-	       :1st element: coefficient
-	       :2nd element: exponent
+	       :1st element: exponent
+	       :2nd element: coefficient
 
 
 

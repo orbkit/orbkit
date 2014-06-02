@@ -26,7 +26,7 @@ License along with orbkit.  If not, see <http://www.gnu.org/licenses/>.
 import copy
 import numpy
 
-from orbkit.core import l_deg, lquant, orbit
+from orbkit.core import l_deg, lquant, orbit, exp
 from orbkit.display import display
 from orbkit.qcinfo import QCinfo
 
@@ -49,13 +49,11 @@ def main_read(filename,itype='molden',all_mo=False):
   '''
   display('Opened \n\t%s\n' % filename)
   
-  itypes = ['molden', 'gamess', 'gaussian.log', 'gaussian.fchk']
-  
   # What kind of input file has to be read?
   reader = {'molden': read_molden, 
-          'gamess': read_gamess, 
-          'gaussian.log': read_gaussian_log, 
-          'gaussian.fchk': read_gaussian_fchk}
+            'gamess': read_gamess, 
+            'gaussian.log': read_gaussian_log, 
+            'gaussian.fchk': read_gaussian_fchk}
   display('Loading %s file...' % itype)
   
   # Return required data
@@ -221,9 +219,8 @@ def read_molden(filename, all_mo=False):
   return qc
   # read_molden 
 
-def read_gamess(filename, all_mo=False):
+def read_gamess(filename, all_mo=False,read_properties=False):
   '''Reads all information desired from a Gamess-US output file.
-  
   **Parameters:**
   
     filename : str
@@ -236,7 +233,10 @@ def read_gamess(filename, all_mo=False):
   qc (class QCinfo) with attributes geo_spec, geo_info, ao_spec, mo_spec, etot :
       See `Central Variables`_ for details.
   '''
-  
+  #a='A1'
+  #sym={}
+  #if a not in sym.keys(): sym[a] = 1
+  #else: sym[a] += 1
   # Initialize the variables 
   qc = QCinfo()
   sec_flag = None                 # A Flag specifying the current section
@@ -274,31 +274,8 @@ def read_gamess(filename, all_mo=False):
         sec_flag = 'mo_info'
         mo_skip = 1
         init_mo = False             # Initialize new MO section
-        mo_new = False              # Indication for start of new MO section
-        ene = False                 # Indication to read energies of MOs
-        len_mo = 0
-        blast = False               # 
-      elif 'NUMBER OF STATES REQUESTED' in line:
-        # get the number of excited states and initialize variables for
-        # transition dipole moment and energies
-        exc_states = int(line.split('=')[1])  # Number of excited states
-        # Dipole moments matrix: Diagonal elements -> permanent dipole moments
-        # Off-diagonal elements -> transition dipole moments
-        qc.dipole_moments = numpy.zeros(((exc_states+1),(exc_states+1),3))
-        # Multiplicity of ground and excited states
-        qc.states['multiplicity'] = numpy.zeros(exc_states+1)
-        # Energies of ground and excited states
-        qc.states['energy'] = numpy.zeros(exc_states+1)
-        dm_flag = None                  # Flag specifying the dipole moments section
-      elif 'TRANSITION DIPOLE MOMENTS' in line:
-        # Section containing energies of excited states
-        sec_flag = 'dm_info'
-      elif 'SPIN MULTIPLICITY' in line:
-        # odd way to get gound state multiplicity
-        gs_multi = int(line.split()[3])
-      elif 'FINAL' in line:
-        # get (last) energy
-        qc.etot = float(line.split()[4])
+        info_key = None             # A Flag specifying the energy and symmetry section
+        len_mo = 0                  # Number of MOs
       elif ' NUMBER OF OCCUPIED ORBITALS (ALPHA)          =' in line:
         occ.append(int(thisline[-1]))
       elif ' NUMBER OF OCCUPIED ORBITALS (BETA )          =' in line:
@@ -309,13 +286,38 @@ def read_gamess(filename, all_mo=False):
         occ.append(int(thisline[-1]))
       elif ' NUMBER OF OCCUPIED ORBITALS (BETA ) KEPT IS    =' in line:
         occ.append(int(thisline[-1]))
-      elif 'TOTAL MULLIKEN AND LOWDIN ATOMIC POPULATIONS' in line and is_pop_ana == True:
-        # Read Mulliken and Lowdin Atomic Populations
-        sec_flag = 'pop_info'
-        pop_skip = 1
-        is_pop_ana == False
-        qc.pop_ana['Lowdin'] = []
-        qc.pop_ana['Mulliken'] = []
+      elif read_properties:
+        if 'NUMBER OF STATES REQUESTED' in line:
+          # get the number of excited states and initialize variables for
+          # transition dipole moment and energies
+          exc_states = int(line.split('=')[1])  # Number of excited states
+          # Dipole moments matrix: Diagonal elements -> permanent dipole moments
+          # Off-diagonal elements -> transition dipole moments
+          qc.dipole_moments = numpy.zeros(((exc_states+1),(exc_states+1),3))
+          # Multiplicity of ground and excited states
+          qc.states['multiplicity'] = numpy.zeros(exc_states+1)
+          # Energies of ground and excited states
+          qc.states['energy'] = numpy.zeros(exc_states+1)
+          qc.states['energy'][0]           = qc.etot
+          qc.states['multiplicity'][0]     = gs_multi
+          dm_flag = None                  # Flag specifying the dipole moments section
+        elif 'TRANSITION DIPOLE MOMENTS' in line:
+          # Section containing energies of excited states
+          sec_flag = 'dm_info'
+            # Energy and Multiplicity for ground state
+        elif 'SPIN MULTIPLICITY' in line:
+          # odd way to get gound state multiplicity
+          gs_multi = int(line.split()[3])
+        elif 'FINAL' in line:
+          # get (last) energy
+          qc.etot = float(line.split()[4])
+        elif 'TOTAL MULLIKEN AND LOWDIN ATOMIC POPULATIONS' in line and is_pop_ana == True:
+          # Read Mulliken and Lowdin Atomic Populations
+          sec_flag = 'pop_info'
+          pop_skip = 1
+          is_pop_ana == False
+          qc.pop_ana['Lowdin'] = []
+          qc.pop_ana['Mulliken'] = []
       else:
         # Check if we are in a specific section 
         if sec_flag == 'geo_info':
@@ -329,7 +331,7 @@ def read_gamess(filename, all_mo=False):
           elif geo_skip:
             geo_skip -= 1
         
-        if sec_flag == 'ao_info':
+        elif sec_flag == 'ao_info':
           if not ao_skip:
             if ' TOTAL NUMBER OF BASIS SET SHELLS' in line:
               sec_flag = None
@@ -358,20 +360,15 @@ def read_gamess(filename, all_mo=False):
                     AO[-1][-len(ao_type)+i_ao]['pnum'] += 1
           elif ao_skip:
             ao_skip -= 1
-        if sec_flag == 'mo_info':
+        elif sec_flag == 'mo_info':
           if not mo_skip:
             if '...... END OF RHF CALCULATION ......' in line:
               sec_flag = None
             else:
               if thisline == []:
-                if blast:
-                  sec_flag = None
-                  blast = False
-                blast = True
                 init_mo = True
-                mo_new = False
-                ene = False
-              elif init_mo and not mo_new:
+                info_key = None
+              elif init_mo:
                 init_len = len(thisline)
                 for ii in range(len(thisline)):
                   qc.mo_spec.append({'coeffs': [],
@@ -380,17 +377,18 @@ def read_gamess(filename, all_mo=False):
                                   'sym': ''
                                   })
                 init_mo = False
-                mo_new = True
-                blast = False
-              elif len(thisline) == init_len and ene == False:
+                info_key = 'energy'
+              elif len(thisline) == init_len and info_key == 'energy':
+                print thisline
                 for ii in range(init_len,0,-1):
                   qc.mo_spec[-ii]['energy'] = float(thisline[init_len-ii])
-                ene = True
-              elif len(thisline) == init_len and ene == True:
+                info_key = 'symmetry'
+              elif len(thisline) == init_len and info_key == 'symmetry':
                 for ii in range(init_len,0,-1):
                   len_mo += 1
                   qc.mo_spec[-ii]['sym'] = '%d.%s' % (len_mo-1, thisline[init_len-ii])
-              elif thisline != [] and not init_mo and mo_new:
+                info_key = 'coeffs'
+              elif thisline != [] and info_key == 'coeffs':
                 for ii in range(init_len,0,-1):
                   qc.mo_spec[-ii]['coeffs'].append(float(line[16:].split()[init_len-ii]))
           elif mo_skip:
@@ -401,7 +399,6 @@ def read_gamess(filename, all_mo=False):
           # way, gamess output syntax differs for transitions involving the 
           # ground state compared to transitions between excited states...
           if 'GROUND STATE (SCF) DIPOLE=' in line:
-            #line_dummy = line.split()
             # ground state dipole is in debye...convert to atomic units
             for ii in range(3):
               qc.dipole_moments[0][0][ii] = float(thisline[ii+4])*0.393430307
@@ -410,11 +407,11 @@ def read_gamess(filename, all_mo=False):
             dm_flag = 'state_info'
           if 'TRANSITION FROM THE GROUND STATE TO EXCITED STATE' in line:
             state = [0,
-                     int(line.replace('STATE', 'STATE ').split()[8])]
+                      int(line.replace('STATE', 'STATE ').split()[8])]
             dm_flag = 'transition_info'
           if 'TRANSITION BETWEEN EXCITED STATES' in line:
             state = [int(thisline[4]),
-                     int(line.replace('AND', 'AND ').split()[6])]
+                      int(line.replace('AND', 'AND ').split()[6])]
             dm_flag = 'transition_info'
           if 'NATURAL ORBITAL OCCUPATION NUMBERS FOR EXCITED STATE' in line:
             sec_flag = None
@@ -437,14 +434,10 @@ def read_gamess(filename, all_mo=False):
             if  line == '\n':
               sec_flag = None
             else:
-              #if len(thisline) == 6:
-              print 'PENG PENG'
               qc.pop_ana['Lowdin'].append(float(thisline[5]))
               qc.pop_ana['Mulliken'].append(float(thisline[3]))
           elif pop_skip:
-            pop_skip -= 1
-          
-          
+            pop_skip -= 1          
          
   # Check usage of same atomic basis sets 
   basis_set = {}
@@ -486,10 +479,6 @@ def read_gamess(filename, all_mo=False):
       qc.mo_spec[ii]['occ_num'] += 1.0
       occ[0] -= 1
   
-  # Energy and Multiplicity for ground state
-  qc.states['energy'][0]           = qc.etot
-  qc.states['multiplicity'][0]     = gs_multi
-  
   return qc
   # read_gamess 
 
@@ -521,7 +510,6 @@ def read_gaussian_fchk(filename, all_mo=False):
   ao_num = 0 
   switch = 0
   qc = QCinfo()
-  count_mo = 0
   
   # Set a counter for the AOs 
   basis_count = 0
@@ -830,8 +818,6 @@ def read_gaussian_log(filename,all_mo=False,orientation='standard',
   c_geo = 0
   c_ao = 0
   c_mo = 0
-  occ = []
-  eigen = []
   orb_sym = []
   qc = QCinfo()
   index = []

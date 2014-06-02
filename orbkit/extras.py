@@ -24,7 +24,6 @@ License along with orbkit.  If not, see <http://www.gnu.org/licenses/>.
 
 # Import general modules
 import os
-import sys
 
 import numpy
 from scipy import integrate
@@ -212,9 +211,7 @@ def mo_set(qc, fid_mo_list,
       os.remove('%s.h5' % options.outputname)
     except OSError:
       pass
-  
-  return_data = []
-  
+    
   for i_file,j_file in enumerate(mo['mo_in_file']):
     display('\nStarting with the %d. element of the mo-List (%s)...\n\t' % 
                 (i_file+1,fid_mo_list) + str(j_file) + 
@@ -326,7 +323,6 @@ def save_mo_hdf5(filename,geo_info,geo_spec,ao_spec,mo_spec,
   
   #--- Slice the grid ---
   sDim = 0
-  sNum = N[sDim]
   N[sDim] = 1
   xyz = [x,y,z]
   zz = [x,y,z]

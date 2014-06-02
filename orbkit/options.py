@@ -48,7 +48,7 @@ available = ['filename','itype','outputname','otype',
 itypes = ['molden', 
           'gamess', 
           'gaussian.log', 
-          'gaussian.fchk']              #: Specifies possible input types.
+          'gaussian.fchk']                        #: Specifies possible input types.
 otypes = ['h5', 'cb', 'am', 'hx']       #: Specifies possible output types.
 drv_options = ['x','y','z']             #: Specifies possible derivative variables.
 

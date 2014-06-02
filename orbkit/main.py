@@ -32,14 +32,12 @@ lgpl_short = '''This is orbkit.
 
 
 # Import general modules
-import os
 import resource
 import time
 
 # Import orbkit modules
-from orbkit import core, grid, extras, read, output, integrate
+from orbkit import core, grid, extras, read, output
 from orbkit import options, display
-from orbkit.qcinfo import QCinfo
 
 def tForm(string,T,extra=''):
   t_diff = int(round(T))

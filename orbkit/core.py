@@ -24,17 +24,13 @@ License along with orbkit.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
 # Import general modules
-import copy
-import os
 import string
-import sys
 import time
 
 import numpy
 from scipy import weave
 from scipy import integrate
 
-from multiprocessing import Process
 from multiprocessing import Pool
 
 # Import orbkit modules
@@ -209,7 +205,7 @@ def ao_creator(geo_spec,ao_spec,exp_list=False,
   for ii in range(len(ao_spec)):
     if exp_list:
       # Read the user-defined xyz-exponents
-      ii_exp = numpy.array([ao_spec[ii]['Exponents']])
+      ii_exp = numpy.array([ao_spec[ii]['Exponents']]) # Exponents
     
     # Compute the atomic orbitals
     if not ii:
