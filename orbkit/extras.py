@@ -236,41 +236,39 @@ def mo_set(qc, fid_mo_list,
     
     if options.z_reduced_density:
       if vector is not None:
-	display(
-	'\nSo far, reducing the density is not supported for vectorized grids.\n')
+        display('\nSo far, reducing the density is not supported for vectorized grids.\n')
       elif drv is not None:
-	display(
-	'\nSo far, reducing the density is not supported for the derivative of the density.\n')
+        display('\nSo far, reducing the density is not supported for the derivative of the density.\n')
       else:
-	rho = integrate.simps(rho, grid.x, dx=grid.delta_[0], axis=0, even='avg')
-	rho = integrate.simps(rho, grid.y, dx=grid.delta_[1], axis=0, even='avg')
+        rho = integrate.simps(rho, grid.x, dx=grid.delta_[0], axis=0, even='avg')
+        rho = integrate.simps(rho, grid.y, dx=grid.delta_[1], axis=0, even='avg')
     
     if not options.no_output:
       if 'h5' in otype:
-	display('Saving to Hierarchical Data Format file (HDF5)...')
-	fid = options.outputname
-	group = '/mo_set:%03d' % (i_file+1)	
-	display('\n\t%s.h5 in the group "%s"' % (fid,group))	
-	output.HDF5_creator(rho,fid,qc.geo_info,qc.geo_spec,data_id='rho',
-				   append=group,mo_spec=qc_select['mo_spec'])
-	if options.drv is not None:
-	  for i,j in enumerate(options.drv):
-	    data_id = 'rho_d%s' % j
-	    output.HDF5_creator(delta_rho[i],fid,qc.geo_info,qc.geo_spec,
-				       data_id=data_id,data_only=True,
-				       append=group,mo_spec=qc_select['mo_spec'])
+        display('Saving to Hierarchical Data Format file (HDF5)...')
+        fid = options.outputname
+        group = '/mo_set:%03d' % (i_file+1)	
+        display('\n\t%s.h5 in the group "%s"' % (fid,group))	
+        output.HDF5_creator(rho,fid,qc.geo_info,qc.geo_spec,data_id='rho',
+          append=group,mo_spec=qc_select['mo_spec'])
+        if options.drv is not None:
+          for i,j in enumerate(options.drv):
+            data_id = 'rho_d%s' % j
+            output.HDF5_creator(delta_rho[i],fid,qc.geo_info,qc.geo_spec,
+                                data_id=data_id,data_only=True,
+                                append=group,mo_spec=qc_select['mo_spec'])
       
       fid = '%s_%03d' % (options.outputname, i_file+1) 
       output.main_output(rho,qc.geo_info,qc.geo_spec,outputname=fid,
-				otype=otype,no_hdf5=True,
-				is_vector=(vector is not None))
+                         otype=otype,no_hdf5=True,
+                         is_vector=(vector is not None))
       if options.drv is not None:
-	for i,j in enumerate(options.drv):
-	  fid = '%s_%03d_d%s' % (options.outputname, i_file+1, j) 
-	  output.main_output(rho,qc.geo_info,qc.geo_spec,outputname=fid,
-				    otype=otype,no_hdf5=True,
-				    is_vector=(vector is not None))
-	    
+        for i,j in enumerate(options.drv):
+          fid = '%s_%03d_d%s' % (options.outputname, i_file+1, j) 
+          output.main_output(rho,qc.geo_info,qc.geo_spec,outputname=fid,
+                             otype=otype,no_hdf5=True,
+                             is_vector=(vector is not None))
+
   return None
   #--- mo_select ---
 

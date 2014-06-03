@@ -101,6 +101,62 @@ def get_grid(start='\t'):
   return display
   # get_grid 
 
+def set_grid(grid):
+  '''Returns a string describing the current x-, y-, z-grid.
+  '''
+  global x, y, z
+  coord = ['x', 'y', 'z']
+  delta_ = numpy.zeros((3,1)) #: Contains the grid spacing.
+  
+  NumberTypes = (int, long, float) #: Contains the supported types.
+  
+  # Check the input variable
+  correct_type = (isinstance(grid,list) or isinstance(grid,numpy.ndarray))
+  if not correct_type or len(grid) != 3:
+    raise TypeError('The `grid` variable has to be a list or a numpy array with ' + 
+                    'three dimensions.')
+  
+  length = []
+  for i,c in enumerate(grid):
+    # Check the type of the grid
+    if isinstance(c,NumberTypes):
+      c = numpy.array([c],dtype=float)      
+    elif isinstance(c,(list,tuple)): 
+      c = numpy.array(c,dtype=float)    
+    elif not isinstance(c,numpy.ndarray):
+      raise TypeError('%s (dimension %d) is of inappropriate type. (%s)' %(coord[i],i,type(c)))
+    # Reshape if necessary
+    if c.ndim != 1:
+      c = c.reshape((-1,))
+    # Save new grid
+    grid[i] = c
+    length.append(len(c))
+  
+  # Produce some information about the grid.
+  info_string = 'Grid has been set up...'
+  info_string += ('\n\tIf the input coordinates will be used for a regular grid,' +
+                  '\n\tit will contain %dx%dx%d=%d data points.' % 
+                  (tuple(length) + (numpy.product(length),)) 
+                  )
+  if length[0] == length[1] == length[2]:
+    info_string += ('\n\n\tIf the input coordinates will be used for a vector grid,' +
+                    '\n\tit will contain %d data points.' % length[0]
+                    )
+  else:
+    info_string += ('\n\n\tAttention: Due to their different length, the grid variables' +
+                    '\n\tcannot be used for a computation using a vector grid!'
+                    )
+  
+  # Write grid 
+  x = grid[0]  
+  y = grid[1]  
+  z = grid[2]
+  
+  is_initialized = True
+  
+  return info_string
+  # set_grid 
+
 def reset_grid():
   '''Resets the grid parameters.'''
   global is_initialized, min_, max_, N_
