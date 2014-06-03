@@ -203,9 +203,9 @@ def ao_creator(geo_spec,ao_spec,exp_list=False,
   
   # Generalized AO creator
   for ii in range(len(ao_spec)):
-    if exp_list:
+    if exp_list or 'type' not in ao_spec[ii].keys():
       # Read the user-defined xyz-exponents
-      ii_exp = numpy.array([ao_spec[ii]['Exponents']]) # Exponents
+      ii_exp = numpy.array([ao_spec[ii]['exp_list']]) # Exponents
     
     # Compute the atomic orbitals
     if not ii:
