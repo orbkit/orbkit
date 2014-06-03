@@ -7,11 +7,11 @@ Impressum
 ---------
 Angaben gemäß § 5 TMG:
   |  Axel Schild
-  |  Schöneberger Str. 32a
-  |  12103 Berlin
+  |  Charlottenstr. 1
+  |  06108 Halle (Saale)
 
 Kontakt:
-  |  E-Mail: axel.schild@fu-berlin.de
+  |  E-Mail: aschild@mpi-halle.mpg.de
   |  E-Mail: v.pohl@fu-berlin.de
 
 

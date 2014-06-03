@@ -475,6 +475,7 @@ def rho_compute(qc,calc_mo=False,vector=None,drv=None,numproc=1):
   The computational tasks are distributed to the worker processes.
   
   **Parameters:**
+  
   qc : class or dict
     QCinfo class or dictionary containing the following attributes/keys.
     See `Central Variables`_ for details.

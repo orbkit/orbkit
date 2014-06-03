@@ -239,9 +239,9 @@ of the output file.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">1st element:</th><td class="field-body">coefficient</td>
+<tr class="field-odd field"><th class="field-name">1st element:</th><td class="field-body">exponent</td>
 </tr>
-<tr class="field-even field"><th class="field-name">2nd element:</th><td class="field-body">exponent</td>
+<tr class="field-even field"><th class="field-name">2nd element:</th><td class="field-body">coefficient</td>
 </tr>
 </tbody>
 </table>
@@ -479,7 +479,7 @@ specified grid.</p>
 
 <dl class="function">
 <dt id="orbkit.options.check_options">
-<tt class="descclassname">orbkit.options.</tt><tt class="descname">check_options</tt><big>(</big><em>error=&lt;built-in method write of file object at 0x2b66d2fb6150&gt;</em>, <em>display=&lt;built-in method write of file object at 0x2b66d2fb6150&gt;</em>, <em>interactive=False</em>, <em>info=True</em><big>)</big><a class="headerlink" href="#orbkit.options.check_options" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">orbkit.options.</tt><tt class="descname">check_options</tt><big>(</big><em>error=&lt;built-in method write of file object at 0x2ac49d18e150&gt;</em>, <em>display=&lt;built-in method write of file object at 0x2ac49d18e150&gt;</em>, <em>interactive=False</em>, <em>info=True</em><big>)</big><a class="headerlink" href="#orbkit.options.check_options" title="Permalink to this definition">¶</a></dt>
 <dd><p>Checks options for errors.</p>
 <p><strong>Parameters:</strong></p>
 <blockquote>
@@ -508,7 +508,7 @@ existing file.</dd>
 
 <dl class="function">
 <dt id="orbkit.options.check_if_exists">
-<tt class="descclassname">orbkit.options.</tt><tt class="descname">check_if_exists</tt><big>(</big><em>fid</em>, <em>what=''</em>, <em>error=&lt;type 'exceptions.IOError'&gt;</em>, <em>display=&lt;built-in method write of file object at 0x2b66d2fb6150&gt;</em>, <em>interactive=False</em><big>)</big><a class="headerlink" href="#orbkit.options.check_if_exists" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">orbkit.options.</tt><tt class="descname">check_if_exists</tt><big>(</big><em>fid</em>, <em>what=''</em>, <em>error=&lt;type 'exceptions.IOError'&gt;</em>, <em>display=&lt;built-in method write of file object at 0x2ac49d18e150&gt;</em>, <em>interactive=False</em><big>)</big><a class="headerlink" href="#orbkit.options.check_if_exists" title="Permalink to this definition">¶</a></dt>
 <dd><p>Checks the existence of a file.</p>
 <p><strong>Parameters:</strong></p>
 <blockquote>
@@ -607,9 +607,9 @@ existing file.</dd>
 
 <dl class="function">
 <dt id="orbkit.read.read_gamess">
-<tt class="descclassname">orbkit.read.</tt><tt class="descname">read_gamess</tt><big>(</big><em>filename</em>, <em>all_mo=False</em><big>)</big><a class="headerlink" href="#orbkit.read.read_gamess" title="Permalink to this definition">¶</a></dt>
-<dd><p>Reads all information desired from a Gamess-US output file.</p>
-<p><strong>Parameters:</strong></p>
+<tt class="descclassname">orbkit.read.</tt><tt class="descname">read_gamess</tt><big>(</big><em>filename</em>, <em>all_mo=False</em>, <em>read_properties=False</em><big>)</big><a class="headerlink" href="#orbkit.read.read_gamess" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads all information desired from a Gamess-US output file.
+<strong>Parameters:</strong></p>
 <blockquote>
 <div><dl class="docutils">
 <dt>filename <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
@@ -703,6 +703,26 @@ existing file.</dd>
 </dl>
 </dd></dl>
 
+<dl class="function">
+<dt id="orbkit.read.read_wfn">
+<tt class="descclassname">orbkit.read.</tt><tt class="descname">read_wfn</tt><big>(</big><em>filename</em>, <em>all_mo=False</em><big>)</big><a class="headerlink" href="#orbkit.read.read_wfn" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads all information desired from a wfn file.</p>
+<p><strong>Parameters:</strong></p>
+<blockquote>
+<div><dl class="docutils">
+<dt>filename <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>Specifies the filename for the input file.</dd>
+<dt>all_mo <span class="classifier-delimiter">:</span> <span class="classifier">bool, optional</span></dt>
+<dd>If True, all molecular orbitals are returned.</dd>
+</dl>
+</div></blockquote>
+<p><strong>Returns:</strong></p>
+<dl class="docutils">
+<dt>qc (class QCinfo) with attributes geo_spec, geo_info, ao_spec, mo_spec, etot :</dt>
+<dd>See <a class="reference internal" href="#central-variables">Central Variables</a> for details.</dd>
+</dl>
+</dd></dl>
+
 </div>
 <div class="section" id="module-orbkit.grid">
 <span id="orbkit-grid"></span><h2>orbkit.grid<a class="headerlink" href="#module-orbkit.grid" title="Permalink to this headline">¶</a></h2>
@@ -716,7 +736,7 @@ are performed.</p>
 
 <dl class="function">
 <dt id="orbkit.grid.center_grid">
-<tt class="descclassname">orbkit.grid.</tt><tt class="descname">center_grid</tt><big>(</big><em>ac</em>, <em>display=&lt;built-in method write of file object at 0x2b66d2fb6150&gt;</em><big>)</big><a class="headerlink" href="#orbkit.grid.center_grid" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">orbkit.grid.</tt><tt class="descname">center_grid</tt><big>(</big><em>ac</em>, <em>display=&lt;built-in method write of file object at 0x2ac49d18e150&gt;</em><big>)</big><a class="headerlink" href="#orbkit.grid.center_grid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Centers the grid to the point ac and to the origin (0,0,0).</p>
 </dd></dl>
 
@@ -868,6 +888,12 @@ specified by the global lists:</p>
 <dt id="orbkit.grid.reset_grid">
 <tt class="descclassname">orbkit.grid.</tt><tt class="descname">reset_grid</tt><big>(</big><big>)</big><a class="headerlink" href="#orbkit.grid.reset_grid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Resets the grid parameters.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="orbkit.grid.set_grid">
+<tt class="descclassname">orbkit.grid.</tt><tt class="descname">set_grid</tt><big>(</big><em>grid</em><big>)</big><a class="headerlink" href="#orbkit.grid.set_grid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a string describing the current x-, y-, z-grid.</p>
 </dd></dl>
 
 <dl class="function">
@@ -1111,7 +1137,7 @@ else the respective coordinates of grid will be used.</dd>
 
 <dl class="function">
 <dt id="orbkit.core.rho_compute">
-<tt class="descclassname">orbkit.core.</tt><tt class="descname">rho_compute</tt><big>(</big><em>geo_spec</em>, <em>ao_spec</em>, <em>mo_spec</em>, <em>calc_mo=False</em>, <em>vector=None</em>, <em>drv=None</em>, <em>numproc=1</em><big>)</big><a class="headerlink" href="#orbkit.core.rho_compute" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">orbkit.core.</tt><tt class="descname">rho_compute</tt><big>(</big><em>qc</em>, <em>calc_mo=False</em>, <em>vector=None</em>, <em>drv=None</em>, <em>numproc=1</em><big>)</big><a class="headerlink" href="#orbkit.core.rho_compute" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the density, the molecular orbitals, or the derivatives thereof.</p>
 <p>orbkit divides 3-dimensional regular grids into 2-dimensional slices and 
 1-dimensional vector grids into 1-dimensional slices of equal length. By default,
@@ -1119,11 +1145,14 @@ else the respective coordinates of grid will be used.</dd>
 The computational tasks are distributed to the worker processes.</p>
 <p><strong>Parameters:</strong></p>
 <dl class="docutils">
-<dt>geo_spec <span class="classifier-delimiter">:</span> <span class="classifier">array_like, shape=(3,NATOMS) </span></dt>
+<dt>qc <span class="classifier-delimiter">:</span> <span class="classifier">class or dict</span></dt>
+<dd>QCinfo class or dictionary containing the following attributes/keys.
+See <a class="reference internal" href="#central-variables">Central Variables</a> for details.</dd>
+<dt>qc.geo_spec <span class="classifier-delimiter">:</span> <span class="classifier">array_like, shape=(3,NATOMS) </span></dt>
 <dd>See <a class="reference internal" href="#central-variables">Central Variables</a> for details.</dd>
-<dt>ao_spec <span class="classifier-delimiter">:</span> <span class="classifier">List of dictionaries</span></dt>
+<dt>qc.ao_spec <span class="classifier-delimiter">:</span> <span class="classifier">List of dictionaries</span></dt>
 <dd>See <a class="reference internal" href="#central-variables">Central Variables</a> for details.</dd>
-<dt>mo_spec <span class="classifier-delimiter">:</span> <span class="classifier">List of dictionaries</span></dt>
+<dt>qc.mo_spec <span class="classifier-delimiter">:</span> <span class="classifier">List of dictionaries</span></dt>
 <dd>See <a class="reference internal" href="#central-variables">Central Variables</a> for details.</dd>
 <dt>calc_mo <span class="classifier-delimiter">:</span> <span class="classifier">bool, optional</span></dt>
 <dd>If True, the computation of  the molecular orbitals requested is only
@@ -1172,10 +1201,10 @@ quantities with respect to DRV.</dd>
 </table>
 <dl class="docutils">
 <dt>mo_list <span class="classifier-delimiter">:</span> <span class="classifier">numpy.ndarray, shape=((NMO,) + N)</span></dt>
-<dd>Contains the NMO=len(mo_spec) molecular orbitals on a grid.</dd>
+<dd>Contains the NMO=len(qc.mo_spec) molecular orbitals on a grid.</dd>
 <dt>delta_mo_list <span class="classifier-delimiter">:</span> <span class="classifier">numpy.ndarray, shape=((NDRV,NMO) + N)</span></dt>
 <dd>Contains the derivatives with respect to drv (NDRV=len(drv)) of the 
-NMO=len(mo_spec) molecular orbitals on a grid.</dd>
+NMO=len(qc.mo_spec) molecular orbitals on a grid.</dd>
 <dt>mo_norm <span class="classifier-delimiter">:</span> <span class="classifier">numpy.ndarray, shape=(NMO,)</span></dt>
 <dd>Contains the numerical norms of the molecular orbitals.</dd>
 <dt>rho <span class="classifier-delimiter">:</span> <span class="classifier">numpy.ndarray, shape=(N)</span></dt>
@@ -1188,16 +1217,19 @@ the density on a grid.</dd>
 
 <dl class="function">
 <dt id="orbkit.core.rho_compute_no_slice">
-<tt class="descclassname">orbkit.core.</tt><tt class="descname">rho_compute_no_slice</tt><big>(</big><em>geo_spec</em>, <em>ao_spec</em>, <em>mo_spec</em>, <em>calc_mo=False</em>, <em>is_vector=False</em>, <em>drv=None</em>, <em>return_components=False</em><big>)</big><a class="headerlink" href="#orbkit.core.rho_compute_no_slice" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">orbkit.core.</tt><tt class="descname">rho_compute_no_slice</tt><big>(</big><em>qc</em>, <em>calc_mo=False</em>, <em>is_vector=False</em>, <em>drv=None</em>, <em>return_components=False</em><big>)</big><a class="headerlink" href="#orbkit.core.rho_compute_no_slice" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates the density, the molecular orbitals, or the derivatives thereof
 without slicing the grid.</p>
 <p><strong>Parameters:</strong></p>
 <dl class="docutils">
-<dt>geo_spec <span class="classifier-delimiter">:</span> <span class="classifier">array_like, shape=(3,NATOMS) </span></dt>
+<dt>qc <span class="classifier-delimiter">:</span> <span class="classifier">class or dict</span></dt>
+<dd>QCinfo class or dictionary containing the following attributes/keys.
+See <a class="reference internal" href="#central-variables">Central Variables</a> for details.</dd>
+<dt>qc.geo_spec <span class="classifier-delimiter">:</span> <span class="classifier">array_like, shape=(3,NATOMS) </span></dt>
 <dd>See <a class="reference internal" href="#central-variables">Central Variables</a> for details.</dd>
-<dt>ao_spec <span class="classifier-delimiter">:</span> <span class="classifier">List of dictionaries</span></dt>
+<dt>qc.ao_spec <span class="classifier-delimiter">:</span> <span class="classifier">List of dictionaries</span></dt>
 <dd>See <a class="reference internal" href="#central-variables">Central Variables</a> for details.</dd>
-<dt>mo_spec <span class="classifier-delimiter">:</span> <span class="classifier">List of dictionaries</span></dt>
+<dt>qc.mo_spec <span class="classifier-delimiter">:</span> <span class="classifier">List of dictionaries</span></dt>
 <dd>See <a class="reference internal" href="#central-variables">Central Variables</a> for details.</dd>
 <dt>calc_mo <span class="classifier-delimiter">:</span> <span class="classifier">bool, optional</span></dt>
 <dd>If True, the computation of  the molecular orbitals requested is only
@@ -1296,10 +1328,10 @@ and if requested, the derivatives thereof as well.</dd>
 <dd>Contains the derivatives with respect to drv (NDRV=len(drv)) of the 
 NAO=len(ao_spec) atomic orbitals on a grid.</dd>
 <dt>mo_list <span class="classifier-delimiter">:</span> <span class="classifier">numpy.ndarray, shape=((NMO,) + N)</span></dt>
-<dd>Contains the NMO=len(mo_spec) molecular orbitals on a grid.</dd>
+<dd>Contains the NMO=len(qc.mo_spec) molecular orbitals on a grid.</dd>
 <dt>delta_mo_list <span class="classifier-delimiter">:</span> <span class="classifier">numpy.ndarray, shape=((NDRV,NMO) + N)</span></dt>
 <dd>Contains the derivatives with respect to drv (NDRV=len(drv)) of the 
-NMO=len(mo_spec) molecular orbitals on a grid.</dd>
+NMO=len(qc.mo_spec) molecular orbitals on a grid.</dd>
 <dt>mo_norm <span class="classifier-delimiter">:</span> <span class="classifier">numpy.ndarray, shape=(NMO,)</span></dt>
 <dd>Contains the numerical norms of the molecular orbitals.</dd>
 <dt>rho <span class="classifier-delimiter">:</span> <span class="classifier">numpy.ndarray, shape=(N)</span></dt>
@@ -1475,7 +1507,7 @@ adjusted to the density for the easy depiction of the density.</p>
 
 <dl class="function">
 <dt id="orbkit.extras.atom_projected_density">
-<tt class="descclassname">orbkit.extras.</tt><tt class="descname">atom_projected_density</tt><big>(</big><em>atom</em>, <em>geo_spec</em>, <em>ao_spec</em>, <em>mo_spec</em>, <em>geo_info=None</em>, <em>bReturnmo=False</em>, <em>ao_list=None</em>, <em>mo_list=None</em>, <em>x=None</em>, <em>y=None</em>, <em>z=None</em>, <em>N=None</em>, <em>is_vector=False</em><big>)</big><a class="headerlink" href="#orbkit.extras.atom_projected_density" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">orbkit.extras.</tt><tt class="descname">atom_projected_density</tt><big>(</big><em>atom</em>, <em>qc</em>, <em>bReturnmo=False</em>, <em>ao_list=None</em>, <em>mo_list=None</em>, <em>x=None</em>, <em>y=None</em>, <em>z=None</em>, <em>N=None</em>, <em>is_vector=False</em><big>)</big><a class="headerlink" href="#orbkit.extras.atom_projected_density" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes the projected electron density with respect to the selected atoms.</p>
 <div class="math">
 <p><img src="_images/math/cabf95bf8d7718de38b7edb8bb55e59c55d1e71d.png" alt="\rho^a(x,y,z) = \sum_i occ_i * mo_i^a * mo_i"/></p>
@@ -1503,7 +1535,7 @@ adjusted to the density for the easy depiction of the density.</p>
 
 <dl class="function">
 <dt id="orbkit.extras.calc_mo">
-<tt class="descclassname">orbkit.extras.</tt><tt class="descname">calc_mo</tt><big>(</big><em>geo_spec</em>, <em>geo_info</em>, <em>ao_spec</em>, <em>mo_spec</em>, <em>fid_mo_list</em>, <em>drv=None</em>, <em>vector=None</em>, <em>otype=None</em><big>)</big><a class="headerlink" href="#orbkit.extras.calc_mo" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">orbkit.extras.</tt><tt class="descname">calc_mo</tt><big>(</big><em>qc</em>, <em>fid_mo_list</em>, <em>drv=None</em>, <em>vector=None</em>, <em>otype=None</em><big>)</big><a class="headerlink" href="#orbkit.extras.calc_mo" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates and saves the selected molecular orbitals or the derivatives thereof.</p>
 <p><strong>Parameters:</strong></p>
 <blockquote>
@@ -1572,7 +1604,7 @@ with x, y, and z as vectors.</dd>
 
 <dl class="function">
 <dt id="orbkit.extras.compute_mulliken_charges">
-<tt class="descclassname">orbkit.extras.</tt><tt class="descname">compute_mulliken_charges</tt><big>(</big><em>atom</em>, <em>geo_info</em>, <em>geo_spec</em>, <em>ao_spec</em>, <em>mo_spec</em>, <em>ao_list=None</em>, <em>mo_list=None</em>, <em>rho_atom=None</em>, <em>x=None</em>, <em>y=None</em>, <em>z=None</em>, <em>N=None</em>, <em>is_vector=False</em><big>)</big><a class="headerlink" href="#orbkit.extras.compute_mulliken_charges" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">orbkit.extras.</tt><tt class="descname">compute_mulliken_charges</tt><big>(</big><em>atom</em>, <em>qc</em>, <em>ao_list=None</em>, <em>mo_list=None</em>, <em>rho_atom=None</em>, <em>x=None</em>, <em>y=None</em>, <em>z=None</em>, <em>N=None</em>, <em>is_vector=False</em><big>)</big><a class="headerlink" href="#orbkit.extras.compute_mulliken_charges" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute the Mulliken charges of the selected atoms using
 the respective projected electron densities.</p>
 <div class="math">
@@ -1666,7 +1698,7 @@ If fid_mo_list is &#8216;all_mo&#8217;, creates a list containing all molecular 
 
 <dl class="function">
 <dt id="orbkit.extras.mo_set">
-<tt class="descclassname">orbkit.extras.</tt><tt class="descname">mo_set</tt><big>(</big><em>geo_spec</em>, <em>geo_info</em>, <em>ao_spec</em>, <em>mo_spec</em>, <em>fid_mo_list</em>, <em>drv=None</em>, <em>vector=None</em>, <em>otype=None</em><big>)</big><a class="headerlink" href="#orbkit.extras.mo_set" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">orbkit.extras.</tt><tt class="descname">mo_set</tt><big>(</big><em>qc</em>, <em>fid_mo_list</em>, <em>drv=None</em>, <em>vector=None</em>, <em>otype=None</em><big>)</big><a class="headerlink" href="#orbkit.extras.mo_set" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates and saves the density or the derivative thereof 
 using selected molecular orbitals.</p>
 <p><strong>Parameters:</strong></p>
@@ -1691,7 +1723,7 @@ with x, y, and z as vectors.</dd>
 
 <dl class="function">
 <dt id="orbkit.extras.mo_transition_flux_density">
-<tt class="descclassname">orbkit.extras.</tt><tt class="descname">mo_transition_flux_density</tt><big>(</big><em>i</em>, <em>j</em>, <em>geo_spec</em>, <em>ao_spec</em>, <em>mo_spec</em>, <em>drv='x'</em>, <em>ao_list=None</em>, <em>mo_list=None</em>, <em>delta_ao_list=None</em>, <em>delta_mo_list=None</em>, <em>x=None</em>, <em>y=None</em>, <em>z=None</em>, <em>N=None</em>, <em>is_vector=False</em><big>)</big><a class="headerlink" href="#orbkit.extras.mo_transition_flux_density" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">orbkit.extras.</tt><tt class="descname">mo_transition_flux_density</tt><big>(</big><em>i</em>, <em>j</em>, <em>qc</em>, <em>drv='x'</em>, <em>ao_list=None</em>, <em>mo_list=None</em>, <em>delta_ao_list=None</em>, <em>delta_mo_list=None</em>, <em>x=None</em>, <em>y=None</em>, <em>z=None</em>, <em>N=None</em>, <em>is_vector=False</em><big>)</big><a class="headerlink" href="#orbkit.extras.mo_transition_flux_density" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate one component (e.g. drv=&#8217;x&#8217;) of the 
 transition electoronic flux density between the 
 molecular orbitals i and j.</p>
