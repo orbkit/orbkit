@@ -109,7 +109,10 @@ def read_molden(filename, all_mo=False):
       qc = QCinfo()
       sec_flag = False             # A Flag specifying the current section 
     elif '_ENERGY=' in line:
-      qc.etot = float(thisline[1])
+      try:
+        qc.etot = float(thisline[1])
+      except IndexError:
+        pass
     elif '[Atoms]' in line:
       # The section containing information about 
       # the molecular geometry begins 
