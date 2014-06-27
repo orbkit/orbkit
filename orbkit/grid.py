@@ -5,8 +5,6 @@ are performed.'''
 orbkit
 Gunter Hermann, Vincent Pohl, and Axel Schild
 
-Institut fuer Chemie und Biochemie, Freie Universitaet Berlin, 14195 Berlin, Germany
-
 This file is part of orbkit.
 
 orbkit is free software: you can redistribute it and/or modify
@@ -25,9 +23,13 @@ License along with orbkit.  If not, see <http://www.gnu.org/licenses/>.
 
 # Import general modules
 import sys
-
 import numpy
-from scipy import weave
+
+# test how to import weave
+try:
+    from scipy import weave
+except:    
+    import weave
 
 # Import orbkit modules
 from orbkit import cSupportCode

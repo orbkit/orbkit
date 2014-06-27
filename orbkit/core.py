@@ -28,7 +28,6 @@ import string
 import time
 
 import numpy
-from scipy import weave
 from scipy import integrate
 
 from multiprocessing import Pool
@@ -36,6 +35,12 @@ from multiprocessing import Pool
 # Import orbkit modules
 from orbkit import grid,cSupportCode
 from orbkit.display import display
+
+# test how to import weave
+try:
+    from scipy import weave
+except:    
+    import weave
 
 def l_creator(geo_spec,ao_spec,sel_ao,exp_list=None,coeff_list=None,
               at_pos=None,is_vector=False,drv=None,
