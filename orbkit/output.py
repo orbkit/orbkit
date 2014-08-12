@@ -332,7 +332,11 @@ def amira_creator_rectilinear_coord(rho,filename):
 def hdf5_open(fid,mode='w'):
   '''Open an HDF5 file.'''
   import h5py
-  return h5py.File(fid, mode)
+  HDF5_file = h5py.File(fid, mode)
+  try:
+    yield HDF5_file
+  finally:
+    HDF5_file.close()
 
 def hdf5_append(x,group,name='data'):
   '''Automatically append data to a HDF5 file/group.'''

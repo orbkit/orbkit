@@ -166,7 +166,7 @@ def read_molden(filename, all_mo=False):
                              'type': ao_type,
                              'pnum': pnum,
                              'coeffs': numpy.zeros((pnum, 2))
-                          })
+                            })
         else:
           # Append the AO coefficients 
           coeffs = numpy.array(line.replace('D','e').split(), dtype=numpy.float64)
@@ -219,6 +219,10 @@ def read_molden(filename, all_mo=False):
     for ii_mo in mo_range:
       if ii_mo['occ_num'] > 0.0000001:
         qc.mo_spec.append(ii_mo)
+  
+  # Convert geo_info and geo_spec to numpy.ndarrays
+  qc.geo_info = numpy.array(qc.geo_info)
+  qc.geo_spec = numpy.array(qc.geo_spec)
   
   return qc
   # read_molden 
@@ -483,6 +487,10 @@ def read_gamess(filename, all_mo=False,read_properties=False):
       qc.mo_spec[ii]['occ_num'] += 1.0
       occ[0] -= 1
   
+  # Convert geo_info and geo_spec to numpy.ndarrays
+  qc.geo_info = numpy.array(qc.geo_info)
+  qc.geo_spec = numpy.array(qc.geo_spec)
+  
   return qc
   # read_gamess 
 
@@ -685,6 +693,10 @@ def read_gaussian_fchk(filename, all_mo=False):
     for ii_mo in mo_range:
       if ii_mo['occ_num'] > 0.0000001:
         qc.mo_spec.append(ii_mo)
+  
+  # Convert geo_info and geo_spec to numpy.ndarrays
+  qc.geo_info = numpy.array(qc.geo_info)
+  qc.geo_spec = numpy.array(qc.geo_spec)
   
   return qc
   # read_gaussian_fchk 
@@ -980,6 +992,10 @@ def read_gaussian_log(filename,all_mo=False,orientation='standard',
       if ii_mo['occ_num'] > 0.0000001:
         qc.mo_spec.append(ii_mo)
   
+  # Convert geo_info and geo_spec to numpy.ndarrays
+  qc.geo_info = numpy.array(qc.geo_info)
+  qc.geo_spec = numpy.array(qc.geo_spec)
+  
   return qc
   # read_gaussian_log 
   
@@ -1064,5 +1080,9 @@ def read_wfn(filename, all_mo=False):
               c_mo += 1
             if (c_mo) == ao_num:
               sec_flag = None
+  
+  # Convert geo_info and geo_spec to numpy.ndarrays
+  qc.geo_info = numpy.array(qc.geo_info)
+  qc.geo_spec = numpy.array(qc.geo_spec)
   
   return qc

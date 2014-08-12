@@ -85,6 +85,7 @@ orbkit.options
 
 Input/Output Options
 ....................
+
 .. autodata:: orbkit.options.filename
 .. autodata:: orbkit.options.itype
 .. autodata:: orbkit.options.outputname
@@ -155,6 +156,16 @@ orbkit.grid
 orbkit.core
 -----------
 .. automodule:: orbkit.core 
+    :members:
+
+orbkit.analytical_integrals
+---------------------------
+.. automodule:: orbkit.analytical_integrals 
+    :members:
+
+orbkit.multiple_files
+---------------------
+.. automodule:: orbkit.multiple_files 
     :members:
 
 orbkit.display

@@ -28,7 +28,6 @@ import string
 import time
 
 import numpy
-from scipy import integrate
 
 from multiprocessing import Pool
 
@@ -258,7 +257,7 @@ def calc_single_mo(xx):
     return 0
 
 def mo_creator(ao_list,mo_spec,is_vector=False,
-            x=None,y=None,z=None,N=None,
+            x=None,y=None,z=None,N=None,mo_coeff=None,
             HDF5_save=False,h5py=False,
             numproc=1,s=0):
   '''Calculates the molecular orbitals.
@@ -312,10 +311,16 @@ def mo_creator(ao_list,mo_spec,is_vector=False,
   if not HDF5_save:
     # Standard mo_creator 
     mo_list = []
-    for ii in range(len(mo_spec)):
-      mo_list.append(numpy.zeros(N))
-      for jj in range(len(ao_list)):
-        mo_list[ii] += mo_spec[ii]['coeffs'][jj] * ao_list[jj]
+    if mo_coeff is None:
+      for ii in range(len(mo_spec)):
+        mo_list.append(numpy.zeros(N))
+        for jj in range(len(ao_list)):
+          mo_list[ii] += mo_spec[ii]['coeffs'][jj] * ao_list[jj]
+    else:
+      for ii in range(len(mo_coeff)):
+        mo_list.append(numpy.zeros(N))
+        for jj in range(len(ao_list)):
+          mo_list[ii] += mo_coeff[ii][jj] * ao_list[jj]
     return mo_list
   else:
     # Save the MOs directly to an HDF5 file 
@@ -902,6 +907,8 @@ def l_deg(l=0,ao=None):
   # l_deg 
 
 def integration(matrix,x=None,y=None,z=None):
+  from scipy import integrate
+  
   if x is None: x = grid.x
   if y is None: y = grid.y
   if z is None: z = grid.z  

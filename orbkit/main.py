@@ -63,7 +63,7 @@ def good_bye_message(t):
   display.display(tForm('The calculation',t[-1]-t[0],extra=ram_req))
   display.display('Thank you. Good bye.')
 
-def main():
+def main(use_qc=None):
   ''' Controls the execution of all computational tasks.
   '''
   # Set some global variables
@@ -80,11 +80,14 @@ def main():
   if (options.mo_set or options.calc_mo) is not False: 
     options.all_mo = True
   
-  # Read the input file
-  qc = read.main_read(options.filename,
-                      itype=options.itype,
-                      all_mo=options.all_mo)
-
+  if use_qc is None:  
+    # Read the input file
+    qc = read.main_read(options.filename,
+                        itype=options.itype,
+                        all_mo=options.all_mo)
+  else:
+    qc = use_qc
+  
   display.display('\nSetting up the grid...')
   if options.grid_file is not None: 
     if grid.read(options.grid_file) and (options.vector is None):
@@ -279,11 +282,12 @@ def main():
   return data
   # main 
 
-def init():  
+def init(reset_display=True):  
   ''' Resets all :mod:`orbkit.options` and :mod:`orbkit.display`. 
   '''
   reload(options)
-  display.is_initiated = False
+  if reset_display:
+    display.is_initiated = False
   
   return 
   # init 

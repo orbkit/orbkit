@@ -43,7 +43,6 @@ ok.main.main()
 import numpy as np
 print('We have %.3f electrons.' % (np.sum(ok.main.rho)*ok.grid.d3r))
 
-
 #---- Second scenario ----
 '''
 Calculate the density and its x- and z-derivative using some orbitals

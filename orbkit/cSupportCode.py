@@ -71,7 +71,7 @@ xyz = '''
 '''
 
 overlap = '''/* Code adapted from 
-M. Hô, J. M. Hernandez-Perez - "Evaluation of Gaussian Molecular Integrals"
+M. Hô, J. M. Hernandez-Perez: "Evaluation of Gaussian Molecular Integrals",
 DOI:10.3888/tmj.14-3
 */
   #include <math.h>
