@@ -377,11 +377,11 @@ def hdf52dict(group,HDF5_file):
     #--- Read all members ---
     members = list(HDF5_file['%(g)s' % {'g':group}])
     try:
-      members = numpy.array(members, dtype = numpy.int)
+      members = numpy.array(members, dtype = numpy.int64)
       x = []
       for mm in numpy.sort(members):
         x.append(hdf52dict('%(g)s/%(m)s' % {'g':group, 'm': mm},HDF5_file))
-    except ValueError:
+    except (ValueError,OverflowError):
       x = {}
       for mm in members:
         x[mm] = hdf52dict('%(g)s/%(m)s' % {'g':group, 'm': mm},HDF5_file)
@@ -390,6 +390,11 @@ def hdf52dict(group,HDF5_file):
         x[ii_a] = attrs[ii_a]
   return x
 
+def hdf5_write(fid,mode='w',**kwargs):
+  f = h5py.File(fid, mode)
+  for i,j in kwargs.iteritems(): 
+    f.create_dataset(i,numpy.shape(j),data=j)
+  f.close()
 
 def HDF5_creator(data,outputname,geo_info,geo_spec,data_id='rho',append=None,
             data_only=False,ao_spec=None,mo_spec=None,is_mo_output=False,

@@ -133,7 +133,7 @@ def l_creator(geo_spec,ao_spec,sel_ao,exp_list=None,coeff_list=None,
   # A list of Python variable names that should be transferred from
   # Python into the C/C++ code. 
   arg_names = ['x','y','z','ao_num','exp_list',
-            'coeff_list','at_pos','ao_list','drv']
+               'coeff_list','at_pos','ao_list','drv']
   # A string of valid C++ code declaring extra code
   support_code = cSupportCode.norm + cSupportCode.xyz
   
@@ -150,7 +150,7 @@ def l_creator(geo_spec,ao_spec,sel_ao,exp_list=None,coeff_list=None,
     
     # Compute the atomic orbitals
     weave.inline(code, arg_names = arg_names, 
-        support_code = support_code,verbose = 1)
+                 support_code = support_code,verbose = 1)
     
 
   return ao_list
@@ -790,9 +790,9 @@ def rho_compute_no_slice(qc,calc_mo=False,is_vector=False,drv=None,
     for ii_d in drv:
       # Calculate the derivatives of the AOs and MOs for this slice 
       delta_ao_list = ao_creator(geo_spec,ao_spec,drv=ii_d,
-                    x=x,y=y,z=z,is_vector=is_vector)
+                    x=grid.x,y=grid.y,z=grid.z,is_vector=is_vector)
       delta_mo_list.append(mo_creator(delta_ao_list,mo_spec,
-                    x=x,y=y,z=z,is_vector=is_vector))
+                    x=grid.x,y=grid.y,z=grid.z,is_vector=is_vector))
     delta_mo_list = numpy.array(delta_mo_list)
     if calc_mo:
       return ((delta_ao_list, delta_mo_list) if return_components 
@@ -817,7 +817,7 @@ def rho_compute_no_slice(qc,calc_mo=False,is_vector=False,drv=None,
   
   # Initialize a numpy array for the density 
   rho = numpy.zeros(N)
-  print(N)
+  
   # Calculate the density 
   for ii_mo in range(len(mo_list)): 
     rho += numpy.square(numpy.abs(mo_list[ii_mo])) * mo_spec[ii_mo]['occ_num']
@@ -1080,58 +1080,58 @@ def ao_code(is_vector=False,is_drv=False):
             
             for (int il=0; il<Nao_list[0]; il++)
             {
-            switch(drv)
-            {
-            case 0:
-            {
-            if (lx[il] == 0)
-            {
-                ao_xyz = - 2 * COEFF_LIST2(ii,0) * 
-                    xyz(X, Y, Z, lx[il]+1, ly[il], lz[il]);
-            }
-            else
-            {
-                ao_xyz = lx[il] * xyz(X, Y, Z, lx[il]-1, ly[il], lz[il]) - 
-                    2 * COEFF_LIST2(ii,0) * 
-                    xyz(X, Y, Z, lx[il]+1, ly[il], lz[il]);    
-            }
-            } break;
-            
-            case 1:
-            {
-            if (ly[il] == 0)
-            {
-                ao_xyz = - 2 * COEFF_LIST2(ii,0) * 
-                    xyz(X, Y, Z, lx[il], ly[il]+1, lz[il]);
-            }
-            else
-            {
-                ao_xyz = ly[il] * xyz(X, Y, Z, lx[il], ly[il]-1, lz[il]) 
-                    - 2 * COEFF_LIST2(ii,0) * 
-                    xyz(X, Y, Z, lx[il], ly[il]+1, lz[il]);   
-            }
-            } break;
-            
-            case 2:
-            {
-            if (lz[il] == 0)
-            {
-                ao_xyz = - 2 * COEFF_LIST2(ii,0) *
-                    xyz(X, Y, Z, lx[il], ly[il], lz[il]+1);
-            }
-            else
-            {
-                ao_xyz = lz[il] * xyz(X, Y, Z, lx[il], ly[il], lz[il]-1) 
+              switch(drv)
+              {
+              case 0:
+              {
+                if (lx[il] == 0)
+                {
+                    ao_xyz = - 2 * COEFF_LIST2(ii,0) * 
+                        xyz(X, Y, Z, lx[il]+1, ly[il], lz[il]);
+                }
+                else
+                {
+                    ao_xyz = lx[il] * xyz(X, Y, Z, lx[il]-1, ly[il], lz[il]) - 
+                        2 * COEFF_LIST2(ii,0) * 
+                        xyz(X, Y, Z, lx[il]+1, ly[il], lz[il]);    
+                }
+              } break;
+              
+              case 1:
+              {
+              if (ly[il] == 0)
+                {
+                    ao_xyz = - 2 * COEFF_LIST2(ii,0) * 
+                        xyz(X, Y, Z, lx[il], ly[il]+1, lz[il]);
+                }
+                else
+                {
+                    ao_xyz = ly[il] * xyz(X, Y, Z, lx[il], ly[il]-1, lz[il]) 
                         - 2 * COEFF_LIST2(ii,0) * 
-                        xyz(X, Y, Z, lx[il], ly[il], lz[il]+1);    
-            }
-            } break;
-            
-            default:
-            {
-            std::cout << "False statement for derivative variable!" 
-                      << std::endl;
-            }
+                        xyz(X, Y, Z, lx[il], ly[il]+1, lz[il]);   
+                }
+              } break;
+              
+              case 2:
+              {
+                if (lz[il] == 0)
+                {
+                    ao_xyz = - 2 * COEFF_LIST2(ii,0) *
+                        xyz(X, Y, Z, lx[il], ly[il], lz[il]+1);
+                }
+                else
+                {
+                    ao_xyz = lz[il] * xyz(X, Y, Z, lx[il], ly[il], lz[il]-1) 
+                            - 2 * COEFF_LIST2(ii,0) * 
+                            xyz(X, Y, Z, lx[il], ly[il], lz[il]+1);    
+                }
+              } break;
+              
+              default:
+              {
+                std::cout << "False statement for derivative variable!" 
+                          << std::endl;
+              }
             }
             AO_LIST4(il,i,j,k) += Norm[ii][il] * ao_xyz * ao_l0[ii];
             }

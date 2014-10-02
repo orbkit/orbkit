@@ -36,7 +36,7 @@ qc = main_read(in_fid,itype='molden',all_mo=False)
 # Compute atomic orbital overlap matrix 
 ao_overlap_matrix = get_ao_overlap(qc.geo_spec,qc.geo_spec,qc.ao_spec)
 
-# Compute the overlap of the molecular orbitals an weight it with the occupation number
+# Compute the overlap of the molecular orbitals and weight it with the occupation number
 electron_number = 0.
 for i_mo in qc.mo_spec:
   electron_number += i_mo['occ_num'] * get_mo_overlap(i_mo['coeffs'],
@@ -88,4 +88,3 @@ for component in range(3):
 
 print('The dipole moment is \mu = (%.8f, %.8f, %.8f) ea_0' % tuple(dipole_moment))
 print('\tRead from the molden_file h2o.md: \mu = (0,0,0.8174022121802662) ea_0')
-

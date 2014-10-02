@@ -174,7 +174,7 @@ def grid2vector():
   Reverse operation: :mod:`orbkit.grid.vector2grid` 
   '''
   # All grid related variables should be globals 
-  global x, y, z
+  global x, y, z, is_vector
   
   # Initialize a list for the grid 
   grid = numpy.zeros((3,numpy.product(N_)))
@@ -203,43 +203,48 @@ def grid2vector():
   y = grid[1,:]  
   z = grid[2,:]
   
+  is_vector = True
   return 0
   # grid2vector 
   
-def vector2grid():
+def vector2grid(Nx=None,Ny=None,Nz=None):
   '''Converts the (3, (Nx*Ny*Nz)) grid matrix (vector grid) back to the regular grid 
   characterized by the x-, y-, z-vectors.
   Reverse operation: :mod:`orbkit.grid.grid2vector`
   '''
   # All grid related variables should be globals 
-  global x, y, z
+  global x, y, z, is_vector
   
-  # Initialize a list for the grid 
-  grid = numpy.zeros((3,numpy.product(N_)))
+  # Initialize a list for the grid
+  grid = [[],[],[]]
+  grid[0] = x
+  grid[1] = y
+  grid[2] = z
+  grid = numpy.array(grid,dtype=float)
+  
+  # Initialize x, y, and z for C++-code
+  x = numpy.zeros(Nx)
+  y = numpy.zeros(Ny)
+  z = numpy.zeros(Nz)
   
   grid_code = """
   int count=0;
-  
-  for (int i=0; i<Nx[0]; i++)
+  for (int i=0; i<Nz[0]; i++)
   {
+    Z1(i) = GRID2(2,i);
     for (int j=0; j<Ny[0]; j++)
     {
-      for (int k=0; k<Nz[0]; k++)
+      Y1(j) = GRID2(1,j*Nz[0]);
+      for (int k=0; k<Nx[0]; k++)
       {
-        GRID2(0,count) = x[i];
-        GRID2(1,count) = y[j];
-        GRID2(2,count) = z[k];
-        count += 1;
-      }
+        X1(k) = GRID2(0,(k*Nz[0]*Ny[0]));
+      }  
     }
   }
   """
   weave.inline(grid_code, ['x','y','z','grid'], verbose = 1, support_code = cSupportCode.math)
   
-  # Write grid 
-  x = grid[0,:]  
-  y = grid[1,:]  
-  z = grid[2,:]
+  is_vector = False
   
   return 0
   # vector2grid 
@@ -258,7 +263,7 @@ def sph2cart_vector(r,theta,phi):
       Specifies azimuth angle. 
   '''
   # All grid related variables should be globals 
-  global x, y, z
+  global x, y, z, is_initialized, is_vector
   
   grid = numpy.zeros((3,numpy.product([len(r),len(theta),len(phi)])))
   grid_code = """
@@ -285,6 +290,9 @@ def sph2cart_vector(r,theta,phi):
   y = grid[1,:]  
   z = grid[2,:]
   
+  is_initialized = True
+  is_vector = True
+  
   return 0
   # sph2cart_vector 
 
@@ -301,7 +309,7 @@ def random_grid(geo_spec,N=1e6,scale=0.5):
         Width of normal distribution
   '''
   # All grid related variables should be globals 
-  global x, y, z, is_initialized
+  global x, y, z, is_initialized, is_vector
   geo_spec = numpy.array(geo_spec)
   at_num = len(geo_spec)
   # Initialize a list for the grid 
@@ -320,6 +328,7 @@ def random_grid(geo_spec,N=1e6,scale=0.5):
   z = grid[2]
   
   is_initialized = True
+  is_vector = True
   
   return 0
   # random_grid 
@@ -456,14 +465,15 @@ def center_grid(ac,display=sys.stdout.write):
   # center_grid 
 
 # Default values for the grid parameters 
-min_ = [-8.0, -8.0, -8.0] #: Specifies minimum grid values (regular grid).
-max_ = [ 8.0,  8.0,  8.0] #: Specifies maximum grid values (regular grid).
-N_   = [ 101,  101,  101] #: Specifies the number of grid points (regular grid).
+min_ = [-8.0, -8.0, -8.0]   #: Specifies minimum grid values (regular grid).
+max_ = [ 8.0,  8.0,  8.0]   #: Specifies maximum grid values (regular grid).
+N_   = [ 101,  101,  101]   #: Specifies the number of grid points (regular grid).
 
 # Initialize some lists 
-x = [0]                     #: Contains the x-coordinates. 
-y = [0]                     #: Contains the y-coordinates. 
-z = [0]                     #: Contains the z-coordinates. 
+x = numpy.array([0])        #: Contains the x-coordinates. 
+y = numpy.array([0])        #: Contains the y-coordinates. 
+z = numpy.array([0])        #: Contains the z-coordinates. 
 delta_ = numpy.zeros((3,1)) #: Contains the grid spacing.
 
 is_initialized = False      #: If True, the grid is assumed to be initialized.
+is_vector = False           #: If True, the grid is assumed to be vectorized.

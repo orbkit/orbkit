@@ -41,7 +41,7 @@ mo_occ_all    = [] #: Contains all molecular orbital occupations. List of numpy.
 sym           = [] #: Python dictionary containing the molecular orbital symmetries and the corresponding position in mo_coeff_all, mo_energy_all, and mo_occ_all, respectively.
 index_list    = [] #: After the execution of the ordering routine, it contains the new indices of the molecular orbitals. If index < 0, the molecular orbital changes its sign. shape=(Nfiles,NMO)
 
-def read(fid_list,itype='molden'):
+def read(fid_list,itype='molden',all_mo=True,nosym=False,**kwargs):
   '''Reads a list of input files.
   
   **Parameters:**
@@ -71,7 +71,7 @@ def read(fid_list,itype='molden'):
   n_r = len(fid_list)
 
   for i,filename in enumerate(fid_list):
-    qc = main_read(filename, itype=itype, all_mo=True)
+    qc = main_read(filename, itype=itype, all_mo=all_mo,**kwargs)
     # Geo Section
     if i > 0 and (geo_old != qc.geo_info).sum():
       raise IOError('geo_info has changed!')
@@ -87,9 +87,12 @@ def read(fid_list,itype='molden'):
     else:
       ao_old = deepcopy(qc.ao_spec)
     # MO Section
-    sym = {}
+    sym = {}    
     MO_Spec.append(qc.mo_spec)
-    for mo in qc.mo_spec:
+      
+    for i,mo in enumerate(qc.mo_spec):
+      if nosym:
+        qc.mo_spec[i]['sym'] = '%d.1' % (i+1)
       key = mo['sym'].split('.')
       if key[1] not in sym.keys():
         sym[key[1]] = 0
@@ -99,7 +102,7 @@ def read(fid_list,itype='molden'):
     for k,it in sym.iteritems():
       if k in sym_list:
         sym_list[k] = max(sym_list[k],it)
-      else: 
+      else:
         sym_list[k] = it
       
         
@@ -128,7 +131,7 @@ def read(fid_list,itype='molden'):
       mo_energy_all[sym[k]][i,index] = mo['energy']
       mo_occ_all[sym[k]][i,index] = mo['occ_num']
 
-def order_using_analytical_overlap(fid_list,itype='molden'):
+def order_using_analytical_overlap(fid_list,itype='molden',**kwargs):
   '''Ordering routine using analytical overlap integrals between molecular
   orbitals. Set fid_list to None to omit the reading of input files.
   
@@ -157,7 +160,7 @@ def order_using_analytical_overlap(fid_list,itype='molden'):
   global geo_spec_all, geo_info, ao_spec, mo_coeff_all, mo_energy_all, mo_occ_all, sym, index_list
   
   if fid_list is not None:
-    read(fid_list,itype=itype)
+    read(fid_list,itype=itype,**kwargs)
 
   iterate= range(len(geo_spec_all)-1)
 
@@ -224,8 +227,8 @@ def order_using_analytical_overlap(fid_list,itype='molden'):
   
   return index_list, mo_overlap
 
-def order_using_extrapolation(fid_list,itype='molden',deg=1,use_mo_values=False,
-                              matrix=None):
+def order_using_extrapolation(fid_list,itype='molden',deg=1,
+                              use_mo_values=False,matrix=None,**kwargs):
   '''Ordering routine using extrapolation of quantities related to the 
   molecular orbitals. Set fid_list to None to omit the reading of input files.
   
@@ -269,7 +272,7 @@ def order_using_extrapolation(fid_list,itype='molden',deg=1,use_mo_values=False,
   
   # Read all input files
   if fid_list is not None:
-    read(fid_list,itype=itype)
+    read(fid_list,itype=itype,**kwargs)
 
   radius = range(len(geo_spec_all)) #: We assume an equally spaced grid
   
@@ -724,9 +727,10 @@ def show_selected_mos(selected_mos,r0=0,steps=1,
     for rr in r:
       ao_list = ao_creator(geo_spec_all[rr],ao_spec)
       mo.append(mo_creator(ao_list,None,
-                mo_coeff=mo_coeff_all[sym[j]][rr,i,numpy.newaxis])[0][:,0,:])
+                mo_coeff=mo_coeff_all[sym[j]][rr,int(i)-1,numpy.newaxis])[0][:,0,:])
     
-    contour_mult_mo(grid.x,grid.z,mo,xlabel='x',ylabel='z',r0=r0)
+    contour_mult_mo(grid.x,grid.z,mo,xlabel='x',ylabel='z',
+                    title='MO:%s' % mo_sel,r0=r0)
 
 def contour_mult_mo(x,y,mo,xlabel='x',ylabel='y',title='',r0=0):
   '''Uses matplotlib to show slices of a molecular orbitals.'''
