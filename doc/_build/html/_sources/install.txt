@@ -36,7 +36,7 @@ Second, follow the subsequent instructions either for git or for tarball.
 .. code-block:: bash
 
     $ cd $HOME
-    $ git clone git://git.code.sf.net/p/orbkit/code orbkit
+    $ git clone http://git.code.sf.net/p/orbkit/code orbkit
     $ export ORBKITPATH=$HOME/orbkit
 
 - Using a tarball:

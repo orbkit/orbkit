@@ -92,6 +92,8 @@
 <li class="toctree-l2"><a class="reference internal" href="#module-orbkit.read">orbkit.read</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#module-orbkit.grid">orbkit.grid</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#module-orbkit.core">orbkit.core</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-orbkit.analytical_integrals">orbkit.analytical_integrals</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-orbkit.multiple_files">orbkit.multiple_files</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#module-orbkit.display">orbkit.display</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#module-orbkit.output">orbkit.output</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#module-orbkit.extras">orbkit.extras</a></li>
@@ -239,9 +241,9 @@ of the output file.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">1st element:</th><td class="field-body">coefficient</td>
+<tr class="field-odd field"><th class="field-name">1st element:</th><td class="field-body">exponent</td>
 </tr>
-<tr class="field-even field"><th class="field-name">2nd element:</th><td class="field-body">exponent</td>
+<tr class="field-even field"><th class="field-name">2nd element:</th><td class="field-body">coefficient</td>
 </tr>
 </tbody>
 </table>
@@ -479,7 +481,7 @@ specified grid.</p>
 
 <dl class="function">
 <dt id="orbkit.options.check_options">
-<tt class="descclassname">orbkit.options.</tt><tt class="descname">check_options</tt><big>(</big><em>error=&lt;built-in method write of file object at 0x2b66d2fb6150&gt;</em>, <em>display=&lt;built-in method write of file object at 0x2b66d2fb6150&gt;</em>, <em>interactive=False</em>, <em>info=True</em><big>)</big><a class="headerlink" href="#orbkit.options.check_options" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">orbkit.options.</tt><tt class="descname">check_options</tt><big>(</big><em>error=&lt;built-in method write of file object at 0x2ab4593b9150&gt;</em>, <em>display=&lt;built-in method write of file object at 0x2ab4593b9150&gt;</em>, <em>interactive=False</em>, <em>info=True</em><big>)</big><a class="headerlink" href="#orbkit.options.check_options" title="Permalink to this definition">¶</a></dt>
 <dd><p>Checks options for errors.</p>
 <p><strong>Parameters:</strong></p>
 <blockquote>
@@ -508,7 +510,7 @@ existing file.</dd>
 
 <dl class="function">
 <dt id="orbkit.options.check_if_exists">
-<tt class="descclassname">orbkit.options.</tt><tt class="descname">check_if_exists</tt><big>(</big><em>fid</em>, <em>what=''</em>, <em>error=&lt;type 'exceptions.IOError'&gt;</em>, <em>display=&lt;built-in method write of file object at 0x2b66d2fb6150&gt;</em>, <em>interactive=False</em><big>)</big><a class="headerlink" href="#orbkit.options.check_if_exists" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">orbkit.options.</tt><tt class="descname">check_if_exists</tt><big>(</big><em>fid</em>, <em>what=''</em>, <em>error=&lt;type 'exceptions.IOError'&gt;</em>, <em>display=&lt;built-in method write of file object at 0x2ab4593b9150&gt;</em>, <em>interactive=False</em><big>)</big><a class="headerlink" href="#orbkit.options.check_if_exists" title="Permalink to this definition">¶</a></dt>
 <dd><p>Checks the existence of a file.</p>
 <p><strong>Parameters:</strong></p>
 <blockquote>
@@ -563,13 +565,13 @@ existing file.</dd>
 <p>Module for controlling all computational tasks.</p>
 <dl class="function">
 <dt id="orbkit.main.init">
-<tt class="descclassname">orbkit.main.</tt><tt class="descname">init</tt><big>(</big><big>)</big><a class="headerlink" href="#orbkit.main.init" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">orbkit.main.</tt><tt class="descname">init</tt><big>(</big><em>reset_display=True</em><big>)</big><a class="headerlink" href="#orbkit.main.init" title="Permalink to this definition">¶</a></dt>
 <dd><p>Resets all <a class="reference internal" href="#module-orbkit.options" title="orbkit.options"><tt class="xref py py-mod docutils literal"><span class="pre">orbkit.options</span></tt></a> and <a class="reference internal" href="#module-orbkit.display" title="orbkit.display"><tt class="xref py py-mod docutils literal"><span class="pre">orbkit.display</span></tt></a>.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="orbkit.main.main">
-<tt class="descclassname">orbkit.main.</tt><tt class="descname">main</tt><big>(</big><big>)</big><a class="headerlink" href="#orbkit.main.main" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">orbkit.main.</tt><tt class="descname">main</tt><big>(</big><em>use_qc=None</em><big>)</big><a class="headerlink" href="#orbkit.main.main" title="Permalink to this definition">¶</a></dt>
 <dd><p>Controls the execution of all computational tasks.</p>
 </dd></dl>
 
@@ -607,9 +609,9 @@ existing file.</dd>
 
 <dl class="function">
 <dt id="orbkit.read.read_gamess">
-<tt class="descclassname">orbkit.read.</tt><tt class="descname">read_gamess</tt><big>(</big><em>filename</em>, <em>all_mo=False</em><big>)</big><a class="headerlink" href="#orbkit.read.read_gamess" title="Permalink to this definition">¶</a></dt>
-<dd><p>Reads all information desired from a Gamess-US output file.</p>
-<p><strong>Parameters:</strong></p>
+<tt class="descclassname">orbkit.read.</tt><tt class="descname">read_gamess</tt><big>(</big><em>filename</em>, <em>all_mo=False</em>, <em>read_properties=False</em><big>)</big><a class="headerlink" href="#orbkit.read.read_gamess" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads all information desired from a Gamess-US output file.
+<strong>Parameters:</strong></p>
 <blockquote>
 <div><dl class="docutils">
 <dt>filename <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
@@ -703,6 +705,26 @@ existing file.</dd>
 </dl>
 </dd></dl>
 
+<dl class="function">
+<dt id="orbkit.read.read_wfn">
+<tt class="descclassname">orbkit.read.</tt><tt class="descname">read_wfn</tt><big>(</big><em>filename</em>, <em>all_mo=False</em><big>)</big><a class="headerlink" href="#orbkit.read.read_wfn" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads all information desired from a wfn file.</p>
+<p><strong>Parameters:</strong></p>
+<blockquote>
+<div><dl class="docutils">
+<dt>filename <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>Specifies the filename for the input file.</dd>
+<dt>all_mo <span class="classifier-delimiter">:</span> <span class="classifier">bool, optional</span></dt>
+<dd>If True, all molecular orbitals are returned.</dd>
+</dl>
+</div></blockquote>
+<p><strong>Returns:</strong></p>
+<dl class="docutils">
+<dt>qc (class QCinfo) with attributes geo_spec, geo_info, ao_spec, mo_spec, etot :</dt>
+<dd>See <a class="reference internal" href="#central-variables">Central Variables</a> for details.</dd>
+</dl>
+</dd></dl>
+
 </div>
 <div class="section" id="module-orbkit.grid">
 <span id="orbkit-grid"></span><h2>orbkit.grid<a class="headerlink" href="#module-orbkit.grid" title="Permalink to this headline">¶</a></h2>
@@ -716,7 +738,7 @@ are performed.</p>
 
 <dl class="function">
 <dt id="orbkit.grid.center_grid">
-<tt class="descclassname">orbkit.grid.</tt><tt class="descname">center_grid</tt><big>(</big><em>ac</em>, <em>display=&lt;built-in method write of file object at 0x2b66d2fb6150&gt;</em><big>)</big><a class="headerlink" href="#orbkit.grid.center_grid" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">orbkit.grid.</tt><tt class="descname">center_grid</tt><big>(</big><em>ac</em>, <em>display=&lt;built-in method write of file object at 0x2ab4593b9150&gt;</em><big>)</big><a class="headerlink" href="#orbkit.grid.center_grid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Centers the grid to the point ac and to the origin (0,0,0).</p>
 </dd></dl>
 
@@ -868,6 +890,12 @@ specified by the global lists:</p>
 <dt id="orbkit.grid.reset_grid">
 <tt class="descclassname">orbkit.grid.</tt><tt class="descname">reset_grid</tt><big>(</big><big>)</big><a class="headerlink" href="#orbkit.grid.reset_grid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Resets the grid parameters.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="orbkit.grid.set_grid">
+<tt class="descclassname">orbkit.grid.</tt><tt class="descname">set_grid</tt><big>(</big><em>grid</em><big>)</big><a class="headerlink" href="#orbkit.grid.set_grid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a string describing the current x-, y-, z-grid.</p>
 </dd></dl>
 
 <dl class="function">
@@ -1074,7 +1102,7 @@ e.g., l_deg(ao=&#8217;xxy&#8217;)</dd>
 
 <dl class="function">
 <dt id="orbkit.core.mo_creator">
-<tt class="descclassname">orbkit.core.</tt><tt class="descname">mo_creator</tt><big>(</big><em>ao_list</em>, <em>mo_spec</em>, <em>is_vector=False</em>, <em>x=None</em>, <em>y=None</em>, <em>z=None</em>, <em>N=None</em>, <em>HDF5_save=False</em>, <em>h5py=False</em>, <em>numproc=1</em>, <em>s=0</em><big>)</big><a class="headerlink" href="#orbkit.core.mo_creator" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">orbkit.core.</tt><tt class="descname">mo_creator</tt><big>(</big><em>ao_list</em>, <em>mo_spec</em>, <em>is_vector=False</em>, <em>x=None</em>, <em>y=None</em>, <em>z=None</em>, <em>N=None</em>, <em>mo_coeff=None</em>, <em>HDF5_save=False</em>, <em>h5py=False</em>, <em>numproc=1</em>, <em>s=0</em><big>)</big><a class="headerlink" href="#orbkit.core.mo_creator" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates the molecular orbitals.</p>
 <p>If a string (filename) is given for the argument <tt class="docutils literal"><span class="pre">HDF5_save</span></tt>, the slice s of each
 molecular orbital will be saved to the disk. This module is used by
@@ -1111,7 +1139,7 @@ else the respective coordinates of grid will be used.</dd>
 
 <dl class="function">
 <dt id="orbkit.core.rho_compute">
-<tt class="descclassname">orbkit.core.</tt><tt class="descname">rho_compute</tt><big>(</big><em>geo_spec</em>, <em>ao_spec</em>, <em>mo_spec</em>, <em>calc_mo=False</em>, <em>vector=None</em>, <em>drv=None</em>, <em>numproc=1</em><big>)</big><a class="headerlink" href="#orbkit.core.rho_compute" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">orbkit.core.</tt><tt class="descname">rho_compute</tt><big>(</big><em>qc</em>, <em>calc_mo=False</em>, <em>vector=None</em>, <em>drv=None</em>, <em>numproc=1</em><big>)</big><a class="headerlink" href="#orbkit.core.rho_compute" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the density, the molecular orbitals, or the derivatives thereof.</p>
 <p>orbkit divides 3-dimensional regular grids into 2-dimensional slices and 
 1-dimensional vector grids into 1-dimensional slices of equal length. By default,
@@ -1119,11 +1147,14 @@ else the respective coordinates of grid will be used.</dd>
 The computational tasks are distributed to the worker processes.</p>
 <p><strong>Parameters:</strong></p>
 <dl class="docutils">
-<dt>geo_spec <span class="classifier-delimiter">:</span> <span class="classifier">array_like, shape=(3,NATOMS) </span></dt>
+<dt>qc <span class="classifier-delimiter">:</span> <span class="classifier">class or dict</span></dt>
+<dd>QCinfo class or dictionary containing the following attributes/keys.
+See <a class="reference internal" href="#central-variables">Central Variables</a> for details.</dd>
+<dt>qc.geo_spec <span class="classifier-delimiter">:</span> <span class="classifier">array_like, shape=(3,NATOMS) </span></dt>
 <dd>See <a class="reference internal" href="#central-variables">Central Variables</a> for details.</dd>
-<dt>ao_spec <span class="classifier-delimiter">:</span> <span class="classifier">List of dictionaries</span></dt>
+<dt>qc.ao_spec <span class="classifier-delimiter">:</span> <span class="classifier">List of dictionaries</span></dt>
 <dd>See <a class="reference internal" href="#central-variables">Central Variables</a> for details.</dd>
-<dt>mo_spec <span class="classifier-delimiter">:</span> <span class="classifier">List of dictionaries</span></dt>
+<dt>qc.mo_spec <span class="classifier-delimiter">:</span> <span class="classifier">List of dictionaries</span></dt>
 <dd>See <a class="reference internal" href="#central-variables">Central Variables</a> for details.</dd>
 <dt>calc_mo <span class="classifier-delimiter">:</span> <span class="classifier">bool, optional</span></dt>
 <dd>If True, the computation of  the molecular orbitals requested is only
@@ -1172,10 +1203,10 @@ quantities with respect to DRV.</dd>
 </table>
 <dl class="docutils">
 <dt>mo_list <span class="classifier-delimiter">:</span> <span class="classifier">numpy.ndarray, shape=((NMO,) + N)</span></dt>
-<dd>Contains the NMO=len(mo_spec) molecular orbitals on a grid.</dd>
+<dd>Contains the NMO=len(qc.mo_spec) molecular orbitals on a grid.</dd>
 <dt>delta_mo_list <span class="classifier-delimiter">:</span> <span class="classifier">numpy.ndarray, shape=((NDRV,NMO) + N)</span></dt>
 <dd>Contains the derivatives with respect to drv (NDRV=len(drv)) of the 
-NMO=len(mo_spec) molecular orbitals on a grid.</dd>
+NMO=len(qc.mo_spec) molecular orbitals on a grid.</dd>
 <dt>mo_norm <span class="classifier-delimiter">:</span> <span class="classifier">numpy.ndarray, shape=(NMO,)</span></dt>
 <dd>Contains the numerical norms of the molecular orbitals.</dd>
 <dt>rho <span class="classifier-delimiter">:</span> <span class="classifier">numpy.ndarray, shape=(N)</span></dt>
@@ -1188,16 +1219,19 @@ the density on a grid.</dd>
 
 <dl class="function">
 <dt id="orbkit.core.rho_compute_no_slice">
-<tt class="descclassname">orbkit.core.</tt><tt class="descname">rho_compute_no_slice</tt><big>(</big><em>geo_spec</em>, <em>ao_spec</em>, <em>mo_spec</em>, <em>calc_mo=False</em>, <em>is_vector=False</em>, <em>drv=None</em>, <em>return_components=False</em><big>)</big><a class="headerlink" href="#orbkit.core.rho_compute_no_slice" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">orbkit.core.</tt><tt class="descname">rho_compute_no_slice</tt><big>(</big><em>qc</em>, <em>calc_mo=False</em>, <em>is_vector=False</em>, <em>drv=None</em>, <em>return_components=False</em><big>)</big><a class="headerlink" href="#orbkit.core.rho_compute_no_slice" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates the density, the molecular orbitals, or the derivatives thereof
 without slicing the grid.</p>
 <p><strong>Parameters:</strong></p>
 <dl class="docutils">
-<dt>geo_spec <span class="classifier-delimiter">:</span> <span class="classifier">array_like, shape=(3,NATOMS) </span></dt>
+<dt>qc <span class="classifier-delimiter">:</span> <span class="classifier">class or dict</span></dt>
+<dd>QCinfo class or dictionary containing the following attributes/keys.
+See <a class="reference internal" href="#central-variables">Central Variables</a> for details.</dd>
+<dt>qc.geo_spec <span class="classifier-delimiter">:</span> <span class="classifier">array_like, shape=(3,NATOMS) </span></dt>
 <dd>See <a class="reference internal" href="#central-variables">Central Variables</a> for details.</dd>
-<dt>ao_spec <span class="classifier-delimiter">:</span> <span class="classifier">List of dictionaries</span></dt>
+<dt>qc.ao_spec <span class="classifier-delimiter">:</span> <span class="classifier">List of dictionaries</span></dt>
 <dd>See <a class="reference internal" href="#central-variables">Central Variables</a> for details.</dd>
-<dt>mo_spec <span class="classifier-delimiter">:</span> <span class="classifier">List of dictionaries</span></dt>
+<dt>qc.mo_spec <span class="classifier-delimiter">:</span> <span class="classifier">List of dictionaries</span></dt>
 <dd>See <a class="reference internal" href="#central-variables">Central Variables</a> for details.</dd>
 <dt>calc_mo <span class="classifier-delimiter">:</span> <span class="classifier">bool, optional</span></dt>
 <dd>If True, the computation of  the molecular orbitals requested is only
@@ -1296,10 +1330,10 @@ and if requested, the derivatives thereof as well.</dd>
 <dd>Contains the derivatives with respect to drv (NDRV=len(drv)) of the 
 NAO=len(ao_spec) atomic orbitals on a grid.</dd>
 <dt>mo_list <span class="classifier-delimiter">:</span> <span class="classifier">numpy.ndarray, shape=((NMO,) + N)</span></dt>
-<dd>Contains the NMO=len(mo_spec) molecular orbitals on a grid.</dd>
+<dd>Contains the NMO=len(qc.mo_spec) molecular orbitals on a grid.</dd>
 <dt>delta_mo_list <span class="classifier-delimiter">:</span> <span class="classifier">numpy.ndarray, shape=((NDRV,NMO) + N)</span></dt>
 <dd>Contains the derivatives with respect to drv (NDRV=len(drv)) of the 
-NMO=len(mo_spec) molecular orbitals on a grid.</dd>
+NMO=len(qc.mo_spec) molecular orbitals on a grid.</dd>
 <dt>mo_norm <span class="classifier-delimiter">:</span> <span class="classifier">numpy.ndarray, shape=(NMO,)</span></dt>
 <dd>Contains the numerical norms of the molecular orbitals.</dd>
 <dt>rho <span class="classifier-delimiter">:</span> <span class="classifier">numpy.ndarray, shape=(N)</span></dt>
@@ -1401,6 +1435,418 @@ the density on a grid.</dd>
 </dd></dl>
 
 </div>
+<div class="section" id="module-orbkit.analytical_integrals">
+<span id="orbkit-analytical-integrals"></span><h2>orbkit.analytical_integrals<a class="headerlink" href="#module-orbkit.analytical_integrals" title="Permalink to this headline">¶</a></h2>
+<p>Module performing analytical integrals between atomic and molecular orbitals.</p>
+<p>Code for the computation of the overlap between primitive atomic basis functions
+adapted from</p>
+<blockquote>
+<div><ol class="upperalpha simple" start="13">
+<li>Hô, J. M. Hernandez-Perez: &#8220;Evaluation of Gaussian Molecular Integrals&#8221;, DOI:10.3888/tmj.14-3</li>
+</ol>
+</div></blockquote>
+<dl class="function">
+<dt id="orbkit.analytical_integrals.contract_ao_overlap_matrix">
+<tt class="descclassname">orbkit.analytical_integrals.</tt><tt class="descname">contract_ao_overlap_matrix</tt><big>(</big><em>ao_uncontracted</em>, <em>ao_spec</em><big>)</big><a class="headerlink" href="#orbkit.analytical_integrals.contract_ao_overlap_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts an overlap matrix built up from primitive (uncontracted) Cartesian 
+Gaussians to an overlap matrix of built up from contracted Cartesian Gaussians.</p>
+<p><strong>Parameters:</strong></p>
+<dl class="docutils">
+<dt>ao_uncontracted <span class="classifier-delimiter">:</span> <span class="classifier">numpy.ndarray, shape = (NAO,NAO)</span></dt>
+<dd>Contains the uncontracted overlap matrix.</dd>
+<dt>ao_spec <span class="classifier-delimiter">:</span> <span class="classifier"></span></dt>
+<dd>See <a class="reference internal" href="#central-variables">Central Variables</a> in the manual for details.</dd>
+</dl>
+<p><strong>Returns:</strong></p>
+<dl class="docutils">
+<dt>ao_overlap_matrix <span class="classifier-delimiter">:</span> <span class="classifier">numpy.ndarray, shape = (NAO,NAO)</span></dt>
+<dd>Contains the contracted overlap matrix.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="orbkit.analytical_integrals.create_mo_coeff">
+<tt class="descclassname">orbkit.analytical_integrals.</tt><tt class="descname">create_mo_coeff</tt><big>(</big><em>mo</em>, <em>name='mo'</em><big>)</big><a class="headerlink" href="#orbkit.analytical_integrals.create_mo_coeff" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts the input variable to an <tt class="docutils literal"><span class="pre">mo_coeff</span></tt> numpy.ndarray.</p>
+<p><strong>Parameters:</strong></p>
+<dl class="docutils">
+<dt>mo <span class="classifier-delimiter">:</span> <span class="classifier">list, numpy.ndarray, or mo_spec (cf. <a class="reference internal" href="#central-variables">Central Variables</a>)</span></dt>
+<dd>Contains the molecular orbital coefficients of all orbitals.</dd>
+<dt>name <span class="classifier-delimiter">:</span> <span class="classifier">string, optional</span></dt>
+<dd>Contains a string describing the input variable.</dd>
+</dl>
+<p><strong>Returns:</strong></p>
+<dl class="docutils">
+<dt>mo <span class="classifier-delimiter">:</span> <span class="classifier">numpy.ndarray, shape = (NMO,NAO)</span></dt>
+<dd>Contains the molecular orbital coefficients of all orbitals.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="orbkit.analytical_integrals.get_ao_overlap">
+<tt class="descclassname">orbkit.analytical_integrals.</tt><tt class="descname">get_ao_overlap</tt><big>(</big><em>coord_a</em>, <em>coord_b</em>, <em>ao_spec</em>, <em>lxlylz_b=None</em>, <em>contraction=True</em><big>)</big><a class="headerlink" href="#orbkit.analytical_integrals.get_ao_overlap" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the overlap matrix of a basis set, where <cite>Bra</cite> basis set
+corresponds to the geometry <tt class="docutils literal"><span class="pre">coord_a</span></tt> and <cite>Ket</cite> basis set corresponds 
+to the geometry <tt class="docutils literal"><span class="pre">coord_b</span></tt>.</p>
+<p>In order to enable the computation of analytical expectation values, 
+the exponents lx, ly, lz for the primitive Cartesian Gaussians of the <cite>Ket</cite>
+basis set can be set manually with <tt class="docutils literal"><span class="pre">lxlylz_b</span></tt>.
+Please note that for the normalization of the primitive Cartesian Gaussians 
+the exponents from <tt class="docutils literal"><span class="pre">ao_spec</span></tt> are used.</p>
+<p><strong>Parameters:</strong></p>
+<dl class="docutils">
+<dt>coord_a <span class="classifier-delimiter">:</span> <span class="classifier">geo_spec</span></dt>
+<dd>Specifies the geometry of the <cite>Bra</cite> basis set. 
+See <a class="reference internal" href="#central-variables">Central Variables</a> in the manual for details.</dd>
+<dt>coord_b <span class="classifier-delimiter">:</span> <span class="classifier">geo_spec</span></dt>
+<dd>Specifies the geometry of the <cite>Ket</cite> basis set. 
+See <a class="reference internal" href="#central-variables">Central Variables</a> in the manual for details.</dd>
+<dt>ao_spec <span class="classifier-delimiter">:</span> <span class="classifier"></span></dt>
+<dd>See <a class="reference internal" href="#central-variables">Central Variables</a> in the manual for details.</dd>
+<dt>lxlylz_b <span class="classifier-delimiter">:</span> <span class="classifier">numpy.ndarray, dtype=numpy.int64, shape = (N_primitve_AO,3), optional</span></dt>
+<dd>Contains the expontents lx, ly, lz for the primitive Cartesian Gaussians of
+the <cite>Ket</cite> basis set.</dd>
+<dt>contraction <span class="classifier-delimiter">:</span> <span class="classifier">bool, optional</span></dt>
+<dd>If True, the basis set will be contracted after the computation of the 
+overlap matrix.</dd>
+</dl>
+<p><strong>Returns:</strong></p>
+<dl class="docutils">
+<dt>ao_overlap_matrix <span class="classifier-delimiter">:</span> <span class="classifier">numpy.ndarray, shape = (NAO,NAO)</span></dt>
+<dd>Contains the overlap matrix.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="orbkit.analytical_integrals.get_lxlylz">
+<tt class="descclassname">orbkit.analytical_integrals.</tt><tt class="descname">get_lxlylz</tt><big>(</big><em>ao_spec</em><big>)</big><a class="headerlink" href="#orbkit.analytical_integrals.get_lxlylz" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extracts the exponents lx, ly, lz for the primitive Cartesian Gaussians.</p>
+<p><strong>Parameters:</strong></p>
+<dl class="docutils">
+<dt>ao_spec <span class="classifier-delimiter">:</span> <span class="classifier"></span></dt>
+<dd>See <a class="reference internal" href="#central-variables">Central Variables</a> in the manual for details.</dd>
+</dl>
+<p><strong>Returns:</strong></p>
+<dl class="docutils">
+<dt>lxlylz <span class="classifier-delimiter">:</span> <span class="classifier">numpy.ndarray, dtype=numpy.int64, shape = (N_primitve_AO,3)</span></dt>
+<dd>Contains the expontents lx, ly, lz for the primitive Cartesian Gaussians.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="orbkit.analytical_integrals.get_mo_overlap">
+<tt class="descclassname">orbkit.analytical_integrals.</tt><tt class="descname">get_mo_overlap</tt><big>(</big><em>mo_a</em>, <em>mo_b</em>, <em>ao_overlap_matrix</em><big>)</big><a class="headerlink" href="#orbkit.analytical_integrals.get_mo_overlap" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the overlap of two molecular orbitals.</p>
+<p><strong>Parameters:</strong></p>
+<dl class="docutils">
+<dt>mo_a <span class="classifier-delimiter">:</span> <span class="classifier">numpy.ndarray, shape = (NAO,)</span></dt>
+<dd>Contains the molecular orbital coefficients of the <cite>Bra</cite> orbital.</dd>
+<dt>mo_b <span class="classifier-delimiter">:</span> <span class="classifier">numpy.ndarray, shape = (NAO,)</span></dt>
+<dd>Contains the molecular orbital coefficients of the <cite>Ket</cite> orbital.</dd>
+<dt>ao_overlap_matrix <span class="classifier-delimiter">:</span> <span class="classifier">numpy.ndarray, shape = (NAO,NAO)</span></dt>
+<dd>Contains the overlap matrix of the basis set.</dd>
+</dl>
+<p><strong>Returns:</strong></p>
+<dl class="docutils">
+<dt>mo_overlap <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>Contains the overlap of the two input molecular orbitals.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="orbkit.analytical_integrals.get_mo_overlap_matrix">
+<tt class="descclassname">orbkit.analytical_integrals.</tt><tt class="descname">get_mo_overlap_matrix</tt><big>(</big><em>mo_a</em>, <em>mo_b</em>, <em>ao_overlap_matrix</em><big>)</big><a class="headerlink" href="#orbkit.analytical_integrals.get_mo_overlap_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the overlap of two sets of molecular orbitals.</p>
+<p><strong>Parameters:</strong></p>
+<dl class="docutils">
+<dt>mo_a <span class="classifier-delimiter">:</span> <span class="classifier">numpy.ndarray, shape = (NMO,NAO)</span></dt>
+<dd>Contains the molecular orbital coefficients of all <cite>Bra</cite> orbitals.</dd>
+<dt>mo_b <span class="classifier-delimiter">:</span> <span class="classifier">numpy.ndarray, shape = (NMO,NAO)</span></dt>
+<dd>Contains the molecular orbital coefficients of all <cite>Ket</cite> orbitals.</dd>
+<dt>ao_overlap_matrix <span class="classifier-delimiter">:</span> <span class="classifier">numpy.ndarray, shape = (NAO,NAO)</span></dt>
+<dd>Contains the overlap matrix of the basis set.</dd>
+</dl>
+<p><strong>Returns:</strong></p>
+<dl class="docutils">
+<dt>mo_overlap_matrix <span class="classifier-delimiter">:</span> <span class="classifier">numpy.ndarray, shape = (NMO,NMO)</span></dt>
+<dd>Contains the overlap matrix between the two sets of input molecular orbitals.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="orbkit.analytical_integrals.is_mo_spec">
+<tt class="descclassname">orbkit.analytical_integrals.</tt><tt class="descname">is_mo_spec</tt><big>(</big><em>mo</em><big>)</big><a class="headerlink" href="#orbkit.analytical_integrals.is_mo_spec" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks if <tt class="docutils literal"><span class="pre">mo</span></tt> is of <tt class="docutils literal"><span class="pre">mo_spec</span></tt> type. 
+(See <a class="reference internal" href="#central-variables">Central Variables</a> for details.)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="orbkit.analytical_integrals.print2D">
+<tt class="descclassname">orbkit.analytical_integrals.</tt><tt class="descname">print2D</tt><big>(</big><em>x</em>, <em>format='%+.2f '</em><big>)</big><a class="headerlink" href="#orbkit.analytical_integrals.print2D" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prints a 2D matrix.</p>
+<p><strong>Parameters:</strong></p>
+<dl class="docutils">
+<dt>x <span class="classifier-delimiter">:</span> <span class="classifier">numpy.ndarray, shape = (n,m)</span></dt>
+<dd>Contains a 2D matrix.</dd>
+<dt>format <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>Specifies the output format.</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-orbkit.multiple_files">
+<span id="orbkit-multiple-files"></span><h2>orbkit.multiple_files<a class="headerlink" href="#module-orbkit.multiple_files" title="Permalink to this headline">¶</a></h2>
+<p>Module for processing multiple output files of quantum chemical software.</p>
+<p><strong>Capabilities</strong></p>
+<blockquote>
+<div><ul class="simple">
+<li>Read a list of files</li>
+<li>Order the molecular orbital coefficients by using analytical integrals,
+by extrapolation, or by hand (e.g. for the preparation of an interpolation)</li>
+<li>Save and read the information obtained to and from an HDF5-file</li>
+<li>Depiction of molecular orbitals</li>
+</ul>
+</div></blockquote>
+<p>Example for the Execution:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># Create a list of input filenames</span>
+<span class="n">fid_list</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">101</span><span class="p">):</span>
+  <span class="n">fid_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s">&#39;~/molden_files/</span><span class="si">%03d</span><span class="s">.molden&#39;</span> <span class="o">%</span> <span class="n">i</span><span class="p">)</span>
+
+<span class="n">init_display</span><span class="p">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">&#39;MO_ordering&#39;</span><span class="p">)</span>  <span class="c"># Specify a filename for the oklog file </span>
+                                    <span class="c"># (We want a oklog file but we have no </span>
+                                    <span class="c"># options.outputname here.)</span>
+
+<span class="c"># Start reading and ordering routine.</span>
+<span class="n">order_using_analytical_overlap</span><span class="p">(</span><span class="n">fid_list</span><span class="p">,</span><span class="n">itype</span><span class="o">=</span><span class="s">&#39;molden&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="data">
+<dt id="orbkit.multiple_files.ao_spec">
+<tt class="descclassname">orbkit.multiple_files.</tt><tt class="descname">ao_spec</tt><em class="property"> = []</em><a class="headerlink" href="#orbkit.multiple_files.ao_spec" title="Permalink to this definition">¶</a></dt>
+<dd><p>See <a class="reference internal" href="#central-variables">Central Variables</a> for details.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="orbkit.multiple_files.compute_mo_list">
+<tt class="descclassname">orbkit.multiple_files.</tt><tt class="descname">compute_mo_list</tt><big>(</big><em>geo_spec_all, ao_spec, mo_matrix, iter_drv=[None, 'x', 'y', 'z']</em><big>)</big><a class="headerlink" href="#orbkit.multiple_files.compute_mo_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the values of the molecular orbitals and, if requested, their 
+derivatives at the nuclear positions for a complete 
+mo_matrix (shape=(Nfiles,NMO,NAO)).</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="orbkit.multiple_files.construct_qc">
+<tt class="descclassname">orbkit.multiple_files.</tt><tt class="descname">construct_qc</tt><big>(</big><big>)</big><a class="headerlink" href="#orbkit.multiple_files.construct_qc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts all global variables to a list of <cite>QCinfo</cite> classses.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="orbkit.multiple_files.contour_mult_mo">
+<tt class="descclassname">orbkit.multiple_files.</tt><tt class="descname">contour_mult_mo</tt><big>(</big><em>x</em>, <em>y</em>, <em>mo</em>, <em>xlabel='x'</em>, <em>ylabel='y'</em>, <em>title=''</em>, <em>r0=0</em><big>)</big><a class="headerlink" href="#orbkit.multiple_files.contour_mult_mo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Uses matplotlib to show slices of a molecular orbitals.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="orbkit.multiple_files.data_interp">
+<tt class="descclassname">orbkit.multiple_files.</tt><tt class="descname">data_interp</tt><big>(</big><em>x</em>, <em>y</em>, <em>xnew</em>, <em>k=3</em><big>)</big><a class="headerlink" href="#orbkit.multiple_files.data_interp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Interpolates a dataset y(x) to y(xnew) using B-Splines of order k.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="orbkit.multiple_files.geo_info">
+<tt class="descclassname">orbkit.multiple_files.</tt><tt class="descname">geo_info</tt><em class="property"> = []</em><a class="headerlink" href="#orbkit.multiple_files.geo_info" title="Permalink to this definition">¶</a></dt>
+<dd><p>See <a class="reference internal" href="#central-variables">Central Variables</a> for details.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="orbkit.multiple_files.geo_spec_all">
+<tt class="descclassname">orbkit.multiple_files.</tt><tt class="descname">geo_spec_all</tt><em class="property"> = []</em><a class="headerlink" href="#orbkit.multiple_files.geo_spec_all" title="Permalink to this definition">¶</a></dt>
+<dd><p>Contains all molecular geometries, i.e., <tt class="docutils literal"><span class="pre">geo_spec</span></tt>. (See <a class="reference internal" href="#central-variables">Central Variables</a> for details.)</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="orbkit.multiple_files.index_list">
+<tt class="descclassname">orbkit.multiple_files.</tt><tt class="descname">index_list</tt><em class="property"> = []</em><a class="headerlink" href="#orbkit.multiple_files.index_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>After the execution of the ordering routine, it contains the new indices of the molecular orbitals. If index &lt; 0, the molecular orbital changes its sign. shape=(Nfiles,NMO)</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="orbkit.multiple_files.mo_coeff_all">
+<tt class="descclassname">orbkit.multiple_files.</tt><tt class="descname">mo_coeff_all</tt><em class="property"> = []</em><a class="headerlink" href="#orbkit.multiple_files.mo_coeff_all" title="Permalink to this definition">¶</a></dt>
+<dd><p>Contains all molecular orbital coefficients. List of numpy.ndarray</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="orbkit.multiple_files.mo_energy_all">
+<tt class="descclassname">orbkit.multiple_files.</tt><tt class="descname">mo_energy_all</tt><em class="property"> = []</em><a class="headerlink" href="#orbkit.multiple_files.mo_energy_all" title="Permalink to this definition">¶</a></dt>
+<dd><p>Contains all molecular orbital energies. List of numpy.ndarray</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="orbkit.multiple_files.mo_occ_all">
+<tt class="descclassname">orbkit.multiple_files.</tt><tt class="descname">mo_occ_all</tt><em class="property"> = []</em><a class="headerlink" href="#orbkit.multiple_files.mo_occ_all" title="Permalink to this definition">¶</a></dt>
+<dd><p>Contains all molecular orbital occupations. List of numpy.ndarray</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="orbkit.multiple_files.order_manually">
+<tt class="descclassname">orbkit.multiple_files.</tt><tt class="descname">order_manually</tt><big>(</big><em>mo</em>, <em>i_0</em>, <em>i_1</em>, <em>r_range</em>, <em>index_list=None</em><big>)</big><a class="headerlink" href="#orbkit.multiple_files.order_manually" title="Permalink to this definition">¶</a></dt>
+<dd><p>Performs the ordering manually.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="orbkit.multiple_files.order_mo">
+<tt class="descclassname">orbkit.multiple_files.</tt><tt class="descname">order_mo</tt><big>(</big><em>mo</em>, <em>index_list=None</em>, <em>backward=True</em>, <em>mu=0.10000000000000001</em>, <em>use_factor=False</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#orbkit.multiple_files.order_mo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Orders a 3d-matrix (shape=(Nfiles,NMO,NAO)) by interchanging the axis=1, 
+i.e., NMO, applying linear extrapolation.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="orbkit.multiple_files.order_mo_higher_deg">
+<tt class="descclassname">orbkit.multiple_files.</tt><tt class="descname">order_mo_higher_deg</tt><big>(</big><em>mo</em>, <em>index_list=None</em>, <em>backward=True</em>, <em>mu=0.10000000000000001</em>, <em>deg=2</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#orbkit.multiple_files.order_mo_higher_deg" title="Permalink to this definition">¶</a></dt>
+<dd><p>Orders a 3d-matrix (shape=(Nfiles,NMO,NAO)) by interchanging the axis=1, 
+i.e., NMO, applying an extrapolation a polynomial fit with a Vandermonde matrix
+as implemented in numpy.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="orbkit.multiple_files.order_pm">
+<tt class="descclassname">orbkit.multiple_files.</tt><tt class="descname">order_pm</tt><big>(</big><em>x</em>, <em>y</em>, <em>backward=True</em>, <em>mu=0.10000000000000001</em>, <em>use_factor=False</em><big>)</big><a class="headerlink" href="#orbkit.multiple_files.order_pm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Outdated function to order exclusively the sign of a data set.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="orbkit.multiple_files.order_using_analytical_overlap">
+<tt class="descclassname">orbkit.multiple_files.</tt><tt class="descname">order_using_analytical_overlap</tt><big>(</big><em>fid_list</em>, <em>itype='molden'</em><big>)</big><a class="headerlink" href="#orbkit.multiple_files.order_using_analytical_overlap" title="Permalink to this definition">¶</a></dt>
+<dd><p>Ordering routine using analytical overlap integrals between molecular
+orbitals. Set fid_list to None to omit the reading of input files.</p>
+<p><strong>Paramerters:</strong></p>
+<dl class="docutils">
+<dt>fid_list <span class="classifier-delimiter">:</span> <span class="classifier">list of str or None</span></dt>
+<dd>If not None, it contains the list of input file names.</dd>
+<dt>itype <span class="classifier-delimiter">:</span> <span class="classifier">str, choices={&#8216;molden&#8217;, &#8216;gamess&#8217;, &#8216;gaussian.log&#8217;, &#8216;gaussian.fchk&#8217;}</span></dt>
+<dd>Specifies the type of the input files.</dd>
+</dl>
+<p><strong>Returns:</strong></p>
+<dl class="docutils">
+<dt>index_list <span class="classifier-delimiter">:</span> <span class="classifier">numpy.ndarray, shape=(Nfiles,NMO)</span></dt>
+<dd>Contains the new indices of the molecular orbitals. If index &lt; 0, the 
+molecular orbital changes its sign.</dd>
+<dt>mo_overlap <span class="classifier-delimiter">:</span> <span class="classifier">numpy.ndarray, shape=((Nfiles - 1),NMO,NMO)</span></dt>
+<dd>Contains the overlap matrix between the molecular orbitals of two subsequent
+geometries, i.e., mo_overlap[i,j,k] corresponds to overlap between the 
+jth molecular orbital at geometry i to the kth molecular orbital at 
+geometry (i+1).</dd>
+</dl>
+<p><strong>Global Variables:</strong></p>
+<p>geo_spec_all, geo_info, ao_spec, mo_coeff_all, mo_energy_all, mo_occ_all, sym, index_list</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="orbkit.multiple_files.order_using_extrapolation">
+<tt class="descclassname">orbkit.multiple_files.</tt><tt class="descname">order_using_extrapolation</tt><big>(</big><em>fid_list</em>, <em>itype='molden'</em>, <em>deg=1</em>, <em>use_mo_values=False</em>, <em>matrix=None</em><big>)</big><a class="headerlink" href="#orbkit.multiple_files.order_using_extrapolation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Ordering routine using extrapolation of quantities related to the 
+molecular orbitals. Set fid_list to None to omit the reading of input files.</p>
+<p>The molecular orbital coefficients (If use_mo_values is False) are 
+extrapolated with a polynomial of degree <tt class="docutils literal"><span class="pre">deg</span></tt> and ordered by 
+minimizing a selected norm (default: Euclidian norm).</p>
+<p><strong>Paramerters:</strong></p>
+<dl class="docutils">
+<dt>fid_list <span class="classifier-delimiter">:</span> <span class="classifier">list of str or None</span></dt>
+<dd>If not None, it contains the list of input file names.</dd>
+<dt>itype <span class="classifier-delimiter">:</span> <span class="classifier">str, choices={&#8216;molden&#8217;, &#8216;gamess&#8217;, &#8216;gaussian.log&#8217;, &#8216;gaussian.fchk&#8217;}</span></dt>
+<dd>Specifies the type of the input files.</dd>
+<dt>deg <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>Specifies the degree of the extrapolation polynomial.</dd>
+<dt>use_mo_values <span class="classifier-delimiter">:</span> <span class="classifier">bool, optional</span></dt>
+<dd>If True, some molecular orbital values and their derivatives are computed
+at the nuclear positions. The ordering routine is applied for those values
+instead.</dd>
+<dt>matrix <span class="classifier-delimiter">:</span> <span class="classifier">None or numpy.ndarray with shape=(Nfiles,N,M)</span></dt>
+<dd>If not None, contains the data to be ordered.</dd>
+</dl>
+<p><strong>Returns:</strong></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name" colspan="2">If matrix is None:</th></tr>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body"><ul class="first simple">
+<li>index_list</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Else:</th><td class="field-body"><ul class="first last simple">
+<li>matrix, index_list</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>index_list <span class="classifier-delimiter">:</span> <span class="classifier">numpy.ndarray, shape=(Nfiles,NMO)</span></dt>
+<dd>Contains the new indices of the molecular orbitals. If index &lt; 0, the 
+molecular orbital changes its sign.</dd>
+<dt>matrix <span class="classifier-delimiter">:</span> <span class="classifier">numpy.ndarray, shape=(Nfiles,N,M)</span></dt>
+<dd>Contains the ordered matrix.</dd>
+</dl>
+<p><strong>Global Variables:</strong></p>
+<p>geo_spec_all, geo_info, ao_spec, mo_coeff_all, mo_energy_all, mo_occ_all, sym, index_list</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="orbkit.multiple_files.plot">
+<tt class="descclassname">orbkit.multiple_files.</tt><tt class="descname">plot</tt><big>(</big><em>mo_matrix, ydata2=None, symmetry='1', title='All', output_format='png', plt_dir='Plots', ylim=[-5, 5], thresh=0.10000000000000001, x0=0</em><big>)</big><a class="headerlink" href="#orbkit.multiple_files.plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots all molecular orbital coefficients of one symmetry.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="orbkit.multiple_files.read">
+<tt class="descclassname">orbkit.multiple_files.</tt><tt class="descname">read</tt><big>(</big><em>fid_list</em>, <em>itype='molden'</em><big>)</big><a class="headerlink" href="#orbkit.multiple_files.read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads a list of input files.</p>
+<p><strong>Parameters:</strong></p>
+<blockquote>
+<div><dl class="docutils">
+<dt>fid_list <span class="classifier-delimiter">:</span> <span class="classifier">list of str</span></dt>
+<dd>List of input file names.</dd>
+<dt>itype <span class="classifier-delimiter">:</span> <span class="classifier">str, choices={&#8216;molden&#8217;, &#8216;gamess&#8217;, &#8216;gaussian.log&#8217;, &#8216;gaussian.fchk&#8217;}</span></dt>
+<dd>Specifies the type of the input files.</dd>
+</dl>
+</div></blockquote>
+<p><strong>Global Variables:</strong></p>
+<p>geo_spec_all, geo_info, ao_spec, mo_coeff_all, mo_energy_all, mo_occ_all, sym</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="orbkit.multiple_files.read_hdf5">
+<tt class="descclassname">orbkit.multiple_files.</tt><tt class="descname">read_hdf5</tt><big>(</big><em>fid, variables=['geo_info', 'geo_spec_all', 'ao_spec', 'mo_coeff_all', 'mo_energy_all', 'mo_occ_all', 'sym', 'index_list']</em><big>)</big><a class="headerlink" href="#orbkit.multiple_files.read_hdf5" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads all variables specified in <tt class="docutils literal"><span class="pre">variables</span></tt> from an HDF5 file
+created with <tt class="docutils literal"><span class="pre">write_hdf5</span></tt> and appends this data to the globals() of 
+this module.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="orbkit.multiple_files.save_hdf5">
+<tt class="descclassname">orbkit.multiple_files.</tt><tt class="descname">save_hdf5</tt><big>(</big><em>fid, variables=['geo_info', 'geo_spec_all', 'ao_spec', 'mo_coeff_all', 'mo_energy_all', 'mo_occ_all', 'sym', 'index_list'], **kwargs</em><big>)</big><a class="headerlink" href="#orbkit.multiple_files.save_hdf5" title="Permalink to this definition">¶</a></dt>
+<dd><p>Writes all global variables specified in <tt class="docutils literal"><span class="pre">variables</span></tt> and all
+additional <tt class="docutils literal"><span class="pre">kwargs</span></tt> to an HDF5 file.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="orbkit.multiple_files.show_selected_mos">
+<tt class="descclassname">orbkit.multiple_files.</tt><tt class="descname">show_selected_mos</tt><big>(</big><em>selected_mos</em>, <em>r0=0</em>, <em>steps=1</em>, <em>N_=None</em>, <em>max_=None</em>, <em>min_=None</em><big>)</big><a class="headerlink" href="#orbkit.multiple_files.show_selected_mos" title="Permalink to this definition">¶</a></dt>
+<dd><p>Uses orbkit to compute selected molecular orbitals and plots it with
+<a class="reference internal" href="#orbkit.multiple_files.contour_mult_mo" title="orbkit.multiple_files.contour_mult_mo"><tt class="xref py py-func docutils literal"><span class="pre">contour_mult_mo()</span></tt></a>.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="orbkit.multiple_files.sym">
+<tt class="descclassname">orbkit.multiple_files.</tt><tt class="descname">sym</tt><em class="property"> = []</em><a class="headerlink" href="#orbkit.multiple_files.sym" title="Permalink to this definition">¶</a></dt>
+<dd><p>Python dictionary containing the molecular orbital symmetries and the corresponding position in mo_coeff_all, mo_energy_all, and mo_occ_all, respectively.</p>
+</dd></dl>
+
+</div>
 <div class="section" id="module-orbkit.display">
 <span id="orbkit-display"></span><h2>orbkit.display<a class="headerlink" href="#module-orbkit.display" title="Permalink to this headline">¶</a></h2>
 <p>Module for writing the .oklog files and printing the terminal output.</p>
@@ -1475,7 +1921,7 @@ adjusted to the density for the easy depiction of the density.</p>
 
 <dl class="function">
 <dt id="orbkit.extras.atom_projected_density">
-<tt class="descclassname">orbkit.extras.</tt><tt class="descname">atom_projected_density</tt><big>(</big><em>atom</em>, <em>geo_spec</em>, <em>ao_spec</em>, <em>mo_spec</em>, <em>geo_info=None</em>, <em>bReturnmo=False</em>, <em>ao_list=None</em>, <em>mo_list=None</em>, <em>x=None</em>, <em>y=None</em>, <em>z=None</em>, <em>N=None</em>, <em>is_vector=False</em><big>)</big><a class="headerlink" href="#orbkit.extras.atom_projected_density" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">orbkit.extras.</tt><tt class="descname">atom_projected_density</tt><big>(</big><em>atom</em>, <em>qc</em>, <em>bReturnmo=False</em>, <em>ao_list=None</em>, <em>mo_list=None</em>, <em>x=None</em>, <em>y=None</em>, <em>z=None</em>, <em>N=None</em>, <em>is_vector=False</em><big>)</big><a class="headerlink" href="#orbkit.extras.atom_projected_density" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes the projected electron density with respect to the selected atoms.</p>
 <div class="math">
 <p><img src="_images/math/cabf95bf8d7718de38b7edb8bb55e59c55d1e71d.png" alt="\rho^a(x,y,z) = \sum_i occ_i * mo_i^a * mo_i"/></p>
@@ -1503,7 +1949,7 @@ adjusted to the density for the easy depiction of the density.</p>
 
 <dl class="function">
 <dt id="orbkit.extras.calc_mo">
-<tt class="descclassname">orbkit.extras.</tt><tt class="descname">calc_mo</tt><big>(</big><em>geo_spec</em>, <em>geo_info</em>, <em>ao_spec</em>, <em>mo_spec</em>, <em>fid_mo_list</em>, <em>drv=None</em>, <em>vector=None</em>, <em>otype=None</em><big>)</big><a class="headerlink" href="#orbkit.extras.calc_mo" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">orbkit.extras.</tt><tt class="descname">calc_mo</tt><big>(</big><em>qc</em>, <em>fid_mo_list</em>, <em>drv=None</em>, <em>vector=None</em>, <em>otype=None</em><big>)</big><a class="headerlink" href="#orbkit.extras.calc_mo" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates and saves the selected molecular orbitals or the derivatives thereof.</p>
 <p><strong>Parameters:</strong></p>
 <blockquote>
@@ -1572,7 +2018,7 @@ with x, y, and z as vectors.</dd>
 
 <dl class="function">
 <dt id="orbkit.extras.compute_mulliken_charges">
-<tt class="descclassname">orbkit.extras.</tt><tt class="descname">compute_mulliken_charges</tt><big>(</big><em>atom</em>, <em>geo_info</em>, <em>geo_spec</em>, <em>ao_spec</em>, <em>mo_spec</em>, <em>ao_list=None</em>, <em>mo_list=None</em>, <em>rho_atom=None</em>, <em>x=None</em>, <em>y=None</em>, <em>z=None</em>, <em>N=None</em>, <em>is_vector=False</em><big>)</big><a class="headerlink" href="#orbkit.extras.compute_mulliken_charges" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">orbkit.extras.</tt><tt class="descname">compute_mulliken_charges</tt><big>(</big><em>atom</em>, <em>qc</em>, <em>ao_list=None</em>, <em>mo_list=None</em>, <em>rho_atom=None</em>, <em>x=None</em>, <em>y=None</em>, <em>z=None</em>, <em>N=None</em>, <em>is_vector=False</em><big>)</big><a class="headerlink" href="#orbkit.extras.compute_mulliken_charges" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute the Mulliken charges of the selected atoms using
 the respective projected electron densities.</p>
 <div class="math">
@@ -1666,7 +2112,7 @@ If fid_mo_list is &#8216;all_mo&#8217;, creates a list containing all molecular 
 
 <dl class="function">
 <dt id="orbkit.extras.mo_set">
-<tt class="descclassname">orbkit.extras.</tt><tt class="descname">mo_set</tt><big>(</big><em>geo_spec</em>, <em>geo_info</em>, <em>ao_spec</em>, <em>mo_spec</em>, <em>fid_mo_list</em>, <em>drv=None</em>, <em>vector=None</em>, <em>otype=None</em><big>)</big><a class="headerlink" href="#orbkit.extras.mo_set" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">orbkit.extras.</tt><tt class="descname">mo_set</tt><big>(</big><em>qc</em>, <em>fid_mo_list</em>, <em>drv=None</em>, <em>vector=None</em>, <em>otype=None</em><big>)</big><a class="headerlink" href="#orbkit.extras.mo_set" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates and saves the density or the derivative thereof 
 using selected molecular orbitals.</p>
 <p><strong>Parameters:</strong></p>
@@ -1691,7 +2137,7 @@ with x, y, and z as vectors.</dd>
 
 <dl class="function">
 <dt id="orbkit.extras.mo_transition_flux_density">
-<tt class="descclassname">orbkit.extras.</tt><tt class="descname">mo_transition_flux_density</tt><big>(</big><em>i</em>, <em>j</em>, <em>geo_spec</em>, <em>ao_spec</em>, <em>mo_spec</em>, <em>drv='x'</em>, <em>ao_list=None</em>, <em>mo_list=None</em>, <em>delta_ao_list=None</em>, <em>delta_mo_list=None</em>, <em>x=None</em>, <em>y=None</em>, <em>z=None</em>, <em>N=None</em>, <em>is_vector=False</em><big>)</big><a class="headerlink" href="#orbkit.extras.mo_transition_flux_density" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">orbkit.extras.</tt><tt class="descname">mo_transition_flux_density</tt><big>(</big><em>i</em>, <em>j</em>, <em>qc</em>, <em>drv='x'</em>, <em>ao_list=None</em>, <em>mo_list=None</em>, <em>delta_ao_list=None</em>, <em>delta_mo_list=None</em>, <em>x=None</em>, <em>y=None</em>, <em>z=None</em>, <em>N=None</em>, <em>is_vector=False</em><big>)</big><a class="headerlink" href="#orbkit.extras.mo_transition_flux_density" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate one component (e.g. drv=&#8217;x&#8217;) of the 
 transition electoronic flux density between the 
 molecular orbitals i and j.</p>

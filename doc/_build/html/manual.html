@@ -413,7 +413,6 @@ all modules and functions available.</p>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 <span class="k">print</span><span class="p">(</span><span class="s">&#39;We have </span><span class="si">%.3f</span><span class="s"> electrons.&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">ok</span><span class="o">.</span><span class="n">main</span><span class="o">.</span><span class="n">rho</span><span class="p">)</span><span class="o">*</span><span class="n">ok</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">d3r</span><span class="p">))</span>
 
-
 <span class="c">#---- Second scenario ----</span>
 <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">Calculate the density and its x- and z-derivative using some orbitals</span>
@@ -507,9 +506,6 @@ all modules and functions available.</p>
 <span class="n">ok</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">max_</span> <span class="o">=</span> <span class="p">[</span> <span class="mf">6.5</span><span class="p">,</span>  <span class="mf">6.5</span><span class="p">,</span>   <span class="mf">6.5</span><span class="p">]</span>
 <span class="n">ok</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">min_</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mf">6.5</span><span class="p">,</span> <span class="o">-</span><span class="mf">6.5</span><span class="p">,</span>  <span class="o">-</span><span class="mf">6.5</span><span class="p">]</span>
 
-<span class="c"># define variable to store quantum chemical information</span>
-<span class="n">qc</span> <span class="o">=</span> <span class="n">ok</span><span class="o">.</span><span class="n">QCinfo</span><span class="p">()</span>
-
 <span class="c"># open molden file and read parameters</span>
 <span class="n">qc</span> <span class="o">=</span> <span class="n">ok</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">main_read</span><span class="p">(</span><span class="n">fid_in</span><span class="p">,</span><span class="n">itype</span><span class="o">=</span><span class="n">itype</span><span class="p">)</span>
 
@@ -522,15 +518,17 @@ all modules and functions available.</p>
 <span class="c"># define the molecular orbital to be calculated</span>
 <span class="n">selected_MO</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;3.1&#39;</span><span class="p">]</span>
 
+<span class="c"># Convert the qc class to a dictionary</span>
+<span class="n">qc_select</span> <span class="o">=</span> <span class="n">qc</span><span class="o">.</span><span class="n">todict</span><span class="p">()</span>
+
 <span class="c"># get only the information of selected MO</span>
-<span class="n">Selected_mo_spec</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">qc_select</span><span class="p">[</span><span class="s">&#39;mo_spec&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
 <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">qc</span><span class="o">.</span><span class="n">mo_spec</span><span class="p">)):</span>
   <span class="k">if</span> <span class="n">qc</span><span class="o">.</span><span class="n">mo_spec</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="s">&#39;sym&#39;</span><span class="p">]</span> <span class="ow">in</span> <span class="n">selected_MO</span><span class="p">:</span>
-    <span class="n">Selected_mo_spec</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">qc</span><span class="o">.</span><span class="n">mo_spec</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+    <span class="n">qc_select</span><span class="p">[</span><span class="s">&#39;mo_spec&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">qc</span><span class="o">.</span><span class="n">mo_spec</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
 
 <span class="c"># calculate MO</span>
-<span class="n">mo_list</span> <span class="o">=</span> <span class="n">ok</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">rho_compute</span><span class="p">(</span><span class="n">qc</span><span class="o">.</span><span class="n">geo_spec</span><span class="p">,</span><span class="n">qc</span><span class="o">.</span><span class="n">ao_spec</span><span class="p">,</span>
-                              <span class="n">Selected_mo_spec</span><span class="p">,</span><span class="n">calc_mo</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span><span class="n">numproc</span><span class="o">=</span><span class="n">numproc</span><span class="p">)</span>    
+<span class="n">mo_list</span> <span class="o">=</span> <span class="n">ok</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">rho_compute</span><span class="p">(</span><span class="n">qc_select</span><span class="p">,</span><span class="n">calc_mo</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span><span class="n">numproc</span><span class="o">=</span><span class="n">numproc</span><span class="p">)</span>    
 
 <span class="c"># plot the results</span>
 <span class="n">x</span> <span class="o">=</span> <span class="n">ok</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">x</span>
@@ -538,8 +536,21 @@ all modules and functions available.</p>
 <span class="n">z</span> <span class="o">=</span> <span class="n">ok</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">z</span>
 
 <span class="c"># if selected, use mayavi2 to make isosurface plot</span>
-<span class="k">if</span> <span class="n">mayavi_yes</span> <span class="o">==</span> <span class="bp">True</span><span class="p">:</span>
+<span class="n">maya</span> <span class="o">=</span> <span class="bp">False</span>
+<span class="k">try</span><span class="p">:</span>
     <span class="kn">from</span> <span class="nn">enthought.mayavi</span> <span class="kn">import</span> <span class="n">mlab</span>
+    <span class="n">maya</span> <span class="o">=</span> <span class="bp">True</span>
+<span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+    <span class="k">pass</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">mayavi</span> <span class="kn">import</span> <span class="n">mlab</span>
+    <span class="n">maya</span> <span class="o">=</span> <span class="bp">True</span>
+<span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+    <span class="k">pass</span>
+
+<span class="k">if</span> <span class="n">maya</span> <span class="o">==</span> <span class="bp">False</span> <span class="ow">and</span> <span class="n">mayavi_yes</span> <span class="o">==</span> <span class="bp">True</span><span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&#39;error importing mayavi&#39;</span><span class="p">)</span>
+<span class="k">elif</span> <span class="n">mayavi_yes</span> <span class="o">==</span> <span class="bp">True</span><span class="p">:</span>    
     <span class="n">src</span> <span class="o">=</span> <span class="n">mlab</span><span class="o">.</span><span class="n">pipeline</span><span class="o">.</span><span class="n">scalar_field</span><span class="p">(</span><span class="n">mo_list</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
     <span class="n">mlab</span><span class="o">.</span><span class="n">pipeline</span><span class="o">.</span><span class="n">iso_surface</span><span class="p">(</span>\
         <span class="n">src</span><span class="p">,</span> <span class="n">contours</span><span class="o">=</span><span class="p">[</span><span class="mf">0.001</span><span class="p">,</span> <span class="p">],</span> <span class="n">opacity</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">))</span>
@@ -666,17 +677,29 @@ all modules and functions available.</p>
 <span class="n">x</span> <span class="o">=</span> <span class="n">ok</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">x</span>
 <span class="n">y</span> <span class="o">=</span> <span class="n">ok</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">y</span>
 <span class="n">z</span> <span class="o">=</span> <span class="n">ok</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">z</span>
+
+<span class="c"># test if mayavi exists and possibly plot</span>
+<span class="n">maya</span> <span class="o">=</span> <span class="bp">False</span>
 <span class="k">try</span><span class="p">:</span>
     <span class="kn">from</span> <span class="nn">enthought.mayavi</span> <span class="kn">import</span> <span class="n">mlab</span>
+    <span class="n">maya</span> <span class="o">=</span> <span class="bp">True</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="k">pass</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">mayavi</span> <span class="kn">import</span> <span class="n">mlab</span>
+    <span class="n">maya</span> <span class="o">=</span> <span class="bp">True</span>
+<span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+    <span class="k">pass</span>
+
+<span class="k">if</span> <span class="n">maya</span> <span class="o">==</span> <span class="bp">False</span><span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&#39;mayavi module could not be loaded and vector field cannot be shown&#39;</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&#39;load &#39;</span> <span class="o">+</span> <span class="n">ok</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">outputname</span> <span class="o">+</span> <span class="s">&#39;.&#39;</span> <span class="o">+</span> <span class="n">ok</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">otype</span> <span class="o">+</span> \
+            <span class="s">&#39; to visualize data yourself.&#39;</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
     <span class="n">mo_num</span> <span class="o">=</span> <span class="mi">3</span>
     <span class="n">mlab</span><span class="o">.</span><span class="n">quiver3d</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">,</span><span class="n">delta_mo_list</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="n">mo_num</span><span class="p">,:],</span><span class="n">delta_mo_list</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="n">mo_num</span><span class="p">,:],</span>\
                     <span class="n">delta_mo_list</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="n">mo_num</span><span class="p">,:],</span><span class="n">line_width</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span><span class="n">scale_factor</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
     <span class="n">mlab</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
-    <span class="k">print</span><span class="p">(</span><span class="s">&#39;ERROR!!! mayavi2 module is missing...&#39;</span><span class="p">)</span>
-    <span class="k">print</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">You need mayavi2 to plot the vector field.&#39;</span><span class="p">)</span>
-    <span class="k">print</span><span class="p">(</span><span class="s">&#39;Load &#39;</span> <span class="o">+</span> <span class="n">ok</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">outputname</span> <span class="o">+</span> <span class="s">&#39;.&#39;</span> <span class="o">+</span> <span class="n">ok</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">otype</span> <span class="o">+</span> \
-            <span class="s">&#39; to visualize data yourself.&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>

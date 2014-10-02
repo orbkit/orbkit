@@ -30,7 +30,7 @@ from orbkit.core import l_deg, lquant, orbit, exp
 from orbkit.display import display
 from orbkit.qcinfo import QCinfo
 
-def main_read(filename,itype='molden',all_mo=False):
+def main_read(filename,itype='molden',all_mo=False,**kwargs):
   '''Calls the requested read function.
   
   **Parameters:**
@@ -44,8 +44,12 @@ def main_read(filename,itype='molden',all_mo=False):
   
   **Returns:**
   
-  qc (class QCinfo) with attributes geo_spec, geo_info, ao_spec, mo_spec, etot :
-        See `Central Variables`_ for details.
+    qc (class QCinfo) with attributes geo_spec, geo_info, ao_spec, mo_spec, etot :
+          See `Central Variables`_ for details.
+  
+  **Note:**
+  
+  
   '''
   display('Opened \n\t%s\n' % filename)
   
@@ -58,10 +62,10 @@ def main_read(filename,itype='molden',all_mo=False):
   display('Loading %s file...' % itype)
   
   # Return required data
-  return reader[itype](filename, all_mo=all_mo)
+  return reader[itype](filename, all_mo=all_mo,**kwargs)
   # main_read 
 
-def read_molden(filename, all_mo=False):
+def read_molden(filename, all_mo=False, i_md=-1, interactive=True):
   '''Reads all information desired from a molden file.
   
   **Parameters:**
@@ -70,11 +74,15 @@ def read_molden(filename, all_mo=False):
       Specifies the filename for the input file.
     all_mo : bool, optional
       If True, all molecular orbitals are returned.
+    i_mo : int, default=-1
+      Selects the `[Molden Format]` section of the output file.
+    interactive : bool
+      If True, the user is asked to select the different sets.
   
   **Returns:**
   
-  qc (class QCinfo) with attributes geo_spec, geo_info, ao_spec, mo_spec, etot :
-      See `Central Variables`_ for details.
+    qc (class QCinfo) with attributes geo_spec, geo_info, ao_spec, mo_spec, etot :
+        See `Central Variables`_ for details.
   '''
 
   fid    = open(filename,'r')      # Open the file
@@ -86,6 +94,45 @@ def read_molden(filename, all_mo=False):
     display('The input file %s is no valid molden file!\nIt does' +
           ' not contain the keyword: [Molden Format]\nEXIT\n' % filename)
     raise IOError('Not a valid input file')
+  
+  def check_sel(count,i,interactive=False):
+    if count == 0:
+      raise IndexError
+    elif count == 1:
+      return 0
+    message = '\tPlease give an integer from 0 to %d: ' % (count-1)
+    
+    try:
+      if interactive:
+        i = int(raw_input(message))
+      i = range(count)[i]
+    except (IndexError,ValueError):
+      raise IOError(message.replace(':','!'))
+    else:
+      display('\tSelecting the %s' %
+              ('last element.' if (i == count-1) else 'element %d.' % i))
+    return i
+  
+  count = 0
+  # Go through the file line by line 
+  for il in range(len(flines)):
+      line = flines[il]            # The current line as string
+      
+      # Check the file for keywords 
+      if '[Molden Format]' in line:
+        count += 1
+  
+  if count == 0:
+    display('The input file %s is no valid molden file!\nIt does' % filename +
+          ' not contain the keyword: [Molden Format]\nEXIT\n' )
+    raise IOError('Not a valid input file')
+  else:
+    if count > 1:
+      display('\nContent of the molden file:')
+      display('\tFound %d [Molden Format] keywords, i.e., ' % count + 
+              'this file contains %d molden files.' % count)
+    i_md = check_sel(count,i_md,interactive=interactive)
+  
   
   # Set a counter for the AOs 
   basis_count = 0
@@ -109,7 +156,10 @@ def read_molden(filename, all_mo=False):
       qc = QCinfo()
       sec_flag = False             # A Flag specifying the current section 
     elif '_ENERGY=' in line:
-      qc.etot = float(thisline[1])
+      try:
+        qc.etot = float(thisline[1])
+      except IndexError:
+        pass
     elif '[Atoms]' in line:
       # The section containing information about 
       # the molecular geometry begins 
@@ -228,13 +278,16 @@ def read_molden(filename, all_mo=False):
       if ii_mo['occ_num'] > 0.0000001:
         qc.mo_spec.append(ii_mo)
   
-  qc.geo_spec = numpy.array(qc.geo_spec)
+  # Convert geo_info and geo_spec to numpy.ndarrays
   qc.geo_info = numpy.array(qc.geo_info)
+  qc.geo_spec = numpy.array(qc.geo_spec)
+  
   return qc
   # read_molden 
 
 def read_gamess(filename, all_mo=False,read_properties=False):
   '''Reads all information desired from a Gamess-US output file.
+  
   **Parameters:**
   
     filename : str
@@ -244,8 +297,8 @@ def read_gamess(filename, all_mo=False,read_properties=False):
   
   **Returns:**
   
-  qc (class QCinfo) with attributes geo_spec, geo_info, ao_spec, mo_spec, etot :
-      See `Central Variables`_ for details.
+    qc (class QCinfo) with attributes geo_spec, geo_info, ao_spec, mo_spec, etot :
+        See `Central Variables`_ for details.
   '''
   # Initialize the variables 
   qc = QCinfo()
@@ -489,8 +542,10 @@ def read_gamess(filename, all_mo=False,read_properties=False):
       qc.mo_spec[ii]['occ_num'] += 1.0
       occ[0] -= 1
   
-  qc.geo_spec = numpy.array(qc.geo_spec)
+  # Convert geo_info and geo_spec to numpy.ndarrays
   qc.geo_info = numpy.array(qc.geo_info)
+  qc.geo_spec = numpy.array(qc.geo_spec)
+  
   return qc
   # read_gamess 
 
@@ -506,8 +561,8 @@ def read_gaussian_fchk(filename, all_mo=False):
   
   **Returns:**
   
-  qc (class QCinfo) with attributes geo_spec, geo_info, ao_spec, mo_spec, etot :
-      See `Central Variables`_ for details.
+    qc (class QCinfo) with attributes geo_spec, geo_info, ao_spec, mo_spec, etot :
+        See `Central Variables`_ for details.
   '''
 
   fid    = open(filename,'r')   # Open the file
@@ -694,6 +749,10 @@ def read_gaussian_fchk(filename, all_mo=False):
       if ii_mo['occ_num'] > 0.0000001:
         qc.mo_spec.append(ii_mo)
   
+  # Convert geo_info and geo_spec to numpy.ndarrays
+  qc.geo_info = numpy.array(qc.geo_info)
+  qc.geo_spec = numpy.array(qc.geo_spec)
+  
   return qc
   # read_gaussian_fchk 
 
@@ -720,8 +779,8 @@ def read_gaussian_log(filename,all_mo=False,orientation='standard',
   
   **Returns:**
   
-  qc (class QCinfo) with attributes geo_spec, geo_info, ao_spec, mo_spec, etot :
-      See `Central Variables`_ for details.
+    qc (class QCinfo) with attributes geo_spec, geo_info, ao_spec, mo_spec, etot :
+        See `Central Variables`_ for details.
 
 .. [#first] Attention: The MOs in the output are only valid for the standard orientation!
 
@@ -988,6 +1047,10 @@ def read_gaussian_log(filename,all_mo=False,orientation='standard',
       if ii_mo['occ_num'] > 0.0000001:
         qc.mo_spec.append(ii_mo)
   
+  # Convert geo_info and geo_spec to numpy.ndarrays
+  qc.geo_info = numpy.array(qc.geo_info)
+  qc.geo_spec = numpy.array(qc.geo_spec)
+  
   return qc
   # read_gaussian_log 
   
@@ -1004,8 +1067,8 @@ def read_wfn(filename, all_mo=False):
   
   **Returns:**
   
-  qc (class QCinfo) with attributes geo_spec, geo_info, ao_spec, mo_spec, etot :
-      See `Central Variables`_ for details.
+    qc (class QCinfo) with attributes geo_spec, geo_info, ao_spec, mo_spec, etot :
+        See `Central Variables`_ for details.
   '''
   aa_to_au = 1/0.52917720859
   # Initialize the variables 
@@ -1072,5 +1135,9 @@ def read_wfn(filename, all_mo=False):
               c_mo += 1
             if (c_mo) == ao_num:
               sec_flag = None
+  
+  # Convert geo_info and geo_spec to numpy.ndarrays
+  qc.geo_info = numpy.array(qc.geo_info)
+  qc.geo_spec = numpy.array(qc.geo_spec)
   
   return qc

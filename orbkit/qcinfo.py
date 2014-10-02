@@ -72,7 +72,7 @@ def standard_mass(atom):
     return nist_mass[atom][1] * u_to_me
   except ValueError:
     return dict(nist_mass)[atom.title()] * u_to_me
-    
+
 class CIinfo:
   def __init__(self,method='ci'):
     self.coeffs = []
@@ -126,15 +126,14 @@ class QCinfo:
 #    self.mo_occup = None
 #    self.mo_energ = None
 #    self.mo_sym   = None
+
   def sort_mo_sym(self):
     keys = []
     for i_mo in self.mo_spec:
       keys.append(i_mo['sym'].split('.'))
-
     keys = numpy.array(keys,dtype=int)
-
     self.mo_spec = list(numpy.array(self.mo_spec)[numpy.lexsort(keys.T)])
-   
+
   def get_com(self,nuc_list=None):
     self.com   = numpy.zeros(3)
     total_mass = 0.

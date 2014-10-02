@@ -2,9 +2,9 @@ orbkit
 ======
 Copyright (C) 2014, Gunter Hermann, Vincent Pohl, and Axel Schild.
 
-orbkit is a parallel Python program package for post-processing 
-wavefunction data extracted from output files of MOLPRO (Molden File Format), 
-TURBOMOLE (Molden file format), GAMESS US, and Gaussian (Formatted Checkpoint File). 
+orbkit is a parallel Python program package for post-processing wavefunction 
+data extracted from output files of MOLPRO (Molden File Format), TURBOMOLE 
+(Molden file format), GAMESS US, and Gaussian (Formatted Checkpoint File). 
 
 Computational capabilities using arbitrary grids:
 
@@ -17,63 +17,64 @@ Computational capabilities using arbitrary grids:
 
 If you use orbkit in your work, please cite it as follows:
 
-Gunter Hermann, Vincent Pohl, Axel Schild: orbkit: A Toolbox for Post-Processing 
-Quantum Chemical Wavefunction Data, available via http://sourceforge.net/p/orbkit (2014).
+Gunter Hermann, Vincent Pohl, Axel Schild: orbkit: A Toolbox for Post-Processing
+Quantum Chemical Wavefunction Data, available via 
+http://sourceforge.net/p/orbkit (2014).
 
 Website: http://sourceforge.net/p/orbkit
 
 Licence Note
 ============
 
-orbkit is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as 
-published by the Free Software Foundation, either version 3 of 
-the License, or any later version.
+orbkit is free software: you can redistribute it and/or modify it under the 
+terms of the GNU Lesser General Public License as published by the Free Software 
+Foundation, either version 3 of the License, or any later version.
 
-orbkit is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU Lesser General Public License for more details.
+orbkit is distributed in the hope that it will be useful, but WITHOUT ANY 
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more details.
 
-You should have received a copy of the GNU Lesser General Public 
-License along with orbkit.  If not, see <http://www.gnu.org/licenses/>.
+You should have received a copy of the GNU Lesser General Public License along 
+with orbkit.  If not, see <http://www.gnu.org/licenses/>.
 
 Installation Requirements
 =========================
 
-For a proper execution of orbkit, the following Python modules are
-required:
+For a proper execution of orbkit, the following Python modules are required:
 
-1) Python 2.6 - 2.7 (http://www.python.org)
+1) Python 2.6 - 2.7 (http://www.python.org) 
+   Python 3.x probably works, too, but is officially not (yet) supported
 2) SciPy Library of algorithms and mathematical tools (http://www.scipy.org/)
-3) NumPy Library of high-level mathematical functions (http://www.numpy.org/)
-4) h5py Interface to the HDF5 binary data format (http://www.h5py.org/)
+3) Weave (scipy.weave) for parallel computing (orbkit will not work without this)
+4) NumPy Library of high-level mathematical functions (http://www.numpy.org/)
+5) h5py Interface to the HDF5 binary data format (http://www.h5py.org/)
 
-The package h5py is not mandatory but strongly recommanded.
+The package h5py is not mandatory but strongly recommended.
 
 Installation
 ============
 
-Currently, no setup.py file is available. So, if you want to use orbkit as a 
-standalone program or a python module, a manual installation is prerequisite. 
-An instruction for linux using bash follows in the subsequent section.
+Currently, no setup.py file is available. If you want to use orbkit as a 
+standalone program or a python module, a simple installation is required. 
 
-Two methods will be described. The installation via git and the installation 
-using a tarball provided.
+You may obtain orbkit via git (recommended) or as a tarball. For both cases, 
+installation instructions for Linux now follow:
 
-First choose and navigate the directory, where you want to install orbkit. 
-In this example we will use the home directory. 
+First choose and navigate in the terminal to the directory where you want to 
+install orbkit. In this example we will use the home directory. 
 
 - Using git:
-  Clone the repository and set a path variable for orbkit to that directory:
+  Clone the repository and set a path variable for orbkit to that directory
+  using your favorite terminal program:
 
     $ cd $HOME
     $ git clone git://git.code.sf.net/p/orbkit/code orbkit
     $ export ORBKITPATH=$HOME/orbkit
 
 - Using a tarball:
-  Download the latest orbkit release, extract the file (`v0.2.0` has to be replaced
-  by the version number), and set a path variable for orbkit to that directory:
+  Download the latest orbkit release, extract the file (`v0.2.0` has to be 
+  replaced by the version number), and set a path variable for orbkit to that 
+  directory:
 
     $ cd $HOME
     $ wget http://sourceforge.net/projects/orbkit/files/latest/download 
@@ -83,12 +84,13 @@ In this example we will use the home directory.
 orbkit Modules
 --------------
 
-In order to use orbkit, you add the orbkit dirrectory to your PYTHONPATH 
-enviroment variable either temporarily by typing
+In order to use orbkit, add the orbkit dirrectory to your PYTHONPATH enviroment 
+variable either temporarily by typing
 
     $ export PYTHONPATH=$PYHONPATH:$ORBKITPATH
 
-or permanently by adding this line to your ~/.bashrc file.
+in the terminal or permanently by adding this line to your terminal program 
+configuration file, e.g. ~/.bashrc, ~/.zshrc, ~/.cshrc, etc.
 
 To use the orbkit standalone program you have to modify your PATH variable as
 well:
@@ -98,5 +100,5 @@ well:
 Support
 =======
 
-If you need help for the usage of orbkit, do not hesitate to contact the 
-orbkit support team via http://sourceforge.net/projects/orbkit/support
+If you need help for the usage of orbkit, contact the orbkit support team via 
+http://sourceforge.net/projects/orbkit/support

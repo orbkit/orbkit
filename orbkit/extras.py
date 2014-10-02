@@ -373,7 +373,7 @@ def atom_projected_density(atom,qc,
   
   **Parameters:**
   
-    atom : int or list of int
+    atom : 'all' or int or list of int
       Specifies the atoms to which the projected electron density will be computed.  
     geo_spec, geo_info, ao_spec, mo_spec :  
       See `Central Variables`_ for details.
@@ -400,6 +400,9 @@ def atom_projected_density(atom,qc,
       return 0
     else:
       N = (len(x),)
+  
+  if atom == 'all':
+    atom = range(1,len(qc.geo_info)+1)  
   
   atom, index = atom2index(atom,geo_info=qc.geo_info)
   

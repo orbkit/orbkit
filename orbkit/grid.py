@@ -5,8 +5,6 @@ are performed.'''
 orbkit
 Gunter Hermann, Vincent Pohl, and Axel Schild
 
-Institut fuer Chemie und Biochemie, Freie Universitaet Berlin, 14195 Berlin, Germany
-
 This file is part of orbkit.
 
 orbkit is free software: you can redistribute it and/or modify
@@ -25,9 +23,13 @@ License along with orbkit.  If not, see <http://www.gnu.org/licenses/>.
 
 # Import general modules
 import sys
-
 import numpy
-from scipy import weave
+
+# test how to import weave
+try:
+    from scipy import weave
+except:    
+    import weave
 
 # Import orbkit modules
 from orbkit import cSupportCode
@@ -89,7 +91,7 @@ def get_grid(start='\t'):
   grid = [x,y,z]
   display = ''
   for ii in range(3):
-    display += ('%(s)s%(c)smin = %(min).3f %(c)smax = %(max).3f N%(c)s = %(N)d ' % 
+    display += ('%(s)s%(c)smin = %(min).2f %(c)smax = %(max).2f N%(c)s = %(N)d ' % 
       {'s': start, 'c': coord[ii], 'min': min(grid[ii]), 'max': max(grid[ii]), 
        'N': len(grid[ii])})
       #{'s': start, 'c': coord[ii], 'min': min_[ii], 'max': max_[ii], 'N': N_[ii]})
@@ -204,7 +206,7 @@ def grid2vector():
   is_vector = True
   return 0
   # grid2vector 
-
+  
 def vector2grid(Nx=None,Ny=None,Nz=None):
   '''Converts the (3, (Nx*Ny*Nz)) grid matrix (vector grid) back to the regular grid 
   characterized by the x-, y-, z-vectors.
@@ -611,14 +613,14 @@ def center_grid(ac,display=sys.stdout.write):
   # center_grid 
 
 # Default values for the grid parameters 
-min_ = [-8.0, -8.0, -8.0] #: Specifies minimum grid values (regular grid).
-max_ = [ 8.0,  8.0,  8.0] #: Specifies maximum grid values (regular grid).
-N_   = [ 101,  101,  101] #: Specifies the number of grid points (regular grid).
+min_ = [-8.0, -8.0, -8.0]   #: Specifies minimum grid values (regular grid).
+max_ = [ 8.0,  8.0,  8.0]   #: Specifies maximum grid values (regular grid).
+N_   = [ 101,  101,  101]   #: Specifies the number of grid points (regular grid).
 
 # Initialize some lists 
-x = [0]                     #: Contains the x-coordinates. 
-y = [0]                     #: Contains the y-coordinates. 
-z = [0]                     #: Contains the z-coordinates. 
+x = numpy.array([0])        #: Contains the x-coordinates. 
+y = numpy.array([0])        #: Contains the y-coordinates. 
+z = numpy.array([0])        #: Contains the z-coordinates. 
 delta_ = numpy.zeros((3,1)) #: Contains the grid spacing.
 
 is_initialized = False      #: If True, the grid is assumed to be initialized.
