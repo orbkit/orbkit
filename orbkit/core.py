@@ -565,7 +565,7 @@ def rho_compute(qc,calc_mo=False,vector=None,drv=None,numproc=1):
   # Print information regarding the density calculation 
   if not calc_mo:
     display("\nStarting the density calculation...")
-  display("The grid has been seperated into %d %sslices and the" % 
+  display("The grid has been separated into %d %sslices and the" % 
                 (sNum, '2d-' if vector is None else ''))
   if numproc == 1:
     display("calculation will be carried out with 1 subprocess.\n" + 
@@ -602,8 +602,11 @@ def rho_compute(qc,calc_mo=False,vector=None,drv=None,numproc=1):
     if not is_vector:
       xx.append((numpy.array([grid.x[s]])))
     else:
-      if i + vector >= N:
-        xx.append((numpy.array([i,N+1],dtype=int)))      
+      if i == N[0]:
+        sNum -= 1
+        break
+      elif (i + vector) >= N[0]:
+        xx.append((numpy.array([i,N[0]],dtype=int)))      
       else:
         xx.append((numpy.array([i,i + vector],dtype=int)))
       i += vector 
@@ -650,7 +653,6 @@ def rho_compute(qc,calc_mo=False,vector=None,drv=None,numproc=1):
     
     # Print out the progress of the computation 
     status = round(s*100/float(sNum))
-    
     if not status % 20 and status != status_old: 
       t.append(time.time())
       display("\tFinished %(f)d%% (%(s)d slices in %(t).3fs)" 
@@ -664,7 +666,7 @@ def rho_compute(qc,calc_mo=False,vector=None,drv=None,numproc=1):
   pool.close()
   pool.join()
   
-  if (not is_vector and not calc_mo):
+  if (not is_vector):
     # Print the norm of the MOs 
     display("\nNorm of the MOs:")
     for ii_mo in range(len(mo_norm)):
@@ -1068,7 +1070,7 @@ def ao_code(is_vector=False,is_drv=False):
             for (int il=0; il<Nao_list[0]; il++)
             {
             switch(drv)
-            {
+            {   
             case 0:
             {
             if (lx[il] == 0)
@@ -1135,7 +1137,6 @@ def ao_code(is_vector=False,is_drv=False):
     int lx[Nao_list[0]], ly[Nao_list[0]], lz[Nao_list[0]];
     double rr, ao_l0[ao_num], ao_xyz;
     
-
     for (int il=0; il<Nao_list[0]; il++)
     {
       lx[il] = EXP_LIST2(il,0);
@@ -1147,7 +1148,6 @@ def ao_code(is_vector=False,is_drv=False):
         Norm[ii][il] = ao_norm(lx[il],ly[il],lz[il],&COEFF_LIST2(ii,0));
       }
     }
-    
     for (int i=0; i<Nx[0]; i++)
     {
       X = x[i]-at_pos[0];
@@ -1164,56 +1164,56 @@ def ao_code(is_vector=False,is_drv=False):
         {
         switch(drv)
         {
-            case 0:
-            {
-            if (lx[il] == 0)
-            {
-            ao_xyz = - 2 * COEFF_LIST2(ii,0) * 
-                xyz(X, Y, Z, lx[il]+1, ly[il], lz[il]);
-            }
-            else
-            {
-            ao_xyz = lx[il] * xyz(X, Y, Z, lx[il]-1, ly[il], lz[il]) 
-                    - 2 * COEFF_LIST2(ii,0) * 
-                    xyz(X, Y, Z, lx[il]+1, ly[il], lz[il]);     
+          case 0:
+          {
+          if (lx[il] == 0)
+          {
+          ao_xyz = - 2 * COEFF_LIST2(ii,0) * 
+              xyz(X, Y, Z, lx[il]+1, ly[il], lz[il]);
           }
-        } break;
-        
-            case 1:
-            {
-            if (ly[il] == 0)
-            {
-            ao_xyz = - 2 * COEFF_LIST2(ii,0) * 
-                    xyz(X, Y, Z, lx[il], ly[il]+1, lz[il]);
-            }
-            else
-            {
-            ao_xyz = ly[il] * xyz(X, Y, Z, lx[il], ly[il]-1, lz[il]) 
-                    - 2 * COEFF_LIST2(ii,0) * 
-                    xyz(X, Y, Z, lx[il], ly[il]+1, lz[il]);    
-            }
-            } break;
-            
-            case 2:
-            {
-            if (lz[il] == 0)
-            {
-            ao_xyz = - 2 * COEFF_LIST2(ii,0) * 
-                    xyz(X, Y, Z, lx[il], ly[il], lz[il]+1);
-            }
-            else
-            {
-            ao_xyz = lz[il] * xyz(X, Y, Z, lx[il], ly[il], lz[il]-1) 
-                    - 2 * COEFF_LIST2(ii,0) * 
-                    xyz(X, Y, Z, lx[il], ly[il], lz[il]+1);    
-            }
-            } break;
-            
-            default:
-            {
-            std::cout << "False statement for derivative variable!" 
-                        << std::endl;
-            }
+          else
+          {
+          ao_xyz = lx[il] * xyz(X, Y, Z, lx[il]-1, ly[il], lz[il]) 
+                  - 2 * COEFF_LIST2(ii,0) * 
+                  xyz(X, Y, Z, lx[il]+1, ly[il], lz[il]);     
+          }
+          } break;
+          
+          case 1:
+          {
+          if (ly[il] == 0)
+          {
+          ao_xyz = - 2 * COEFF_LIST2(ii,0) * 
+                  xyz(X, Y, Z, lx[il], ly[il]+1, lz[il]);
+          }
+          else
+          {
+          ao_xyz = ly[il] * xyz(X, Y, Z, lx[il], ly[il]-1, lz[il]) 
+                  - 2 * COEFF_LIST2(ii,0) * 
+                  xyz(X, Y, Z, lx[il], ly[il]+1, lz[il]);    
+          }
+          } break;
+          
+          case 2:
+          {
+          if (lz[il] == 0)
+          {
+          ao_xyz = - 2 * COEFF_LIST2(ii,0) * 
+                  xyz(X, Y, Z, lx[il], ly[il], lz[il]+1);
+          }
+          else
+          {
+          ao_xyz = lz[il] * xyz(X, Y, Z, lx[il], ly[il], lz[il]-1) 
+                  - 2 * COEFF_LIST2(ii,0) * 
+                  xyz(X, Y, Z, lx[il], ly[il], lz[il]+1);    
+          }
+          } break;
+          
+          default:
+          {
+          std::cout << "False statement for derivative variable!" 
+                      << std::endl;
+          }
         }
         AO_LIST2(il,i) += Norm[ii][il] * ao_xyz * ao_l0[ii];
         }

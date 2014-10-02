@@ -279,14 +279,15 @@ def main():
   return data
   # main 
 
-def init():  
-  ''' Resets all :mod:`orbkit.options` and :mod:`orbkit.display`. 
-  '''
-  reload(options)
-  display.is_initiated = False
-  
-  return 
-  # init 
+def init(reset_display=True):  
+ ''' Resets all :mod:`orbkit.options` and :mod:`orbkit.display`. 
+ '''
+ reload(options)
+ if reset_display:
+   display.is_initiated = False
+ 
+ return 
+ # init  
   
 
 #if __name__ == '__main__':

@@ -23,7 +23,10 @@
 !Tab.csv
 
 # Under developement
-interpolation.py
+orbkit/development
+examples/Plots
+examples/NaCl_molden_files
+
 
 # IDE files to ignore (Netbeans, Eclipse)
 nbproject/private/
@@ -36,4 +39,3 @@ nbproject/private/
 
 # except this file
 !.gitignore
-

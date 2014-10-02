@@ -72,6 +72,40 @@ def standard_mass(atom):
     return nist_mass[atom][1] * u_to_me
   except ValueError:
     return dict(nist_mass)[atom.title()] * u_to_me
+    
+class CIinfo:
+  def __init__(self,method='ci'):
+    self.coeffs = []
+    self.occ    = []
+    self.info   = None
+    self.method = method
+  def copy(self):
+    ciinfo = self.__class__(method=self.method)
+    if self.coeffs != []:
+      ciinfo.coeffs = numpy.copy(self.coeffs)
+    if self.occ != []:
+      ciinfo.occ = numpy.copy(self.occ)
+    if self.info is not None:
+      ciinfo.info = self.info.copy()    
+    return ciinfo
+  def todict(self):
+    return self.__dict__
+  def hdf5_save(self,fid='out.h5',group='/ci:0',mode='w'):
+    from orbkit.output import hdf5_open,hdf5_append
+    from copy import copy
+    for hdf5_file in hdf5_open(fid,mode=mode):
+      dct = copy(self.todict())
+      dct['info'] = numpy.array(dct['info'].items(),dtype=str)
+      hdf5_append(dct,hdf5_file,name=group)
+  def hdf5_read(self,fid='out.h5',group='/ci:0'):
+    from orbkit.output import hdf5_open,hdf52dict
+    for hdf5_file in hdf5_open(fid,mode='r'):
+      for key in self.__dict__.keys():
+        try:
+          self.__dict__[key] = hdf52dict('%s/%s' % (group,key),hdf5_file)
+        except KeyError:
+          self.__dict__[key] = hdf5_file['%s' % group].attrs[key]
+      self.__dict__['info'] = dict(self.__dict__['info'])
 
 class QCinfo:
   def __init__(self):
@@ -92,7 +126,15 @@ class QCinfo:
 #    self.mo_occup = None
 #    self.mo_energ = None
 #    self.mo_sym   = None
+  def sort_mo_sym(self):
+    keys = []
+    for i_mo in self.mo_spec:
+      keys.append(i_mo['sym'].split('.'))
 
+    keys = numpy.array(keys,dtype=int)
+
+    self.mo_spec = list(numpy.array(self.mo_spec)[numpy.lexsort(keys.T)])
+   
   def get_com(self,nuc_list=None):
     self.com   = numpy.zeros(3)
     total_mass = 0.

@@ -141,9 +141,9 @@ def pdb_creator(filename,qc,c_type='Lowdin'):
               }
     string += 'ATOM  %(num)s%(type)s%(id)s    ' % content
     for i in reversed(range(3)):
-      string += '%+.3f'.rjust(7)[:7] % (qc.geo_spec[il][i]/aa_to_au)
+      string += '%+.3f'.rjust(7)[:7] % (qc.geo_spec[il][i])/aa_to_au
     
-    charge = 0 if qc.pop_ana[c_type][il] == None else qc.pop_ana[c_type][il]
+    charge = 0 #if qc.pop_ana[c_type][il] == None else qc.pop_ana[c_type][il]
     string += '  1.00  %+.6f\n' % charge
   
   string += ('MASTER        0    0    0    0    0    0    0    0 ' + 

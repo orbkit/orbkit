@@ -143,6 +143,13 @@ def read_molden(filename, all_mo=False):
         qc.geo_spec.append([float(ii)*aa_to_au for ii in thisline[3:]])
       if sec_flag == 'ao_info':
         # Atomic orbital section 
+        def check_int(i):
+          try:
+            int(i)
+            return True
+          except ValueError:
+            return False
+        
         if thisline == []:
           # There is a blank line after every AO 
           bNew = True
@@ -151,23 +158,27 @@ def read_molden(filename, all_mo=False):
           bNew = False
           at_num = int(thisline[0]) - 1
           ao_num = 0
-        elif len(thisline) == 3:
+        elif len(thisline) == 3 and check_int(thisline[1]):
           # AO information section 
           # Initialize a new dict for this AO 
           ao_num = 0               # Initialize number of atomic orbiatls 
           ao_type = thisline[0]    # Which type of atomic orbital do we have
           pnum = int(thisline[1])  # Number of primatives
           # Calculate the degeneracy of this AO and increase basis_count 
-          basis_count += l_deg(lquant[ao_type])
-          qc.ao_spec.append({'atom': at_num,
-                             'type': ao_type,
-                             'pnum': pnum,
-                             'coeffs': numpy.zeros((pnum, 2))
-                          })
+          for i_ao in ao_type:
+            # Calculate the degeneracy of this AO and increase basis_count 
+            basis_count += l_deg(lquant[i_ao])
+            qc.ao_spec.append({'atom': at_num,
+                            'type': i_ao,
+                            'pnum': pnum,
+                            'coeffs': numpy.zeros((pnum, 2))
+                            })
         else:
           # Append the AO coefficients 
           coeffs = numpy.array(line.replace('D','e').split(), dtype=numpy.float64)
-          qc.ao_spec[-1]['coeffs'][ao_num,:] = coeffs
+          for i_ao in range(len(ao_type)):
+            qc.ao_spec[-len(ao_type)+i_ao]['coeffs'][ao_num,:] = [coeffs[0],
+                                                               coeffs[1+i_ao]]
           ao_num += 1
       if sec_flag == 'mo_info':
         # Molecular orbital section 
@@ -217,6 +228,8 @@ def read_molden(filename, all_mo=False):
       if ii_mo['occ_num'] > 0.0000001:
         qc.mo_spec.append(ii_mo)
   
+  qc.geo_spec = numpy.array(qc.geo_spec)
+  qc.geo_info = numpy.array(qc.geo_info)
   return qc
   # read_molden 
 
@@ -234,10 +247,6 @@ def read_gamess(filename, all_mo=False,read_properties=False):
   qc (class QCinfo) with attributes geo_spec, geo_info, ao_spec, mo_spec, etot :
       See `Central Variables`_ for details.
   '''
-  #a='A1'
-  #sym={}
-  #if a not in sym.keys(): sym[a] = 1
-  #else: sym[a] += 1
   # Initialize the variables 
   qc = QCinfo()
   sec_flag = None                 # A Flag specifying the current section
@@ -276,7 +285,8 @@ def read_gamess(filename, all_mo=False,read_properties=False):
         mo_skip = 1
         init_mo = False             # Initialize new MO section
         info_key = None             # A Flag specifying the energy and symmetry section
-        len_mo = 0                  # Number of MOs
+        len_mo = 0                  # Number of MOs 
+        sym={}                      # Symmetry of MOs
       elif ' NUMBER OF OCCUPIED ORBITALS (ALPHA)          =' in line:
         occ.append(int(thisline[-1]))
       elif ' NUMBER OF OCCUPIED ORBITALS (BETA )          =' in line:
@@ -287,38 +297,37 @@ def read_gamess(filename, all_mo=False,read_properties=False):
         occ.append(int(thisline[-1]))
       elif ' NUMBER OF OCCUPIED ORBITALS (BETA ) KEPT IS    =' in line:
         occ.append(int(thisline[-1]))
-      elif read_properties:
-        if 'NUMBER OF STATES REQUESTED' in line:
-          # get the number of excited states and initialize variables for
-          # transition dipole moment and energies
-          exc_states = int(line.split('=')[1])  # Number of excited states
-          # Dipole moments matrix: Diagonal elements -> permanent dipole moments
-          # Off-diagonal elements -> transition dipole moments
-          qc.dipole_moments = numpy.zeros(((exc_states+1),(exc_states+1),3))
-          # Multiplicity of ground and excited states
-          qc.states['multiplicity'] = numpy.zeros(exc_states+1)
-          # Energies of ground and excited states
-          qc.states['energy'] = numpy.zeros(exc_states+1)
-          qc.states['energy'][0]           = qc.etot
-          qc.states['multiplicity'][0]     = gs_multi
-          dm_flag = None                  # Flag specifying the dipole moments section
-        elif 'TRANSITION DIPOLE MOMENTS' in line:
-          # Section containing energies of excited states
-          sec_flag = 'dm_info'
-            # Energy and Multiplicity for ground state
-        elif 'SPIN MULTIPLICITY' in line:
-          # odd way to get gound state multiplicity
-          gs_multi = int(line.split()[3])
-        elif 'FINAL' in line:
-          # get (last) energy
-          qc.etot = float(line.split()[4])
-        elif 'TOTAL MULLIKEN AND LOWDIN ATOMIC POPULATIONS' in line and is_pop_ana == True:
-          # Read Mulliken and Lowdin Atomic Populations
-          sec_flag = 'pop_info'
-          pop_skip = 1
-          is_pop_ana == False
-          qc.pop_ana['Lowdin'] = []
-          qc.pop_ana['Mulliken'] = []
+      elif 'NUMBER OF STATES REQUESTED' in line and read_properties:
+        # get the number of excited states and initialize variables for
+        # transition dipole moment and energies
+        exc_states = int(line.split('=')[1])  # Number of excited states
+        # Dipole moments matrix: Diagonal elements -> permanent dipole moments
+        # Off-diagonal elements -> transition dipole moments
+        qc.dipole_moments = numpy.zeros(((exc_states+1),(exc_states+1),3))
+        # Multiplicity of ground and excited states
+        qc.states['multiplicity'] = numpy.zeros(exc_states+1)
+        # Energies of ground and excited states
+        qc.states['energy'] = numpy.zeros(exc_states+1)
+        qc.states['energy'][0]           = qc.etot
+        qc.states['multiplicity'][0]     = gs_multi
+        dm_flag = None                  # Flag specifying the dipole moments section
+      elif 'TRANSITION DIPOLE MOMENTS' in line and read_properties:
+        # Section containing energies of excited states
+        sec_flag = 'dm_info'
+          # Energy and Multiplicity for ground state
+      elif 'SPIN MULTIPLICITY' in line and read_properties:
+        # odd way to get gound state multiplicity
+        gs_multi = int(line.split()[3])
+      elif 'FINAL' in line and read_properties:
+        # get (last) energy
+        qc.etot = float(line.split()[4])
+      elif 'TOTAL MULLIKEN AND LOWDIN ATOMIC POPULATIONS' in line and is_pop_ana == True and read_properties:
+        # Read Mulliken and Lowdin Atomic Populations
+        sec_flag = 'pop_info'
+        pop_skip = 1
+        is_pop_ana == False
+        qc.pop_ana['Lowdin'] = []
+        qc.pop_ana['Mulliken'] = []
       else:
         # Check if we are in a specific section 
         if sec_flag == 'geo_info':
@@ -363,7 +372,7 @@ def read_gamess(filename, all_mo=False,read_properties=False):
             ao_skip -= 1
         elif sec_flag == 'mo_info':
           if not mo_skip:
-            if '...... END OF RHF CALCULATION ......' in line:
+            if 'END OF' in line and 'CALCULATION' in line:
               sec_flag = None
             else:
               if thisline == []:
@@ -380,14 +389,16 @@ def read_gamess(filename, all_mo=False,read_properties=False):
                 init_mo = False
                 info_key = 'energy'
               elif len(thisline) == init_len and info_key == 'energy':
-                print thisline
                 for ii in range(init_len,0,-1):
                   qc.mo_spec[-ii]['energy'] = float(thisline[init_len-ii])
                 info_key = 'symmetry'
               elif len(thisline) == init_len and info_key == 'symmetry':
                 for ii in range(init_len,0,-1):
                   len_mo += 1
-                  qc.mo_spec[-ii]['sym'] = '%d.%s' % (len_mo-1, thisline[init_len-ii])
+                  a= thisline[init_len-ii]
+                  if a not in sym.keys(): sym[a] = 1
+                  else: sym[a] += 1
+                  qc.mo_spec[-ii]['sym'] = '%d.%s' % (sym[a], thisline[init_len-ii])
                 info_key = 'coeffs'
               elif thisline != [] and info_key == 'coeffs':
                 for ii in range(init_len,0,-1):
@@ -395,7 +406,7 @@ def read_gamess(filename, all_mo=False,read_properties=False):
           elif mo_skip:
             mo_skip -= 1
             
-        if sec_flag == 'dm_info':
+        elif sec_flag == 'dm_info':
           # instead of giving the output in a useful human and machine readable 
           # way, gamess output syntax differs for transitions involving the 
           # ground state compared to transitions between excited states...
@@ -430,7 +441,7 @@ def read_gamess(filename, all_mo=False,read_properties=False):
               for ii in range(3):
                 qc.dipole_moments[state[0]][state[1]][ii] = float(thisline[ii+3])
                 qc.dipole_moments[state[1]][state[0]][ii] = float(thisline[ii+3])
-        if sec_flag == 'pop_info':
+        elif sec_flag == 'pop_info':
           if not pop_skip:
             if  line == '\n':
               sec_flag = None
@@ -474,12 +485,12 @@ def read_gamess(filename, all_mo=False,read_properties=False):
     if not occ[0] and occ[1]:
       qc.mo_spec[ii]['occ_num'] += 1.0
       occ[1] -= 1
-      print('occ_1')
     if not occ[1] and occ[0]:
-      print('occ_0')
       qc.mo_spec[ii]['occ_num'] += 1.0
       occ[0] -= 1
   
+  qc.geo_spec = numpy.array(qc.geo_spec)
+  qc.geo_info = numpy.array(qc.geo_info)
   return qc
   # read_gamess 
 
