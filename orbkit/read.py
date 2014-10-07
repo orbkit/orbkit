@@ -350,38 +350,37 @@ def read_gamess(filename, all_mo=False,read_properties=False):
         occ.append(int(thisline[-1]))
       elif ' NUMBER OF OCCUPIED ORBITALS (BETA ) KEPT IS    =' in line:
         occ.append(int(thisline[-1]))
-      elif read_properties:
-        if 'NUMBER OF STATES REQUESTED' in line:
-          # get the number of excited states and initialize variables for
-          # transition dipole moment and energies
-          exc_states = int(line.split('=')[1])  # Number of excited states
-          # Dipole moments matrix: Diagonal elements -> permanent dipole moments
-          # Off-diagonal elements -> transition dipole moments
-          qc.dipole_moments = numpy.zeros(((exc_states+1),(exc_states+1),3))
-          # Multiplicity of ground and excited states
-          qc.states['multiplicity'] = numpy.zeros(exc_states+1)
-          # Energies of ground and excited states
-          qc.states['energy'] = numpy.zeros(exc_states+1)
-          qc.states['energy'][0]           = qc.etot
-          qc.states['multiplicity'][0]     = gs_multi
-          dm_flag = None                  # Flag specifying the dipole moments section
-        elif 'TRANSITION DIPOLE MOMENTS' in line:
-          # Section containing energies of excited states
-          sec_flag = 'dm_info'
-            # Energy and Multiplicity for ground state
-        elif 'SPIN MULTIPLICITY' in line:
-          # odd way to get gound state multiplicity
-          gs_multi = int(line.split()[3])
-        elif 'FINAL' in line:
-          # get (last) energy
-          qc.etot = float(line.split()[4])
-        elif 'TOTAL MULLIKEN AND LOWDIN ATOMIC POPULATIONS' in line and is_pop_ana == True:
-          # Read Mulliken and Lowdin Atomic Populations
-          sec_flag = 'pop_info'
-          pop_skip = 1
-          is_pop_ana == False
-          qc.pop_ana['Lowdin'] = []
-          qc.pop_ana['Mulliken'] = []
+      elif 'NUMBER OF STATES REQUESTED' in line and read_properties:
+        # get the number of excited states and initialize variables for
+        # transition dipole moment and energies
+        exc_states = int(line.split('=')[1])  # Number of excited states
+        # Dipole moments matrix: Diagonal elements -> permanent dipole moments
+        # Off-diagonal elements -> transition dipole moments
+        qc.dipole_moments = numpy.zeros(((exc_states+1),(exc_states+1),3))
+        # Multiplicity of ground and excited states
+        qc.states['multiplicity'] = numpy.zeros(exc_states+1)
+        # Energies of ground and excited states
+        qc.states['energy'] = numpy.zeros(exc_states+1)
+        qc.states['energy'][0]           = qc.etot
+        qc.states['multiplicity'][0]     = gs_multi
+        dm_flag = None                  # Flag specifying the dipole moments section
+      elif 'TRANSITION DIPOLE MOMENTS' in line and read_properties:
+        # Section containing energies of excited states
+        sec_flag = 'dm_info'
+          # Energy and Multiplicity for ground state
+      elif 'SPIN MULTIPLICITY' in line and read_properties:
+        # odd way to get gound state multiplicity
+        gs_multi = int(line.split()[3])
+      elif 'FINAL' in line and read_properties:
+        # get (last) energy
+        qc.etot = float(line.split()[4])
+      elif 'TOTAL MULLIKEN AND LOWDIN ATOMIC POPULATIONS' in line and is_pop_ana == True and read_properties:
+        # Read Mulliken and Lowdin Atomic Populations
+        sec_flag = 'pop_info'
+        pop_skip = 1
+        is_pop_ana == False
+        qc.pop_ana['Lowdin'] = []
+        qc.pop_ana['Mulliken'] = []
       else:
         # Check if we are in a specific section 
         if sec_flag == 'geo_info':
@@ -426,7 +425,7 @@ def read_gamess(filename, all_mo=False,read_properties=False):
             ao_skip -= 1
         elif sec_flag == 'mo_info':
           if not mo_skip:
-            if '...... END OF RHF CALCULATION ......' in line:
+            if 'END OF' in line and 'CALCULATION' in line:
               sec_flag = None
             else:
               if thisline == []:

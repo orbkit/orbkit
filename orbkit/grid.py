@@ -177,7 +177,7 @@ def grid2vector():
   global x, y, z, is_vector
   
   # Initialize a list for the grid 
-  grid = numpy.zeros((3,numpy.product(N_)))
+  grid = numpy.zeros((3,len(x)*len(y)*len(z)))
   
   grid_code = """
   int count=0;
@@ -248,6 +248,154 @@ def vector2grid(Nx=None,Ny=None,Nz=None):
   
   return 0
   # vector2grid 
+  
+def matrix_vector2grid(matrix=None,Nx=None,Ny=None,Nz=None): 
+  '''Converts the (Nx*Ny*Nz) data matrix back to the (Nx,Nz,Ny)
+  '''
+  
+  if Nx*Ny*Nz != len(matrix):
+    raise TypeError('Check Nx, Ny, and Nz!')
+    
+  # Initialize matrix (Nx,Ny,Nz)
+  regmatrix = numpy.zeros((Nx,Ny,Nz))
+  
+  matrix_code = """
+  int count=0;
+  for (int i=0; i<Nregmatrix[0]; i++)
+  {
+    for (int j=0; j<Nregmatrix[1]; j++)
+    {
+      for (int k=0; k<Nregmatrix[2]; k++)
+      {
+        REGMATRIX3(i,j,k) = MATRIX1(count);
+        count += 1;
+      }  
+    }
+  }
+  """
+  weave.inline(matrix_code, ['regmatrix','matrix'], verbose = 1, support_code = cSupportCode.math)
+
+  return regmatrix
+  # matrix_grid2vector
+
+def matrix_grid2vector(matrix=None): 
+  '''Converts the (Nx,Ny,Nz) data matrix back to the regular grid (Nx,Nz,Ny)
+  '''
+  
+  # Initialize matrix (Nx*Ny*Nz)
+  vecmatrix = numpy.zeros((numpy.shape(matrix)[0]*numpy.shape(matrix)[1]*numpy.shape(matrix)[2]))
+  
+  matrix_code = """
+  int count=0;
+  for (int i=0; i<Nmatrix[0]; i++)
+  {
+    for (int j=0; j<Nmatrix[1]; j++)
+    {
+      for (int k=0; k<Nmatrix[2]; k++)
+      {
+        VECMATRIX1(count) = MATRIX3(i,j,k);
+        count += 1;
+      }  
+    }
+  }
+  """
+  weave.inline(matrix_code, ['vecmatrix','matrix'], verbose = 1, support_code = cSupportCode.math)
+
+  return vecmatrix
+  # matrix_grid2vector
+  
+def grid_sym_op(grid=None,symop=None,is_vector=None):
+  '''Executes given symmetry operation on vector grid 
+  '''
+  
+  sym_op_code = """
+  int count=0; 
+  for (int i=0; i<Ngrid[1]; i++)
+  {
+    for (int j=0; j<Ngrid[0]; j++)
+    {
+      for (int k=0; k<Nsymop[1]; k++)
+      {
+        SYMGRID2(j,i) += SYMOP2(j,k)*GRID2(j,i);
+      }
+    }
+  }
+  """
+  
+  # Initialize matrix (Nx*Ny*Nz)
+  symgrid = numpy.zeros((3,len(grid[0])))
+  grid = numpy.array(grid)
+  
+  if is_vector == True:
+    
+    # Symmetry operation
+    weave.inline(sym_op_code, ['grid','symop','symgrid'], verbose = 1, support_code = cSupportCode.math)
+  
+  elif is_vector == None:
+    N_ = numpy.array([len(grid[0]),len(grid[0]),len(grid[1]),len(grid[2])])
+    
+    # Conversion from regular grid to vector grid
+    global x,y,z
+    x = grid[0] 
+    y = grid[1]
+    z = grid[2]
+    grid2vector()
+    grid = numpy.array([x,y,z],dtype=float)
+    
+    # Symmetry operation
+    weave.inline(sym_op_code, ['grid','symop','symgrid'], verbose = 1, support_code = cSupportCode.math)
+  
+  return symgrid
+  # grid_sym_op
+  
+def rot(ang,axis):
+ '''Creates matrix representation for arbitrary rotations
+ Angle has to be defined in radians, e.g., numpy.pi/2.0
+ Axis has to be specified as follows: 
+ x-axis -> axis=0,
+ y-axis -> axis=1,
+ z-axis -> axis=2,
+ '''
+ # Initialize cosine, sinus, and additional numpy functions
+ cos = numpy.cos
+ sin = numpy.sin
+ array = numpy.array
+ insert = numpy.insert
+ 
+ # Create rotation matrix around defined rotations axis
+ rotmatrix = array([[ cos(ang), sin(ang)],
+                 [-sin(ang), cos(ang)]])
+ rotmatrix = insert(insert(rotmatrix,axis,0,axis=0),axis,0,axis=1)
+ rotmatrix[axis,axis] = 1
+ 
+ return rotmatrix
+ # rot
+
+def reflect(plane):
+ '''Creates matrix representation for reflection
+ Plane has to be specified as follows:
+ xy-plane -> plane= numpy.array([0,1])
+ xz-plane -> plane= numpy.array([0,2])
+ yz-plane -> plane= numpy.array([1,2])
+ '''
+ 
+ # Create reflection matrix for defined plane
+ sigma = numpy.array([[1,0,0],[0,1,0],[0,0,1]],dtype=float)
+ axis = 3-numpy.sum(plane)
+ sigma[axis,axis] *= -1.0
+
+ return sigma
+ # reflect
+
+def inversion():
+ '''Transfer matrix representation for inversion
+ '''
+
+ # Inversion matrix
+ inv = numpy.array([[-1,0,0],[0,-1,0],[0,0,-1]],dtype=float) # inversion
+
+ return inv
+ # inversion
 
 def sph2cart_vector(r,theta,phi):
   '''Converts a spherical regular grid matrix (r, theta, phi)

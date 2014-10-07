@@ -576,7 +576,7 @@ def rho_compute(qc,calc_mo=False,vector=None,drv=None,numproc=1):
   # Print information regarding the density calculation 
   if not calc_mo:
     display("\nStarting the density calculation...")
-  display("The grid has been seperated into %d %sslices and the" % 
+  display("The grid has been separated into %d %sslices and the" % 
                 (sNum, '2d-' if vector is None else ''))
   if numproc == 1:
     display("calculation will be carried out with 1 subprocess.\n" + 
@@ -613,8 +613,11 @@ def rho_compute(qc,calc_mo=False,vector=None,drv=None,numproc=1):
     if not is_vector:
       xx.append((numpy.array([grid.x[s]])))
     else:
-      if i + vector >= N:
-        xx.append((numpy.array([i,N+1],dtype=int)))      
+      if i == N[0]:
+        sNum -= 1
+        break
+      elif (i + vector) >= N[0]:
+        xx.append((numpy.array([i,N[0]],dtype=int)))      
       else:
         xx.append((numpy.array([i,i + vector],dtype=int)))
       i += vector 
@@ -661,7 +664,6 @@ def rho_compute(qc,calc_mo=False,vector=None,drv=None,numproc=1):
     
     # Print out the progress of the computation 
     status = round(s*100/float(sNum))
-    
     if not status % 20 and status != status_old: 
       t.append(time.time())
       display("\tFinished %(f)d%% (%(s)d slices in %(t).3fs)" 
