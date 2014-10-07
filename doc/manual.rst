@@ -131,7 +131,7 @@ Grid Related Options
 ....................
 
 For the modification of the grid, one can specify a grid via an external 
-plain text file (:code:`GRID_FILE`):
+plain text file (:literal:`GRID_FILE`):
 
 .. code-block:: bash
 

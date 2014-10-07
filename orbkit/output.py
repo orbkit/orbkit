@@ -31,7 +31,7 @@ from orbkit import grid, options
 from orbkit.display import display
 
 def main_output(data,geo_info,geo_spec,outputname='new',otype='h5',
-                drv=None,no_hdf5=False,is_vector=False,**kwargs):
+                drv=None,omit=[],is_vector=False,**kwargs):
   '''Creates the requested output.
   '''
   print_waring = False
@@ -47,51 +47,58 @@ def main_output(data,geo_info,geo_spec,outputname='new',otype='h5',
   for i,j in it:
     f['d'] = j
     d = data[i]
-    if 'h5' in otype and not no_hdf5:
-      display('Saving to Hierarchical Data Format file (HDF5)...' +
+    if 'h5' in otype and 'h5' not in omit:
+      display('\nSaving to Hierarchical Data Format file (HDF5)...' +
               '\n\t%(o)s.h5' % {'o': fid % f})
       HDF5_creator(d,(fid % f),geo_info,geo_spec,**kwargs)
     
     if 'am' in otype or 'hx' in otype and not print_waring:
       if is_vector: print_waring = True
       else: 
-        display('Saving to ZIBAmiraMesh file...' +
+        display('\nSaving to ZIBAmiraMesh file...' +
                      '\n\t%(o)s.am' % {'o': fid % f})
         amira_creator(d,(fid % f))
     if 'hx' in otype and not print_waring:
       if is_vector: print_waring = True
       else: 
-        #--- Create Amira network incl. Alphamap ---
+        # Create Amira network incl. Alphamap
         display('\nCreating ZIBAmira network file...')
         hx_network_creator(data,(fid % f))
-    if 'cb' in otype and not print_waring:
+    if 'cb' in otype or 'vmd' in otype and not print_waring:
       if is_vector: print_waring = True
       else: 
-        display('Saving to .cb file...' +
+        display('\nSaving to .cb file...' +
                       '\n\t%(o)s.cb' % {'o': fid % f})
-        cube_creator(d,(fid % f),geo_info,geo_spec)
+        cube_creator(d,(fid % f),geo_info,geo_spec,**kwargs)
        #else: output_creator(d,(fid % f),geo_info,geo_spec)  # Axel's cube files
-  
+    if 'vmd' in otype and 'vmd' not in omit and not print_waring:
+      if is_vector: print_waring = True
+      else: 
+        # Create VMD network 
+        display('\nCreating VMD network file...' +
+                      '\n\t%(o)s.vmd' % {'o': fid % f})        
+        vmd_network_creator((fid % f),cube_files=['%s.cb' % (fid % f)])
+      
   if print_waring:
     display('For a vectorized grid only HDF5 is available as output format...')
     display('Skipping all other formats...')
   
   return 0
-  #--- main_output ---
+  # main_output 
 
-def cube_creator(rho,filename,geo_info,geo_spec):
+def cube_creator(rho,filename,geo_info,geo_spec,comments='',**kwargs):
   '''Creates a plain text Gaussian cube file.
   '''
   
-  #--- Open an empty file ---
+  # Open an empty file 
   fid = open('%(f)s.cb' % {'f': filename}, 'w')
   
-  #--- Write the type and the position of the atoms in the header ---
-  string = 'orbkit Density calculation\n'
-  string += ' %(f)s\n'  % {'f': filename}
-  #--- How many atoms ---
+  # Write the type and the position of the atoms in the header 
+  string = 'orbkit calculation\n'
+  string += ' %(f)s\n'  % {'f': comments}
+  # How many atoms 
   string += ('%(at)d' % {'at': len(geo_info)}).rjust(5)
-  #--- Minima
+  # Minima
   for ii in range(3):
     string += ('%(min)0.6f' % {'min': grid.min_[ii]}).rjust(12)
 
@@ -122,11 +129,11 @@ def cube_creator(rho,filename,geo_info,geo_spec):
   
   fid.write(string)
   
-  #--- Close the file ---
+  # Close the file 
   fid.close()
   
   return 0
-  #--- output_creator ---
+  # output_creator 
   
 def pdb_creator(filename,qc,c_type='Lowdin'):
   aa_to_au = 1/0.52917720859
@@ -177,7 +184,7 @@ def xyz_creator(filename,qc,c_type='Lowdin'):
 def amira_creator(rho,filename):
   '''Creates a ZIBAmira mesh file. (plain text)
   '''
-  #--- Open an empty file ---
+  # Open an empty file 
   fid = open('%(f)s.am' % {'f': filename},'w')
 
   # usage:
@@ -190,7 +197,7 @@ def amira_creator(rho,filename):
   #     - select  Expr -> A and Result type -> regular and Apply
   #     - use the new data object to display your density as usual,
   
-  #--- Write Header ---
+  # Write Header 
   fid.write('# AmiraMesh 3D ASCII 2.0\n\n\n')
   fid.write('define Lattice %(Nx)d %(Ny)d %(Nz)d\n' % 
                     {'Nx': grid.N_[0],'Ny': grid.N_[1],'Nz': grid.N_[2]})
@@ -215,17 +222,17 @@ def amira_creator(rho,filename):
   
   fid.write(string)
   
-  #--- Close the file ---
+  # Close the file 
   fid.close()
   
   return 0
-  #--- amira_creator ---
+  # amira_creator 
 
 
 def amira_creator_vector(rho,filename):
   '''Creates a ZIBAmira mesh file using a rectingular grid.
   '''
-  #--- Open an empty file ---
+  # Open an empty file 
   fid = open('%(f)s.am' % {'f': filename},'w')
 
   # usage:
@@ -240,7 +247,7 @@ def amira_creator_vector(rho,filename):
   
   N = len(rho)
   
-  #--- Write Header ---
+  # Write Header 
   fid.write('# AmiraMesh 3D ASCII 2.0\n\n\n')
   fid.write('define Lattice %(Nx)d %(Ny)d %(Nz)d\n' % 
             {'Nx': N,'Ny': N,'Nz': N})
@@ -271,17 +278,17 @@ def amira_creator_vector(rho,filename):
   
   fid.write(string)
   
-  #--- Close the file ---
+  # Close the file 
   fid.close()
   
   return 0
-  #--- amira_creator_rectilinear_coord ---
+  # amira_creator_rectilinear_coord 
 
 def amira_creator_rectilinear_coord(rho,filename):
   '''Creates a ZIBAmira mesh file using a rectilinear coordinates.
   '''
   
-  #--- Open an empty file ---
+  # Open an empty file 
   fid = open('%(f)s.am' % {'f': filename},'w')
 
   # usage:
@@ -294,7 +301,7 @@ def amira_creator_rectilinear_coord(rho,filename):
   #     - select  Expr -> A and Result type -> regular and Apply
   #     - use the new data object to display your density as usual,
   
-  #--- Write Header ---
+  # Write Header 
   fid.write('# AmiraMesh 3D ASCII 2.0\n\n\n')
   fid.write('define Lattice %(Nx)d %(Ny)d %(Nz)d\n' % 
             {'Nx': grid.N_[0],'Ny': grid.N_[1],'Nz': grid.N_[2]})
@@ -323,11 +330,11 @@ def amira_creator_rectilinear_coord(rho,filename):
   
   fid.write(string)
   
-  #--- Close the file ---
+  # Close the file 
   fid.close()
   
   return 0
-  #--- amira_creator_rectilinear_coord ---
+  # amira_creator_rectilinear_coord 
 
 def hdf5_open(fid,mode='w'):
   '''Open an HDF5 file.'''
@@ -371,10 +378,10 @@ def hdf52dict(group,HDF5_file):
   to a python dictionary.
   '''
   try:
-    #--- The selected group is a dataset ---
+    # The selected group is a dataset 
     x = HDF5_file['%s' % group][()]
   except:
-    #--- Read all members ---
+    # Read all members 
     members = list(HDF5_file['%(g)s' % {'g':group}])
     try:
       members = numpy.array(members, dtype = numpy.int64)
@@ -468,7 +475,7 @@ def HDF5_creator(data,outputname,geo_info,geo_spec,data_id='rho',append=None,
   HDF5_file.close()
   
   return 0
-  #--- HDF5_creator ---
+  # HDF5_creator 
 
 def HDF5_creator_geo(filename,geo_info,geo_spec):
   '''Appends geo_info and geo_spec to an HDF5 file.'''
@@ -527,15 +534,46 @@ def HDF5_creator_MO(MO,filename,geo_info,geo_spec,mo_spec):
     
     #f.close()
   return 0
-  #--- HDF5_creator ---
+  # HDF5_creator 
 
+def vmd_network_creator(filename,cube_files=None,render=True,**kwargs):
+  from os import path,listdir
+  from linecache import getline
+  from orbkit import vmd_network_draft
+  if cube_files is None:
+    display('No list of cube (.cb) filenames provided. Checking the directory' + 
+            ' of the outputfile...')
+    cube_files = []
+    for fid in listdir(path.dirname(filename)):
+      if fid.endswith('.cb'):
+        cube_files.append(fid)
+    if cube_files == []:
+      raise IOError('Could not find valid cube files in %s' % path.dirname(filename))
+      
+  title = []
+  mo = ''
+  for i,f in enumerate(cube_files):
+    title = getline(f,2)
+    if title.split() == []:
+      title = path.splitext(path.basename(title))[0]
+    else:
+      title = title.replace('\n','').replace(' ','')
+    mo += vmd_network_draft.mo_string % {'n1': f,'n2': title, 'c':i, 
+                                         'render': '' if render else '#'}
+  
+  f = open('%(f)s.vmd' % {'f': filename},'w')
+  f.write(vmd_network_draft.vmd_string % {'mo':mo})
+  f.close()
+  return 0
+  # vmd_network_creator
+  
 def determine_rho_range(rho,start=0.01,stop=0.999):
   '''Get a range for the isosurface values.'''
-  #--- Sort the density values ---
+  # Sort the density values 
   a=numpy.reshape(rho,-1)
   a=a[numpy.argsort(a)]
   
-  #--- Where do we have the start and stop percentage? ---
+  # Where do we have the start and stop percentage? 
   n1=int(start*len(a))
   n2=int(stop*len(a))
   rho_min=a[n1]
@@ -549,87 +587,87 @@ def colormap_creator(rho,filename,n_peaks=5,start=0.01,stop=0.999,peak_width=0.1
   **Default:** Isosurface values between 1% and 99.9% of the total density.
   '''
   
-  #--- Where do we have the start and stop percentage? ---
+  # Where do we have the start and stop percentage? 
   rho_min, rho_max = determine_rho_range(rho,start=start,stop=stop)
   
-  #--- Compute the distance between two isosurface values ---
+  # Compute the distance between two isosurface values 
   delta_peak =(rho_max-rho_min)/(n_peaks-1)
   
-  #--- Open a cmap file ---
+  # Open a cmap file 
   fid = open('%(f)s.cmap' % {'f': filename}, 'w')
   
-  #--- Write the header ---
+  # Write the header 
   fid.write('<!DOCTYPE Colormap>\n')
   fid.write('<ColormapVisage2.0 Name="%(f)s">\n' % {'f': filename})
   fid.write('  <Graph Active="1" Type="0" Name="">\n')
   
-  #--- Initialize a counter for the contour values ---
+  # Initialize a counter for the contour values 
   counter = 0
   
-  #--- Initialize a string for the contours ---
+  # Initialize a string for the contours 
   c_str = ('    <Control Opacity="%(o)f" Number="%(c)d" Blue="%(v)f"' + 
             ' Red="%(v)f" Green="%(v)f" Value="%(p)f"/>\n' )
   
-  #--- Write the initial value at zero with zero opacity ---
+  # Write the initial value at zero with zero opacity 
   fid.write(c_str % {'o': 0, 'c': counter, 'v': 0, 'p': 0})
   counter += 1
   
-  #--- Loop over the contour values ---
+  # Loop over the contour values 
   for ii in range(n_peaks):
-    #--- Calculate the value for the isosurface peak and two values ---
-    #--- next to the peak with zero opacity ---
+    # Calculate the value for the isosurface peak and two values 
+    # next to the peak with zero opacity 
     peak = rho_min+delta_peak*(ii+1)
     peak_minus = peak * (1 - peak_width/2.)
     peak_plus = peak * (1 + peak_width/2.)
     
-    #--- Calculate a value for the opacity and the color---
+    # Calculate a value for the opacity and the color
     value = 1-(float(ii+1)/(n_peaks+1)*0.9)
     
-    #--- Write the peak ---
-    #--- Left edge of the peak ---
+    # Write the peak 
+    # Left edge of the peak 
     fid.write(c_str % {'o': 0, 'c': counter, 'v': value, 'p': peak_minus})
     counter += 1
-    #--- The peak ---
+    # The peak 
     fid.write(c_str % {'o': 1-value, 'c': counter, 'v': value, 'p': peak})
     counter += 1
-    #--- Right edge of the peak ---
+    # Right edge of the peak 
     fid.write(c_str % {'o': 0, 'c': counter, 'v': value, 'p': peak_plus})
     counter += 1
   
-  #--- Write a final value at 1.5 * (final peak value) with zero opacity ---
+  # Write a final value at 1.5 * (final peak value) with zero opacity 
   fid.write(c_str % {'o': 0, 'c': counter, 'v': 0, 'p': peak_plus*1.5})
   
-  #--- Finalize the file ---
+  # Finalize the file 
   fid.write('  </Graph>\n')
   fid.write('</ColormapVisage2.0>')
   
-  #--- Close the file ---
+  # Close the file 
   fid.close()
   
   return 0
-  #--- colormap_creator ---
+  # colormap_creator 
 
 def hx_network_creator(rho,filename):
   '''Creates a ZIBAmira hx-network file including a colormap file (.cmap)
   adjusted to the density for the easy depiction of the density.
   '''
   from orbkit.hx_network_draft import hx_network
-  #--- Create a .cmap colormap file using the default values ---
+  # Create a .cmap colormap file using the default values 
   display('\tCreating ZIBAmira colormap file...\n\t\t%(f)s.cmap' % 
                 {'f': filename})
   colormap_creator(rho,filename)
   
-  #--- Create a .hx network file based on the file orbkit.hx_network_draft.py ---
+  # Create a .hx network file based on the file orbkit.hx_network_draft.py 
   display('\tCreating ZIBAmira network file...\n\t\t%(f)s.hx' % 
                 {'f': filename})
-  #--- Open an empty file
+  # Open an empty file
   fid = open('%(f)s.hx' % {'f': filename},'w')
   
   filename = filename.split('/')[-1]
-  #--- Copy the content of the draft file and replace the keywords ---
+  # Copy the content of the draft file and replace the keywords 
   fid.write(hx_network.replace("FILENAME",filename)) 
   
-  #--- Close the file ---
+  # Close the file 
   fid.close()  
   
   return 0
@@ -637,10 +675,10 @@ def hx_network_creator(rho,filename):
 def output_creator(rho,filename,geo_info,geo_spec):
   '''Creates a simple plain text output. (outdated)
   '''
-  #--- Open an empty file ---
+  # Open an empty file 
   fid = open('%(f)s.cb' % {'f': filename}, 'w')
   
-  #--- Write the type and the position of the atoms in the header ---
+  # Write the type and the position of the atoms in the header 
   fid.write('Position of the nuclei (in a_0)\n')
   string = 'Number of nuclei:\t%d\n' % len(geo_info)
   for ii in range(len(geo_info)):
@@ -668,13 +706,13 @@ def output_creator(rho,filename,geo_info,geo_spec):
   
   fid.write(string)
   
-  #--- Close the file ---
+  # Close the file 
   fid.close()
   
   return 0
-  #--- output_creator ---
+  # output_creator 
 
-#--- Class for the creation of a mo amira network ---
+# Class for the creation of a mo amira network 
 #### NOT FINISHED YET ###
 class cmo_display:
   def __init__(self):
@@ -729,7 +767,7 @@ Lattice { float[4] Data } @1\n
 
 
 def h5am_creator(rho,filename):
-  # --- FUNCTION HDF5_creator --- creates HDF5 file (Hierarchical Data Format) ------------------------
+  #  FUNCTION HDF5_creator  creates HDF5 file (Hierarchical Data Format) 
   import h5py
 
   f = h5py.File(filename + '.h5am', 'w')

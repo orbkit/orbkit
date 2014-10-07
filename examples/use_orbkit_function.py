@@ -64,14 +64,14 @@ out_fid = 'h2o_r2'
 ok.main.init()
 
 # set some options
-ok.options.grid_file  = 'grid_reg.txt'   # grid file to read from (regular grid)
-ok.options.filename   = in_fid           # input file name
-ok.options.itype      = 'molden'         # input file type [default]
-ok.options.outputname = out_fid          # output file (base) name
-ok.options.otype      = ['h5', 'cb']     # output file types
-ok.options.calc_mo    = './MO_List.tab'  # list of MOs (Molpro notation)
-ok.options.drv        = ['x', 'z']       # derivatives along x and z
-ok.options.no_log     = True             # do not write log this time
+ok.options.grid_file  = 'grid_reg.txt'          # grid file to read from (regular grid)
+ok.options.filename   = in_fid                  # input file name
+ok.options.itype      = 'molden'                # input file type [default]
+ok.options.outputname = out_fid                 # output file (base) name
+ok.options.otype      = ['h5']                  # output file types
+ok.options.calc_mo    = ['2.1','1.1','2.3']     # list of MO labels (Molpro notation)
+ok.options.drv        = ['x', 'z']              # derivatives along x and z
+ok.options.no_log     = True                    # do not write log this time
 
 # run orbkit
 ok.main.main()
@@ -82,7 +82,7 @@ ok.main.main()
 Create an ZIBAmira Network from the density caclulated of MOs
 selected by their number in the molden file
 '''
-print('\n \n Third scenario: calculate electron density for Amira. \n \n')
+print('\n \n Third scenario: calculate electron density for Amira and VMD. \n \n')
 
 in_fid  = 'h2o.md'
 out_fid = 'h2o_r3'
@@ -91,10 +91,12 @@ out_fid = 'h2o_r3'
 ok.main.init()
 
 # set some options
-ok.options.otype      = ['am', 'hx']         # output file types
-ok.options.mo_list    = './MO_List_int.tab'  # list of MOs (Molden enumeration)
-ok.options.filename   = in_fid 
-ok.options.outputname = out_fid
+ok.options.otype      = ['hx', 'vmd']           # output file types
+ok.options.mo_set     = [[1,2,3],[5,4]]         # list of MO labels (Molden enumeration)
+ok.options.filename   = in_fid                  # input file name
+ok.options.itype      = 'molden'                # input file type [default]
+ok.options.outputname = out_fid                 # output file (base) name
+ok.options.numproc    = 2                       # number of processes
 
 # run orbkit
 ok.main.main()
