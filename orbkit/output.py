@@ -25,6 +25,7 @@ License along with orbkit.  If not, see <http://www.gnu.org/licenses/>.
 
 # Import general modules
 import numpy
+import h5py
 
 # Import orbkit modules
 from orbkit import grid, options
@@ -390,10 +391,15 @@ def hdf52dict(group,HDF5_file):
         x[ii_a] = attrs[ii_a]
   return x
 
-def hdf5_write(fid,mode='w',**kwargs):
+def hdf5_write(fid,mode='w',gname='',**kwargs):
   f = h5py.File(fid, mode)
-  for i,j in kwargs.iteritems(): 
-    f.create_dataset(i,numpy.shape(j),data=j)
+  if gname is not '':
+    group = f.create_group(gname)
+    for i,j in kwargs.iteritems(): 
+      group.create_dataset(i,numpy.shape(j),data=j)
+  else:
+    for i,j in kwargs.iteritems(): 
+      f.create_dataset(i,numpy.shape(j),data=j)
   f.close()
 
 def HDF5_creator(data,outputname,geo_info,geo_spec,data_id='rho',append=None,
