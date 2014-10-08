@@ -49,7 +49,7 @@ itypes = ['molden',
           'gamess', 
           'gaussian.log', 
           'gaussian.fchk']                        #: Specifies possible input types.
-otypes = ['h5', 'cb', 'am', 'hx']       #: Specifies possible output types.
+otypes = ['h5', 'cb', 'am', 'hx', 'vmd']       #: Specifies possible output types.
 drv_options = ['x','y','z']             #: Specifies possible derivative variables.
 
 def get_options():
@@ -105,7 +105,8 @@ def init_parser():
                       type="choice", action="append", choices=otypes,
                       help='''output formats (multiple calls possible):  
                       '%s' (HDF5 file), '%s' (Gaussian cube file), 
-                      '%s' (ZIBAmiraMesh file), '%s' (ZIBAmira network) '''
+                      '%s' (ZIBAmiraMesh file), '%s' (ZIBAmira network), 
+                      '%s' (VMD network) '''
                       % tuple(otypes) + "[default: 'h5']")
   parser.add_option_group(group)
   group = optparse.OptionGroup(parser, "Computational Options")
@@ -275,7 +276,8 @@ def check_options(error=sys.stdout.write,display=sys.stdout.write,
   #--- Grid-Related Options ---#  
   
   # Check for the compability of the vector option and the output formats
-  if vector is not None and ('cb' in otype or 'am' in otype or 'hx' in otype):
+  if vector is not None and ('cb' in otype or 'vmd' in otype or 
+                             'am' in otype or 'hx' in otype):
     error('For a vectorized grid, only HDF5 \n' +
     'is available as output format. Type: --otype=h5\n')
     #'The Gaussian cube file output format does not allow\n\t'+

@@ -496,30 +496,15 @@ def read(filename, comment='#'):
 
   **Supported Formats:**
   
-  :Regular Grid: 
-  
-    |  The input has the following format
-    |
-    |    x xmin xmax Nx
-    |    y ymin ymax Ny
-    |    z zmin zmax Nz
-    |
-    |  E.g.,
-    |
-    |    x -5  5 11
-    |    y -2  2  5
-    |    z  0  0  1
-    |
-  
-  :Vector-Grid:
-  
-    |  The input has the following format
-    |
-    |    x  y  z
-    |    5 -5  0
-    |    2  7  0
-    |    ...
-    |
+    Regular Grid:
+    
+      .. literalinclude:: ../examples/grid_reg.txt
+            :language: bash
+    
+    Vector Grid:
+    
+      .. literalinclude:: ../examples/grid_vec.txt
+            :language: bash
   
   **Hint:** If a line starts with '#', it will be skipped. Please, do not use '#' at the end of a line!
   '''

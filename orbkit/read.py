@@ -1141,3 +1141,115 @@ def read_wfn(filename, all_mo=False):
   qc.geo_spec = numpy.array(qc.geo_spec)
   
   return qc
+
+
+def mo_select(mo_spec, fid_mo_list):
+  '''Selects  molecular orbitals from an external file.
+
+  **Parameters:**
+   
+    mo_spec :        
+      See `Central Variables`_ for details.
+    fid_mo_list : str, `'all_mo'`, or list
+      |If fid_mo_list is a str, specifies the filename of the molecular orbitals list. 
+      |
+      |If fid_mo_list is 'all_mo', creates a list containing all molecular orbitals.
+      |
+      |If fid_mo_list is a list, provides a list (or a list of lists) of 
+      |molecular orbital labels.
+
+  **Supported Formats:**
+  
+    Integer List:
+    
+      .. literalinclude:: ../examples/MO_List_int.tab
+            :language: bash
+    
+    List with Symmetry Labels:
+    
+      .. literalinclude:: ../examples/MO_List.tab
+            :language: bash
+
+  **Returns:**
+  
+    Dictionary with following Members:
+      :mo: - List of molecular orbital labels.
+      :mo_ii: - List of molecular orbital indices.
+      :mo_spec: - Selected elements of mo_spec. See `Central Variables`_ for details.
+      :mo_in_file: - List of molecular orbital labels within the fid_mo_list file.
+      :sym_select: - If True, symmetry labels have been used. 
+      
+  '''
+  mo_in_file = []
+  all_mo = []
+  selected_mo = []
+  selected_mo_spec = []
+  selected_mo_ii = [] 
+  sym_select = False
+  
+  if isinstance(fid_mo_list,str) and fid_mo_list.lower() == 'all_mo':
+    selected_mo = numpy.array(numpy.arange(len(mo_spec))+1, dtype=numpy.str)
+    mo_in_file = [selected_mo]
+    selected_mo_spec = mo_spec
+  else:  
+    if isinstance(fid_mo_list, list):
+      if any(isinstance(i, list) for i in fid_mo_list):
+        for i in fid_mo_list:
+          if isinstance(i, list):
+            selected_mo.extend(i)
+          else:
+            selected_mo.append(i)
+            i = [i]
+          mo_in_file.append(map(str,i))
+      else:
+        selected_mo.extend(fid_mo_list)
+        mo_in_file.append(map(str, fid_mo_list))
+    else:
+      try:
+        fid=open(fid_mo_list,'r')
+        flines = fid.readlines()
+        fid.close()
+        for line in flines:
+          integer = line.split()
+          mo_in_file.append(integer)
+          all_mo = all_mo + integer
+        selected_mo=list(set(all_mo))
+      except:
+        raise IOError('The selected mo-list (%(m)s) is not valid!' % 
+                      {'m': fid_mo_list} + '\ne.g.\n\t1\t3\n\t2\t7\t9\n')
+      
+    # Check if the molecular orbitals are specified by symmetry 
+    # (e.g. 1.1 in MOLPRO nomenclature) or 
+    # by the number in the molden file (e.g. 1)
+    
+    try: # Try to convert selections into integer
+      for i in selected_mo: 
+        int(i)
+    except ValueError:
+      sym_select = True
+      # Add '.' after molecular orbital number if missing
+      for i in range(len(selected_mo)):
+        if not '.' in selected_mo[i]:
+          from re import search
+          a = search(r'\d+', selected_mo[i]).group()
+          if a == selected_mo[i]:
+            selected_mo[i] = '%s.1' % a
+          else:
+            selected_mo[i] = selected_mo[i].replace(a, '%s.' % a)
+    
+    if sym_select:
+      for k in range(len(mo_spec)):
+        if mo_spec[k]['sym'] in selected_mo:
+          selected_mo_spec.append(mo_spec[k])
+          selected_mo_ii.append(mo_spec[k]['sym'])
+      selected_mo_ii = numpy.array(selected_mo_ii)
+    else:
+      selected_mo = map(int, selected_mo)            
+      selected_mo.sort()
+      selected_mo = map(str, selected_mo)
+      for k in range(len(mo_spec)):
+        if str(k+1) in selected_mo: selected_mo_spec.append(mo_spec[k])
+  
+  return {'mo': selected_mo, 'mo_ii': selected_mo_ii,
+          'mo_spec': selected_mo_spec, 
+          'mo_in_file': mo_in_file, 'sym_select': sym_select}

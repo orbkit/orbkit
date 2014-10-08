@@ -31,98 +31,7 @@ from scipy import integrate
 # Import orbkit modules
 from orbkit import core,grid,output,options
 from orbkit.display import display
-
-def mo_select(mo_spec, fid_mo_list):
-  '''Selects  molecular orbitals from an external file.
-
-  **Parameters:**
-   
-    mo_spec :        
-      See `Central Variables`_ for details.
-    fid_mo_list : str
-      Specifies the filename of the molecular orbitals list. 
-      If fid_mo_list is 'all_mo', creates a list containing all molecular orbitals.
-
-  **Supported Formats:**
-  
-    Integer List:
-    
-      .. literalinclude:: ../examples/MO_List_int.tab
-            :language: bash
-    
-    List with Symmetry Labels:
-    
-      .. literalinclude:: ../examples/MO_List.tab
-            :language: bash
-
-  **Returns:**
-  
-    Dictionary with following Members:
-      :mo: - List of molecular orbital labels.
-      :mo_ii: - List of molecular orbital indices.
-      :mo_spec: - Selected elements of mo_spec. See `Central Variables`_ for details.
-      :mo_in_file: - List of molecular orbital labels within the fid_mo_list file.
-      :sym_select: - If True, symmetry labels have been used. 
-      
-  '''
-  mo_in_file = []
-  all_mo = []
-  selected_mo_spec = []
-  selected_mo_ii = [] 
-  sym_select = False
-  
-  if fid_mo_list.lower() == 'all_mo':
-    selected_mo = numpy.array(numpy.arange(len(mo_spec))+1, dtype=numpy.str)
-    mo_in_file = [selected_mo]
-    selected_mo_spec = mo_spec
-  else:  
-    try:
-      fid=open(fid_mo_list,'r')
-      flines = fid.readlines()
-      fid.close()
-      for line in flines:
-        integer = line.split()
-        mo_in_file.append(integer)
-        all_mo = all_mo + integer
-    except:
-      raise IOError('The selected mo-list (%(m)s) is not valid!' % 
-                    {'m': fid_mo_list} + '\ne.g.\n\t1\t3\n\t2\t7\t9\n')
-    
-    #--- Check if the mos are specified ---
-    #--- by symmetry (e.g. 1.1 in MOLPRO nomenclature) or ---
-    #--- by the number in the molden file (e.g. 1) ---
-    selected_mo=list(set(all_mo))
-    try: # Try to convert selections into integer
-      for i in selected_mo: 
-        int(i)
-    except ValueError:
-      sym_select = True
-      # Add '.' after molecular orbital number if missing
-      for i in range(len(selected_mo)):
-        if not '.' in selected_mo[i]:
-          from re import search
-          a = search(r'\d+', selected_mo[i]).group()
-          if a == selected_mo[i]:
-            selected_mo[i] = '%s.1' % a
-          else:
-            selected_mo[i] = selected_mo[i].replace(a, '%s.' % a)
-    
-    if sym_select:
-      for k in range(len(mo_spec)):
-        if mo_spec[k]['sym'] in selected_mo:
-          selected_mo_spec.append(mo_spec[k])
-          selected_mo_ii.append(mo_spec[k]['sym'])
-      selected_mo_ii = numpy.array(selected_mo_ii)
-    else:
-      selected_mo = map(int, selected_mo)            
-      selected_mo.sort()
-      selected_mo = map(str, selected_mo)
-      for k in range(len(mo_spec)):
-        if str(k+1) in selected_mo: selected_mo_spec.append(mo_spec[k])
-  
-  return {'mo': selected_mo, 'mo_ii': selected_mo_ii,
-          'mo_spec': selected_mo_spec, 
-          'mo_in_file': mo_in_file, 'sym_select': sym_select}
+from orbkit.read import mo_select
 
 def calc_mo(qc, fid_mo_list, drv=None, vector=None, otype=None):
   '''Calculates and saves the selected molecular orbitals or the derivatives thereof.
@@ -160,7 +69,7 @@ def calc_mo(qc, fid_mo_list, drv=None, vector=None, otype=None):
   qc_select = qc.todict()
   qc_select['mo_spec'] = mo['mo_spec']
   
-  #--- Calculate the AOs and MOs ---
+  # Calculate the AOs and MOs 
   mo_list = core.rho_compute(qc_select,calc_mo=True,drv=drv,vector=vector,
                              numproc=options.numproc)
   
@@ -171,13 +80,25 @@ def calc_mo(qc, fid_mo_list, drv=None, vector=None, otype=None):
       output.main_output(mo_list,qc.geo_info,qc.geo_spec,data_id='MO',
                     outputname=fid,
                     mo_spec=qc_select['mo_spec'],drv=drv,is_mo_output=True)
-    #--- Create Output ---
-    for i,j in enumerate(qc_select['mo_spec']):   
+    # Create Output     
+    cube_files = []
+    for i,j in enumerate(qc_select['mo_spec']):
+      outputname = '%s_%s' % (fid,mo['mo'][i])
+      cube_files.append('%s.cb' % outputname)
+      comments = ('%s,Occ=%.1f,E=%+.2f' % (mo['mo'][i],
+                                           j['occ_num'],
+                                           j['energy']))
       index = numpy.index_exp[:,i] if drv is not None else i
       output.main_output(mo_list[index],qc.geo_info,qc.geo_spec,
-                      outputname='%s_%s' % (fid,j['sym']),
-                      otype=otype,no_hdf5=True,drv=drv,
+                      outputname=outputname,
+                      comments=comments,
+                      otype=otype,omit=['h5','vmd'],drv=drv,
                       is_vector=(options.vector is not None))
+    
+    if 'vmd' in otype and options.vector is None:
+      display('\nCreating VMD network file...' +
+                      '\n\t%(o)s.vmd' % {'o': fid})
+      output.vmd_network_creator(fid,cube_files=cube_files)
   return mo_list, mo
   
 def mo_set(qc, fid_mo_list, 
@@ -211,7 +132,8 @@ def mo_set(qc, fid_mo_list,
       os.remove('%s.h5' % options.outputname)
     except OSError:
       pass
-    
+       
+  cube_files = []
   for i_file,j_file in enumerate(mo['mo_in_file']):
     display('\nStarting with the %d. element of the mo-List (%s)...\n\t' % 
                 (i_file+1,fid_mo_list) + str(j_file) + 
@@ -246,10 +168,9 @@ def mo_set(qc, fid_mo_list,
     if not options.no_output:
       if 'h5' in otype:
         display('Saving to Hierarchical Data Format file (HDF5)...')
-        fid = options.outputname
         group = '/mo_set:%03d' % (i_file+1)	
-        display('\n\t%s.h5 in the group "%s"' % (fid,group))	
-        output.HDF5_creator(rho,fid,qc.geo_info,qc.geo_spec,data_id='rho',
+        display('\n\t%s.h5 in the group "%s"' % (options.outputname,group))	
+        output.HDF5_creator(rho,options.outputname,qc.geo_info,qc.geo_spec,data_id='rho',
           append=group,mo_spec=qc_select['mo_spec'])
         if options.drv is not None:
           for i,j in enumerate(options.drv):
@@ -259,18 +180,26 @@ def mo_set(qc, fid_mo_list,
                                 append=group,mo_spec=qc_select['mo_spec'])
       
       fid = '%s_%03d' % (options.outputname, i_file+1) 
+      cube_files.append('%s.cb' % fid)
+      comments = ('mo_set:'+','.join(j_file))
       output.main_output(rho,qc.geo_info,qc.geo_spec,outputname=fid,
-                         otype=otype,no_hdf5=True,
-                         is_vector=(vector is not None))
+                         otype=otype,omit=['h5','vmd'],
+                         comments=comments,is_vector=(vector is not None))
       if options.drv is not None:
         for i,j in enumerate(options.drv):
           fid = '%s_%03d_d%s' % (options.outputname, i_file+1, j) 
-          output.main_output(rho,qc.geo_info,qc.geo_spec,outputname=fid,
-                             otype=otype,no_hdf5=True,
-                             is_vector=(vector is not None))
-
+          cube_files.append('%s.cb' % fid)
+          comments = ('d/%s_of_mo_set:' % j + ','.join(j_file))
+          output.main_output(delta_rho[i],qc.geo_info,qc.geo_spec,outputname=fid,
+                             otype=otype,omit=['h5','vmd'],
+                             comments=comments,is_vector=(vector is not None))
+  if not options.no_output:
+    if 'vmd' in otype and options.vector is None:
+      display('\nCreating VMD network file...' +
+                      '\n\t%(o)s.vmd' % {'o': options.outputname})
+      output.vmd_network_creator(options.outputname,cube_files=cube_files)
   return None
-  #--- mo_select ---
+  # mo_select 
 
 def save_mo_hdf5(filename,geo_info,geo_spec,ao_spec,mo_spec,
                  x=None,y=None,z=None,N=None):
@@ -283,7 +212,7 @@ def save_mo_hdf5(filename,geo_info,geo_spec,ao_spec,mo_spec,
   if z is None: z = grid.z
   if N is None: N = grid.N_
   
-  #--- Initialize HDF5_File ---
+  # Initialize HDF5_File 
   fid = filename if filename.endswith('.h5') else '%s.h5' % filename
   f = h5py.File(fid, 'w')
   
@@ -319,7 +248,7 @@ def save_mo_hdf5(filename,geo_info,geo_spec,ao_spec,mo_spec,
   f.close()
     
   
-  #--- Slice the grid ---
+  # Slice the grid 
   sDim = 0
   N[sDim] = 1
   xyz = [x,y,z]
@@ -453,7 +382,7 @@ def atom_projected_density(atom,qc,
   else:
     display('Returning the atom-projected density')
     return rho_atom
-  #--- atom_projected_density ---
+  # atom_projected_density 
 
 def compute_mulliken_charges(atom,qc,
             ao_list=None,mo_list=None,rho_atom=None,
@@ -504,7 +433,7 @@ def compute_mulliken_charges(atom,qc,
   mulliken_charge = []  
   for i,a in enumerate(index):
     mulliken_charge.append(core.integration(rho_atom[i]))
-    #--- Print the Mulliken Charges ---
+    # Print the Mulliken Charges 
     a = int(a)
     display('\tAtom %s (%s):\t%+0.4f' % 
             (qc.geo_info[a][1],qc.geo_info[a][0],mulliken_charge[-1]))
@@ -578,4 +507,4 @@ def mo_transition_flux_density(i,j,qc,drv='x',
     delta_mo = delta_mo_list[i]
   
   return mo*delta_mo
-  #--- mo_transition_flux_density ---
+  # mo_transition_flux_density 

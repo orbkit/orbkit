@@ -15,6 +15,9 @@
 *.cmap
 *.log
 *.oklog
+*.tga
+*.vmd
+*.kate-swp
 
 !orbkit*.hx
 !h2o.md
