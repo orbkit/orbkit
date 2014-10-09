@@ -162,7 +162,7 @@ def order_using_analytical_overlap(fid_list,itype='molden',**kwargs):
   if fid_list is not None:
     read(fid_list,itype=itype,**kwargs)
 
-  iterate= range(len(geo_spec_all)-1)
+  iterate= range(1,len(geo_spec_all))
 
   mo_overlap = [[] for i in sym.iterkeys()]
   index_list = [[] for i in sym.iterkeys()]
@@ -178,8 +178,8 @@ def order_using_analytical_overlap(fid_list,itype='molden',**kwargs):
     c += 1
     if not c % (len(iterate)/10):
       display('\tFinished %d of %d geometries' % (c, len(iterate)))
-    r1 = rr
-    r2 = rr+1
+    r1 = rr-1
+    r2 = rr
     ao_overlap = get_ao_overlap(geo_spec_all[r1],geo_spec_all[r2],ao_spec)
     
     cs = 0
@@ -200,24 +200,24 @@ def order_using_analytical_overlap(fid_list,itype='molden',**kwargs):
             break
         if line_max is not None:
           # Interchange the coefficients
-          mo_coeff[rr+1,[i,line_max],:] = mo_coeff[rr+1,[line_max,i],:]
+          mo_coeff[r2,[i,line_max],:] = mo_coeff[r2,[line_max,i],:]
           overlap[:,[i,line_max]] = overlap[:,[line_max,i]]
-          index_list[s][rr+1,[i,line_max]] = index_list[s][rr+1,[line_max,i]]
+          index_list[s][r2,[i,line_max]] = index_list[s][r2,[line_max,i]]
       
       for i in range(shape[1]):
         # Change the signs
-        mo_coeff[rr+1,i,:] *= numpy.sign(overlap[i,i])
+        mo_coeff[r2,i,:] *= numpy.sign(overlap[i,i])
         overlap[:,i] *= numpy.sign(overlap[i,i])
-        index_list[s][rr+1,i] *= numpy.sign(overlap[i,i])
+        index_list[s][r2,i] *= numpy.sign(overlap[i,i])
       
       mo_overlap[cs].append(overlap)
       cs += 1
       
       mo_coeff_all[s] = mo_coeff
       
-      index = numpy.abs(index_list[s])[rr,:]
-      mo_energy_all[s][rr,:] = mo_energy_all[s][rr,index]
-      mo_occ_all[s][rr,:] = mo_occ_all[s][rr,index]
+      index = numpy.abs(index_list[s])[r2,:]
+      mo_energy_all[s][r2,:] = mo_energy_all[s][r2,index]
+      mo_occ_all[s][r2,:] = mo_occ_all[s][r2,index]
   
   tmp = []
   for i in mo_overlap:
@@ -655,6 +655,9 @@ def plot(mo_matrix,ydata2=None,symmetry='1',title='All',output_format='png',
   display('Plotting data of symmetry %s to %s' % (symmetry,plt_dir))
   if not os.path.exists(plt_dir):
     os.makedirs(plt_dir)
+  
+  if numpy.ndim(mo_matrix) == 2:
+    mo_matrix = mo_matrix[:,numpy.newaxis,:]
   
   shape = numpy.shape(mo_matrix)
   
