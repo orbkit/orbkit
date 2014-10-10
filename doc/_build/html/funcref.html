@@ -1,5 +1,6 @@
 
 
+
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -14,24 +15,10 @@
   
 
   
-  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
 
   
   
-
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:'./',
-        VERSION:'0.2.0',
-        COLLAPSE_INDEX:false,
-        FILE_SUFFIX:'.html',
-        HAS_SOURCE:  true
-      };
-    </script>
-      <script type="text/javascript" src="_static/jquery.js"></script>
-      <script type="text/javascript" src="_static/underscore.js"></script>
-      <script type="text/javascript" src="_static/doctools.js"></script>
-
     
 
   
@@ -39,7 +26,6 @@
   
   
     <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-    <script type="text/javascript" src="_static/js/theme.js"></script>
   
 
   
@@ -47,26 +33,31 @@
         <link rel="next" title="Licence Note" href="licence.html"/>
         <link rel="prev" title="Manual" href="manual.html"/> 
 
-  <script src="//cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav">
+<body class="wy-body-for-nav" role="document">
 
   <div class="wy-grid-for-nav">
 
     
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-nav-search">
-        <a href="toctree.html" class="icon icon-home"> orbkit</a>
-        <form class="wy-form" action="search.html" method="get">
-  <input type="text" name="q" placeholder="Search docs" />
-  <input type="hidden" name="check_keywords" value="yes" />
-  <input type="hidden" name="area" value="default" />
-</form>
+        
+          <a href="toctree.html" class="fa fa-home"> orbkit</a>
+        
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
       </div>
 
-      <div class="wy-menu wy-menu-vertical" data-spy="affix">
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
         
         
             <ul class="current">
@@ -115,23 +106,30 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top">
-        <i data-toggle="wy-nav-top" class="icon icon-reorder"></i>
-        <a href="/">orbkit</a>
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="toctree.html">orbkit</a>
       </nav>
 
 
       
       <div class="wy-nav-content">
         <div class="rst-content">
-          <ul class="wy-breadcrumbs">
-  <li><a href="toctree.html">Docs</a> &raquo;</li>
-  <li><a href="">Function Reference</a></li>
-  
-</ul>
-<hr/>
-
-          
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="toctree.html">Docs</a> &raquo;</li>
+      
+    <li>Function Reference</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          <a href="_sources/funcref.txt" rel="nofollow"> View page source</a>
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document">
+            
   <div class="section" id="function-reference">
 <h1>Function Reference<a class="headerlink" href="#function-reference" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="central-variables">
@@ -481,7 +479,7 @@ specified grid.</p>
 
 <dl class="function">
 <dt id="orbkit.options.check_options">
-<tt class="descclassname">orbkit.options.</tt><tt class="descname">check_options</tt><big>(</big><em>error=&lt;built-in method write of file object at 0x2ab4593b9150&gt;</em>, <em>display=&lt;built-in method write of file object at 0x2ab4593b9150&gt;</em>, <em>interactive=False</em>, <em>info=True</em><big>)</big><a class="headerlink" href="#orbkit.options.check_options" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">orbkit.options.</tt><tt class="descname">check_options</tt><big>(</big><em>error=&lt;built-in method write of file object at 0x2b922d6881e0&gt;</em>, <em>display=&lt;built-in method write of file object at 0x2b922d6881e0&gt;</em>, <em>interactive=False</em>, <em>info=True</em><big>)</big><a class="headerlink" href="#orbkit.options.check_options" title="Permalink to this definition">¶</a></dt>
 <dd><p>Checks options for errors.</p>
 <p><strong>Parameters:</strong></p>
 <blockquote>
@@ -510,7 +508,7 @@ existing file.</dd>
 
 <dl class="function">
 <dt id="orbkit.options.check_if_exists">
-<tt class="descclassname">orbkit.options.</tt><tt class="descname">check_if_exists</tt><big>(</big><em>fid</em>, <em>what=''</em>, <em>error=&lt;type 'exceptions.IOError'&gt;</em>, <em>display=&lt;built-in method write of file object at 0x2ab4593b9150&gt;</em>, <em>interactive=False</em><big>)</big><a class="headerlink" href="#orbkit.options.check_if_exists" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">orbkit.options.</tt><tt class="descname">check_if_exists</tt><big>(</big><em>fid</em>, <em>what=''</em>, <em>error=&lt;type 'exceptions.IOError'&gt;</em>, <em>display=&lt;built-in method write of file object at 0x2b922d6881e0&gt;</em>, <em>interactive=False</em><big>)</big><a class="headerlink" href="#orbkit.options.check_if_exists" title="Permalink to this definition">¶</a></dt>
 <dd><p>Checks the existence of a file.</p>
 <p><strong>Parameters:</strong></p>
 <blockquote>
@@ -548,7 +546,7 @@ existing file.</dd>
 
 <dl class="data">
 <dt id="orbkit.options.otypes">
-<tt class="descclassname">orbkit.options.</tt><tt class="descname">otypes</tt><em class="property"> = ['h5', 'cb', 'am', 'hx']</em><a class="headerlink" href="#orbkit.options.otypes" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">orbkit.options.</tt><tt class="descname">otypes</tt><em class="property"> = ['h5', 'cb', 'am', 'hx', 'vmd']</em><a class="headerlink" href="#orbkit.options.otypes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Specifies possible output types.</p>
 </dd></dl>
 
@@ -587,7 +585,7 @@ existing file.</dd>
 <p>Module for reading the output files of quantum chemical software.</p>
 <dl class="function">
 <dt id="orbkit.read.main_read">
-<tt class="descclassname">orbkit.read.</tt><tt class="descname">main_read</tt><big>(</big><em>filename</em>, <em>itype='molden'</em>, <em>all_mo=False</em><big>)</big><a class="headerlink" href="#orbkit.read.main_read" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">orbkit.read.</tt><tt class="descname">main_read</tt><big>(</big><em>filename</em>, <em>itype='molden'</em>, <em>all_mo=False</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#orbkit.read.main_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calls the requested read function.</p>
 <p><strong>Parameters:</strong></p>
 <blockquote>
@@ -601,17 +599,97 @@ existing file.</dd>
 </dl>
 </div></blockquote>
 <p><strong>Returns:</strong></p>
-<dl class="docutils">
+<blockquote>
+<div><dl class="docutils">
 <dt>qc (class QCinfo) with attributes geo_spec, geo_info, ao_spec, mo_spec, etot :</dt>
 <dd>See <a class="reference internal" href="#central-variables">Central Variables</a> for details.</dd>
 </dl>
+</div></blockquote>
+<p><strong>Note:</strong></p>
+</dd></dl>
+
+<dl class="function">
+<dt id="orbkit.read.mo_select">
+<tt class="descclassname">orbkit.read.</tt><tt class="descname">mo_select</tt><big>(</big><em>mo_spec</em>, <em>fid_mo_list</em><big>)</big><a class="headerlink" href="#orbkit.read.mo_select" title="Permalink to this definition">¶</a></dt>
+<dd><p>Selects molecular orbitals from an external file.</p>
+<p><strong>Parameters:</strong></p>
+<blockquote>
+<div><dl class="docutils">
+<dt>mo_spec <span class="classifier-delimiter">:</span> <span class="classifier"></span></dt>
+<dd>See <a class="reference internal" href="#central-variables">Central Variables</a> for details.</dd>
+<dt>fid_mo_list <span class="classifier-delimiter">:</span> <span class="classifier">str, <cite>&#8216;all_mo&#8217;</cite>, or list</span></dt>
+<dd><div class="first last line-block">
+<div class="line">If fid_mo_list is a str, specifies the filename of the molecular orbitals list.</div>
+<div class="line">If fid_mo_list is &#8216;all_mo&#8217;, creates a list containing all molecular orbitals.</div>
+<div class="line">If fid_mo_list is a list, provides a list (or a list of lists) of molecular 
+orbital labels.</div>
+</div>
+</dd>
+</dl>
+</div></blockquote>
+<p><strong>Supported Formats:</strong></p>
+<blockquote>
+<div><p>Integer List:</p>
+<blockquote>
+<div><div class="highlight-bash"><div class="highlight"><pre>1	2	3
+5	4
+</pre></div>
+</div>
+</div></blockquote>
+<p>List with Symmetry Labels:</p>
+<blockquote>
+<div><div class="highlight-bash"><div class="highlight"><pre>1.1	2.1	1.3
+1.1	4.1
+4.1	2.3	2.1
+</pre></div>
+</div>
+</div></blockquote>
+</div></blockquote>
+<p><strong>Returns:</strong></p>
+<blockquote>
+<div><dl class="docutils">
+<dt>Dictionary with following Members:</dt>
+<dd><table class="first last docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">mo:</th><td class="field-body"><ul class="first simple">
+<li>List of molecular orbital labels.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">mo_ii:</th><td class="field-body"><ul class="first simple">
+<li>List of molecular orbital indices.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">mo_spec:</th><td class="field-body"><ul class="first simple">
+<li>Selected elements of mo_spec. See <a class="reference internal" href="#central-variables">Central Variables</a> for details.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">mo_in_file:</th><td class="field-body"><ul class="first simple">
+<li>List of molecular orbital labels within the fid_mo_list file.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">sym_select:</th><td class="field-body"><ul class="first last simple">
+<li>If True, symmetry labels have been used.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd>
+</dl>
+</div></blockquote>
 </dd></dl>
 
 <dl class="function">
 <dt id="orbkit.read.read_gamess">
 <tt class="descclassname">orbkit.read.</tt><tt class="descname">read_gamess</tt><big>(</big><em>filename</em>, <em>all_mo=False</em>, <em>read_properties=False</em><big>)</big><a class="headerlink" href="#orbkit.read.read_gamess" title="Permalink to this definition">¶</a></dt>
-<dd><p>Reads all information desired from a Gamess-US output file.
-<strong>Parameters:</strong></p>
+<dd><p>Reads all information desired from a Gamess-US output file.</p>
+<p><strong>Parameters:</strong></p>
 <blockquote>
 <div><dl class="docutils">
 <dt>filename <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
@@ -621,10 +699,12 @@ existing file.</dd>
 </dl>
 </div></blockquote>
 <p><strong>Returns:</strong></p>
-<dl class="docutils">
+<blockquote>
+<div><dl class="docutils">
 <dt>qc (class QCinfo) with attributes geo_spec, geo_info, ao_spec, mo_spec, etot :</dt>
 <dd>See <a class="reference internal" href="#central-variables">Central Variables</a> for details.</dd>
 </dl>
+</div></blockquote>
 </dd></dl>
 
 <dl class="function">
@@ -641,10 +721,12 @@ existing file.</dd>
 </dl>
 </div></blockquote>
 <p><strong>Returns:</strong></p>
-<dl class="docutils">
+<blockquote>
+<div><dl class="docutils">
 <dt>qc (class QCinfo) with attributes geo_spec, geo_info, ao_spec, mo_spec, etot :</dt>
 <dd>See <a class="reference internal" href="#central-variables">Central Variables</a> for details.</dd>
 </dl>
+</div></blockquote>
 </dd></dl>
 
 <dl class="function">
@@ -672,10 +754,12 @@ existing file.</dd>
 </dl>
 </div></blockquote>
 <p><strong>Returns:</strong></p>
-<dl class="docutils">
+<blockquote>
+<div><dl class="docutils">
 <dt>qc (class QCinfo) with attributes geo_spec, geo_info, ao_spec, mo_spec, etot :</dt>
 <dd>See <a class="reference internal" href="#central-variables">Central Variables</a> for details.</dd>
 </dl>
+</div></blockquote>
 </div></blockquote>
 <table class="docutils footnote" frame="void" id="first" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
@@ -687,7 +771,7 @@ existing file.</dd>
 
 <dl class="function">
 <dt id="orbkit.read.read_molden">
-<tt class="descclassname">orbkit.read.</tt><tt class="descname">read_molden</tt><big>(</big><em>filename</em>, <em>all_mo=False</em><big>)</big><a class="headerlink" href="#orbkit.read.read_molden" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">orbkit.read.</tt><tt class="descname">read_molden</tt><big>(</big><em>filename</em>, <em>all_mo=False</em>, <em>i_md=-1</em>, <em>interactive=True</em><big>)</big><a class="headerlink" href="#orbkit.read.read_molden" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reads all information desired from a molden file.</p>
 <p><strong>Parameters:</strong></p>
 <blockquote>
@@ -696,13 +780,19 @@ existing file.</dd>
 <dd>Specifies the filename for the input file.</dd>
 <dt>all_mo <span class="classifier-delimiter">:</span> <span class="classifier">bool, optional</span></dt>
 <dd>If True, all molecular orbitals are returned.</dd>
+<dt>i_mo <span class="classifier-delimiter">:</span> <span class="classifier">int, default=-1</span></dt>
+<dd>Selects the <cite>[Molden Format]</cite> section of the output file.</dd>
+<dt>interactive <span class="classifier-delimiter">:</span> <span class="classifier">bool</span></dt>
+<dd>If True, the user is asked to select the different sets.</dd>
 </dl>
 </div></blockquote>
 <p><strong>Returns:</strong></p>
-<dl class="docutils">
+<blockquote>
+<div><dl class="docutils">
 <dt>qc (class QCinfo) with attributes geo_spec, geo_info, ao_spec, mo_spec, etot :</dt>
 <dd>See <a class="reference internal" href="#central-variables">Central Variables</a> for details.</dd>
 </dl>
+</div></blockquote>
 </dd></dl>
 
 <dl class="function">
@@ -719,10 +809,12 @@ existing file.</dd>
 </dl>
 </div></blockquote>
 <p><strong>Returns:</strong></p>
-<dl class="docutils">
+<blockquote>
+<div><dl class="docutils">
 <dt>qc (class QCinfo) with attributes geo_spec, geo_info, ao_spec, mo_spec, etot :</dt>
 <dd>See <a class="reference internal" href="#central-variables">Central Variables</a> for details.</dd>
 </dl>
+</div></blockquote>
 </dd></dl>
 
 </div>
@@ -738,7 +830,7 @@ are performed.</p>
 
 <dl class="function">
 <dt id="orbkit.grid.center_grid">
-<tt class="descclassname">orbkit.grid.</tt><tt class="descname">center_grid</tt><big>(</big><em>ac</em>, <em>display=&lt;built-in method write of file object at 0x2ab4593b9150&gt;</em><big>)</big><a class="headerlink" href="#orbkit.grid.center_grid" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">orbkit.grid.</tt><tt class="descname">center_grid</tt><big>(</big><em>ac</em>, <em>display=&lt;built-in method write of file object at 0x2b922d6881e0&gt;</em><big>)</big><a class="headerlink" href="#orbkit.grid.center_grid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Centers the grid to the point ac and to the origin (0,0,0).</p>
 </dd></dl>
 
@@ -790,10 +882,40 @@ specified by the global lists:</p>
 </div></blockquote>
 </dd></dl>
 
+<dl class="function">
+<dt id="orbkit.grid.grid_sym_op">
+<tt class="descclassname">orbkit.grid.</tt><tt class="descname">grid_sym_op</tt><big>(</big><em>grid=None</em>, <em>symop=None</em>, <em>is_vector=None</em><big>)</big><a class="headerlink" href="#orbkit.grid.grid_sym_op" title="Permalink to this definition">¶</a></dt>
+<dd><p>Executes given symmetry operation on vector grid</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="orbkit.grid.inversion">
+<tt class="descclassname">orbkit.grid.</tt><tt class="descname">inversion</tt><big>(</big><big>)</big><a class="headerlink" href="#orbkit.grid.inversion" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transfer matrix representation for inversion</p>
+</dd></dl>
+
 <dl class="data">
 <dt id="orbkit.grid.is_initialized">
 <tt class="descclassname">orbkit.grid.</tt><tt class="descname">is_initialized</tt><em class="property"> = False</em><a class="headerlink" href="#orbkit.grid.is_initialized" title="Permalink to this definition">¶</a></dt>
 <dd><p>If True, the grid is assumed to be initialized.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="orbkit.grid.is_vector">
+<tt class="descclassname">orbkit.grid.</tt><tt class="descname">is_vector</tt><em class="property"> = False</em><a class="headerlink" href="#orbkit.grid.is_vector" title="Permalink to this definition">¶</a></dt>
+<dd><p>If True, the grid is assumed to be vectorized.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="orbkit.grid.matrix_grid2vector">
+<tt class="descclassname">orbkit.grid.</tt><tt class="descname">matrix_grid2vector</tt><big>(</big><em>matrix=None</em><big>)</big><a class="headerlink" href="#orbkit.grid.matrix_grid2vector" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts the (Nx,Ny,Nz) data matrix back to the regular grid (Nx,Nz,Ny)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="orbkit.grid.matrix_vector2grid">
+<tt class="descclassname">orbkit.grid.</tt><tt class="descname">matrix_vector2grid</tt><big>(</big><em>matrix=None</em>, <em>Nx=None</em>, <em>Ny=None</em>, <em>Nz=None</em><big>)</big><a class="headerlink" href="#orbkit.grid.matrix_vector2grid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts the (Nx*Ny*Nz) data matrix back to the (Nx,Nz,Ny)</p>
 </dd></dl>
 
 <dl class="data">
@@ -844,52 +966,64 @@ specified by the global lists:</p>
 </dl>
 </div></blockquote>
 <p><strong>Supported Formats:</strong></p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Regular Grid:</th><td class="field-body"><div class="first last line-block">
-<div class="line">The input has the following format</div>
-<div class="line"><br /></div>
-<div class="line-block">
-<div class="line">x xmin xmax Nx</div>
-<div class="line">y ymin ymax Ny</div>
-<div class="line">z zmin zmax Nz</div>
-<div class="line"><br /></div>
+<blockquote>
+<div><p>Regular Grid:</p>
+<blockquote>
+<div><div class="highlight-bash"><div class="highlight"><pre><span class="c"># Regular Grid Example File</span>
+<span class="c"># Format:</span>
+<span class="c"># x xmin xmax Nx</span>
+<span class="c"># y ymin ymax Ny</span>
+<span class="c"># z zmin zmax Nz</span>
+
+x -5 5 101
+y -2 2  51
+z  0 0   1 
+</pre></div>
 </div>
-<div class="line">E.g.,</div>
-<div class="line"><br /></div>
-<div class="line-block">
-<div class="line">x -5  5 11</div>
-<div class="line">y -2  2  5</div>
-<div class="line">z  0  0  1</div>
-<div class="line"><br /></div>
+</div></blockquote>
+<p>Vector Grid:</p>
+<blockquote>
+<div><div class="highlight-bash"><div class="highlight"><pre><span class="c"># Vectorized Grid Example File</span>
+<span class="c"># The header &#39;x y z&#39; is mandatory!</span>
+
+x	y	z
+-5	-5	0
+-4	-5	0
+-3	-5	0
+0	0	0
+2	-1e-1	9.78
+</pre></div>
 </div>
-</div>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Vector-Grid:</th><td class="field-body"><div class="first last line-block">
-<div class="line">The input has the following format</div>
-<div class="line"><br /></div>
-<div class="line-block">
-<div class="line">x  y  z</div>
-<div class="line">5 -5  0</div>
-<div class="line">2  7  0</div>
-<div class="line">...</div>
-<div class="line"><br /></div>
-</div>
-</div>
-</td>
-</tr>
-</tbody>
-</table>
+</div></blockquote>
+</div></blockquote>
 <p><strong>Hint:</strong> If a line starts with &#8216;#&#8217;, it will be skipped. Please, do not use &#8216;#&#8217; at the end of a line!</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="orbkit.grid.reflect">
+<tt class="descclassname">orbkit.grid.</tt><tt class="descname">reflect</tt><big>(</big><em>plane</em><big>)</big><a class="headerlink" href="#orbkit.grid.reflect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates matrix representation for reflection
+Plane has to be specified as follows:
+xy-plane -&gt; plane= numpy.array([0,1])
+xz-plane -&gt; plane= numpy.array([0,2])
+yz-plane -&gt; plane= numpy.array([1,2])</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="orbkit.grid.reset_grid">
 <tt class="descclassname">orbkit.grid.</tt><tt class="descname">reset_grid</tt><big>(</big><big>)</big><a class="headerlink" href="#orbkit.grid.reset_grid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Resets the grid parameters.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="orbkit.grid.rot">
+<tt class="descclassname">orbkit.grid.</tt><tt class="descname">rot</tt><big>(</big><em>ang</em>, <em>axis</em><big>)</big><a class="headerlink" href="#orbkit.grid.rot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates matrix representation for arbitrary rotations
+Angle has to be defined in radians, e.g., numpy.pi/2.0
+Axis has to be specified as follows: 
+x-axis -&gt; axis=0,
+y-axis -&gt; axis=1,
+z-axis -&gt; axis=2,</p>
 </dd></dl>
 
 <dl class="function">
@@ -918,7 +1052,7 @@ to a Cartesian grid matrix (vector grid) with the shape (3, (Nr*Ntheta*Nphi)).</
 
 <dl class="function">
 <dt id="orbkit.grid.vector2grid">
-<tt class="descclassname">orbkit.grid.</tt><tt class="descname">vector2grid</tt><big>(</big><big>)</big><a class="headerlink" href="#orbkit.grid.vector2grid" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">orbkit.grid.</tt><tt class="descname">vector2grid</tt><big>(</big><em>Nx=None</em>, <em>Ny=None</em>, <em>Nz=None</em><big>)</big><a class="headerlink" href="#orbkit.grid.vector2grid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Converts the (3, (Nx*Ny*Nz)) grid matrix (vector grid) back to the regular grid 
 characterized by the x-, y-, z-vectors.
 Reverse operation: <a class="reference internal" href="#orbkit.grid.grid2vector" title="orbkit.grid.grid2vector"><tt class="xref py py-mod docutils literal"><span class="pre">orbkit.grid.grid2vector</span></tt></a></p>
@@ -926,19 +1060,19 @@ Reverse operation: <a class="reference internal" href="#orbkit.grid.grid2vector"
 
 <dl class="data">
 <dt id="orbkit.grid.x">
-<tt class="descclassname">orbkit.grid.</tt><tt class="descname">x</tt><em class="property"> = [0]</em><a class="headerlink" href="#orbkit.grid.x" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">orbkit.grid.</tt><tt class="descname">x</tt><em class="property"> = array([0])</em><a class="headerlink" href="#orbkit.grid.x" title="Permalink to this definition">¶</a></dt>
 <dd><p>Contains the x-coordinates.</p>
 </dd></dl>
 
 <dl class="data">
 <dt id="orbkit.grid.y">
-<tt class="descclassname">orbkit.grid.</tt><tt class="descname">y</tt><em class="property"> = [0]</em><a class="headerlink" href="#orbkit.grid.y" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">orbkit.grid.</tt><tt class="descname">y</tt><em class="property"> = array([0])</em><a class="headerlink" href="#orbkit.grid.y" title="Permalink to this definition">¶</a></dt>
 <dd><p>Contains the y-coordinates.</p>
 </dd></dl>
 
 <dl class="data">
 <dt id="orbkit.grid.z">
-<tt class="descclassname">orbkit.grid.</tt><tt class="descname">z</tt><em class="property"> = [0]</em><a class="headerlink" href="#orbkit.grid.z" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">orbkit.grid.</tt><tt class="descname">z</tt><em class="property"> = array([0])</em><a class="headerlink" href="#orbkit.grid.z" title="Permalink to this definition">¶</a></dt>
 <dd><p>Contains the z-coordinates.</p>
 </dd></dl>
 
@@ -1286,7 +1420,7 @@ and if requested, the derivatives thereof as well.</dd>
 </table>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Else:</th><td class="field-body"><div class="first line-block">
+<tr class="field-odd field"><th class="field-name">Else :</th><td class="field-body"><div class="first line-block">
 <div class="line"><br /></div>
 </div>
 <table class="last docutils field-list" frame="void" rules="none">
@@ -1446,6 +1580,18 @@ adapted from</p>
 </ol>
 </div></blockquote>
 <dl class="function">
+<dt id="orbkit.analytical_integrals.ao_overlap_code">
+<tt class="descclassname">orbkit.analytical_integrals.</tt><tt class="descname">ao_overlap_code</tt><big>(</big><em>is_drv=False</em><big>)</big><a class="headerlink" href="#orbkit.analytical_integrals.ao_overlap_code" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the requested C++ code.</p>
+<p><strong>Parameters:</strong></p>
+<dl class="docutils">
+<dt>is_drv <span class="classifier-delimiter">:</span> <span class="classifier">bool</span></dt>
+<dd>If True, returns the code for the computation of the
+derivative of an atomic orbital.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
 <dt id="orbkit.analytical_integrals.contract_ao_overlap_matrix">
 <tt class="descclassname">orbkit.analytical_integrals.</tt><tt class="descname">contract_ao_overlap_matrix</tt><big>(</big><em>ao_uncontracted</em>, <em>ao_spec</em><big>)</big><a class="headerlink" href="#orbkit.analytical_integrals.contract_ao_overlap_matrix" title="Permalink to this definition">¶</a></dt>
 <dd><p>Converts an overlap matrix built up from primitive (uncontracted) Cartesian 
@@ -1483,8 +1629,27 @@ Gaussians to an overlap matrix of built up from contracted Cartesian Gaussians.<
 </dd></dl>
 
 <dl class="function">
+<dt id="orbkit.analytical_integrals.get_ao_dipole_matrix">
+<tt class="descclassname">orbkit.analytical_integrals.</tt><tt class="descname">get_ao_dipole_matrix</tt><big>(</big><em>qc</em>, <em>component='x'</em><big>)</big><a class="headerlink" href="#orbkit.analytical_integrals.get_ao_dipole_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the expectation value of the dipole moment operator between 
+all atomic orbitals.</p>
+<p><strong>Parameters:</strong></p>
+<dl class="docutils">
+<dt>qc <span class="classifier-delimiter">:</span> <span class="classifier">class</span></dt>
+<dd>QCinfo class. (See <a class="reference internal" href="#central-variables">Central Variables</a> for details.)</dd>
+<dt>component <span class="classifier-delimiter">:</span> <span class="classifier">int or string, {&#8216;x&#8217;,&#8217;y&#8217;, &#8216;z&#8217;, 0, 1, 2}</span></dt>
+<dd>Specifies the compontent of the dipole moment operator which shall be applied.</dd>
+</dl>
+<p><strong>Returns:</strong></p>
+<dl class="docutils">
+<dt>ao_dipole_matrix <span class="classifier-delimiter">:</span> <span class="classifier">numpy.ndarray, shape=(NAO,NAO)</span></dt>
+<dd>Contains the expectation value matrix.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
 <dt id="orbkit.analytical_integrals.get_ao_overlap">
-<tt class="descclassname">orbkit.analytical_integrals.</tt><tt class="descname">get_ao_overlap</tt><big>(</big><em>coord_a</em>, <em>coord_b</em>, <em>ao_spec</em>, <em>lxlylz_b=None</em>, <em>contraction=True</em><big>)</big><a class="headerlink" href="#orbkit.analytical_integrals.get_ao_overlap" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">orbkit.analytical_integrals.</tt><tt class="descname">get_ao_overlap</tt><big>(</big><em>coord_a</em>, <em>coord_b</em>, <em>ao_spec</em>, <em>lxlylz_b=None</em>, <em>contraction=True</em>, <em>drv=None</em><big>)</big><a class="headerlink" href="#orbkit.analytical_integrals.get_ao_overlap" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes the overlap matrix of a basis set, where <cite>Bra</cite> basis set
 corresponds to the geometry <tt class="docutils literal"><span class="pre">coord_a</span></tt> and <cite>Ket</cite> basis set corresponds 
 to the geometry <tt class="docutils literal"><span class="pre">coord_b</span></tt>.</p>
@@ -1514,6 +1679,24 @@ overlap matrix.</dd>
 <dl class="docutils">
 <dt>ao_overlap_matrix <span class="classifier-delimiter">:</span> <span class="classifier">numpy.ndarray, shape = (NAO,NAO)</span></dt>
 <dd>Contains the overlap matrix.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="orbkit.analytical_integrals.get_dipole_moment">
+<tt class="descclassname">orbkit.analytical_integrals.</tt><tt class="descname">get_dipole_moment</tt><big>(</big><em>qc, component=['x', 'y', 'z']</em><big>)</big><a class="headerlink" href="#orbkit.analytical_integrals.get_dipole_moment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the dipole moment analytically.</p>
+<p><strong>Parameters:</strong></p>
+<dl class="docutils">
+<dt>qc <span class="classifier-delimiter">:</span> <span class="classifier">class</span></dt>
+<dd>QCinfo class. (See <a class="reference internal" href="#central-variables">Central Variables</a> for details.)</dd>
+<dt>component <span class="classifier-delimiter">:</span> <span class="classifier">string or list of strings, {&#8216;x&#8217;,&#8217;y&#8217;, or &#8216;z&#8217;}</span></dt>
+<dd>Specifies the compontent(s) of the dipole moment which shall be computed.</dd>
+</dl>
+<p><strong>Returns:</strong></p>
+<dl class="docutils">
+<dt>dipole_moment <span class="classifier-delimiter">:</span> <span class="classifier">1D numpy.array, shape[0]=len(component)</span></dt>
+<dd>Contains the dipole moment.</dd>
 </dl>
 </dd></dl>
 
@@ -1559,9 +1742,9 @@ overlap matrix.</dd>
 <dd><p>Computes the overlap of two sets of molecular orbitals.</p>
 <p><strong>Parameters:</strong></p>
 <dl class="docutils">
-<dt>mo_a <span class="classifier-delimiter">:</span> <span class="classifier">numpy.ndarray, shape = (NMO,NAO)</span></dt>
+<dt>mo_a <span class="classifier-delimiter">:</span> <span class="classifier">numpy.ndarray with shape = (NMO,NAO) or mo_spec (cf. <a class="reference internal" href="#central-variables">Central Variables</a>)</span></dt>
 <dd>Contains the molecular orbital coefficients of all <cite>Bra</cite> orbitals.</dd>
-<dt>mo_b <span class="classifier-delimiter">:</span> <span class="classifier">numpy.ndarray, shape = (NMO,NAO)</span></dt>
+<dt>mo_b <span class="classifier-delimiter">:</span> <span class="classifier">numpy.ndarray with shape = (NMO,NAO) or mo_spec (cf. <a class="reference internal" href="#central-variables">Central Variables</a>)</span></dt>
 <dd>Contains the molecular orbital coefficients of all <cite>Ket</cite> orbitals.</dd>
 <dt>ao_overlap_matrix <span class="classifier-delimiter">:</span> <span class="classifier">numpy.ndarray, shape = (NAO,NAO)</span></dt>
 <dd>Contains the overlap matrix of the basis set.</dd>
@@ -1570,6 +1753,24 @@ overlap matrix.</dd>
 <dl class="docutils">
 <dt>mo_overlap_matrix <span class="classifier-delimiter">:</span> <span class="classifier">numpy.ndarray, shape = (NMO,NMO)</span></dt>
 <dd>Contains the overlap matrix between the two sets of input molecular orbitals.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="orbkit.analytical_integrals.get_nuclear_dipole_moment">
+<tt class="descclassname">orbkit.analytical_integrals.</tt><tt class="descname">get_nuclear_dipole_moment</tt><big>(</big><em>qc</em>, <em>component='x'</em><big>)</big><a class="headerlink" href="#orbkit.analytical_integrals.get_nuclear_dipole_moment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the nuclear part of the dipole moment.</p>
+<p><strong>Parameters:</strong></p>
+<dl class="docutils">
+<dt>qc <span class="classifier-delimiter">:</span> <span class="classifier">class</span></dt>
+<dd>QCinfo class. (See <a class="reference internal" href="#central-variables">Central Variables</a> for details.)</dd>
+<dt>component <span class="classifier-delimiter">:</span> <span class="classifier">int or string, {&#8216;x&#8217;,&#8217;y&#8217;, &#8216;z&#8217;, 0, 1, 2}</span></dt>
+<dd>Specifies the compontent of the dipole moment operator which shall be applied.</dd>
+</dl>
+<p><strong>Returns:</strong></p>
+<dl class="docutils">
+<dt>nuclear_dipole_moment <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>Contains the nuclear dipole moment.</dd>
 </dl>
 </dd></dl>
 
@@ -1665,6 +1866,30 @@ mo_matrix (shape=(Nfiles,NMO,NAO)).</p>
 <dd><p>Contains all molecular geometries, i.e., <tt class="docutils literal"><span class="pre">geo_spec</span></tt>. (See <a class="reference internal" href="#central-variables">Central Variables</a> for details.)</p>
 </dd></dl>
 
+<dl class="function">
+<dt id="orbkit.multiple_files.get_extrapolation">
+<tt class="descclassname">orbkit.multiple_files.</tt><tt class="descname">get_extrapolation</tt><big>(</big><em>r1</em>, <em>r2</em>, <em>mo_coeff</em>, <em>deg=1</em>, <em>grid1d=None</em><big>)</big><a class="headerlink" href="#orbkit.multiple_files.get_extrapolation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extrapolates the molecular orbital coefficients <tt class="docutils literal"><span class="pre">mo_coeff</span></tt> 
+using a polynomial of degree <tt class="docutils literal"><span class="pre">deg</span></tt>.</p>
+<p><strong>Paramerters:</strong></p>
+<dl class="docutils">
+<dt>r1 <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>Specifies the index of the last known molecular orbital.</dd>
+<dt>r2 <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>Specifies the index to which the molecular orbital coefficients are 
+extrapolated.</dd>
+<dt>deg <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>Specifies the degree of the extrapolation polynomial.</dd>
+<dt>grid1d <span class="classifier-delimiter">:</span> <span class="classifier">list or numpy.1darray, optional</span></dt>
+<dd>Specifies the grid for the extrapolation.</dd>
+</dl>
+<p><strong>Returns:</strong></p>
+<dl class="docutils">
+<dt>epol <span class="classifier-delimiter">:</span> <span class="classifier">numpy.ndarray, shape=(NMO,NAO))</span></dt>
+<dd>Contains the extrapolated molecular orbital coefficients.</dd>
+</dl>
+</dd></dl>
+
 <dl class="data">
 <dt id="orbkit.multiple_files.index_list">
 <tt class="descclassname">orbkit.multiple_files.</tt><tt class="descname">index_list</tt><em class="property"> = []</em><a class="headerlink" href="#orbkit.multiple_files.index_list" title="Permalink to this definition">¶</a></dt>
@@ -1697,14 +1922,14 @@ mo_matrix (shape=(Nfiles,NMO,NAO)).</p>
 
 <dl class="function">
 <dt id="orbkit.multiple_files.order_mo">
-<tt class="descclassname">orbkit.multiple_files.</tt><tt class="descname">order_mo</tt><big>(</big><em>mo</em>, <em>index_list=None</em>, <em>backward=True</em>, <em>mu=0.10000000000000001</em>, <em>use_factor=False</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#orbkit.multiple_files.order_mo" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">orbkit.multiple_files.</tt><tt class="descname">order_mo</tt><big>(</big><em>mo</em>, <em>index_list=None</em>, <em>backward=True</em>, <em>mu=0.1</em>, <em>use_factor=False</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#orbkit.multiple_files.order_mo" title="Permalink to this definition">¶</a></dt>
 <dd><p>Orders a 3d-matrix (shape=(Nfiles,NMO,NAO)) by interchanging the axis=1, 
 i.e., NMO, applying linear extrapolation.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="orbkit.multiple_files.order_mo_higher_deg">
-<tt class="descclassname">orbkit.multiple_files.</tt><tt class="descname">order_mo_higher_deg</tt><big>(</big><em>mo</em>, <em>index_list=None</em>, <em>backward=True</em>, <em>mu=0.10000000000000001</em>, <em>deg=2</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#orbkit.multiple_files.order_mo_higher_deg" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">orbkit.multiple_files.</tt><tt class="descname">order_mo_higher_deg</tt><big>(</big><em>mo</em>, <em>index_list=None</em>, <em>backward=True</em>, <em>mu=0.1</em>, <em>deg=2</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#orbkit.multiple_files.order_mo_higher_deg" title="Permalink to this definition">¶</a></dt>
 <dd><p>Orders a 3d-matrix (shape=(Nfiles,NMO,NAO)) by interchanging the axis=1, 
 i.e., NMO, applying an extrapolation a polynomial fit with a Vandermonde matrix
 as implemented in numpy.</p>
@@ -1712,21 +1937,27 @@ as implemented in numpy.</p>
 
 <dl class="function">
 <dt id="orbkit.multiple_files.order_pm">
-<tt class="descclassname">orbkit.multiple_files.</tt><tt class="descname">order_pm</tt><big>(</big><em>x</em>, <em>y</em>, <em>backward=True</em>, <em>mu=0.10000000000000001</em>, <em>use_factor=False</em><big>)</big><a class="headerlink" href="#orbkit.multiple_files.order_pm" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">orbkit.multiple_files.</tt><tt class="descname">order_pm</tt><big>(</big><em>x</em>, <em>y</em>, <em>backward=True</em>, <em>mu=0.1</em>, <em>use_factor=False</em><big>)</big><a class="headerlink" href="#orbkit.multiple_files.order_pm" title="Permalink to this definition">¶</a></dt>
 <dd><p>Outdated function to order exclusively the sign of a data set.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="orbkit.multiple_files.order_using_analytical_overlap">
-<tt class="descclassname">orbkit.multiple_files.</tt><tt class="descname">order_using_analytical_overlap</tt><big>(</big><em>fid_list</em>, <em>itype='molden'</em><big>)</big><a class="headerlink" href="#orbkit.multiple_files.order_using_analytical_overlap" title="Permalink to this definition">¶</a></dt>
-<dd><p>Ordering routine using analytical overlap integrals between molecular
-orbitals. Set fid_list to None to omit the reading of input files.</p>
+<tt class="descclassname">orbkit.multiple_files.</tt><tt class="descname">order_using_analytical_overlap</tt><big>(</big><em>fid_list</em>, <em>itype='molden'</em>, <em>deg=0</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#orbkit.multiple_files.order_using_analytical_overlap" title="Permalink to this definition">¶</a></dt>
+<dd><p>Performs an ordering routine using analytical overlap integrals between 
+molecular orbitals. Set fid_list to None to omit the reading of input files.</p>
+<p>If <tt class="docutils literal"><span class="pre">deg</span></tt> is set to a value larger than zero, the molecular orbital 
+coefficients are extrapolated with a polynomial of degree <tt class="docutils literal"><span class="pre">deg</span></tt>,
+before computing the molecular orbital overlap matrix.</p>
 <p><strong>Paramerters:</strong></p>
 <dl class="docutils">
 <dt>fid_list <span class="classifier-delimiter">:</span> <span class="classifier">list of str or None</span></dt>
 <dd>If not None, it contains the list of input file names.</dd>
 <dt>itype <span class="classifier-delimiter">:</span> <span class="classifier">str, choices={&#8216;molden&#8217;, &#8216;gamess&#8217;, &#8216;gaussian.log&#8217;, &#8216;gaussian.fchk&#8217;}</span></dt>
 <dd>Specifies the type of the input files.</dd>
+<dt>deg <span class="classifier-delimiter">:</span> <span class="classifier">int, optional</span></dt>
+<dd>If greater than zero, specifies the degree of the extrapolation polynomial
+for the molecular orbital coefficients.</dd>
 </dl>
 <p><strong>Returns:</strong></p>
 <dl class="docutils">
@@ -1745,9 +1976,10 @@ geometry (i+1).</dd>
 
 <dl class="function">
 <dt id="orbkit.multiple_files.order_using_extrapolation">
-<tt class="descclassname">orbkit.multiple_files.</tt><tt class="descname">order_using_extrapolation</tt><big>(</big><em>fid_list</em>, <em>itype='molden'</em>, <em>deg=1</em>, <em>use_mo_values=False</em>, <em>matrix=None</em><big>)</big><a class="headerlink" href="#orbkit.multiple_files.order_using_extrapolation" title="Permalink to this definition">¶</a></dt>
-<dd><p>Ordering routine using extrapolation of quantities related to the 
-molecular orbitals. Set fid_list to None to omit the reading of input files.</p>
+<tt class="descclassname">orbkit.multiple_files.</tt><tt class="descname">order_using_extrapolation</tt><big>(</big><em>fid_list</em>, <em>itype='molden'</em>, <em>deg=1</em>, <em>use_mo_values=False</em>, <em>matrix=None</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#orbkit.multiple_files.order_using_extrapolation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Performs an ordering routine using extrapolation of quantities related to 
+the molecular orbitals. Set fid_list to None to omit the reading of input 
+files.</p>
 <p>The molecular orbital coefficients (If use_mo_values is False) are 
 extrapolated with a polynomial of degree <tt class="docutils literal"><span class="pre">deg</span></tt> and ordered by 
 minimizing a selected norm (default: Euclidian norm).</p>
@@ -1777,7 +2009,7 @@ instead.</dd>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Else:</th><td class="field-body"><ul class="first last simple">
+<tr class="field-even field"><th class="field-name">Else :</th><td class="field-body"><ul class="first last simple">
 <li>matrix, index_list</li>
 </ul>
 </td>
@@ -1797,13 +2029,13 @@ molecular orbital changes its sign.</dd>
 
 <dl class="function">
 <dt id="orbkit.multiple_files.plot">
-<tt class="descclassname">orbkit.multiple_files.</tt><tt class="descname">plot</tt><big>(</big><em>mo_matrix, ydata2=None, symmetry='1', title='All', output_format='png', plt_dir='Plots', ylim=[-5, 5], thresh=0.10000000000000001, x0=0</em><big>)</big><a class="headerlink" href="#orbkit.multiple_files.plot" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">orbkit.multiple_files.</tt><tt class="descname">plot</tt><big>(</big><em>mo_matrix, symmetry='1', title='All', x_label='${\\sf index}$', y_label='MO coefficients', output_format='png', plt_dir='Plots', ylim=[-5, 5], thresh=0.1, x0=0, grid=True, **kwargs</em><big>)</big><a class="headerlink" href="#orbkit.multiple_files.plot" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plots all molecular orbital coefficients of one symmetry.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="orbkit.multiple_files.read">
-<tt class="descclassname">orbkit.multiple_files.</tt><tt class="descname">read</tt><big>(</big><em>fid_list</em>, <em>itype='molden'</em><big>)</big><a class="headerlink" href="#orbkit.multiple_files.read" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">orbkit.multiple_files.</tt><tt class="descname">read</tt><big>(</big><em>fid_list</em>, <em>itype='molden'</em>, <em>all_mo=True</em>, <em>nosym=False</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#orbkit.multiple_files.read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reads a list of input files.</p>
 <p><strong>Parameters:</strong></p>
 <blockquote>
@@ -1880,7 +2112,7 @@ additional <tt class="docutils literal"><span class="pre">kwargs</span></tt> to 
 <p>Module for creating the requested output files.</p>
 <dl class="function">
 <dt id="orbkit.output.main_output">
-<tt class="descclassname">orbkit.output.</tt><tt class="descname">main_output</tt><big>(</big><em>data</em>, <em>geo_info</em>, <em>geo_spec</em>, <em>outputname='new'</em>, <em>otype='h5'</em>, <em>drv=None</em>, <em>no_hdf5=False</em>, <em>is_vector=False</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#orbkit.output.main_output" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">orbkit.output.</tt><tt class="descname">main_output</tt><big>(</big><em>data</em>, <em>geo_info</em>, <em>geo_spec</em>, <em>outputname='new'</em>, <em>otype='h5'</em>, <em>drv=None</em>, <em>omit=</em><span class="optional">[</span><span class="optional">]</span>, <em>is_vector=False</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#orbkit.output.main_output" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates the requested output.</p>
 </dd></dl>
 
@@ -1905,7 +2137,7 @@ adjusted to the density for the easy depiction of the density.</p>
 
 <dl class="function">
 <dt id="orbkit.output.cube_creator">
-<tt class="descclassname">orbkit.output.</tt><tt class="descname">cube_creator</tt><big>(</big><em>rho</em>, <em>filename</em>, <em>geo_info</em>, <em>geo_spec</em><big>)</big><a class="headerlink" href="#orbkit.output.cube_creator" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">orbkit.output.</tt><tt class="descname">cube_creator</tt><big>(</big><em>rho</em>, <em>filename</em>, <em>geo_info</em>, <em>geo_spec</em>, <em>comments=''</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#orbkit.output.cube_creator" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates a plain text Gaussian cube file.</p>
 </dd></dl>
 
@@ -1924,11 +2156,11 @@ adjusted to the density for the easy depiction of the density.</p>
 <tt class="descclassname">orbkit.extras.</tt><tt class="descname">atom_projected_density</tt><big>(</big><em>atom</em>, <em>qc</em>, <em>bReturnmo=False</em>, <em>ao_list=None</em>, <em>mo_list=None</em>, <em>x=None</em>, <em>y=None</em>, <em>z=None</em>, <em>N=None</em>, <em>is_vector=False</em><big>)</big><a class="headerlink" href="#orbkit.extras.atom_projected_density" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes the projected electron density with respect to the selected atoms.</p>
 <div class="math">
-<p><img src="_images/math/cabf95bf8d7718de38b7edb8bb55e59c55d1e71d.png" alt="\rho^a(x,y,z) = \sum_i occ_i * mo_i^a * mo_i"/></p>
+<p><img src="_images/math/c28502ee34e63e4948b3ea58ddfa7f599473f6f3.png" alt="\rho^a(x,y,z) = \sum_i occ_i * mo_i^a * mo_i"/></p>
 </div><p><strong>Parameters:</strong></p>
 <blockquote>
 <div><dl class="docutils">
-<dt>atom <span class="classifier-delimiter">:</span> <span class="classifier">int or list of int</span></dt>
+<dt>atom <span class="classifier-delimiter">:</span> <span class="classifier">&#8216;all&#8217; or int or list of int</span></dt>
 <dd>Specifies the atoms to which the projected electron density will be computed.</dd>
 <dt>geo_spec, geo_info, ao_spec, mo_spec <span class="classifier-delimiter">:</span> <span class="classifier"></span></dt>
 <dd>See <a class="reference internal" href="#central-variables">Central Variables</a> for details.</dd>
@@ -2022,7 +2254,7 @@ with x, y, and z as vectors.</dd>
 <dd><p>Compute the Mulliken charges of the selected atoms using
 the respective projected electron densities.</p>
 <div class="math">
-<p><img src="_images/math/11edc24212238eca415c7c6667d4e0ce678561dd.png" alt="P^a = \int \rho^a(x,y,z) d^3r"/></p>
+<p><img src="_images/math/3543a979775fb6c98ad573405201b5c4c0d4de15.png" alt="P^a = \int \rho^a(x,y,z) d^3r"/></p>
 </div><p><strong>Parameters:</strong></p>
 <blockquote>
 <div><dl class="docutils">
@@ -2035,77 +2267,6 @@ the respective projected electron densities.</p>
 <div><dl class="docutils">
 <dt>geo_spec, geo_info, ao_spec, mo_spec :</dt>
 <dd>See the <a class="reference internal" href="#central-variables">Central Variables</a> in the manual for details.</dd>
-</dl>
-</div></blockquote>
-</dd></dl>
-
-<dl class="function">
-<dt id="orbkit.extras.mo_select">
-<tt class="descclassname">orbkit.extras.</tt><tt class="descname">mo_select</tt><big>(</big><em>mo_spec</em>, <em>fid_mo_list</em><big>)</big><a class="headerlink" href="#orbkit.extras.mo_select" title="Permalink to this definition">¶</a></dt>
-<dd><p>Selects  molecular orbitals from an external file.</p>
-<p><strong>Parameters:</strong></p>
-<blockquote>
-<div><dl class="docutils">
-<dt>mo_spec <span class="classifier-delimiter">:</span> <span class="classifier"></span></dt>
-<dd>See <a class="reference internal" href="#central-variables">Central Variables</a> for details.</dd>
-<dt>fid_mo_list <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
-<dd>Specifies the filename of the molecular orbitals list. 
-If fid_mo_list is &#8216;all_mo&#8217;, creates a list containing all molecular orbitals.</dd>
-</dl>
-</div></blockquote>
-<p><strong>Supported Formats:</strong></p>
-<blockquote>
-<div><p>Integer List:</p>
-<blockquote>
-<div><div class="highlight-bash"><div class="highlight"><pre>1	2	3
-</pre></div>
-</div>
-</div></blockquote>
-<p>List with Symmetry Labels:</p>
-<blockquote>
-<div><div class="highlight-bash"><div class="highlight"><pre>1.1	2.1	1.3
-1.1	4.1
-4.1	2.3	2.1
-</pre></div>
-</div>
-</div></blockquote>
-</div></blockquote>
-<p><strong>Returns:</strong></p>
-<blockquote>
-<div><dl class="docutils">
-<dt>Dictionary with following Members:</dt>
-<dd><table class="first last docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">mo:</th><td class="field-body"><ul class="first simple">
-<li>List of molecular orbital labels.</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">mo_ii:</th><td class="field-body"><ul class="first simple">
-<li>List of molecular orbital indices.</li>
-</ul>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">mo_spec:</th><td class="field-body"><ul class="first simple">
-<li>Selected elements of mo_spec. See <a class="reference internal" href="#central-variables">Central Variables</a> for details.</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">mo_in_file:</th><td class="field-body"><ul class="first simple">
-<li>List of molecular orbital labels within the fid_mo_list file.</li>
-</ul>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">sym_select:</th><td class="field-body"><ul class="first last simple">
-<li>If True, symmetry labels have been used.</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-</dd>
 </dl>
 </div></blockquote>
 </dd></dl>
@@ -2142,7 +2303,7 @@ with x, y, and z as vectors.</dd>
 transition electoronic flux density between the 
 molecular orbitals i and j.</p>
 <div class="math">
-<p><img src="_images/math/8e7ca349ffeee57da51728e8e783b711f1deecf5.png" alt="moTEFD_{i,j}(r) = &lt;mo_i|\delta(r-r')\nabla_x|mo_j&gt;"/></p>
+<p><img src="_images/math/72d4f1b0730539540dcbacf517c2e752b70dacb9.png" alt="moTEFD_{i,j}(r) = &lt;mo_i|\delta(r-r')\nabla_x|mo_j&gt;"/></p>
 </div><p><strong>Parameters:</strong></p>
 <blockquote>
 <div><dl class="docutils">
@@ -2171,25 +2332,28 @@ small amount of the RAM.</p>
 </div>
 
 
+          </div>
           <footer>
   
-    <div class="rst-footer-buttons">
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="licence.html" class="btn btn-neutral float-right" title="Licence Note"/>Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="licence.html" class="btn btn-neutral float-right" title="Licence Note">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="manual.html" class="btn btn-neutral" title="Manual"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="manual.html" class="btn btn-neutral" title="Manual"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
 
   <hr/>
 
-  <p>
-      &copy; Copyright 2014, Gunter Hermann, Vincent Pohl, and Axel Schild.
-  </p>
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2014, Gunter Hermann, Vincent Pohl, and Axel Schild.
+    </p>
+  </div>
 
-  <a href="https://www.github.com/snide/sphinx_rtd_theme">Sphinx theme</a> provided by <a href="http://readthedocs.org">Read the Docs</a>
+  <a href="https://github.com/snide/sphinx_rtd_theme">Sphinx theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>
 </footer>
         </div>
       </div>
@@ -2198,6 +2362,38 @@ small amount of the RAM.</p>
 
   </div>
   
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'',
+            VERSION:'0.2.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
 
 </body>
 </html>

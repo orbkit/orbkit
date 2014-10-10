@@ -1144,19 +1144,17 @@ def read_wfn(filename, all_mo=False):
 
 
 def mo_select(mo_spec, fid_mo_list):
-  '''Selects  molecular orbitals from an external file.
+  '''Selects molecular orbitals from an external file.
 
   **Parameters:**
    
     mo_spec :        
       See `Central Variables`_ for details.
     fid_mo_list : str, `'all_mo'`, or list
-      |If fid_mo_list is a str, specifies the filename of the molecular orbitals list. 
-      |
-      |If fid_mo_list is 'all_mo', creates a list containing all molecular orbitals.
-      |
-      |If fid_mo_list is a list, provides a list (or a list of lists) of 
-      |molecular orbital labels.
+      | If fid_mo_list is a str, specifies the filename of the molecular orbitals list.
+      | If fid_mo_list is 'all_mo', creates a list containing all molecular orbitals.
+      | If fid_mo_list is a list, provides a list (or a list of lists) of molecular 
+        orbital labels.
 
   **Supported Formats:**
   

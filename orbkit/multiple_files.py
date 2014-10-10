@@ -131,9 +131,51 @@ def read(fid_list,itype='molden',all_mo=True,nosym=False,**kwargs):
       mo_energy_all[sym[k]][i,index] = mo['energy']
       mo_occ_all[sym[k]][i,index] = mo['occ_num']
 
-def order_using_analytical_overlap(fid_list,itype='molden',**kwargs):
-  '''Ordering routine using analytical overlap integrals between molecular
-  orbitals. Set fid_list to None to omit the reading of input files.
+def get_extrapolation(r1,r2,mo_coeff,deg=1,grid1d=None):
+  '''Extrapolates the molecular orbital coefficients :literal:`mo_coeff` 
+  using a polynomial of degree :literal:`deg`.
+  
+  **Paramerters:**
+  
+  r1 : int
+    Specifies the index of the last known molecular orbital.
+  r2 : int
+    Specifies the index to which the molecular orbital coefficients are 
+    extrapolated.
+  deg : int
+    Specifies the degree of the extrapolation polynomial.
+  grid1d : list or numpy.1darray, optional
+    Specifies the grid for the extrapolation.
+  
+  **Returns:**
+  
+  epol : numpy.ndarray, shape=(NMO,NAO))
+    Contains the extrapolated molecular orbital coefficients.  
+  '''
+  if grid1d is None:
+    grid1d = range(r2+1)
+  
+  if deg < 2:
+    m = (mo_coeff[r1-1,:,:] - mo_coeff[r1,:,:])/float(grid1d[r1-1] - grid1d[r1])
+    epol = (m * (grid1d[r2] - grid1d[r1]) + mo_coeff[r1,:,:])
+  else:
+    shape = mo_coeff.shape
+    epol = numpy.zeros(shape[1:])
+    for i in range(shape[1]):
+      for j in range(shape[2]):
+        x = grid1d[:r2]
+        y = mo_coeff[:r2,i,j]
+        z = numpy.polyfit(x, y, deg)
+        epol[i,j] = numpy.poly1d(z)(grid1d[r2])
+  return epol
+
+def order_using_analytical_overlap(fid_list,itype='molden',deg=0,**kwargs):
+  '''Performs an ordering routine using analytical overlap integrals between 
+  molecular orbitals. Set fid_list to None to omit the reading of input files.
+  
+  If :literal:`deg` is set to a value larger than zero, the molecular orbital 
+  coefficients are extrapolated with a polynomial of degree :literal:`deg`,
+  before computing the molecular orbital overlap matrix.
   
   **Paramerters:**
   
@@ -141,6 +183,9 @@ def order_using_analytical_overlap(fid_list,itype='molden',**kwargs):
     If not None, it contains the list of input file names.
   itype : str, choices={'molden', 'gamess', 'gaussian.log', 'gaussian.fchk'}
     Specifies the type of the input files.
+  deg : int, optional
+    If greater than zero, specifies the degree of the extrapolation polynomial
+    for the molecular orbital coefficients.  
   
   **Returns:**
   
@@ -163,7 +208,10 @@ def order_using_analytical_overlap(fid_list,itype='molden',**kwargs):
     read(fid_list,itype=itype,**kwargs)
 
   iterate= range(1,len(geo_spec_all))
-
+  
+  if deg > 0:
+    std = numpy.array([numpy.std(i-geo_spec_all[0]) for i in geo_spec_all])
+  
   mo_overlap = [[] for i in sym.iterkeys()]
   index_list = [[] for i in sym.iterkeys()]
 
@@ -175,18 +223,23 @@ def order_using_analytical_overlap(fid_list,itype='molden',**kwargs):
   display('Starting the ordering routine using the MO overlap...')
   c = 0
   for rr in iterate:
-    c += 1
-    if not c % (len(iterate)/10):
-      display('\tFinished %d of %d geometries' % (c, len(iterate)))
     r1 = rr-1
     r2 = rr
-    ao_overlap = get_ao_overlap(geo_spec_all[r1],geo_spec_all[r2],ao_spec)
+    
+    if deg > 0 and r1 >= deg:
+      ao_overlap = get_ao_overlap(geo_spec_all[r2],geo_spec_all[r2],ao_spec)
+    else:
+      ao_overlap = get_ao_overlap(geo_spec_all[r1],geo_spec_all[r2],ao_spec)
     
     cs = 0
     for s in sym.itervalues():
       mo_coeff = mo_coeff_all[s]
       shape = numpy.shape(mo_coeff)
-      overlap = get_mo_overlap_matrix(mo_coeff[r1],mo_coeff[r2],ao_overlap)
+      if deg > 0 and r1 >= deg:
+        mo_r1 = get_extrapolation(r1,r2,mo_coeff,grid1d=std,deg=deg)
+      else:
+        mo_r1 = mo_coeff[r1]
+      overlap = get_mo_overlap_matrix(mo_r1,mo_coeff[r2],ao_overlap)
       
       for i in range(shape[1]):
         # Iterate the rows of the overlap matrix
@@ -218,6 +271,10 @@ def order_using_analytical_overlap(fid_list,itype='molden',**kwargs):
       index = numpy.abs(index_list[s])[r2,:]
       mo_energy_all[s][r2,:] = mo_energy_all[s][r2,index]
       mo_occ_all[s][r2,:] = mo_occ_all[s][r2,index]
+    
+    c += 1
+    if not c % int(numpy.ceil(len(iterate)/10.)):
+      display('\tFinished %d of %d geometries' % (c, len(iterate)))
   
   tmp = []
   for i in mo_overlap:
@@ -229,8 +286,9 @@ def order_using_analytical_overlap(fid_list,itype='molden',**kwargs):
 
 def order_using_extrapolation(fid_list,itype='molden',deg=1,
                               use_mo_values=False,matrix=None,**kwargs):
-  '''Ordering routine using extrapolation of quantities related to the 
-  molecular orbitals. Set fid_list to None to omit the reading of input files.
+  '''Performs an ordering routine using extrapolation of quantities related to 
+  the molecular orbitals. Set fid_list to None to omit the reading of input 
+  files.
   
   The molecular orbital coefficients (If use_mo_values is False) are 
   extrapolated with a polynomial of degree :literal:`deg` and ordered by 
@@ -645,8 +703,9 @@ def data_interp(x,y,xnew,k=3):
   
   return ynew
 
-def plot(mo_matrix,ydata2=None,symmetry='1',title='All',output_format='png',
-         plt_dir='Plots',ylim=[-5, 5],thresh=0.1,x0=0):
+def plot(mo_matrix,symmetry='1',title='All',x_label='${\\sf index}$',
+         y_label='MO coefficients',output_format='png',
+         plt_dir='Plots',ylim=[-5, 5],thresh=0.1,x0=0,grid=True,**kwargs):
   '''Plots all molecular orbital coefficients of one symmetry.'''
   import pylab as plt
   from matplotlib.ticker import MultipleLocator
@@ -673,16 +732,16 @@ def plot(mo_matrix,ydata2=None,symmetry='1',title='All',output_format='png',
       Y = mo_matrix[:,i,ij]
       X = numpy.arange(len(Y))+x0
       if max(numpy.abs(Y)) > thresh:
-        curves.append(ax.plot(Y, colors[ij%len(colors)]+'o-' ,linewidth=1.5))
+        curves.append(ax.plot(Y, colors[ij%len(colors)]+'-' ,linewidth=1.5))
     
-    x_label='${\\sf index}$';y_label='MO coefficients';
+    
     plt.xlabel(x_label, fontsize=16);
     plt.ylabel(y_label, fontsize=16);
     plt.title('%s: %d.%s'%  (title,i+1,symmetry))
     plt.ylim(ylim)
     ax.xaxis.set_minor_locator(MultipleLocator(1))
-    ax.xaxis.grid(True, which='minor')
-    ax.grid(True, which='both')
+    ax.xaxis.grid(grid, which='minor')
+    ax.grid(grid, which='both')
     return fig
   
   if output_format == 'pdf':
@@ -692,14 +751,14 @@ def plot(mo_matrix,ydata2=None,symmetry='1',title='All',output_format='png',
     with PdfPages(os.path.join(plt_dir,output_fid)) as pdf:
       for i in range(shape[1]):
         fig = plot_mo(i)
-        pdf.savefig(fig)
+        pdf.savefig(fig,**kwargs)
         plt.close()
   elif output_format == 'png':
     for i in range(shape[1]):
       fig = plot_mo(i)
       output_fid = '%d.%s.png' % (i+1,symmetry.replace(' ','_'))
       display('\t%s' % output_fid)
-      fig.savefig(os.path.join(plt_dir, output_fid) ,format='png')
+      fig.savefig(os.path.join(plt_dir, output_fid),format='png',**kwargs)
       plt.close()
   else:
     raise ValueError('output_format `%s` is not supported' % output_format)
