@@ -603,8 +603,9 @@ def rho_compute(qc,calc_mo=False,vector=None,drv=None,numproc=1):
     if is_drv:
       delta_rho = numpy.zeros((len(drv),) + N)
 
-  # Start the worker processes --
-  pool = Pool(processes=numproc)
+  # Start the worker processes
+  if numproc > 0:
+    pool = Pool(processes=numproc)
   
   # Write the slices in x to an array xx 
   xx = []
@@ -639,14 +640,16 @@ def rho_compute(qc,calc_mo=False,vector=None,drv=None,numproc=1):
         The C++ atomic orbital code seems not to be compiled yet.
         Running the first slice on one CPU...\n''' + ('-'*80))
         result = slice_rho(xx[s])
-        it = pool.imap(slice_rho, xx[1:])
+        if numproc > 0:
+          it = pool.imap(slice_rho, xx[1:])
         display(('-'*80))
       else:
-        it = pool.imap(slice_rho, xx)
-        result = it.next()
+        if numproc > 0:
+          it = pool.imap(slice_rho, xx)
+        result = it.next() if numproc > 0 else slice_rho(xx[s])
     else:
       # Perform the compution for the current slice 
-      result = it.next()
+      result = it.next() if numproc > 0 else slice_rho(xx[s])
     # What output do we expect 
     if calc_mo:
       if not is_drv:
@@ -673,9 +676,10 @@ def rho_compute(qc,calc_mo=False,vector=None,drv=None,numproc=1):
       status_old = status
       s_old = s + 1
   
-  # Close the worker processes --
-  pool.close()
-  pool.join()
+  # Close the worker processes
+  if numproc > 0:
+    pool.close()
+    pool.join()
   
   if (not is_vector and not calc_mo):
     # Print the norm of the MOs 
@@ -1255,4 +1259,3 @@ def is_compiled(code):
     return True
   # The funciton was not found
   return False
-    

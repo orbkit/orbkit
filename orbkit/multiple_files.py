@@ -206,10 +206,14 @@ def order_using_analytical_overlap(fid_list,itype='molden',deg=0,**kwargs):
   
   if fid_list is not None:
     read(fid_list,itype=itype,**kwargs)
+    
+  display('\nStarting the ordering routine using the molecular orbital overlap...')
 
   iterate= range(1,len(geo_spec_all))
   
   if deg > 0:
+    display('\tThe molecular orbital coefficients will be extrapolated')
+    display('\tusing a least squares polynomial fit of degree %d.' % deg)
     std = numpy.array([numpy.std(i-geo_spec_all[0]) for i in geo_spec_all])
   
   mo_overlap = [[] for i in sym.iterkeys()]
@@ -219,8 +223,7 @@ def order_using_analytical_overlap(fid_list,itype='molden',deg=0,**kwargs):
     shape = numpy.shape(mo_coeff_all[s])
     index_list[s] = numpy.ones((shape[0],shape[1]),dtype=int)
     index_list[s] *= numpy.arange(shape[1],dtype=int)
-  
-  display('Starting the ordering routine using the MO overlap...')
+   
   c = 0
   for rr in iterate:
     r1 = rr-1
@@ -375,22 +378,16 @@ def order_using_extrapolation(fid_list,itype='molden',deg=1,
     
   return index_list
 
-def order_manually(mo,i_0,i_1,r_range,index_list=None):
+def order_manually(matrix,i_0,i_1,r_range,using_sign=True):
   '''Performs the ordering manually.
   '''
-  shape = numpy.shape(mo)  
   
-  if index_list == None:
-    index_list = numpy.ones((shape[0],shape[1]),dtype=int)
-    index_list *= numpy.arange(shape[1],dtype=int)
-  
-  def sign(x): return -1 if x < 0 else 1
+  def sign(x): return -1 if x < 0 and using_sign else 1
   
   for rr in r_range:
-    mo[rr,[abs(i_0),abs(i_1)],:] = sign(i_1)*mo[rr,[abs(i_1),abs(i_0)],:]
-    index_list[rr,[abs(i_0),abs(i_1)]] = index_list[rr,[abs(i_1),abs(i_0)]]
+    matrix[rr,[abs(i_0),abs(i_1)]] = sign(i_1)*matrix[rr,[abs(i_1),abs(i_0)]]
   
-  return mo, index_list
+  return matrix
 
 
 def order_mo(mo,index_list=None,backward=True,mu=1e-1,use_factor=False,**kwargs):

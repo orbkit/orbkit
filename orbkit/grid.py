@@ -555,6 +555,29 @@ def read(filename, comment='#'):
   
   return is_vector   
 
+def adjust_to_geo(qc,extend=5.0,step=0.1):
+  '''Adjusts the grid boundaries to the molecular geometry.
+  
+  **Parameters:**
+  
+  qc : QCinfo class
+    See `Central Variables`_ for details.
+  extend : float
+    Specifies the value by which the grid boundaries are extended in each 
+    direction.
+  step : float
+    Specifies the grid spacing.
+  
+  '''
+  global min_, max_, N_
+  
+  for i in range(3):
+    min_[i] = min(qc.geo_spec[:,i]) - abs(extend)
+    max_[i] = max(qc.geo_spec[:,i]) + abs(extend)
+    N_[i] = int(numpy.ceil((max_[i] - min_[i]) / float(abs(step)))) + 1
+    # Correct maximum value, if necessary
+    max_[i] = (N_[i] - 1) * abs(step) + min_[i]
+
 def center_grid(ac,display=sys.stdout.write):
   '''Centers the grid to the point ac and to the origin (0,0,0).
   '''
@@ -573,10 +596,11 @@ def center_grid(ac,display=sys.stdout.write):
   grid = [x, y, z]
   
   for ii in range(3):
-    position = numpy.nonzero(ac[ii] <= grid[ii])[0][0]
-    g = numpy.abs(grid[ii][position] - ac[ii]);
-    c = 1/2.*delta_[ii] - g;
-    grid[ii] += c;
+    if len(grid[ii]) != 1:
+      position = numpy.nonzero(ac[ii] <= grid[ii])[0][0]
+      g = numpy.abs(grid[ii][position] - ac[ii]);
+      c = 1/2.*delta_[ii] - g;
+      grid[ii] += c;
   
   x = grid[0]  
   y = grid[1]  
