@@ -26,15 +26,18 @@ License along with orbkit.  If not, see <http://www.gnu.org/licenses/>.
 import numpy
 from os import path
 
-#: Contains the mass conversion factor to atomic units
-u_to_me = 1822.88839
+
+u_to_me = 1822.88839 # Contains the mass conversion factor to atomic units
 nist_mass = None
-#: Standard atomic masses as "Linearized ASCII Output", see http://physics.nist.gov
+# Standard atomic masses as "Linearized ASCII Output", see http://physics.nist.gov
 nist_file = path.join(path.dirname(path.realpath(__file__)),
                       'supporting_data/Atomic_Weights_NIST.html')
 # see http://physics.nist.gov/cgi-bin/Compositions/stand_alone.pl?ele=&all=all&ascii=ascii2&isotype=some
 
 def read_nist():
+  '''Reads and converts the atomic masses from the "Linearized ASCII Output", 
+  see http://physics.nist.gov.
+  '''
   global nist_mass
   
   f = open(nist_file,'r')
@@ -64,9 +67,20 @@ def read_nist():
       nist_mass[index][1] = float(rm_brackets(thisline[-1]))
 
 def standard_mass(atom):
-  if nist_mass is None:
-    read_nist()
+  '''Returns the standard atomic mass of a given atom.
+    
+  **Parameters:**
   
+  qc : int or str
+    Contains the name or atomic number of the atom.
+  
+  **Returns:**
+  
+  mass : float
+    Contains the atomic mass in atomic units.
+  '''
+  if nist_mass is None:
+    read_nist()  
   try:
     atom = int(atom) - 1
     return nist_mass[atom][1] * u_to_me
@@ -108,6 +122,9 @@ class CIinfo:
       self.__dict__['info'] = dict(self.__dict__['info'])
 
 class QCinfo:
+  '''Class managing all information from the from the output 
+  files of quantum chemical software.
+  '''
   def __init__(self):
     self.geo_spec = []
     self.geo_info = []
@@ -128,6 +145,8 @@ class QCinfo:
 #    self.mo_sym   = None
 
   def sort_mo_sym(self):
+    '''Sorts mo_spec by symmetry.
+    '''
     keys = []
     for i_mo in self.mo_spec:
       keys.append(i_mo['sym'].split('.'))
@@ -135,6 +154,8 @@ class QCinfo:
     self.mo_spec = list(numpy.array(self.mo_spec)[numpy.lexsort(keys.T)])
 
   def get_com(self,nuc_list=None):
+    '''Computes the center of mass.
+    '''
     self.com   = numpy.zeros(3)
     total_mass = 0.
     if nuc_list is None:
@@ -147,6 +168,8 @@ class QCinfo:
     return self.com
 
   def get_coc(self):
+    '''Computes the center of charge.
+    '''
     self.coc     = numpy.zeros(3)
     total_charge = 0.
     for ii in range(len(self.geo_info)):
@@ -157,6 +180,8 @@ class QCinfo:
     return self.coc
   
   def todict(self):
+    '''Converts all essential variables into a dictionary.
+    '''
     dct = {}
     keys = ['geo_spec',
             'geo_info',

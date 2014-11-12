@@ -158,7 +158,7 @@ def init_parser():
   group.add_option("--adjust_grid",dest="adjust_grid", 
                       type="float",nargs=2,
                       help=('''create a grid using a spacing of X a_0 and having 
-                      the size of the molecular plus D a_0 in each direction, 
+                      the size of the molecule plus D a_0 in each direction, 
                       e.g., --adjust_grid=D X'''
                       ).replace('  ','').replace('\n',''))
   group.add_option("--random_grid", dest="random_grid",
@@ -407,6 +407,7 @@ drv             = None          #: Specifies derivative variables. (list of str)
 vector          = None          #: If not None, vector grid is used. Specifies number of points per subprocess. (int)
 dvec            = 1e4           #(No Option) Specifies the standard value for the points per subprocess. (int)
 grid_file       = None          #: Specifies file to read grid from. (filename)
+adjust_grid     = None          #: If not None, create a grid using a spacing of X a_0 and having the size of the molecule plus D a_0 in each direction. (list: [D, x])
 center_grid     = None          #: If not None, grid is centered to specified atom and origin. (int) 
 random_grid     = False         #: If True, creates random grid around atom positions. (bool)
 #--- Additional Options ---

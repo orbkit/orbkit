@@ -1208,7 +1208,7 @@ def mo_select(mo_spec, fid_mo_list):
         flines = fid.readlines()
         fid.close()
         for line in flines:
-          integer = line.split()
+          integer = line.replace(',',' ').split()
           mo_in_file.append(integer)
           all_mo = all_mo + integer
         selected_mo=list(set(all_mo))

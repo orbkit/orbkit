@@ -692,17 +692,53 @@ def compute_mo_list(geo_spec_all,ao_spec,mo_matrix,iter_drv=[None, 'x', 'y', 'z'
     
     return mo_list
 
-def data_interp(x,y,xnew,k=3):
+def data_interp(x,y,xnew,k=3,der=0,s=0,**kwargs):
   '''Interpolates a dataset y(x) to y(xnew) using B-Splines of order k.'''
   from scipy import interpolate
-  tck = interpolate.splrep(x,y,s=0,k=k)
-  ynew = interpolate.splev(xnew,tck,der=0)
+  tck = interpolate.splrep(x,y,s=s,k=k)
+  ynew = interpolate.splev(xnew,tck,der=der)
   
   return ynew
 
+def interpolate_all(x,xnew,k=3,**kwargs):
+  '''Interpolates a dataset y(x) to y(xnew) using B-Splines of order k.'''
+  from scipy import interpolate
+  global geo_spec_all, mo_coeff_all, mo_energy_all, mo_occ_all 
+  
+  shape = list(geo_spec_all.shape)
+  shape[0] = len(xnew)
+  tmp = numpy.zeros(shape)  
+  for i in range(shape[1]):
+    for j in range(shape[2]):
+      tmp[:,i,j] = data_interp(x,geo_spec_all[:,i,j],xnew,k=k,**kwargs)
+  geo_spec_all = numpy.copy(tmp)
+  
+  for i_mo in range(len(mo_coeff_all)):
+    shape = list(mo_coeff_all[i_mo].shape)
+    shape[0] = len(xnew)
+    tmp = numpy.zeros(shape)  
+    for i in range(shape[1]):
+      for j in range(shape[2]):
+        tmp[:,i,j] = data_interp(x,mo_coeff_all[i_mo][:,i,j],xnew,k=k,**kwargs)
+    mo_coeff_all[i_mo] = numpy.copy(tmp)
+    
+    shape = list(mo_energy_all[i_mo].shape)
+    shape[0] = len(xnew)
+    tmp = numpy.zeros(shape)  
+    for i in range(shape[1]):
+      tmp[:,i] = data_interp(x,mo_energy_all[i_mo][:,i],xnew,k=k,**kwargs)
+    mo_energy_all[i_mo] = numpy.copy(tmp)
+    
+    shape = list(mo_occ_all[i_mo].shape)
+    shape[0] = len(xnew)
+    tmp = numpy.zeros(shape)  
+    for i in range(shape[1]):
+      tmp[:,i] = data_interp(x,mo_occ_all[i_mo][:,i],xnew,k=k,**kwargs)
+    mo_occ_all[i_mo] = numpy.copy(tmp)
+
 def plot(mo_matrix,symmetry='1',title='All',x_label='${\\sf index}$',
          y_label='MO coefficients',output_format='png',
-         plt_dir='Plots',ylim=[-5, 5],thresh=0.1,x0=0,grid=True,**kwargs):
+         plt_dir='Plots',ylim=[-5, 5],thresh=0.1,x0=0,grid=True,x_grid=None,**kwargs):
   '''Plots all molecular orbital coefficients of one symmetry.'''
   import pylab as plt
   from matplotlib.ticker import MultipleLocator
@@ -727,9 +763,12 @@ def plot(mo_matrix,symmetry='1',title='All',x_label='${\\sf index}$',
     curves=[]
     for ij in range(shape[2]):
       Y = mo_matrix[:,i,ij]
-      X = numpy.arange(len(Y))+x0
+      if x_grid is None:
+        X = numpy.arange(len(Y))+x0
+      else:
+        X = x_grid
       if max(numpy.abs(Y)) > thresh:
-        curves.append(ax.plot(Y, colors[ij%len(colors)]+'-' ,linewidth=1.5))
+        curves.append(ax.plot(X,Y, colors[ij%len(colors)]+'-' ,linewidth=1.5))
     
     
     plt.xlabel(x_label, fontsize=16);

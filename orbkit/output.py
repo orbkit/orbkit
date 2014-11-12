@@ -587,6 +587,101 @@ def determine_rho_range(rho,start=0.01,stop=0.999):
   
   return rho_min, rho_max
 
+def colormap_creator_peaks(filename,peaks,peak_width=0.02,peak_minus=None,peak_plus=None,alpha=0.2,rgb=0.2):  
+  '''Creates a ZIBAmira colomap for selected data values.
+  
+  **Parameters:**
+  
+  filename : str
+    Specifies the filename of the colormap.
+  peaks : list
+    Determines the values for peaks in the colormap.
+  peak_width : float
+    Specifies the width of of the peaks in the colormap.
+  peak_min : None or float, optional
+    Specifies the lower boundary of the colomap. (Peak with no hight.)
+    If None, is set to the smallest data value minus 2*peak_width.
+  peak_min : None or float, optional
+    Specifies the upper boundary of the colomap. (Peak with no hight.)
+    If None, is set to the larges data value plus 2*peak_width.
+  alpha : float, data_range={0..1}
+    Determines the opacity of the peak. (alpha = 1 - opacity)
+  rgb : float or list or numpy.ndarray, data_range={0..1}
+    If float or shape=(len(peaks),), specifies a the grey tone.
+    Else, specifies the color in [red,green,blue].
+  
+  '''
+  peaks = numpy.sort(peaks)
+  if peak_minus is None:
+    peak_minus = peaks[0]-(2*peak_width)
+  if peak_plus is None:
+    peak_plus = peaks[-1]+(2*peak_width)
+  
+  if isinstance(rgb,(float,int)):
+    rgb = numpy.zeros((len(peaks),3)) + rgb
+  else:
+    rgb = numpy.array(rgb, dtype=float)
+    if rgb.ndim == 1:
+      if len(rgb) == 3:
+        rgb = numpy.zeros((len(peaks),3)) + rgb[numpy.newaxis,:]
+      elif len(rgb) == len(peaks):
+        rgb = numpy.zeros((len(peaks),3)) + rgb[:,numpy.newaxis]
+      else:
+        raise ValueError("Wrong shape of 'rgb'")
+    elif not (rgb.ndim == 2 and rgb.shape == (len(peaks),3)):
+        raise ValueError("Wrong shape of 'rgb'")
+  
+  # Open a cmap file 
+  fid = open('%(f)s.cmap' % {'f': filename}, 'w')
+  
+  # Write the header 
+  fid.write('<!DOCTYPE Colormap>\n')
+  fid.write('<ColormapVisage2.0 Name="%(f)s">\n' % {'f': filename})
+  fid.write('  <Graph Active="1" Type="0" Name="">\n')
+  
+  # Initialize a counter for the contour values 
+  counter = 0
+  
+  # Initialize a string for the contours 
+  c_str = ('    <Control Opacity="%(o)f" Number="%(c)d" Blue="%(b)f"' + 
+            ' Red="%(r)f" Green="%(g)f" Value="%(p)f"/>\n' )
+  
+  # Write the initial value at zero with zero opacity 
+  fid.write(c_str % {'o': 0, 'c': counter, 'r': 0, 'g': 0, 'b': 0, 
+                     'p': peak_minus})
+  counter += 1
+  
+  for i,p in enumerate(peaks):
+    print p
+    # Write the peak 
+    # Left edge of the peak
+    fid.write(c_str % {'o': 0, 'c': counter, 'p': p-peak_width/2., 
+                       'r': rgb[i,0], 'g': rgb[i,1], 'b': rgb[i,2]})
+    counter += 1
+    # The peak 
+    fid.write(c_str % {'o': 1-alpha, 'c': counter, 'p': p, 
+                       'r': rgb[i,0], 'g': rgb[i,1], 'b': rgb[i,2]})
+    counter += 1
+    # Right edge of the peak
+    fid.write(c_str % {'o': 0, 'c': counter, 'p': p+peak_width/2., 
+                       'r': rgb[i,0], 'g': rgb[i,1], 'b': rgb[i,2]})
+    counter += 1
+  
+  # Write a final value at 1.5 * (final peak value) with zero opacity 
+  fid.write(c_str % {'o': 0, 'c': counter, 'r': 0, 'g': 0, 'b': 0, 
+                     'p': peak_plus})
+  
+  # Finalize the file 
+  fid.write('  </Graph>\n')
+  fid.write('</ColormapVisage2.0>')
+  
+  # Close the file
+  fid.close()
+  
+  # colormap_creator 
+    
+  
+
 def colormap_creator(rho,filename,n_peaks=5,start=0.01,stop=0.999,peak_width=0.1):
   '''Creates a .cmap colormap for ZIBAmira adjusted to the density.
 
@@ -647,7 +742,7 @@ def colormap_creator(rho,filename,n_peaks=5,start=0.01,stop=0.999,peak_width=0.1
   fid.write('  </Graph>\n')
   fid.write('</ColormapVisage2.0>')
   
-  # Close the file 
+  # Close the file
   fid.close()
   
   return 0
@@ -776,26 +871,30 @@ def h5am_creator(rho,filename):
   #  FUNCTION HDF5_creator  creates HDF5 file (Hierarchical Data Format) 
   import h5py
 
-  f = h5py.File(filename + '.h5am', 'w')
-
-  amira = f.create_group('amira')
-  amira.attrs['version']     = 2
-  amira.attrs['contenttype'] = 'HDF5amiralattice'
-  amira.attrs['numdims']     = 3
-  amira.attrs['dims']        = [len(grid.x),len(grid.y),len(grid.z)]  
-  amira.attrs['boundingbox'] = [grid.x[0],grid.x[-1],grid.y[0],grid.y[-1],grid.z[0],grid.z[-1]]
-  amira.attrs['latticetype'] = 'http://amira.zib.de/latticetypes#uniform'
-  #amira.attrs['latticetype'] = 'http://amira.zib.de/latticetypes#rectilinear'
-  #amira.attrs['coordX'] = grid.x
-  #amira.attrs['coordY'] = grid.y  
-  #amira.attrs['coordZ'] = grid.z
-  amira.attrs['ndatasets'] = 1
-
-  dataset0 = amira.create_group('dataset:0')
-  dataset0.attrs['ndatavar'] = 0
-  dataset0.attrs['datatype'] = 'http://amira.zib.de/types#double'
-  a=h5py.h5t.array_create(h5py.h5t.IEEE_F64LE, (len(grid.x),len(grid.y),len(grid.z)))
-  dset = dataset0.create_dataset('timestep:0',(len(grid.x),len(grid.y),len(grid.z)),data=rho)
+  #f = h5py.File(filename + '.h5am', 'w')
+  
+  with h5py.File(filename + '.h5am', 'w') as f:
+    amira = f.create_group('amira')
+    amira.attrs['version']     = 2
+    amira.attrs['contenttype'] = 'HDF5amiralattice'
+    amira.attrs['numdims']     = 3
+    amira.attrs['dims']        = [len(grid.x),len(grid.y),len(grid.z)]  
+    amira.attrs['boundingbox'] = [grid.x[0],grid.x[-1],grid.y[0],grid.y[-1],grid.z[0],grid.z[-1]]
+    amira.attrs['latticetype'] = 'http://amira.zib.de/latticetypes#uniform'
+    #amira.attrs['latticetype'] = 'http://amira.zib.de/latticetypes#rectilinear'
+    #amira.attrs['coordX'] = grid.x
+    #amira.attrs['coordY'] = grid.y  
+    #amira.attrs['coordZ'] = grid.z
+    amira.attrs['ndatasets'] = 1
+  return
+  
+  if 0:
+    dataset0 = amira.create_group('dataset:0')
+    dataset0.attrs['ndatavar'] = 0
+    dataset0.attrs['datatype'] = 'http://amira.zib.de/types#double'
+    a = h5py.h5t.array_create(h5py.h5t.IEEE_F64LE, (len(grid.x),len(grid.y),len(grid.z)))
+    dset = dataset0.create_dataset('timestep:0',(len(grid.x),len(grid.y),len(grid.z)),data=rho)#,dtype=numpy.float32)
+  
   
   #print dset
   #dset = dataset0.create_dataset('timestep:0',(len(grid.x),len(grid.y),len(grid.z)),data=rho)
