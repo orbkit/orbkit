@@ -303,7 +303,6 @@ def read_gamess(filename, all_mo=False,read_properties=False):
   # Initialize the variables 
   qc = QCinfo()
   sec_flag = None                 # A Flag specifying the current section
-  occ = []                        # occupation number of molecular orbitals
   is_pop_ana = True               # Flag for population analysis for ground state
 
   # Go through the file line by line 
@@ -341,13 +340,16 @@ def read_gamess(filename, all_mo=False,read_properties=False):
         len_mo = 0                  # Number of MOs 
         sym={}                      # Symmetry of MOs
       elif ' NUMBER OF OCCUPIED ORBITALS (ALPHA)          =' in line:
-        occ.append(int(thisline[-1]))
+        occ = []                        # occupation number of molecular orbitals
+	occ.append(int(thisline[-1]))
       elif ' NUMBER OF OCCUPIED ORBITALS (BETA )          =' in line:
         occ.append(int(thisline[-1]))
-      elif '          ECP POTENTIALS' in line:
-        occ = []
+#      elif 'ECP POTENTIALS' in line:
+#        sec_flag = 'ecp_info'
+#        ecp = ''
       elif ' NUMBER OF OCCUPIED ORBITALS (ALPHA) KEPT IS    =' in line:
-        occ.append(int(thisline[-1]))
+        occ = []                        # occupation number of molecular orbitals
+	occ.append(int(thisline[-1]))
       elif ' NUMBER OF OCCUPIED ORBITALS (BETA ) KEPT IS    =' in line:
         occ.append(int(thisline[-1]))
       elif 'NUMBER OF STATES REQUESTED' in line and read_properties:
@@ -458,7 +460,19 @@ def read_gamess(filename, all_mo=False,read_properties=False):
                   qc.mo_spec[-ii]['coeffs'].append(float(line[16:].split()[init_len-ii]))
           elif mo_skip:
             mo_skip -= 1
-            
+        elif sec_flag == 'ecp_info':
+          if 'THE ECP RUN REMOVES' in line:
+              sec_flag = None
+          elif 'PARAMETERS FOR' in line:
+            if line[17:25].split()[0] != ecp:
+              ecp = line[17:25].split()[0]
+              zcore = float(line[51:55].split()[0])
+              ii_geo = int(line[35:41].split()[0])-1
+              qc.geo_info[ii_geo][2] = str(float(qc.geo_info[ii_geo][2]) - zcore)
+            else:
+              ii_geo = int(line[35:41].split()[0])-1
+              qc.geo_info[ii_geo][2] = str(float(qc.geo_info[ii_geo][2]) - zcore)
+              
         elif sec_flag == 'dm_info':
           # instead of giving the output in a useful human and machine readable 
           # way, gamess output syntax differs for transitions involving the 
@@ -545,7 +559,7 @@ def read_gamess(filename, all_mo=False,read_properties=False):
   # Convert geo_info and geo_spec to numpy.ndarrays
   qc.geo_info = numpy.array(qc.geo_info)
   qc.geo_spec = numpy.array(qc.geo_spec)
-  
+
   return qc
   # read_gamess 
 

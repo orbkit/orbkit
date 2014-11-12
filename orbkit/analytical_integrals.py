@@ -8,6 +8,7 @@ adapted from
 '''
 
 import numpy
+from multiprocessing import Pool
 # test how to import weave
 try:
     from scipy import weave
@@ -15,7 +16,7 @@ except:
     import weave
 
 from orbkit import cSupportCode
-from orbkit.core import exp,lquant
+from orbkit.core import exp,lquant,slicer
 
 def get_ao_overlap(coord_a,coord_b,ao_spec,lxlylz_b=None,contraction=True,drv=None):
   '''Computes the overlap matrix of a basis set, where `Bra` basis set
@@ -216,8 +217,18 @@ def get_mo_overlap(mo_a,mo_b,ao_overlap_matrix):
   arg_names = ['mo_a', 'mo_b', 'ao_overlap_matrix']
   
   return weave.inline(code, arg_names = arg_names,verbose = 1)
+  
+def run_slice(sector):
+  mo_overlap_matrix = numpy.zeros((sector[1]-sector[0],multiov['shape'][1]))
+  mo_a = multiov['mo_a']
+  mo_b = multiov['mo_b']
+  ao_overlap_matrix = multiov['ao_overlap_matrix']
+  arg_names = ['mo_a', 'mo_b', 'ao_overlap_matrix', 'mo_overlap_matrix','sector']
+  weave.inline(moom_code, arg_names = arg_names, 
+          support_code = cSupportCode.overlap + cSupportCode.norm,verbose = 1)
+  return mo_overlap_matrix
 
-def get_mo_overlap_matrix(mo_a,mo_b,ao_overlap_matrix):
+def get_mo_overlap_matrix(mo_a,mo_b,ao_overlap_matrix,numproc=1):
   '''Computes the overlap of two sets of molecular orbitals.
   
   **Parameters:**
@@ -236,35 +247,41 @@ def get_mo_overlap_matrix(mo_a,mo_b,ao_overlap_matrix):
   mo_overlap_matrix : numpy.ndarray, shape = (NMO,NMO)
     Contains the overlap matrix between the two sets of input molecular orbitals.
   '''
-  mo_a = create_mo_coeff(mo_a,name='mo_a')
-  mo_b = create_mo_coeff(mo_b,name='mo_b')  
+  global multiov
+  multiov = {'ao_overlap_matrix': ao_overlap_matrix,
+             'shape': numpy.shape(ao_overlap_matrix),
+             'mo_a': create_mo_coeff(mo_a,name='mo_a'),
+             'mo_b': create_mo_coeff(mo_a,name='mo_b'),
+             }
   
-  shape_a = numpy.shape(mo_a)
-  shape_b = numpy.shape(mo_b)
+  shape_a = numpy.shape(multiov['mo_a'])
+  shape_b = numpy.shape(multiov['mo_b'])
+  
   mo_overlap_matrix = numpy.zeros((shape_a[0],shape_b[0]))
   if shape_a[1] != shape_b[1]:
     raise ValueError('mo_a and mo_b have to correspond to the same basis set, '+
                      'i.e., shape_a[1] != shape_b[1]')
   
-  code = '''
-  for (int i=0; i<Nmo_a[0]; i++)
-  {
-    for (int j=0; j<Nmo_b[0]; j++)
-    {
-      for (int k=0; k<Nao_overlap_matrix[0]; k++)
-      {
-        for (int l=0; l<Nao_overlap_matrix[1]; l++)
-        {
-          MO_OVERLAP_MATRIX2(i,j) += MO_A2(i,k) * MO_B2(j,l) * AO_OVERLAP_MATRIX2(k,l);
-        }
-      }
-    }
-  }
-  '''
-  arg_names = ['mo_a', 'mo_b', 'ao_overlap_matrix', 'mo_overlap_matrix']
+  xx = slicer(N=len(multiov['mo_a']),
+              vector=round(len(multiov['mo_a'])/float(numproc)),
+              numproc=numproc)
 
-  weave.inline(code, arg_names = arg_names, 
-            support_code = cSupportCode.overlap + cSupportCode.norm,verbose = 1)
+  #--- Start the worker processes
+  if numproc > 1:
+    pool = Pool(processes=numproc)
+    it = pool.imap(run_slice, xx)
+  
+  #--- Send each task to single processor
+  for l,[m,n] in enumerate(xx):
+    #--- Call function to compute one-electron density
+    mo_overlap_matrix[m:n,:] = it.next() if numproc > 1 else run_slice(xx[l])
+    
+  #--- Close the worker processes
+  if numproc > 1:  
+    pool.close()
+    pool.join()
+  
+  del multiov
   
   return mo_overlap_matrix
 
@@ -583,3 +600,20 @@ def ao_overlap_code(is_drv=False):
     
     '''
   return code
+
+moom_code = '''
+int i0 = int(sector[0]);
+for (int i=i0; i<int(sector[1]); i++)
+{
+  for (int j=0; j<Nmo_b[0]; j++)
+  {
+    for (int k=0; k<Nao_overlap_matrix[0]; k++)
+    {
+      for (int l=0; l<Nao_overlap_matrix[1]; l++)
+      {
+        MO_OVERLAP_MATRIX2(i-i0,j)  += MO_A2(i,k) * MO_B2(j,l) * AO_OVERLAP_MATRIX2(k,l);
+      }
+    }
+  }
+}
+'''

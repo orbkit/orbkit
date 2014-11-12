@@ -705,7 +705,7 @@ def rho_compute(qc,calc_mo=False,vector=None,drv=None,numproc=1):
   # rho_compute 
 
 def rho_compute_no_slice(qc,calc_mo=False,is_vector=False,drv=None,
-                         return_components=False):
+                         return_components=False,x=None,y=None,z=None):
   '''Calculates the density, the molecular orbitals, or the derivatives thereof
   without slicing the grid.
   
@@ -778,6 +778,11 @@ def rho_compute_no_slice(qc,calc_mo=False,is_vector=False,drv=None,
     Contains the derivatives with respect to drv (NDRV=len(drv)) of 
     the density on a grid.
   '''
+  # Create the grid
+  if x is None: x = grid.x
+  if y is None: y = grid.y
+  if z is None: z = grid.z
+  
   if not isinstance(qc,dict):
     qc = qc.todict()
   
@@ -1259,3 +1264,21 @@ def is_compiled(code):
     return True
   # The funciton was not found
   return False
+    
+def slicer(N,vector=1e4,numproc=1):
+  i = 0
+  sNum = int((N/(vector))+1) if int(vector) > 0 else int(N)
+  xx = []
+  if numproc > 1:
+    for s in range(sNum):
+      if i == N:
+        N -= 1
+        break
+      elif (i + vector) >= N:
+        xx.append((numpy.array([i,N],dtype=int)))      
+      else:
+        xx.append((numpy.array([i,i + vector],dtype=int)))
+      i += vector
+  else:
+    xx.append((numpy.array([0,N],dtype=int))) 
+  return xx
