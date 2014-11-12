@@ -90,17 +90,21 @@ def main(use_qc=None):
   
   display.display('\nSetting up the grid...')
   if options.grid_file is not None: 
+    # Read the grid from an external file
     if grid.read(options.grid_file) and (options.vector is None):
-      options.vector = core.dvec
-  
-  if options.random_grid:
+      options.vector = options.dvec
+  elif options.adjust_grid is not None:
+    # Adjust the grid to geo_spec 
+    extend,step = options.adjust_grid      
+    grid.adjust_to_geo(qc,extend=extend,step=step)  
+  elif options.random_grid:
+    # Create a randomized grid
     grid.random_grid(qc.geo_spec)
     if (options.vector is None):
-      options.vector = core.dvec
-  else:
-    # Initialize grid
-    grid.grid_init(is_vector=(options.vector is not None))
+      options.vector = options.dvec
   
+  # Initialize grid
+  grid.grid_init(is_vector=(options.vector is not None))  
   display.display(grid.get_grid())   # Display the grid
 
   if options.vector and options.center_grid is not None:
@@ -110,14 +114,17 @@ def main(use_qc=None):
     if not((isinstance(atom, int)) and (0 < atom <= len(qc.geo_spec))):
       display.display('Not a Valid atom number for centering the grid')
       display.display('Coose a valid index:')
-      for i,j in enumerate(qc.geo_info): display.display('\t%s\t%d' % (i[0], j+1))
+      for i,j in enumerate(qc.geo_info): display.display('\t%s\t%d' % (j[0], i+1))
       if options.interactive:
         while not((isinstance(atom, int)) and (0 < atom <= len(qc.geo_spec))):
-          atom = raw_input('Please insert a correct index: ')
+          try:
+            atom = int(raw_input('Please insert a correct index: '))
+          except ValueError:
+            pass
       else: raise IOError('Insert a correct filename for the MO list!')
 
     # Center the grid to a specific atom and (0,0,0) if requested
-    grid.center_grid(qc.geo_spec[atom])
+    grid.center_grid(qc.geo_spec[atom-1],display=display.display)
 
   if options.vector is not None:
     info = 'vectorized'

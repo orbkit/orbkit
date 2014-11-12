@@ -154,14 +154,20 @@ def init_parser():
                       ).replace('  ','').replace('\n',''))   
   group.add_option("--grid", dest="grid_file",
                       type="string",
-                      help='''Read the grid from the plain text file GRID_FILE''')    
-  group.add_option("--center", dest="center_grid",
-                      metavar="ATOM",type="int",
-                      help='''center with respect to the origin and the 
-                      atom number ATOM (input order)''') 
+                      help='''read the grid from the plain text file GRID_FILE''')    
+  group.add_option("--adjust_grid",dest="adjust_grid", 
+                      type="float",nargs=2,
+                      help=('''create a grid using a spacing of X a_0 and having 
+                      the size of the molecular plus D a_0 in each direction, 
+                      e.g., --adjust_grid=D X'''
+                      ).replace('  ','').replace('\n',''))
   group.add_option("--random_grid", dest="random_grid",
                       default=False, action="store_true",  
                       help=optparse.SUPPRESS_HELP)
+  group.add_option("--center", dest="center_grid",
+                      metavar="ATOM",type="int",
+                      help='''center with respect to the origin and the 
+                      atom number ATOM (input order)''')
   parser.add_option_group(group)
   group = optparse.OptionGroup(parser, "Additional Options")
   group.add_option("--z_reduced_density",dest="z_reduced_density",

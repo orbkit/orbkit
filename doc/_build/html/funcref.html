@@ -15,7 +15,7 @@
   
 
   
-  <link href='https://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
 
   
   
@@ -45,9 +45,7 @@
     
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-nav-search">
-        
-          <a href="toctree.html" class="fa fa-home"> orbkit</a>
-        
+        <a href="toctree.html" class="fa fa-home"> orbkit</a>
         <div role="search">
   <form id ="rtd-search-form" class="wy-form" action="search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
@@ -128,7 +126,7 @@
   </ul>
   <hr/>
 </div>
-          <div role="main" class="document">
+          <div role="main">
             
   <div class="section" id="function-reference">
 <h1>Function Reference<a class="headerlink" href="#function-reference" title="Permalink to this headline">¶</a></h1>
@@ -479,7 +477,7 @@ specified grid.</p>
 
 <dl class="function">
 <dt id="orbkit.options.check_options">
-<tt class="descclassname">orbkit.options.</tt><tt class="descname">check_options</tt><big>(</big><em>error=&lt;built-in method write of file object at 0x2b922d6881e0&gt;</em>, <em>display=&lt;built-in method write of file object at 0x2b922d6881e0&gt;</em>, <em>interactive=False</em>, <em>info=True</em><big>)</big><a class="headerlink" href="#orbkit.options.check_options" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">orbkit.options.</tt><tt class="descname">check_options</tt><big>(</big><em>error=&lt;built-in method write of file object at 0x2b7c2455d1e0&gt;</em>, <em>display=&lt;built-in method write of file object at 0x2b7c2455d1e0&gt;</em>, <em>interactive=False</em>, <em>info=True</em><big>)</big><a class="headerlink" href="#orbkit.options.check_options" title="Permalink to this definition">¶</a></dt>
 <dd><p>Checks options for errors.</p>
 <p><strong>Parameters:</strong></p>
 <blockquote>
@@ -508,7 +506,7 @@ existing file.</dd>
 
 <dl class="function">
 <dt id="orbkit.options.check_if_exists">
-<tt class="descclassname">orbkit.options.</tt><tt class="descname">check_if_exists</tt><big>(</big><em>fid</em>, <em>what=''</em>, <em>error=&lt;type 'exceptions.IOError'&gt;</em>, <em>display=&lt;built-in method write of file object at 0x2b922d6881e0&gt;</em>, <em>interactive=False</em><big>)</big><a class="headerlink" href="#orbkit.options.check_if_exists" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">orbkit.options.</tt><tt class="descname">check_if_exists</tt><big>(</big><em>fid</em>, <em>what=''</em>, <em>error=&lt;type 'exceptions.IOError'&gt;</em>, <em>display=&lt;built-in method write of file object at 0x2b7c2455d1e0&gt;</em>, <em>interactive=False</em><big>)</big><a class="headerlink" href="#orbkit.options.check_if_exists" title="Permalink to this definition">¶</a></dt>
 <dd><p>Checks the existence of a file.</p>
 <p><strong>Parameters:</strong></p>
 <blockquote>
@@ -829,8 +827,24 @@ are performed.</p>
 </dd></dl>
 
 <dl class="function">
+<dt id="orbkit.grid.adjust_to_geo">
+<tt class="descclassname">orbkit.grid.</tt><tt class="descname">adjust_to_geo</tt><big>(</big><em>qc</em>, <em>extend=5.0</em>, <em>step=0.1</em><big>)</big><a class="headerlink" href="#orbkit.grid.adjust_to_geo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adjusts the grid boundaries to the molecular geometry.</p>
+<p><strong>Parameters:</strong></p>
+<dl class="docutils">
+<dt>qc <span class="classifier-delimiter">:</span> <span class="classifier">QCinfo class</span></dt>
+<dd>See <a class="reference internal" href="#central-variables">Central Variables</a> for details.</dd>
+<dt>extend <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>Specifies the value by which the grid boundaries are extended in each 
+direction.</dd>
+<dt>step <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>Specifies the grid spacing.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
 <dt id="orbkit.grid.center_grid">
-<tt class="descclassname">orbkit.grid.</tt><tt class="descname">center_grid</tt><big>(</big><em>ac</em>, <em>display=&lt;built-in method write of file object at 0x2b922d6881e0&gt;</em><big>)</big><a class="headerlink" href="#orbkit.grid.center_grid" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">orbkit.grid.</tt><tt class="descname">center_grid</tt><big>(</big><em>ac</em>, <em>display=&lt;built-in method write of file object at 0x2b7c2455d1e0&gt;</em><big>)</big><a class="headerlink" href="#orbkit.grid.center_grid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Centers the grid to the point ac and to the origin (0,0,0).</p>
 </dd></dl>
 
@@ -1916,7 +1930,7 @@ extrapolated.</dd>
 
 <dl class="function">
 <dt id="orbkit.multiple_files.order_manually">
-<tt class="descclassname">orbkit.multiple_files.</tt><tt class="descname">order_manually</tt><big>(</big><em>mo</em>, <em>i_0</em>, <em>i_1</em>, <em>r_range</em>, <em>index_list=None</em><big>)</big><a class="headerlink" href="#orbkit.multiple_files.order_manually" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">orbkit.multiple_files.</tt><tt class="descname">order_manually</tt><big>(</big><em>matrix</em>, <em>i_0</em>, <em>i_1</em>, <em>r_range</em>, <em>using_sign=True</em><big>)</big><a class="headerlink" href="#orbkit.multiple_files.order_manually" title="Permalink to this definition">¶</a></dt>
 <dd><p>Performs the ordering manually.</p>
 </dd></dl>
 
@@ -2337,7 +2351,7 @@ small amount of the RAM.</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="licence.html" class="btn btn-neutral float-right" title="Licence Note">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="licence.html" class="btn btn-neutral float-right" title="Licence Note"/>Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="manual.html" class="btn btn-neutral" title="Manual"><span class="fa fa-arrow-circle-left"></span> Previous</a>

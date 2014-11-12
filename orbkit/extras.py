@@ -85,7 +85,7 @@ def calc_mo(qc, fid_mo_list, drv=None, vector=None, otype=None):
     for i,j in enumerate(qc_select['mo_spec']):
       outputname = '%s_%s' % (fid,mo['mo'][i])
       cube_files.append('%s.cb' % outputname)
-      comments = ('%s,Occ=%.1f,E=%+.2f' % (mo['mo'][i],
+      comments = ('%s,Occ=%.1f,E=%+.4f' % (mo['mo'][i],
                                            j['occ_num'],
                                            j['energy']))
       index = numpy.index_exp[:,i] if drv is not None else i
