@@ -249,18 +249,19 @@ def get_mo_overlap_matrix(mo_a,mo_b,ao_overlap_matrix,numproc=1):
   '''
   global multiov
   multiov = {'ao_overlap_matrix': ao_overlap_matrix,
-             'shape': numpy.shape(ao_overlap_matrix),
              'mo_a': create_mo_coeff(mo_a,name='mo_a'),
-             'mo_b': create_mo_coeff(mo_a,name='mo_b'),
+             'mo_b': create_mo_coeff(mo_b,name='mo_b'),
              }
   
   shape_a = numpy.shape(multiov['mo_a'])
   shape_b = numpy.shape(multiov['mo_b'])
+  multiov['shape'] = (shape_a[0],shape_b[0])
   
-  mo_overlap_matrix = numpy.zeros((shape_a[0],shape_b[0]))
   if shape_a[1] != shape_b[1]:
     raise ValueError('mo_a and mo_b have to correspond to the same basis set, '+
                      'i.e., shape_a[1] != shape_b[1]')
+  
+  mo_overlap_matrix = numpy.zeros(multiov['shape']) 
   
   xx = slicer(N=len(multiov['mo_a']),
               vector=round(len(multiov['mo_a'])/float(numproc)),
