@@ -32,6 +32,7 @@ under certain conditions. Type '-l' for details.
 
 import os
 import sys
+from copy import deepcopy
 thismodule = sys.modules[__name__]
 
 from orbkit import grid
@@ -306,14 +307,27 @@ def check_options(error=sys.stdout.write,display=sys.stdout.write,
     error('Please choose --calc_mo OR --mo_set, not both. \n'+
         '--calc_mo will be done.\n')
   if calc_mo != False:
-    if calc_mo.lower() != 'all_mo':
-      setattr(thismodule,'calc_mo',
+    if not (calc_mo.lower() == 'all_mo' or ',' in calc_mo.lower() or ':' in  calc_mo.lower()):
+      try:
+        i = deepcopy(calc_mo)
+	if i != 'homo' and i != 'lumo':
+	  for r in ['homo','lumo','-','+']:
+            i = i.replace(r,'')
+          int(i.split('.')[0])
+      except ValueError: 
+        setattr(thismodule,'calc_mo',
                 check_if_exists(calc_mo,
                 what='filename for the MO list',
                 interactive=interactive))
   if mo_set != False:
-    if mo_set.lower() != 'all_mo':
-      setattr(thismodule,'mo_set',
+    if not (mo_set.lower() == 'all_mo' or ',' in mo_set.lower() or ':' in  mo_set.lower()):
+      try:
+        i = deepcopy(mo_set)
+        for r in ['homo','lumo','-','+']:
+          i = i.replace(r,'')
+        int(i.split('.')[0])
+      except ValueError: 
+         setattr(thismodule,'mo_set',
                 check_if_exists(mo_set, 
                 what='filename for the MO list', 
                 interactive=interactive))

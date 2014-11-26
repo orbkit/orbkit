@@ -60,8 +60,10 @@ def tForm(string,T,extra=''):
 def good_bye_message(t):
   ram_requirement = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
   ram_req = '\nand required %.2f MB of RAM' % (ram_requirement/1000.)
-  display.display(tForm('The calculation',t[-1]-t[0],extra=ram_req))
-  display.display('Thank you. Good bye.')
+  msg = tForm('The calculation',t[-1]-t[0],extra=ram_req)
+  msg += '\nThank you. Good bye.'
+  display.display(msg)
+  return msg
 
 def main(use_qc=None):
   ''' Controls the execution of all computational tasks.

@@ -681,7 +681,7 @@ def rho_compute(qc,calc_mo=False,vector=None,drv=None,numproc=1):
     pool.close()
     pool.join()
   
-  if (not is_vector and not calc_mo):
+  if not is_vector:
     # Print the norm of the MOs 
     display("\nNorm of the MOs:")
     for ii_mo in range(len(mo_norm)):

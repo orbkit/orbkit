@@ -135,13 +135,13 @@ def mo_set(qc, fid_mo_list,
        
   cube_files = []
   for i_file,j_file in enumerate(mo['mo_in_file']):
-    display('\nStarting with the %d. element of the mo-List (%s)...\n\t' % 
+    display('Starting with the %d. element of the molecular orbital list (%s)...\n\t' % 
                 (i_file+1,fid_mo_list) + str(j_file) + 
                 '\n\t(Only regarding existing and occupied mos.)\n')
     
     qc_select['mo_spec'] = []
     for i_mo,j_mo in enumerate(mo['mo']):
-      if j_mo in j_file: 
+      if j_mo in j_file:
         if mo['sym_select']: 
           ii_mo = numpy.argwhere(mo['mo_ii'] == j_mo)
         else: 
