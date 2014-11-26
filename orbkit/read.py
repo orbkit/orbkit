@@ -1026,7 +1026,7 @@ def read_gaussian_log(filename,all_mo=False,orientation='standard',
       if sec_flag == 'mo_info':
         # Molecular orbital section 
         info = line[:21].split()
-        coeffs = line[21:].split()
+        coeffs = line[21:].replace('-',' -').split()
         if info == []:
           if bNew:
             index = [offset+i for i in range(len(coeffs))]

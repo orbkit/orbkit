@@ -251,7 +251,7 @@ def get_mo_overlap_matrix(mo_a,mo_b,ao_overlap_matrix,numproc=1):
   multiov = {'ao_overlap_matrix': ao_overlap_matrix,
              'shape': numpy.shape(ao_overlap_matrix),
              'mo_a': create_mo_coeff(mo_a,name='mo_a'),
-             'mo_b': create_mo_coeff(mo_a,name='mo_b'),
+             'mo_b': create_mo_coeff(mo_b,name='mo_b'),
              }
   
   shape_a = numpy.shape(multiov['mo_a'])
