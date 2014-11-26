@@ -1199,19 +1199,32 @@ def mo_select(mo_spec, fid_mo_list):
   selected_mo_ii = [] 
   sym_select = False
   
+  display('\nProcessing molecular orbital list...')
+  
   if isinstance(fid_mo_list,str) and fid_mo_list.lower() == 'all_mo':
     selected_mo = numpy.array(numpy.arange(len(mo_spec))+1, dtype=numpy.str)
     mo_in_file = [selected_mo]
     selected_mo_spec = mo_spec
   else:  
+    if isinstance(fid_mo_list,str):
+      if ',' in fid_mo_list:
+        fid_mo_list = fid_mo_list.split(',')
+      else:
+        try:
+	  if fid_mo_list != 'homo' and fid_mo_list != 'lumo':
+            i = fid_mo_list.split('.')[0]
+	    for r in ['homo','lumo','-','+',':']:
+              i = i.replace(r,'')
+            int(i)
+	  fid_mo_list = [fid_mo_list]
+	except ValueError:
+          pass
     if isinstance(fid_mo_list, list):
       if any(isinstance(i, list) for i in fid_mo_list):
         for i in fid_mo_list:
-          if isinstance(i, list):
-            selected_mo.extend(i)
-          else:
-            selected_mo.append(i)
-            i = [i]
+          if not isinstance(i, list):
+            i = i.split(',') if isinstance(i,str) else [i]
+          selected_mo.extend(i)
           mo_in_file.append(map(str,i))
       else:
         selected_mo.extend(fid_mo_list)
@@ -1229,13 +1242,21 @@ def mo_select(mo_spec, fid_mo_list):
       except:
         raise IOError('The selected mo-list (%(m)s) is not valid!' % 
                       {'m': fid_mo_list} + '\ne.g.\n\t1\t3\n\t2\t7\t9\n')
-      
+    
+    # Print some information
+    for i,j in enumerate(mo_in_file):
+      display('\tLine %d: %s' % (i+1,str(j)))
+    
     # Check if the molecular orbitals are specified by symmetry 
     # (e.g. 1.1 in MOLPRO nomenclature) or 
     # by the number in the molden file (e.g. 1)
     
     try: # Try to convert selections into integer
-      for i in selected_mo: 
+      for i in selected_mo:
+        if i == 'homo' or i == 'lumo':
+          i += '+0'
+	for r in ['homo','lumo','-','+',':']:
+          i = i.replace(r,'')
         int(i)
     except ValueError:
       sym_select = True
@@ -1243,8 +1264,11 @@ def mo_select(mo_spec, fid_mo_list):
       for i in range(len(selected_mo)):
         if not '.' in selected_mo[i]:
           from re import search
-          a = search(r'\d+', selected_mo[i]).group()
-          if a == selected_mo[i]:
+	  try:
+            a = search(r'\d+', selected_mo[i]).group()
+	  except AttributeError:
+            raise IOError('Cannot convert `%s` to integer.' % selected_mo[i])
+	  if a == selected_mo[i]:
             selected_mo[i] = '%s.1' % a
           else:
             selected_mo[i] = selected_mo[i].replace(a, '%s.' % a)
@@ -1256,12 +1280,39 @@ def mo_select(mo_spec, fid_mo_list):
           selected_mo_ii.append(mo_spec[k]['sym'])
       selected_mo_ii = numpy.array(selected_mo_ii)
     else:
+      def get_selection(selected_mo):
+        mo_occup = numpy.array([i['occ_num'] for i in mo_spec])
+        #mo_energ = numpy.array([i['energy'] for i in mo_spec])
+        homo = (mo_occup>0.).nonzero()[0][-1]   + 1 # molden numbering
+        lumo = (mo_occup>0.).nonzero()[0][-1]+1 + 1 # molden numbering
+        sel = []
+        for i in selected_mo:
+          i = i.lower().split(':')
+	  if len(i) == 1:
+            sel.append(eval(i[0]))
+	  else:
+            i = range(*[eval(j) for j in i])
+	    sel.extend(i)
+        return sel
+      selected_mo = get_selection(selected_mo)
       selected_mo = map(int, selected_mo)            
       selected_mo.sort()
       selected_mo = map(str, selected_mo)
+      selected_mo_ii = []
       for k in range(len(mo_spec)):
-        if str(k+1) in selected_mo: selected_mo_spec.append(mo_spec[k])
+        if str(k+1) in selected_mo: 
+          selected_mo_spec.append(mo_spec[k])
+          selected_mo_ii.append(str(k+1))
+      selected_mo = selected_mo_ii
+      for i in range(len(mo_in_file)):
+        mo_in_file[i] = map(str, get_selection(mo_in_file[i]))
   
+    # Print some information
+    display('The following orbitals will be considered...')
+    for i,j in enumerate(mo_in_file):
+      display('\tLine %d: %s' % (i+1,str(j)))
+  
+  display('')
   return {'mo': selected_mo, 'mo_ii': selected_mo_ii,
           'mo_spec': selected_mo_spec, 
           'mo_in_file': mo_in_file, 'sym_select': sym_select}
