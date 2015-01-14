@@ -90,7 +90,10 @@ def get_ao_overlap(coord_a,coord_b,ao_spec,lxlylz_b=None,contraction=True,drv=No
   index = []
   b = 0
   for sel_ao in range(len(ao_spec)):
-    l = exp[lquant[ao_spec[sel_ao]['type']]]
+    if 'exp_list' in ao_spec[sel_ao].keys():
+      l = ao_spec[sel_ao]['exp_list']
+    else:
+      l = exp[lquant[ao_spec[sel_ao]['type']]]
     
     ra = numpy.append(ra,coord_a[ao_spec[sel_ao]['atom']][numpy.newaxis,:],axis=0)
     rb = numpy.append(rb,coord_b[ao_spec[sel_ao]['atom']][numpy.newaxis,:],axis=0)
@@ -143,7 +146,10 @@ def contract_ao_overlap_matrix(ao_uncontracted,ao_spec):
   index = []
   b = 0
   for sel_ao in range(len(ao_spec)):
-    l = exp[lquant[ao_spec[sel_ao]['type']]]
+    if 'exp_list' in ao_spec[sel_ao].keys():
+      l = ao_spec[sel_ao]['exp_list']
+    else:
+      l = exp[lquant[ao_spec[sel_ao]['type']]]
     for i in l:
       for j in ao_spec[sel_ao]['coeffs']:
         index.append([sel_ao,b])
@@ -354,7 +360,10 @@ def get_ao_dipole_matrix(qc,component='x'):
 
   i = 0
   for sel_ao in range(len(qc.ao_spec)):
-    l = exp[lquant[qc.ao_spec[sel_ao]['type']]]
+    if 'exp_list' in ao_spec[sel_ao].keys():
+      l = ao_spec[sel_ao]['exp_list']
+    else:
+      l = exp[lquant[qc.ao_spec[sel_ao]['type']]]
     for ll in l:
       for j in qc.ao_spec[sel_ao]['coeffs']:
         ao_part_2[:,i] *= qc.geo_spec[qc.ao_spec[sel_ao]['atom'],component]
@@ -404,7 +413,10 @@ def get_lxlylz(ao_spec):
   '''
   lxlylz = []
   for sel_ao in range(len(ao_spec)):
-    l = exp[lquant[ao_spec[sel_ao]['type']]]
+    if 'exp_list' in ao_spec[sel_ao].keys():
+      l = ao_spec[sel_ao]['exp_list']
+    else:
+      l = exp[lquant[ao_spec[sel_ao]['type']]]
     lxlylz.extend(l)
 
   return numpy.array(lxlylz,dtype=numpy.int64)

@@ -106,8 +106,8 @@ def l_creator(geo_spec,ao_spec,sel_ao,exp_list=None,coeff_list=None,
   
   # Build up the numpy arrays for the AO compuation
   if exp_list is None:
-    l = lquant[ao_spec[sel_ao]['type']]
-    exp_list = numpy.array(exp[l])
+    exp_list = lquant[ao_spec[sel_ao]['type']]
+  exp_list = numpy.array(exp_list)
   if coeff_list is None:
     coeff_list = numpy.array(ao_spec[sel_ao]['coeffs'])
   if at_pos is None:
@@ -156,7 +156,7 @@ def l_creator(geo_spec,ao_spec,sel_ao,exp_list=None,coeff_list=None,
   return ao_list
   # l_creator 
 
-def ao_creator(geo_spec,ao_spec,exp_list=False,
+def ao_creator(geo_spec,ao_spec,
                is_vector=False,drv=None,
                x=None,y=None,z=None,N=None):
   '''Calculates all contracted atomic orbitals or its
@@ -168,10 +168,6 @@ def ao_creator(geo_spec,ao_spec,exp_list=False,
     See `Central Variables`_ in the manual for details.
   sel_ao : int
     Index of the requested atomic orbital
-  exp_list : bool, optional
-    If True, takes the xyz-exponents from ao_spec[i]['Exponents'],
-    else the standard molden exponents (exp) for quantum number l will be 
-    used.
   is_vector : bool, optional
     If True, a vectorized grid will be applied
   drv : int or string, {None, 'x', 'y', 'z', 0, 1, 2}, optional
@@ -202,15 +198,13 @@ def ao_creator(geo_spec,ao_spec,exp_list=False,
     else:
       N = (len(x),)
   
-  if not exp_list:
-    ii_exp = None # Use the standard molden xyz-exponents (exp)
-  
   # Generalized AO creator
   for ii in range(len(ao_spec)):
-    if exp_list or 'type' not in ao_spec[ii].keys():
+    if 'exp_list' in ao_spec[ii].keys():
       # Read the user-defined xyz-exponents
-      ii_exp = numpy.array([ao_spec[ii]['exp_list']]) # Exponents
-    
+      ii_exp = ao_spec[ii]['exp_list'] # Exponents
+    else:
+      ii_exp = None # Use the standard molden xyz-exponents (exp)
     # Compute the atomic orbitals
     if not ii:
       ao_list = l_creator(geo_spec,ao_spec,ii,drv=drv,
@@ -315,6 +309,7 @@ def mo_creator(ao_list,mo_spec,is_vector=False,
       for ii in range(len(mo_spec)):
         mo_list.append(numpy.zeros(N))
         for jj in range(len(ao_list)):
+          print mo_spec[ii]['coeffs'][jj] , ao_list[jj]
           mo_list[ii] += mo_spec[ii]['coeffs'][jj] * ao_list[jj]
     else:
       for ii in range(len(mo_coeff)):
