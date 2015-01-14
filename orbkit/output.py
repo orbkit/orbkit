@@ -542,7 +542,8 @@ def HDF5_creator_MO(MO,filename,geo_info,geo_spec,mo_spec):
   return 0
   # HDF5_creator 
 
-def vmd_network_creator(filename,cube_files=None,render=True,**kwargs):
+def vmd_network_creator(filename,cube_files=None,render=False,iso=(-0.01,0.01),
+                        abspath=True,**kwargs):
   from os import path,listdir
   from linecache import getline
   from orbkit import vmd_network_draft
@@ -555,7 +556,7 @@ def vmd_network_creator(filename,cube_files=None,render=True,**kwargs):
         cube_files.append(fid)
     if cube_files == []:
       raise IOError('Could not find valid cube files in %s' % path.dirname(filename))
-      
+  
   title = []
   mo = ''
   for i,f in enumerate(cube_files):
@@ -564,8 +565,15 @@ def vmd_network_creator(filename,cube_files=None,render=True,**kwargs):
       title = path.splitext(path.basename(title))[0]
     else:
       title = title.replace('\n','').replace(' ','')
-    mo += vmd_network_draft.mo_string % {'n1': f,'n2': title, 'c':i, 
-                                         'render': '' if render else '#'}
+    pid = path.abspath(f) if abspath else path.relpath(f,path.relpath(filename))
+    mo += vmd_network_draft.mo_string % {
+                                  'c': i, 
+                                  'n1': pid,
+                                  'n2': title, 
+                                  'isored': iso[0], 
+                                  'isoblue': iso[1], 
+                                  'render': '' if render else '#'
+                                  }
   
   f = open('%(f)s.vmd' % {'f': filename},'w')
   f.write(vmd_network_draft.vmd_string % {'mo':mo})

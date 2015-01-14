@@ -790,7 +790,15 @@ def rho_compute_no_slice(qc,calc_mo=False,is_vector=False,drv=None,
   geo_spec = qc['geo_spec']
   ao_spec = qc['ao_spec']
   mo_spec = qc['mo_spec']
-  
+    
+  if not is_vector:
+    N = (len(x),len(y),len(z))
+  else:
+    if len(x) != len(y) or len(x) != len(z):
+      display("Dimensions of x-, y-, and z- coordinate differ!")
+      return 0
+    else:
+      N = (len(x),)
   
   if drv is not None:
     try:
@@ -801,30 +809,31 @@ def rho_compute_no_slice(qc,calc_mo=False,is_vector=False,drv=None,
     for ii_d in drv:
       # Calculate the derivatives of the AOs and MOs for this slice 
       delta_ao_list = ao_creator(geo_spec,ao_spec,drv=ii_d,
-                    x=grid.x,y=grid.y,z=grid.z,is_vector=is_vector)
+                                 is_vector=is_vector,
+                                 x=x,y=y,z=z)
       delta_mo_list.append(mo_creator(delta_ao_list,mo_spec,
-                    x=grid.x,y=grid.y,z=grid.z,is_vector=is_vector))
+                                      is_vector=is_vector,
+                                      x=x,y=y,z=z))
     delta_mo_list = numpy.array(delta_mo_list)
     if calc_mo:
       return ((delta_ao_list, delta_mo_list) if return_components 
         else delta_mo_list)
   
   # Calculate the AOs and MOs 
-  ao_list = ao_creator(geo_spec,ao_spec,is_vector=is_vector)
-  mo_list = mo_creator(ao_list,mo_spec,is_vector=is_vector)
+  ao_list = ao_creator(geo_spec,ao_spec,is_vector=is_vector,x=x,y=y,z=z)
+  mo_list = mo_creator(ao_list,mo_spec,is_vector=is_vector,x=x,y=y,z=z)
+  
+  if not is_vector:
+    d3r = numpy.product([x[1]-x[0],y[1]-y[0],z[1]-z[0]])
+    # Print the norm of the MOs 
+    display("Norm of the MOs:")
+    for ii_mo in range(len(mo_list)): 
+      display("\t%(m).6f\tMO %(n)s" 
+       % {'m':numpy.sum(mo_list[ii_mo]**2)*d3r, 'n':mo_spec[ii_mo]['sym']})
   
   if calc_mo:
     return ((ao_list, mo_list) if return_components 
       else mo_list)
-  
-  if not is_vector:
-    N = tuple(grid.N_)
-  else:
-    if len(grid.x) != len(grid.y) or len(grid.x) != len(grid.z):
-      display("Dimensions of x-, y-, and z- coordinate differ!")
-      return 0
-    else:
-      N = (len(grid.x),)
   
   # Initialize a numpy array for the density 
   rho = numpy.zeros(N)
@@ -834,18 +843,12 @@ def rho_compute_no_slice(qc,calc_mo=False,is_vector=False,drv=None,
     rho += numpy.square(numpy.abs(mo_list[ii_mo])) * mo_spec[ii_mo]['occ_num']
   
   if not is_vector:
-    # Print the norm of the MOs 
-    display("Norm of the MOs:")
-    for ii_mo in range(len(mo_list)): 
-      display("\t%(m).6f\tMO %(n)s" 
-       % {'m':numpy.sum(mo_list[ii_mo]**2)*grid.d3r, 'n':mo_spec[ii_mo]['sym']})
-    
+    d3r = numpy.product([x[1]-x[0],y[1]-y[0],z[1]-z[0]])    
     # Print the number of electrons 
-    display("We have " + str(numpy.sum(rho)*grid.d3r) + " electrons.")
+    display("We have " + str(numpy.sum(rho)*d3r) + " electrons.")
   
   if drv is None:
     return ((ao_list, mo_list, rho) if return_components else rho)
-    
   
   # Print information 
   display('\nCalculating the derivative of the density...')
@@ -858,7 +861,6 @@ def rho_compute_no_slice(qc,calc_mo=False,is_vector=False,drv=None,
     for ii_mo in range(len(mo_list)): 
       delta_rho[ii_d] += (mo_spec[ii_mo]['occ_num'] * 
             2 * delta_mo_list[ii_d,ii_mo]*mo_list[ii_mo])
-  
   
   return ((ao_list, mo_list, rho, delta_ao_list, delta_mo_list, delta_rho) 
         if return_components else (rho, delta_rho))

@@ -13,7 +13,7 @@ mol colupdate 0 top 0
 mol scaleminmax top 0 0.000000 0.000000
 mol smoothrep top 0 0
 mol drawframes top 0 {now}
-mol representation Isosurface 0.010000 0 0 0 1 1
+mol representation Isosurface %(isoblue)0.6f 0 0 0 1 1
 mol color ColorID 0
 mol selection {all}
 mol material Opaque
@@ -23,7 +23,7 @@ mol colupdate 1 top 0
 mol scaleminmax top 1 0.000000 0.000000
 mol smoothrep top 1 0
 mol drawframes top 1 {now}
-mol representation Isosurface -0.010000 0 0 0 1 1
+mol representation Isosurface %(isored)0.6f 0 0 0 1 1
 mol color ColorID 1
 mol selection {all}
 mol material Opaque

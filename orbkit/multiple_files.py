@@ -41,6 +41,11 @@ mo_occ_all    = [] #: Contains all molecular orbital occupations. List of numpy.
 sym           = [] #: Python dictionary containing the molecular orbital symmetries and the corresponding position in mo_coeff_all, mo_energy_all, and mo_occ_all, respectively.
 index_list    = [] #: After the execution of the ordering routine, it contains the new indices of the molecular orbitals. If index < 0, the molecular orbital changes its sign. shape=(Nfiles,NMO)
 
+geo_spec_tck  = []
+mo_coeff_tck  = []
+mo_energy_tck = []
+mo_occ_tck    = []
+
 def read(fid_list,itype='molden',all_mo=True,nosym=False,**kwargs):
   '''Reads a list of input files.
   
@@ -56,7 +61,7 @@ def read(fid_list,itype='molden',all_mo=True,nosym=False,**kwargs):
   geo_spec_all, geo_info, ao_spec, mo_coeff_all, mo_energy_all, mo_occ_all, sym
   '''
   global geo_spec_all, geo_info, ao_spec, mo_coeff_all, mo_energy_all, mo_occ_all, sym
-
+  
   geo_spec_all = []
   MO_Spec = []
   mo_coeff_all = []
@@ -65,22 +70,22 @@ def read(fid_list,itype='molden',all_mo=True,nosym=False,**kwargs):
   # geo_info and ao_info have to stay unchanged
   geo_old = []
   ao_old = []
-
+  
   sym_list = {}
   n_ao = {}
   n_r = len(fid_list)
-
+  
   for i,filename in enumerate(fid_list):
     qc = main_read(filename, itype=itype, all_mo=all_mo,**kwargs)
     # Geo Section
     if i > 0 and (geo_old != qc.geo_info).sum():
-      raise IOError('geo_info has changed!')
+      raise IOError('qc.geo_info has changed!')
     else:
       geo_old = deepcopy(qc.geo_info)
     geo_spec_all.append(qc.geo_spec)
     # AO Section
     if (i > 0 and not
-        numpy.alltrue([numpy.allclose(ao_old[j]['coeffs'],qc.ao_spec[j]['coeffs']) 
+        numpy.alltrue([numpy.allclose(ao_old[j]['coeffs'],qc.ao_spec[j]['coeffs'])
                       for j in range(len(ao_old))]
                       )):
       raise IOError('qc.ao_spec has changed!')
@@ -89,7 +94,7 @@ def read(fid_list,itype='molden',all_mo=True,nosym=False,**kwargs):
     # MO Section
     sym = {}    
     MO_Spec.append(qc.mo_spec)
-      
+    
     for i,mo in enumerate(qc.mo_spec):
       if nosym:
         qc.mo_spec[i]['sym'] = '%d.1' % (i+1)
@@ -104,23 +109,21 @@ def read(fid_list,itype='molden',all_mo=True,nosym=False,**kwargs):
         sym_list[k] = max(sym_list[k],it)
       else:
         sym_list[k] = it
-      
-        
-    
+  
   geo_spec_all = numpy.array(geo_spec_all)
   geo_info = qc.geo_info
   ao_spec = qc.ao_spec
   # Presorting of the MOs according to their symmetry
-
+  
   sym = []
   for k,it in sym_list.iteritems():
     sym.append((k,len(sym)))
     mo_coeff_all.append(numpy.zeros((n_r,it,n_ao[k])))
     mo_energy_all.append(numpy.zeros((n_r,it)))
     mo_occ_all.append(numpy.zeros((n_r,it)))
-
+  
   sym = dict(sym)
-
+  
   for i,spec in enumerate(MO_Spec):
     for j,mo in enumerate(spec):
       index,k = mo['sym'].split('.')
@@ -389,7 +392,6 @@ def order_manually(matrix,i_0,i_1,r_range,using_sign=True):
   
   return matrix
 
-
 def order_mo(mo,index_list=None,backward=True,mu=1e-1,use_factor=False,**kwargs):
   '''Orders a 3d-matrix (shape=(Nfiles,NMO,NAO)) by interchanging the axis=1, 
   i.e., NMO, applying linear extrapolation.'''
@@ -644,7 +646,6 @@ def read_hdf5(fid,variables=['geo_info',
         globals()[i] = {}
         for k,l in s.iteritems():
           globals()[i][k] = int(l)
-  
 
 def construct_qc():
   '''Converts all global variables to a list of `QCinfo` classses.
@@ -699,6 +700,38 @@ def data_interp(x,y,xnew,k=3,der=0,s=0,**kwargs):
   ynew = interpolate.splev(xnew,tck,der=der)
   
   return ynew
+
+def splrep_all(x,k=3,**kwargs):
+  from scipy import interpolate
+  global geo_spec_tck, mo_coeff_tck, mo_energy_tck, mo_occ_tck
+  
+  geo_spec_tck  = []
+  mo_coeff_tck  = []
+  mo_energy_tck = []
+  mo_occ_tck    = []
+  
+  shape = geo_spec_all.shape
+  for i in range(shape[1]):
+    geo_spec_tck.append([])
+    for j in range(shape[2]):
+      geo_spec_tck[-1].append(interpolate.splrep(x,geo_spec_all[:,i,j],
+                              k=k,**kwargs))
+  
+  for i_mo in range(len(mo_coeff_all)):
+    mo_coeff_tck.append([])
+    mo_energy_tck.append([])
+    mo_occ_tck.append([])
+    shape = mo_coeff_all[i_mo].shape    
+    for i in range(shape[1]):
+      mo_coeff_tck[-1].append([])
+      mo_energy_tck[-1].append(interpolate.splrep(x,mo_energy_all[i_mo][:,i],
+                               k=k,**kwargs))
+      mo_occ_tck[-1].append(interpolate.splrep(x,mo_occ_all[i_mo][:,i],
+                            k=k,**kwargs))
+      for j in range(shape[2]):
+        mo_coeff_tck[-1][-1].append(interpolate.splrep(x,
+                                    mo_coeff_all[i_mo][:,i,j],
+                                    k=k,**kwargs))
 
 def interpolate_all(x,xnew,k=3,**kwargs):
   '''Interpolates a dataset y(x) to y(xnew) using B-Splines of order k.'''
@@ -775,9 +808,9 @@ def plot(mo_matrix,symmetry='1',title='All',x_label='${\\sf index}$',
     plt.ylabel(y_label, fontsize=16);
     plt.title('%s: %d.%s'%  (title,i+1,symmetry))
     plt.ylim(ylim)
-    ax.xaxis.set_minor_locator(MultipleLocator(1))
-    ax.xaxis.grid(grid, which='minor')
-    ax.grid(grid, which='both')
+    #ax.xaxis.set_minor_locator(MultipleLocator(1))
+    #ax.xaxis.grid(grid, which='minor')
+    #ax.grid(grid, which='both')
     return fig
   
   if output_format == 'pdf':

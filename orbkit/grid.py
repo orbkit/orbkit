@@ -276,7 +276,27 @@ def matrix_vector2grid(matrix=None,Nx=None,Ny=None,Nz=None):
   weave.inline(matrix_code, ['regmatrix','matrix'], verbose = 1, support_code = cSupportCode.math)
 
   return regmatrix
-  # matrix_grid2vector
+  # matrix_vector2grid
+
+def mv2g(**kwargs):
+  '''Converts all `numpy.ndarrays` from passed to the keyword arguments 
+  (`**kwargs`) from a vector grid of `shape=(..., Nx*Ny*Nz, ...,)` to a regular 
+  grid of `shape=(..., Nx, Ny, Nz, ...,)` and returns it as a dictionary.  
+  '''
+  import itertools
+  return_val = {}
+  for i,j in kwargs.iteritems():
+    shape = numpy.shape(j)
+    where = numpy.argwhere(shape==numpy.product(N_))
+    return_val[i] = numpy.zeros(shape[:where]+tuple(N_)+shape[where+1:])
+    for key in itertools.product(*[range(k) for k in (shape[:where] + shape[where+1:])]):
+      obj = [slice(k,k+1) for k in key]
+      for r in range(3):
+        obj.insert(where,slice(None,None))
+      return_val[i][obj] = matrix_vector2grid(matrix=j[obj[:where]+obj[where+2:]].reshape((-1,)), 
+                                          **dict(zip(['Nx','Ny','Nz'],N_)))
+  
+  return return_val 
 
 def matrix_grid2vector(matrix=None): 
   '''Converts the (Nx,Ny,Nz) data matrix back to the regular grid (Nx,Nz,Ny)
@@ -303,7 +323,7 @@ def matrix_grid2vector(matrix=None):
 
   return vecmatrix
   # matrix_grid2vector
-  
+
 def grid_sym_op(grid=None,symop=None,is_vector=None):
   '''Executes given symmetry operation on vector grid 
   '''

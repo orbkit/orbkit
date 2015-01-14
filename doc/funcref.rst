@@ -79,6 +79,11 @@ within :mod:`orbkit.main`.
   specified grid.
 
 
+orbkit.qcinfo
+--------------
+.. automodule:: orbkit.qcinfo 
+    :members:
+
 orbkit.options
 --------------
 .. automodule:: orbkit.options 
