@@ -309,7 +309,6 @@ def mo_creator(ao_list,mo_spec,is_vector=False,
       for ii in range(len(mo_spec)):
         mo_list.append(numpy.zeros(N))
         for jj in range(len(ao_list)):
-          print mo_spec[ii]['coeffs'][jj] , ao_list[jj]
           mo_list[ii] += mo_spec[ii]['coeffs'][jj] * ao_list[jj]
     else:
       for ii in range(len(mo_coeff)):
@@ -939,7 +938,6 @@ def integration(matrix,x=None,y=None,z=None):
     integral = 2*numpy.pi*integrate.simps(R*matrix, r, axis=0, even='avg')
     integral = integrate.simps(integral, z, axis=0, even='avg')
   else: 
-    #print('Error in integration! ndim is not 3 or 2...')
     return numpy.sum(matrix)
   return integral
 
