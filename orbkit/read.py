@@ -339,6 +339,7 @@ def read_gamess(filename, all_mo=False,read_properties=False):
         info_key = None             # A Flag specifying the energy and symmetry section
         len_mo = 0                  # Number of MOs 
         sym={}                      # Symmetry of MOs
+        exp_list = []
       elif ' NUMBER OF OCCUPIED ORBITALS (ALPHA)          =' in line:
         occ = []                        # occupation number of molecular orbitals
 	occ.append(int(thisline[-1]))
@@ -427,7 +428,7 @@ def read_gamess(filename, all_mo=False,read_properties=False):
             ao_skip -= 1
         elif sec_flag == 'mo_info':
           if not mo_skip:
-            if 'END OF' in line and 'CALCULATION' in line:
+            if 'END OF' in line and 'CALCULATION' in line or '-----------' in line:
               sec_flag = None
             else:
               if thisline == []:
@@ -435,6 +436,7 @@ def read_gamess(filename, all_mo=False,read_properties=False):
                 info_key = None
               elif init_mo:
                 init_len = len(thisline)
+                exp_list = []
                 for ii in range(len(thisline)):
                   qc.mo_spec.append({'coeffs': [],
                                   'energy': 0.0,
@@ -450,12 +452,13 @@ def read_gamess(filename, all_mo=False,read_properties=False):
               elif len(thisline) == init_len and info_key == 'symmetry':
                 for ii in range(init_len,0,-1):
                   len_mo += 1
-                  a= thisline[init_len-ii]
+                  a = thisline[init_len-ii]
                   if a not in sym.keys(): sym[a] = 1
                   else: sym[a] += 1
                   qc.mo_spec[-ii]['sym'] = '%d.%s' % (sym[a], thisline[init_len-ii])
                 info_key = 'coeffs'
               elif thisline != [] and info_key == 'coeffs':
+                exp_list.append(thisline[3])
                 for ii in range(init_len,0,-1):
                   qc.mo_spec[-ii]['coeffs'].append(float(line[16:].split()[init_len-ii]))
           elif mo_skip:
@@ -541,8 +544,19 @@ def read_gamess(filename, all_mo=False,read_properties=False):
       qc.ao_spec.append({'atom': qc.geo_info[kk][1]-1,
                          'type': basis_set[qc.geo_info[kk][0]][ll]['type'],
                          'pnum': basis_set[qc.geo_info[kk][0]][ll]['pnum'],
-                         'coeffs': basis_set[qc.geo_info[kk][0]][ll]['coeffs']
+                         'coeffs': basis_set[qc.geo_info[kk][0]][ll]['coeffs'],
+                         'exp_list': None
                          })
+  # Reconstruct exponents list for ao_spec
+  count = 0
+  for i,j in enumerate(qc.ao_spec):    
+    l = l_deg(lquant[j['type']])
+    j['exp_list'] = []
+    for i in range(l):
+      j['exp_list'].append((exp_list[count].lower().count('x'),
+                            exp_list[count].lower().count('y'),
+                            exp_list[count].lower().count('z')))
+      count += 1
 
   for ii in range(len(qc.mo_spec)):
     if occ[0] and occ[1]:
