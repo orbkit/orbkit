@@ -106,12 +106,15 @@ def l_creator(geo_spec,ao_spec,sel_ao,exp_list=None,coeff_list=None,
   
   # Build up the numpy arrays for the AO compuation
   if exp_list is None:
-    exp_list = lquant[ao_spec[sel_ao]['type']]
+    exp_list = exp[lquant[ao_spec[sel_ao]['type']]]  
   exp_list = numpy.array(exp_list)
+  
   if coeff_list is None:
     coeff_list = numpy.array(ao_spec[sel_ao]['coeffs'])
+  
   if at_pos is None:
     at_pos = numpy.array(geo_spec[ao_spec[sel_ao]['atom']])
+  
   ao_list = numpy.zeros(((len(exp_list),) + tuple(N)))
   
   # number of primitive atomic oribtals
