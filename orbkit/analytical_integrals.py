@@ -360,8 +360,8 @@ def get_ao_dipole_matrix(qc,component='x'):
 
   i = 0
   for sel_ao in range(len(qc.ao_spec)):
-    if 'exp_list' in ao_spec[sel_ao].keys():
-      l = ao_spec[sel_ao]['exp_list']
+    if 'exp_list' in qc.ao_spec[sel_ao].keys():
+      l = qc.ao_spec[sel_ao]['exp_list']
     else:
       l = exp[lquant[qc.ao_spec[sel_ao]['type']]]
     for ll in l:
