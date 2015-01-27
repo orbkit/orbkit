@@ -38,7 +38,7 @@ def calc_mo(qc, fid_mo_list, drv=None, vector=None, otype=None):
 
   **Parameters:**
    
-    geo_spec, geo_info, ao_spec, mo_spec :        
+    qc.geo_spec, qc.geo_info, qc.ao_spec, qc.mo_spec :
       See `Central Variables`_ for details.
     fid_mo_list : str
       Specifies the filename of the molecular orbitals list. 
@@ -74,6 +74,11 @@ def calc_mo(qc, fid_mo_list, drv=None, vector=None, otype=None):
                              numproc=options.numproc)
   
   fid = '%s_MO' % (options.outputname)
+  if 'vmd' in otype and not 'cb' in otype:
+    if isinstance(otype,list):
+      otype.append('cb')
+    else:
+      otype = [otype,'cb']
   
   if not options.no_output:
     if 'h5' in otype:    
@@ -108,7 +113,7 @@ def mo_set(qc, fid_mo_list,
   
   **Parameters:**
    
-    geo_spec, geo_info, ao_spec, mo_spec :        
+    qc.geo_spec, qc.geo_info, qc.ao_spec, qc.mo_spec :
       See `Central Variables`_ for details.
     fid_mo_list : str
       Specifies the filename of the molecular orbitals list. 
@@ -189,7 +194,7 @@ def mo_set(qc, fid_mo_list,
         for i,j in enumerate(options.drv):
           fid = '%s_%03d_d%s' % (options.outputname, i_file+1, j) 
           cube_files.append('%s.cb' % fid)
-          comments = ('d/%s_of_mo_set:' % j + ','.join(j_file))
+          comments = ('d%s_of_mo_set:' % j + ','.join(j_file))
           output.main_output(delta_rho[i],qc.geo_info,qc.geo_spec,outputname=fid,
                              otype=otype,omit=['h5','vmd'],
                              comments=comments,is_vector=(vector is not None))
@@ -200,6 +205,82 @@ def mo_set(qc, fid_mo_list,
       output.vmd_network_creator(options.outputname,cube_files=cube_files)
   return None
   # mo_select 
+
+def calc_ao(qc, drv=None, is_vector=False, otype=None):  
+  '''Computes and saves all atomic orbital or a derivative thereof.
+  
+  **Parameters:**
+   
+    qc.geo_spec, qc.geo_info, qc.ao_spec :
+      See `Central Variables`_ for details.
+    otype : str or list of str, optional
+      Specifies output file type. See :data:`otypes` for details.
+    drv : int or string, {None, 'x', 'y', 'z', 0, 1, 2}, optional
+      If not None, a derivative calculation of the atomic orbitals 
+      is requested.
+    is_vector : bool, optional
+      If True, performs the computations on a vectorized grid, i.e., 
+      with x, y, and z as vectors.
+    
+  **Returns:**    
+  
+    ao_list : numpy.ndarray, shape=((NAO,) + N)
+      Contains the computed NAO atomic orbitals on a grid. Is only returned, if
+      otype is None.
+  '''
+  from omp_functions import run
+  global global_val
+  
+  dstr = '' if drv is None else '_d%s' % drv
+  
+  ao_spec = []
+  lxlylz = []
+  for sel_ao in range(len(qc.ao_spec)):
+    if 'exp_list' in qc.ao_spec[sel_ao].keys():
+      l = qc.ao_spec[sel_ao]['exp_list']
+    else:
+      l = core.exp[core.lquant[qc.ao_spec[sel_ao]['type']]]
+    lxlylz.extend(l)
+    for i in l:
+      ao_spec.append(qc.ao_spec[sel_ao].copy())
+      ao_spec[-1]['exp_list'] = [i]
+
+  global_val = {'qc':qc,'drv':drv,'is_vector':is_vector,'otype':otype,
+                'ao_spec':ao_spec}
+  
+  ao = run(get_ao,x=numpy.arange(len(ao_spec)).reshape((-1,1)),numproc=options.numproc,display=display)
+  
+  del global_val
+  
+  if otype is None or 'h5' in otype:   
+    ao_list = []
+    for i in ao:
+      ao_list.extend(i)
+    ao_list = numpy.array(ao_list)
+    if otype is None:
+      return ao_list
+    
+    import h5py
+    fid = '%s_AO%s.h5' % (options.outputname,dstr)
+    output.hdf5_write(fid,mode='w',gname='general_info',
+                      x=grid.x,y=grid.y,z=grid.z,N=grid.N_,
+                      geo_info=qc.geo_info,geo_spec=qc.geo_spec,
+                      lxlylz=numpy.array(lxlylz,dtype=numpy.int64),
+                      grid_info=numpy.array(is_vector,dtype=int))
+    f = h5py.File(fid, 'a')
+    output.hdf5_append(ao_spec,f,name='ao_spec')
+    output.hdf5_append(ao_list,f,name='ao_list')
+    f.close()
+  
+  if 'vmd' in otype and options.vector is None:
+    fid = '%s_AO%s' % (options.outputname,dstr)
+    display('\nCreating VMD network file...' +
+                    '\n\t%(o)s.vmd' % {'o': fid})
+    output.vmd_network_creator(fid,
+                            cube_files=['%s_AO%s_%03d.cb' % (options.outputname,
+                                        dstr,x) for x in range(len(ao_spec))])
+  return None
+  # calc_ao
 
 def save_mo_hdf5(filename,geo_info,geo_spec,ao_spec,mo_spec,
                  x=None,y=None,z=None,N=None):
@@ -264,6 +345,30 @@ def save_mo_hdf5(filename,geo_info,geo_spec,ao_spec,mo_spec,
   
   return 0
 
+def get_ao(x):
+  ao_list = core.l_creator(global_val['qc'].geo_spec,global_val['ao_spec'],
+                           x,exp_list=global_val['ao_spec'][x]['exp_list'],
+                           is_vector=global_val['is_vector'],
+                           drv=global_val['drv'])
+  
+  if global_val['otype'] is None or 'h5' in global_val['otype']:
+    return ao_list
+  else:
+    drv = global_val['drv']
+    comments = '%03d.lxlylz=%s,at=%d' %(x,
+                                         global_val['ao_spec'][x]['exp_list'][0],
+                                         global_val['ao_spec'][x]['atom'])
+    output.main_output(ao_list[0] if drv is None else ao_list,
+                       global_val['qc'].geo_info,
+                       global_val['qc'].geo_spec,
+                       comments=comments,
+                       outputname='%s_AO_%03d' % (options.outputname,x),
+                       otype=global_val['otype'],
+                       omit=['h5','vmd'],
+                       drv = None if drv is None else [drv],
+                       is_vector=global_val['is_vector'])
+    return None
+
 def atom2index(atom,geo_info=None):
   '''Converts a list of atom numbers to indices of :data:`geo_info`.'''
   if not (isinstance(atom,list) or isinstance(atom,numpy.ndarray)):
@@ -304,7 +409,7 @@ def atom_projected_density(atom,qc,
   
     atom : 'all' or int or list of int
       Specifies the atoms to which the projected electron density will be computed.  
-    geo_spec, geo_info, ao_spec, mo_spec :  
+    geo_spec, geo_info, ao_spec, mo_spec :
       See `Central Variables`_ for details.
     bReturnmo : bool, optional
       If True, the atom projected molecular orbitals are additionally returned.

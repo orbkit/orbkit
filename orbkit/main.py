@@ -137,6 +137,22 @@ def main(use_qc=None):
   
   t.append(time.time()) # A new time step
   
+  # The calculation of all AOs (--calc_ao)
+  if options.calc_ao != False:
+    if options.drv is None or not isinstance(options.drv,list):
+      options.drv = [options.drv]
+    
+    data = []
+    for drv in options.drv:
+      data.append(extras.calc_ao(qc,
+                                 drv=drv,
+                                 is_vector=(options.vector is not None),
+                                 otype=options.otype))
+    
+    t.append(time.time()) # Final time
+    good_bye_message(t)
+    return data
+  
   # The calculation of selected MOs (--calc_mo) or 
   # the density formed by selected MOs (--mo_set)
   if (options.mo_set or options.calc_mo) != False: 

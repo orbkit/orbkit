@@ -123,10 +123,8 @@ def init_parser():
                       and compute the electron density 
                       using exclusively those orbitals'''.replace('  ','').replace('\n',''))  
   group.add_option("--calc_ao",dest="calc_ao",
-                      default=False, type="string", 
-                      help=optparse.SUPPRESS_HELP)
-                      #="calculate and save the AOs specified by the indices 
-                      #in their selected file (delimiter=' ')") #INCLUDEME  
+                      default=False,action="store_true", 
+                      help="calculate and save all AOs.")  
   group.add_option("--calc_mo",dest="calc_mo",
                       default=False, type="string", 
                       help=('''calculate and save the MOs specified in the 
@@ -413,7 +411,7 @@ otype           = 'h5'          #: Specifies output file type. See :data:`otypes
 #--- Computational Options ---
 numproc         = 1             #: Specifies number of subprocesses for multiprocessing. (int)
 mo_set          = False         #: Specifies molecular orbitals used for density calculation. (filename)
-calc_ao         = False         #
+calc_ao         = False         #: If True, all atomic orbitals will be computed and saved.
 calc_mo         = False         #: Specifies which molecular orbitals will be calculated. (filename)
 all_mo          = False         #: If True, all molecular orbitals will be computed. (bool)
 drv             = None          #: Specifies derivative variables. (list of str)
