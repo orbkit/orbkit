@@ -21,7 +21,7 @@ from orbkit.core import exp,lquant,slicer
 def get_ao_overlap(coord_a,coord_b,ao_spec,lxlylz_b=None,contraction=True,drv=None):
   '''Computes the overlap matrix of a basis set, where `Bra` basis set
   corresponds to the geometry :literal:`coord_a` and `Ket` basis set corresponds 
-  to the geometry :literal:`coord_b`. 
+  to the geometry :literal:`coord_b`.
   
   In order to enable the computation of analytical expectation values, 
   the exponents lx, ly, lz for the primitive Cartesian Gaussians of the `Ket`
@@ -463,7 +463,7 @@ def create_mo_coeff(mo,name='mo'):
     raise ValueError('%s has to be 2-dimensional.'%s)  
   return mo
 
-def print2D(x,format='%+.2f '):
+def print2D(x,format='%+.2f ',start='\t'):
   '''Prints a 2D matrix.
   
   **Parameters:**
@@ -476,7 +476,7 @@ def print2D(x,format='%+.2f '):
   '''
   shape = numpy.shape(x)
   for i in range(shape[0]):
-    s = ""
+    s = start
     for j in range(shape[1]):
       s += format % x[i,j]
     print s
