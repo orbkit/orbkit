@@ -3,19 +3,23 @@ import numpy
 from time import time
 from multiprocessing import Pool
 
-def slicer(N,vector=1e4):
+def slicer(N,vector=1e4,numproc=1):
   i = 0
-  sNum = int((N/vector)+1)
+  vector = 1 if int(vector) <= 0.0 else int(vector)
+  sNum = int((N/(vector))+1)
   xx = []
-  for s in range(sNum):
-    if i == N:
-      N -= 1
-      break
-    elif (i + vector) >= N:
-      xx.append((numpy.array([i,N],dtype=int)))
-    else:
-      xx.append((numpy.array([i,i + vector],dtype=int)))
-    i += vector
+  if numproc > 1:
+    for s in range(sNum):
+      if i == N:
+        N -= 1
+        break
+      elif (i + vector) >= N:
+        xx.append((numpy.array([i,N],dtype=int)))      
+      else:
+        xx.append((numpy.array([i,i + vector],dtype=int)))
+      i += vector
+  else:
+    xx.append((numpy.array([0,N],dtype=int))) 
   return xx
 
 def run(f,x=numpy.arange(10).reshape((-1,1)),numproc=1,display=sys.stdout.write):

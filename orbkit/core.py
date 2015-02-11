@@ -1265,7 +1265,8 @@ def is_compiled(code):
     
 def slicer(N,vector=1e4,numproc=1):
   i = 0
-  sNum = int((N/(vector))+1) if int(vector) > 0 else int(N)
+  vector = 1 if int(vector) <= 0.0 else int(vector)
+  sNum = int((N/(vector))+1)
   xx = []
   if numproc > 1:
     for s in range(sNum):
