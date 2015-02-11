@@ -1238,7 +1238,7 @@ def mo_select(mo_spec, fid_mo_list):
         for i in fid_mo_list:
           if not isinstance(i, list):
             i = i.split(',') if isinstance(i,str) else [i]
-          selected_mo.extend(i)
+          selected_mo.extend(map(str,i))
           mo_in_file.append(map(str,i))
       else:
         selected_mo.extend(fid_mo_list)
