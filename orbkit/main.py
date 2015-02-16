@@ -312,11 +312,10 @@ def init(reset_display=True):
   '''
   reload(options)
   if reset_display:
-    display.is_initiated = False
+    reload(display)
   
   return 
-  # init 
-  
+  # init
 
 #if __name__ == '__main__':
 def run_standalone():

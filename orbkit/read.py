@@ -1288,10 +1288,15 @@ def mo_select(mo_spec, fid_mo_list):
             selected_mo[i] = selected_mo[i].replace(a, '%s.' % a)
     
     if sym_select:
-      for k in range(len(mo_spec)):
-        if mo_spec[k]['sym'] in selected_mo:
-          selected_mo_spec.append(mo_spec[k])
-          selected_mo_ii.append(mo_spec[k]['sym'])
+      for i in selected_mo:
+        is_present = False
+        for k in range(len(mo_spec)):
+          if mo_spec[k]['sym'] == i:
+            selected_mo_spec.append(mo_spec[k])
+            selected_mo_ii.append(mo_spec[k]['sym'])
+            is_present = True
+        if not is_present:
+          raise IOError('Cannot find %s in mo_spec' % i)
       selected_mo_ii = numpy.array(selected_mo_ii)
     else:
       def get_selection(selected_mo):

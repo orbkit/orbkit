@@ -33,22 +33,28 @@ def run(f,x=numpy.arange(10).reshape((-1,1)),numproc=1,display=sys.stdout.write)
   s_old = 0
   t = [time()]
   return_val = [None for i in x]
-  for l,ifid in enumerate(x):
-    return_val[l] = it.next() if numproc > 1 else f(ifid)  
-    #--- Print out the progress of the computation ---
-    status = numpy.floor(l*10/float(len(x)))*10
-    if not status % 10 and status != status_old:
-      t.append(time())
-      display("\tFinished %(f)d%% (%(s)d slices in %(t).3fs)"
-                      % {'f': status,
-                          's': l + 1 - s_old,
-                          't': t[-1]-t[-2]})
-      status_old = status
-      s_old = l + 1
+  try:
+    for l,ifid in enumerate(x):
+      return_val[l] = it.next() if numproc > 1 else f(ifid)  
+      #--- Print out the progress of the computation ---
+      status = numpy.floor(l*10/float(len(x)))*10
+      if display is not None and not status % 10 and status != status_old:
+        t.append(time())
+        display("\tFinished %(f)d%% (%(s)d slices in %(t).3fs)"
+                        % {'f': status,
+                            's': l + 1 - s_old,
+                            't': t[-1]-t[-2]})
+        status_old = status
+        s_old = l + 1
   
-  if numproc > 1:
-    pool.close()
-    pool.join()
-    pool.terminate()
+  finally:
+    if numproc > 1:
+      pool.close()
+      pool.join()
+      pool.terminate()
+  
+  if display is not None:
+    display("\t" + 40*"-")
+    display("\tComputation required %(t).3fs" % {'t': t[-1]-t[0]})
   
   return return_val
