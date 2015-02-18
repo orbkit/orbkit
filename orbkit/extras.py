@@ -65,7 +65,7 @@ def calc_mo(qc, fid_mo_list, drv=None, vector=None, otype=None):
         :sym_select: - If True, symmetry labels have been used. 
       
   '''
-  mo = mo_select(qc.mo_spec, fid_mo_list)
+  mo = mo_select(qc.mo_spec, fid_mo_list, strict=True)
   qc_select = qc.todict()
   qc_select['mo_spec'] = mo['mo_spec']
   
@@ -89,16 +89,20 @@ def calc_mo(qc, fid_mo_list, drv=None, vector=None, otype=None):
     cube_files = []
     for i,j in enumerate(qc_select['mo_spec']):
       outputname = '%s_%s' % (fid,mo['mo'][i])
-      cube_files.append('%s.cb' % outputname)
       comments = ('%s,Occ=%.1f,E=%+.4f' % (mo['mo'][i],
                                            j['occ_num'],
                                            j['energy']))
       index = numpy.index_exp[:,i] if drv is not None else i
-      output.main_output(mo_list[index],qc.geo_info,qc.geo_spec,
-                      outputname=outputname,
-                      comments=comments,
-                      otype=otype,omit=['h5','vmd'],drv=drv,
-                      is_vector=(options.vector is not None))
+      output_written = output.main_output(mo_list[index],
+                                      qc.geo_info,qc.geo_spec,
+                                      outputname=outputname,
+                                      comments=comments,
+                                      otype=otype,omit=['h5','vmd'],drv=drv,
+                                      is_vector=(options.vector is not None))
+      
+      for i in output_written:
+        if i.endswith('.cb'):
+          cube_files.append(i)
     
     if 'vmd' in otype and options.vector is None:
       display('\nCreating VMD network file...' +
@@ -129,7 +133,7 @@ def mo_set(qc, fid_mo_list,
     
   '''
 
-  mo = mo_select(qc.mo_spec, fid_mo_list)
+  mo = mo_select(qc.mo_spec, fid_mo_list, strict=False)
   qc_select = qc.todict()
   
   if 'h5' in otype:

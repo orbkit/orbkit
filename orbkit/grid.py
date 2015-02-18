@@ -34,7 +34,7 @@ except:
 # Import orbkit modules
 from orbkit import cSupportCode
 
-def grid_init(is_vector=False):
+def grid_init(is_vector=False, force=False):
   '''Sets up the regular x-, y-, z-grid 
   specified by the global lists: 
 
@@ -52,7 +52,7 @@ def grid_init(is_vector=False):
   # All grid related variables should be globals 
   global x, y, z, d3r, min_, max_, N_, delta_, grid, is_initialized
   
-  if is_initialized:
+  if is_initialized and not force:
     return 0
   
   # Initialize a list for the grid 

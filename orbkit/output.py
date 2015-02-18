@@ -36,6 +36,7 @@ def main_output(data,geo_info,geo_spec,outputname='new',otype='h5',
   '''Creates the requested output.
   '''
   print_waring = False
+  output_written = []
   if drv is not None:
     fid = '%(f)s_d%(d)s'
     it = enumerate(drv)
@@ -52,25 +53,28 @@ def main_output(data,geo_info,geo_spec,outputname='new',otype='h5',
       display('\nSaving to Hierarchical Data Format file (HDF5)...' +
               '\n\t%(o)s.h5' % {'o': fid % f})
       HDF5_creator(d,(fid % f),geo_info,geo_spec,**kwargs)
-    
+      output_written.append('%s.h5' % (fid % f))
     if 'am' in otype or 'hx' in otype and not print_waring:
       if is_vector: print_waring = True
       else: 
         display('\nSaving to ZIBAmiraMesh file...' +
                      '\n\t%(o)s.am' % {'o': fid % f})
         amira_creator(d,(fid % f))
+        output_written.append('%s.am' % (fid % f))
     if 'hx' in otype and not print_waring:
       if is_vector: print_waring = True
       else: 
         # Create Amira network incl. Alphamap
         display('\nCreating ZIBAmira network file...')
         hx_network_creator(data,(fid % f))
+        output_written.append('%s.hx' % (fid % f))
     if 'cb' in otype or 'vmd' in otype and not print_waring:
       if is_vector: print_waring = True
       else: 
         display('\nSaving to .cb file...' +
                       '\n\t%(o)s.cb' % {'o': fid % f})
         cube_creator(d,(fid % f),geo_info,geo_spec,**kwargs)
+        output_written.append('%s.cb' % (fid % f))
        #else: output_creator(d,(fid % f),geo_info,geo_spec)  # Axel's cube files
     if 'vmd' in otype and 'vmd' not in omit and not print_waring:
       if is_vector: print_waring = True
@@ -79,12 +83,13 @@ def main_output(data,geo_info,geo_spec,outputname='new',otype='h5',
         display('\nCreating VMD network file...' +
                       '\n\t%(o)s.vmd' % {'o': fid % f})        
         vmd_network_creator((fid % f),cube_files=['%s.cb' % (fid % f)])
+        output_written.append('%s.vmd' % (fid % f))
       
   if print_waring:
     display('For a vectorized grid only HDF5 is available as output format...')
     display('Skipping all other formats...')
   
-  return 0
+  return output_written
   # main_output 
 
 def cube_creator(rho,filename,geo_info,geo_spec,comments='',**kwargs):

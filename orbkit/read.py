@@ -1171,13 +1171,17 @@ def read_wfn(filename, all_mo=False):
   return qc
 
 
-def mo_select(mo_spec, fid_mo_list):
+def mo_select(mo_spec, fid_mo_list, strict=False):
   '''Selects molecular orbitals from an external file.
 
   **Parameters:**
    
     mo_spec :        
       See `Central Variables`_ for details.
+    strict : bool, optional
+      If True, orbkit will follow strictly the fid_mo_list, i.e., the order of 
+      the molecular orbitals will be kept and multiple occurrences of items 
+      will evoke multiple calculations of the respective molecular orbitals. 
     fid_mo_list : str, `'all_mo'`, or list
       | If fid_mo_list is a str, specifies the filename of the molecular orbitals list.
       | If fid_mo_list is 'all_mo', creates a list containing all molecular orbitals.
@@ -1206,19 +1210,49 @@ def mo_select(mo_spec, fid_mo_list):
       :sym_select: - If True, symmetry labels have been used. 
       
   '''
+  display('\nProcessing molecular orbital list...')
+  
   mo_in_file = []
   all_mo = []
   selected_mo = []
-  selected_mo_spec = []
-  selected_mo_ii = [] 
   sym_select = False
   
-  display('\nProcessing molecular orbital list...')
+  def assign_selected_mo(selected_mo,mo_spec,strict=False,  
+                          what=lambda x,y: y[x]['sym']):
+    selected_mo_spec = []
+    selected_mo_ii = [] 
+    for i in selected_mo:
+      is_present = False
+      for k in range(len(mo_spec)):
+        if (what(k,mo_spec) == i):
+          is_present = True
+          if strict or (i not in selected_mo_ii):
+            selected_mo_spec.append(mo_spec[k])
+            selected_mo_ii.append(what(k,mo_spec))
+      if not is_present:
+        raise IOError('Cannot find %s in mo_spec' % i)
+    selected_mo_ii = numpy.array(selected_mo_ii)
+    return selected_mo_spec,selected_mo_ii
+  
+  def get_selection(selected_mo):
+    mo_occup = numpy.array([i['occ_num'] for i in mo_spec])
+    homo = (mo_occup>0.).nonzero()[0][-1]   + 1 # molden numbering
+    lumo = (mo_occup>0.).nonzero()[0][-1]+1 + 1 # molden numbering
+    sel = []
+    for i in selected_mo:
+      i = i.lower().split(':')
+      if len(i) == 1:
+        sel.append(eval(i[0]))
+      else:
+        i = range(*[eval(j) for j in i])
+        sel.extend(i)
+    return sel
   
   if isinstance(fid_mo_list,str) and fid_mo_list.lower() == 'all_mo':
     selected_mo = numpy.array(numpy.arange(len(mo_spec))+1, dtype=numpy.str)
     mo_in_file = [selected_mo]
     selected_mo_spec = mo_spec
+    selected_mo_ii = numpy.array([i['sym'] for i in selected_mo_spec])
   else:  
     if isinstance(fid_mo_list,str):
       if ',' in fid_mo_list:
@@ -1288,40 +1322,22 @@ def mo_select(mo_spec, fid_mo_list):
             selected_mo[i] = selected_mo[i].replace(a, '%s.' % a)
     
     if sym_select:
-      for i in selected_mo:
-        is_present = False
-        for k in range(len(mo_spec)):
-          if mo_spec[k]['sym'] == i:
-            selected_mo_spec.append(mo_spec[k])
-            selected_mo_ii.append(mo_spec[k]['sym'])
-            is_present = True
-        if not is_present:
-          raise IOError('Cannot find %s in mo_spec' % i)
-      selected_mo_ii = numpy.array(selected_mo_ii)
+      what = lambda x,y: y[x]['sym']
+      selected_mo_spec,selected_mo_ii = assign_selected_mo(selected_mo,
+                                                           mo_spec,
+                                                           strict=strict,
+                                                           what=what)
     else:
-      def get_selection(selected_mo):
-        mo_occup = numpy.array([i['occ_num'] for i in mo_spec])
-        #mo_energ = numpy.array([i['energy'] for i in mo_spec])
-        homo = (mo_occup>0.).nonzero()[0][-1]   + 1 # molden numbering
-        lumo = (mo_occup>0.).nonzero()[0][-1]+1 + 1 # molden numbering
-        sel = []
-        for i in selected_mo:
-          i = i.lower().split(':')
-	  if len(i) == 1:
-            sel.append(eval(i[0]))
-	  else:
-            i = range(*[eval(j) for j in i])
-	    sel.extend(i)
-        return sel
       selected_mo = get_selection(selected_mo)
-      selected_mo = map(int, selected_mo)            
-      selected_mo.sort()
+      if not strict:
+        selected_mo = map(int, selected_mo)            
+        selected_mo.sort()
       selected_mo = map(str, selected_mo)
-      selected_mo_ii = []
-      for k in range(len(mo_spec)):
-        if str(k+1) in selected_mo: 
-          selected_mo_spec.append(mo_spec[k])
-          selected_mo_ii.append(str(k+1))
+      what = lambda x,y: str(x+1)
+      selected_mo_spec,selected_mo_ii = assign_selected_mo(selected_mo,
+                                                           mo_spec,
+                                                           strict=strict,
+                                                           what=what)
       selected_mo = selected_mo_ii
       for i in range(len(mo_in_file)):
         mo_in_file[i] = map(str, get_selection(mo_in_file[i]))
