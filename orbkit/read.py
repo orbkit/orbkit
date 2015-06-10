@@ -22,7 +22,7 @@ GNU Lesser General Public License for more details.
 You should have received a copy of the GNU Lesser General Public 
 License along with orbkit.  If not, see <http://www.gnu.org/licenses/>.
 '''
-
+import os
 import copy
 import numpy
 
@@ -45,7 +45,7 @@ def main_read(filename,itype='molden',all_mo=False,**kwargs):
   **Returns:**
   
     qc (class QCinfo) with attributes geo_spec, geo_info, ao_spec, mo_spec, etot :
-          See `Central Variables`_ for details.
+          See :ref:`Central Variables` for details.
   
   **Note:**
   
@@ -74,7 +74,7 @@ def read_molden(filename, all_mo=False, i_md=-1, interactive=True):
       Specifies the filename for the input file.
     all_mo : bool, optional
       If True, all molecular orbitals are returned.
-    i_mo : int, default=-1
+    i_md : int, default=-1
       Selects the `[Molden Format]` section of the output file.
     interactive : bool
       If True, the user is asked to select the different sets.
@@ -82,7 +82,7 @@ def read_molden(filename, all_mo=False, i_md=-1, interactive=True):
   **Returns:**
   
     qc (class QCinfo) with attributes geo_spec, geo_info, ao_spec, mo_spec, etot :
-        See `Central Variables`_ for details.
+        See :ref:`Central Variables` for details.
   '''
 
   fid    = open(filename,'r')      # Open the file
@@ -116,11 +116,11 @@ def read_molden(filename, all_mo=False, i_md=-1, interactive=True):
   count = 0
   # Go through the file line by line 
   for il in range(len(flines)):
-      line = flines[il]            # The current line as string
-      
-      # Check the file for keywords 
-      if '[Molden Format]' in line:
-        count += 1
+    line = flines[il]            # The current line as string
+    
+    # Check the file for keywords 
+    if '[Molden Format]' in line:
+      count += 1
   
   if count == 0:
     display('The input file %s is no valid molden file!\nIt does' % filename +
@@ -144,6 +144,8 @@ def read_molden(filename, all_mo=False, i_md=-1, interactive=True):
              }
   MO_keys = synonyms.keys()
   
+  count = 0
+  start_reading = False
   # Go through the file line by line 
   for il in range(len(flines)):
     line = flines[il]              # The current line as string
@@ -153,122 +155,129 @@ def read_molden(filename, all_mo=False, i_md=-1, interactive=True):
     if '[Molden Format]' in line:
       # A new file begins 
       # Initialize the variables 
-      qc = QCinfo()
-      sec_flag = False             # A Flag specifying the current section 
-    elif '_ENERGY=' in line:
-      try:
-        qc.etot = float(thisline[1])
-      except IndexError:
-        pass
-    elif '[Atoms]' in line:
-      # The section containing information about 
-      # the molecular geometry begins 
-      sec_flag = 'geo_info'
-      if 'Angs' in line:
-        # The length are given in Angstroem 
-        # and have to be converted to Bohr radii --
-        aa_to_au = 1/0.52917720859
+      if i_md == count:
+        qc = QCinfo()
+        sec_flag = False           # A Flag specifying the current section 
+        start_reading = True       # Found the selected section
       else:
-        # The length are given in Bohr radii 
-        aa_to_au = 1.0
-    elif '[GTO]' in line:
-      # The section containing information about 
-      # the atomic orbitals begins 
-      sec_flag = 'ao_info'
-      bNew = True                  # Indication for start of new AO section
-    elif '[MO]' in line:
-      # The section containing information about 
-      # the molecular orbitals begins 
-      sec_flag = 'mo_info'
-      bNew = True                  # Indication for start of new MO section
-    elif '[STO]' in line:
-      # The orbkit does not support Slater type orbitals 
-      display('orbkit does not work for STOs!\nEXIT\n');
-      raise IOError('Not a valid input file')
-    else:
-      # Check if we are in a specific section 
-      if sec_flag == 'geo_info':
-        # Geometry section 
-        qc.geo_info.append(thisline[0:3])
-        qc.geo_spec.append([float(ii)*aa_to_au for ii in thisline[3:]])
-      if sec_flag == 'ao_info':
-        # Atomic orbital section 
-        def check_int(i):
-          try:
-            int(i)
-            return True
-          except ValueError:
-            return False
-        
-        if thisline == []:
-          # There is a blank line after every AO 
-          bNew = True
-        elif bNew:
-          # The following AOs are for which atom? 
-          bNew = False
-          at_num = int(thisline[0]) - 1
-          ao_num = 0
-        elif len(thisline) == 3 and check_int(thisline[1]):
-          # AO information section 
-          # Initialize a new dict for this AO 
-          ao_num = 0               # Initialize number of atomic orbiatls 
-          ao_type = thisline[0]    # Which type of atomic orbital do we have
-          pnum = int(thisline[1])  # Number of primatives
-          # Calculate the degeneracy of this AO and increase basis_count 
-          for i_ao in ao_type:
-            # Calculate the degeneracy of this AO and increase basis_count 
-            basis_count += l_deg(lquant[i_ao])
-            qc.ao_spec.append({'atom': at_num,
-                            'type': i_ao,
-                            'pnum': pnum,
-                            'coeffs': numpy.zeros((pnum, 2))
-                            })
+        start_reading = False
+      count += 1
+      continue
+    if start_reading:
+      if '_ENERGY=' in line:
+        try:
+          qc.etot = float(thisline[1])
+        except IndexError:
+          pass
+      elif '[Atoms]' in line:
+        # The section containing information about 
+        # the molecular geometry begins 
+        sec_flag = 'geo_info'
+        if 'Angs' in line:
+          # The length are given in Angstroem 
+          # and have to be converted to Bohr radii --
+          aa_to_au = 1/0.52917720859
         else:
-          # Append the AO coefficients 
-          coeffs = numpy.array(line.replace('D','e').split(), dtype=numpy.float64)
-          for i_ao in range(len(ao_type)):
-            qc.ao_spec[-len(ao_type)+i_ao]['coeffs'][ao_num,:] = [coeffs[0],
-                                                               coeffs[1+i_ao]]
-          ao_num += 1
-      if sec_flag == 'mo_info':
-        # Molecular orbital section 
-        if '=' in line:
-          # MO information section 
-          if bNew:
-            # Create a numpy array for the MO coefficients and 
-            # for backward compability create a simple counter for 'sym'
-            qc.mo_spec.append({'coeffs': numpy.zeros(basis_count),
-                               'sym': '%d.1' % (len(qc.mo_spec)+1)})
-            bNew = False
-          # Append information to dict of this MO 
-          info = line.replace('\n','').replace(' ','')
-          info = info.split('=')
-          if info[0] in MO_keys: 
-            if info[0] != 'Sym':
-              info[1] = float(info[1])
-            elif not '.' in info[1]:
-              from re import search
-              a = search(r'\d+', info[1]).group()
-              if a == info[1]:
-                info[1] = '%s.1' % a
-              else:
-                info[1] = info[1].replace(a, '%s.' % a)
-            qc.mo_spec[-1][synonyms[info[0]]] = info[1]
-        else:
-          if ('[' or ']') in line:
-            # start of another section that is not (yet) read
-            sec_flag = None
-          else:
-            # Append the MO coefficients 
-            bNew = True            # Reset bNew
-            index = int(thisline[0])-1
-            try: 
-              # Try to convert coefficient to float 
-              qc.mo_spec[-1]['coeffs'][index] = float(thisline[1])
+          # The length are given in Bohr radii 
+          aa_to_au = 1.0
+      elif '[GTO]' in line:
+        # The section containing information about 
+        # the atomic orbitals begins 
+        sec_flag = 'ao_info'
+        bNew = True                  # Indication for start of new AO section
+      elif '[MO]' in line:
+        # The section containing information about 
+        # the molecular orbitals begins 
+        sec_flag = 'mo_info'
+        bNew = True                  # Indication for start of new MO section
+      elif '[STO]' in line:
+        # The orbkit does not support Slater type orbitals 
+        display('orbkit does not work for STOs!\nEXIT\n');
+        raise IOError('Not a valid input file')
+      else:
+        # Check if we are in a specific section 
+        if sec_flag == 'geo_info':
+          # Geometry section 
+          qc.geo_info.append(thisline[0:3])
+          qc.geo_spec.append([float(ii)*aa_to_au for ii in thisline[3:]])
+        if sec_flag == 'ao_info':
+          # Atomic orbital section 
+          def check_int(i):
+            try:
+              int(i)
+              return True
             except ValueError:
-              # If it cannot be converted print error message 
-              display('Error in coefficient %d of MO %s!' % (index, 
-                qc.mo_spec[-1]['sym']) + '\nSetting this coefficient to zero...')
+              return False
+          
+          if thisline == []:
+            # There is a blank line after every AO 
+            bNew = True
+          elif bNew:
+            # The following AOs are for which atom? 
+            bNew = False
+            at_num = int(thisline[0]) - 1
+            ao_num = 0
+          elif len(thisline) == 3 and check_int(thisline[1]):
+            # AO information section 
+            # Initialize a new dict for this AO 
+            ao_num = 0               # Initialize number of atomic orbiatls 
+            ao_type = thisline[0]    # Which type of atomic orbital do we have
+            pnum = int(thisline[1])  # Number of primatives
+            # Calculate the degeneracy of this AO and increase basis_count 
+            for i_ao in ao_type:
+              # Calculate the degeneracy of this AO and increase basis_count 
+              basis_count += l_deg(lquant[i_ao])
+              qc.ao_spec.append({'atom': at_num,
+                              'type': i_ao,
+                              'pnum': pnum,
+                              'coeffs': numpy.zeros((pnum, 2))
+                              })
+          else:
+            # Append the AO coefficients 
+            coeffs = numpy.array(line.replace('D','e').split(), dtype=numpy.float64)
+            for i_ao in range(len(ao_type)):
+              qc.ao_spec[-len(ao_type)+i_ao]['coeffs'][ao_num,:] = [coeffs[0],
+                                                                coeffs[1+i_ao]]
+            ao_num += 1
+        if sec_flag == 'mo_info':
+          # Molecular orbital section 
+          if '=' in line:
+            # MO information section 
+            if bNew:
+              # Create a numpy array for the MO coefficients and 
+              # for backward compability create a simple counter for 'sym'
+              qc.mo_spec.append({'coeffs': numpy.zeros(basis_count),
+                                'sym': '%d.1' % (len(qc.mo_spec)+1)})
+              bNew = False
+            # Append information to dict of this MO 
+            info = line.replace('\n','').replace(' ','')
+            info = info.split('=')
+            if info[0] in MO_keys: 
+              if info[0] != 'Sym':
+                info[1] = float(info[1])
+              elif not '.' in info[1]:
+                from re import search
+                a = search(r'\d+', info[1]).group()
+                if a == info[1]:
+                  info[1] = '%s.1' % a
+                else:
+                  info[1] = info[1].replace(a, '%s.' % a)
+              qc.mo_spec[-1][synonyms[info[0]]] = info[1]
+          else:
+            if ('[' or ']') in line:
+              # start of another section that is not (yet) read
+              sec_flag = None
+            else:
+              # Append the MO coefficients 
+              bNew = True            # Reset bNew
+              index = int(thisline[0])-1
+              try: 
+                # Try to convert coefficient to float 
+                qc.mo_spec[-1]['coeffs'][index] = float(thisline[1])
+              except ValueError:
+                # If it cannot be converted print error message 
+                display('Error in coefficient %d of MO %s!' % (index, 
+                  qc.mo_spec[-1]['sym']) + '\nSetting this coefficient to zero...')
   
   # Are all MOs requested for the calculation? 
   if not all_mo:
@@ -298,7 +307,7 @@ def read_gamess(filename, all_mo=False,read_properties=False):
   **Returns:**
   
     qc (class QCinfo) with attributes geo_spec, geo_info, ao_spec, mo_spec, etot :
-        See `Central Variables`_ for details.
+        See :ref:`Central Variables` for details.
   '''
   # Initialize the variables 
   qc = QCinfo()
@@ -590,7 +599,7 @@ def read_gaussian_fchk(filename, all_mo=False):
   **Returns:**
   
     qc (class QCinfo) with attributes geo_spec, geo_info, ao_spec, mo_spec, etot :
-        See `Central Variables`_ for details.
+        See :ref:`Central Variables` for details.
   '''
 
   fid    = open(filename,'r')   # Open the file
@@ -808,7 +817,7 @@ def read_gaussian_log(filename,all_mo=False,orientation='standard',
   **Returns:**
   
     qc (class QCinfo) with attributes geo_spec, geo_info, ao_spec, mo_spec, etot :
-        See `Central Variables`_ for details.
+        See :ref:`Central Variables` for details.
 
 .. [#first] Attention: The MOs in the output are only valid for the standard orientation!
 
@@ -1096,7 +1105,7 @@ def read_wfn(filename, all_mo=False):
   **Returns:**
   
     qc (class QCinfo) with attributes geo_spec, geo_info, ao_spec, mo_spec, etot :
-        See `Central Variables`_ for details.
+        See :ref:`Central Variables` for details.
   '''
   aa_to_au = 1/0.52917720859
   # Initialize the variables 
@@ -1177,7 +1186,7 @@ def mo_select(mo_spec, fid_mo_list, strict=False):
   **Parameters:**
    
     mo_spec :        
-      See `Central Variables`_ for details.
+      See :ref:`Central Variables` for details.
     strict : bool, optional
       If True, orbkit will follow strictly the fid_mo_list, i.e., the order of 
       the molecular orbitals will be kept and multiple occurrences of items 
@@ -1190,22 +1199,24 @@ def mo_select(mo_spec, fid_mo_list, strict=False):
 
   **Supported Formats:**
   
-    Integer List:
+    Integer List::
     
-      .. literalinclude:: ../examples/MO_List_int.tab
-            :language: bash
+      1       2       3
+      5       4
+      homo    lumo+2:lumo+4
     
-    List with Symmetry Labels:
+    List with Symmetry Labels::
     
-      .. literalinclude:: ../examples/MO_List.tab
-            :language: bash
-
+      1.1     2.1     1.3
+      1.1     4.1
+      4.1     2.3     2.1
+  
   **Returns:**
   
     Dictionary with following Members:
       :mo: - List of molecular orbital labels.
       :mo_ii: - List of molecular orbital indices.
-      :mo_spec: - Selected elements of mo_spec. See `Central Variables`_ for details.
+      :mo_spec: - Selected elements of mo_spec. See :ref:`Central Variables` for details.
       :mo_in_file: - List of molecular orbital labels within the fid_mo_list file.
       :sym_select: - If True, symmetry labels have been used. 
       
@@ -1213,7 +1224,6 @@ def mo_select(mo_spec, fid_mo_list, strict=False):
   display('\nProcessing molecular orbital list...')
   
   mo_in_file = []
-  all_mo = []
   selected_mo = []
   sym_select = False
   
@@ -1253,30 +1263,18 @@ def mo_select(mo_spec, fid_mo_list, strict=False):
     mo_in_file = [selected_mo]
     selected_mo_spec = mo_spec
     selected_mo_ii = numpy.array([i['sym'] for i in selected_mo_spec])
-  else:  
-    if isinstance(fid_mo_list,str):
+  else:
+    if isinstance(fid_mo_list,str) and not os.path.exists(fid_mo_list):
       if ',' in fid_mo_list:
         fid_mo_list = fid_mo_list.split(',')
       else:
-        try:
-	  if fid_mo_list != 'homo' and fid_mo_list != 'lumo':
-            i = fid_mo_list.split('.')[0]
-	    for r in ['homo','lumo','-','+',':']:
-              i = i.replace(r,'')
-            int(i)
-	  fid_mo_list = [fid_mo_list]
-	except ValueError:
-          pass
+        fid_mo_list = [fid_mo_list]
     if isinstance(fid_mo_list, list):
-      if any(isinstance(i, list) for i in fid_mo_list):
-        for i in fid_mo_list:
-          if not isinstance(i, list):
-            i = i.split(',') if isinstance(i,str) else [i]
-          selected_mo.extend(map(str,i))
-          mo_in_file.append(map(str,i))
-      else:
-        selected_mo.extend(fid_mo_list)
-        mo_in_file.append(map(str, fid_mo_list))
+      for i in fid_mo_list:
+        if not isinstance(i, list):
+          i = i.split(',') if isinstance(i,str) else [i]
+        selected_mo.extend(map(str,i))
+        mo_in_file.append(map(str,i))
     else:
       try:
         fid=open(fid_mo_list,'r')
@@ -1285,8 +1283,7 @@ def mo_select(mo_spec, fid_mo_list, strict=False):
         for line in flines:
           integer = line.replace(',',' ').split()
           mo_in_file.append(integer)
-          all_mo = all_mo + integer
-        selected_mo=list(set(all_mo))
+          selected_mo.extend(integer)
       except:
         raise IOError('The selected mo-list (%(m)s) is not valid!' % 
                       {'m': fid_mo_list} + '\ne.g.\n\t1\t3\n\t2\t7\t9\n')
@@ -1297,10 +1294,12 @@ def mo_select(mo_spec, fid_mo_list, strict=False):
     
     # Check if the molecular orbitals are specified by symmetry 
     # (e.g. 1.1 in MOLPRO nomenclature) or 
-    # by the number in the molden file (e.g. 1)
+    # by the number in the input file (e.g. 1)
     
     try: # Try to convert selections into integer
       for i in selected_mo:
+        if isinstance(i,int):
+          continue
         if i == 'homo' or i == 'lumo':
           i += '+0'
 	for r in ['homo','lumo','-','+',':']:
@@ -1308,18 +1307,16 @@ def mo_select(mo_spec, fid_mo_list, strict=False):
         int(i)
     except ValueError:
       sym_select = True
-      # Add '.' after molecular orbital number if missing
+      errors = []
       for i in range(len(selected_mo)):
         if not '.' in selected_mo[i]:
-          from re import search
-	  try:
-            a = search(r'\d+', selected_mo[i]).group()
-	  except AttributeError:
-            raise IOError('Cannot convert `%s` to integer.' % selected_mo[i])
-	  if a == selected_mo[i]:
-            selected_mo[i] = '%s.1' % a
-          else:
-            selected_mo[i] = selected_mo[i].replace(a, '%s.' % a)
+          errors.append(i)      
+      if errors:
+        err = [selected_mo[i] for i in errors]
+        raise IOError('`%s` are no valid labels according '% ', '.join(err) +
+                      'to the MOLPRO nomenclature, e.g., `5.1` or `5.A1`.' +
+                      '\n\tHint: You cannot mix integer numbering and MOLPRO\'s ' +
+                      'symmetry labels')
     
     if sym_select:
       what = lambda x,y: y[x]['sym']
@@ -1329,6 +1326,7 @@ def mo_select(mo_spec, fid_mo_list, strict=False):
                                                            what=what)
     else:
       selected_mo = get_selection(selected_mo)
+      
       if not strict:
         selected_mo = map(int, selected_mo)            
         selected_mo.sort()
@@ -1341,9 +1339,9 @@ def mo_select(mo_spec, fid_mo_list, strict=False):
       selected_mo = selected_mo_ii
       for i in range(len(mo_in_file)):
         mo_in_file[i] = map(str, get_selection(mo_in_file[i]))
-  
+    
     # Print some information
-    display('The following orbitals will be considered...')
+    display('\nThe following orbitals will be considered...')
     for i,j in enumerate(mo_in_file):
       display('\tLine %d: %s' % (i+1,str(j)))
   

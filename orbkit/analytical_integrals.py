@@ -33,14 +33,14 @@ def get_ao_overlap(coord_a,coord_b,ao_spec,lxlylz_b=None,contraction=True,drv=No
   
   coord_a : geo_spec
      Specifies the geometry of the `Bra` basis set. 
-     See `Central Variables`_ in the manual for details.
+     See :ref:`Central Variables` in the manual for details.
   
   coord_b : geo_spec
      Specifies the geometry of the `Ket` basis set. 
-     See `Central Variables`_ in the manual for details.
+     See :ref:`Central Variables` in the manual for details.
   
   ao_spec : 
-     See `Central Variables`_ in the manual for details.
+     See :ref:`Central Variables` in the manual for details.
   
   lxlylz_b : numpy.ndarray, dtype=numpy.int64, shape = (N_primitve_AO,3), optional
     Contains the expontents lx, ly, lz for the primitive Cartesian Gaussians of
@@ -135,7 +135,7 @@ def contract_ao_overlap_matrix(ao_uncontracted,ao_spec):
     Contains the uncontracted overlap matrix.
   
   ao_spec : 
-     See `Central Variables`_ in the manual for details.
+     See :ref:`Central Variables` in the manual for details.
   
   **Returns:**
   
@@ -239,10 +239,10 @@ def get_mo_overlap_matrix(mo_a,mo_b,ao_overlap_matrix,numproc=1):
   
   **Parameters:**
   
-  mo_a : numpy.ndarray with shape = (NMO,NAO) or mo_spec (cf. `Central Variables`_)
+  mo_a : numpy.ndarray with shape = (NMO,NAO) or mo_spec (cf. :ref:`Central Variables`)
      Contains the molecular orbital coefficients of all `Bra` orbitals.
   
-  mo_b : numpy.ndarray with shape = (NMO,NAO) or mo_spec (cf. `Central Variables`_)
+  mo_b : numpy.ndarray with shape = (NMO,NAO) or mo_spec (cf. :ref:`Central Variables`)
      Contains the molecular orbital coefficients of all `Ket` orbitals.
   
   ao_overlap_matrix : numpy.ndarray, shape = (NAO,NAO)
@@ -298,7 +298,7 @@ def get_dipole_moment(qc,component=['x','y','z']):
   **Parameters:**
   
   qc : class
-    QCinfo class. (See `Central Variables`_ for details.)
+    QCinfo class. (See :ref:`Central Variables` for details.)
   component : string or list of strings, {'x','y', or 'z'}
     Specifies the compontent(s) of the dipole moment which shall be computed.
   
@@ -333,7 +333,7 @@ def get_ao_dipole_matrix(qc,component='x'):
   **Parameters:**
   
   qc : class
-    QCinfo class. (See `Central Variables`_ for details.)
+    QCinfo class. (See :ref:`Central Variables` for details.)
   component : int or string, {'x','y', 'z', 0, 1, 2}
     Specifies the compontent of the dipole moment operator which shall be applied.
   
@@ -378,7 +378,7 @@ def get_nuclear_dipole_moment(qc,component='x'):
   **Parameters:**
   
   qc : class
-    QCinfo class. (See `Central Variables`_ for details.)
+    QCinfo class. (See :ref:`Central Variables` for details.)
   component : int or string, {'x','y', 'z', 0, 1, 2}
     Specifies the compontent of the dipole moment operator which shall be applied.
   
@@ -404,7 +404,7 @@ def get_lxlylz(ao_spec):
   **Parameters:**
   
   ao_spec : 
-     See `Central Variables`_ in the manual for details.
+     See :ref:`Central Variables` in the manual for details.
   
   **Returns:**
   
@@ -423,7 +423,7 @@ def get_lxlylz(ao_spec):
 
 def is_mo_spec(mo):
   '''Checks if :literal:`mo` is of :literal:`mo_spec` type. 
-  (See `Central Variables`_ for details.)'''
+  (See :ref:`Central Variables` for details.)'''
   if not isinstance(mo,list):
     return False
   return_val = True
@@ -440,7 +440,7 @@ def create_mo_coeff(mo,name='mo'):
   
   **Parameters:**
   
-  mo : list, numpy.ndarray, or mo_spec (cf. `Central Variables`_)
+  mo : list, numpy.ndarray, or mo_spec (cf. :ref:`Central Variables`)
     Contains the molecular orbital coefficients of all orbitals.
   name : string, optional
     Contains a string describing the input variable. 

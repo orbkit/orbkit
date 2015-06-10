@@ -32,9 +32,9 @@ from orbkit.read import main_read
 from orbkit.display import display,init_display
 from orbkit.analytical_integrals import get_ao_overlap, get_mo_overlap_matrix
 
-geo_spec_all  = [] #: Contains all molecular geometries, i.e., :literal:`geo_spec`. (See `Central Variables`_ for details.)
-geo_info      = [] #: See `Central Variables`_ for details.
-ao_spec       = [] #: See `Central Variables`_ for details.
+geo_spec_all  = [] #: Contains all molecular geometries, i.e., :literal:`geo_spec`. (See :ref:`Central Variables` for details.)
+geo_info      = [] #: See :ref:`Central Variables` for details.
+ao_spec       = [] #: See :ref:`Central Variables` for details.
 mo_coeff_all  = [] #: Contains all molecular orbital coefficients. List of numpy.ndarray
 mo_energy_all = [] #: Contains all molecular orbital energies. List of numpy.ndarray
 mo_occ_all    = [] #: Contains all molecular orbital occupations. List of numpy.ndarray
@@ -769,15 +769,15 @@ def interpolate_all(x,xnew,k=3,**kwargs):
       tmp[:,i] = data_interp(x,mo_occ_all[i_mo][:,i],xnew,k=k,**kwargs)
     mo_occ_all[i_mo] = numpy.copy(tmp)
 
-def plot(mo_matrix,symmetry='1',title='All',x_label='${\\sf index}$',
+def plot(mo_matrix,symmetry='1',title='All',x_label='index',
          y_label='MO coefficients',output_format='png',
-         plt_dir='Plots',ylim=[-5, 5],thresh=0.1,x0=0,grid=True,x_grid=None,**kwargs):
+         plt_dir='Plots',ylim=None,thresh=0.1,x0=0,grid=True,x_grid=None,**kwargs):
   '''Plots all molecular orbital coefficients of one symmetry.'''
   import pylab as plt
   from matplotlib.ticker import MultipleLocator
   import os
   
-  display('Plotting data of symmetry %s to %s' % (symmetry,plt_dir))
+  display('Plotting data of symmetry %s to %s/' % (symmetry,plt_dir))
   if not os.path.exists(plt_dir):
     os.makedirs(plt_dir)
   
@@ -801,7 +801,7 @@ def plot(mo_matrix,symmetry='1',title='All',x_label='${\\sf index}$',
       else:
         X = x_grid
       if max(numpy.abs(Y)) > thresh:
-        curves.append(ax.plot(X,Y, colors[ij%len(colors)]+'-' ,linewidth=1.5))
+        curves.append(ax.plot(X,Y, colors[ij%len(colors)]+'.-' ,linewidth=1.5))
     
     
     plt.xlabel(x_label, fontsize=16);
@@ -832,36 +832,56 @@ def plot(mo_matrix,symmetry='1',title='All',x_label='${\\sf index}$',
   else:
     raise ValueError('output_format `%s` is not supported' % output_format)
 
-def show_selected_mos(selected_mos,r0=0,steps=1,
-                      N_=None,max_=None,min_=None):
+def show_selected_mos(selected_mos,r0=0,steps=1,select_slice='xz',where=0.0,
+                      npts=[26,51],minpts=[-3,-6],maxpts=[3,6],nuclear_pos='x'):
   '''Uses orbkit to compute selected molecular orbitals and plots it with
   :func:`contour_mult_mo`.'''
   from orbkit import grid
   from orbkit.core import ao_creator,mo_creator
   r = range(r0,r0+steps)
-  # Set grid parameters 
-  grid.N_   = [  26,   1,  51] if N_   is None else N_
-  grid.max_ = [ 3.0,   0,   6] if max_ is None else max_
-  grid.min_ = [-3.0,   0,  -6] if min_ is None else min_
   
-  if grid.N_[1] != 1:
-    raise ValueError('show_selected_mos currently only supports an xz slice.' +
-                     'N_[1] has to be 1. Please use contour_mult_mo directly,' + 
-                     'if you want a different 2D-slice.')
+  grid.N_ = [1,1,1]
+  grid.min_ = [0,0,0]
+  grid.max_ = [0,0,0]
+  if select_slice == 'xy':
+    k = [0,1]
+    grid.min_[2] += where
+    grid.max_[2] += where
+  elif select_slice == 'yz':
+    k = [1,2]
+    grid.min_[0] += where
+    grid.max_[0] += where
+  elif select_slice == 'xz':
+    k = [0,2]
+    grid.min_[1] += where
+    grid.max_[1] += where
+  else:
+    raise ValueError('`show_selected_mos` currently only' + 
+                     'supports slices parallel to the following planes:' +
+                     'select_slice = `xy`, `yz`, or `xz`')
+  for i,j in enumerate(k):
+    grid.N_[j] = npts[i]
+    grid.min_[j] = minpts[i]
+    grid.max_[j] = maxpts[i]
   
   # Initialize grid
   grid.is_initialized = False
-  grid.grid_init()
+  grid.grid_init(force=True)
+  xyz = grid.x,grid.y,grid.z
   for mo_sel in selected_mos:
     i,j = mo_sel.split('.')
     mo = []
     for rr in r:
       ao_list = ao_creator(geo_spec_all[rr],ao_spec)
       mo.append(mo_creator(ao_list,None,
-                mo_coeff=mo_coeff_all[sym[j]][rr,int(i)-1,numpy.newaxis])[0][:,0,:])
+                mo_coeff=mo_coeff_all[sym[j]][rr,int(i)-1,numpy.newaxis])[0].reshape(tuple(npts)))
     
-    contour_mult_mo(grid.x,grid.z,mo,xlabel='x',ylabel='z',
+    f, pics = contour_mult_mo(xyz[k[0]],xyz[k[1]],mo,
+                    xlabel=select_slice[0],ylabel=select_slice[1],
                     title='MO:%s' % mo_sel,r0=r0)
+    for i,pic in enumerate(pics):
+      pic.plot(geo_spec_all[rr,:,k[1]],geo_spec_all[rr,:,k[0]],nuclear_pos,
+               markersize=10,markeredgewidth=2)
 
 def contour_mult_mo(x,y,mo,xlabel='x',ylabel='y',title='',r0=0):
   '''Uses matplotlib to show slices of a molecular orbitals.'''
@@ -877,7 +897,9 @@ def contour_mult_mo(x,y,mo,xlabel='x',ylabel='y',title='',r0=0):
     pic.contourf(\
         y,x,mo[i],50,cmap=plt.cm.rainbow,vmax=vmax,vmin=-vmax)
     pic.set_ylabel(xlabel)  
+    pic.set_xlabel(ylabel)  
     pic.set_title('Data Point %d' % (r0+i))
   
   f.subplots_adjust(left=0.15,bottom=0.05,top=0.95,right=0.95)
   f.show()
+  return f,pics

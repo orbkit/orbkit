@@ -88,7 +88,7 @@ def get_grid(start='\t'):
   '''Returns a string describing the current x-, y-, z-grid.
   '''
   coord = ['x', 'y', 'z']
-  grid = [x,y,z]
+  grid = [x, y, z]
   display = ''
   for ii in range(3):
     display += ('%(s)s%(c)smin = %(min).2f %(c)smax = %(max).2f N%(c)s = %(N)d ' % 
@@ -102,6 +102,11 @@ def get_grid(start='\t'):
   
   return display
   # get_grid 
+
+def todict():
+  '''Returns a dictionary containing the current x-, y-, z-grid.
+  '''
+  return {'x': x, 'y': y, 'z': z}
 
 def set_grid(grid):
   '''Returns a string describing the current x-, y-, z-grid.
@@ -158,15 +163,6 @@ def set_grid(grid):
   
   return info_string
   # set_grid 
-
-def reset_grid():
-  '''Resets the grid parameters.'''
-  global is_initialized, min_, max_, N_
-  is_initialized = False
-  min_ = [-8.0, -8.0, -8.0]
-  max_ = [ 8.0,  8.0,  8.0]
-  N_   = [ 101,  101,  101]
-  # reset_grid 
 
 def grid2vector():
   '''Converts the regular grid characterized by x-, y-, z-vectors
@@ -249,6 +245,32 @@ def vector2grid(Nx=None,Ny=None,Nz=None):
   return 0
   # vector2grid 
   
+def matrix_grid2vector(matrix=None): 
+  '''Converts the (Nx,Ny,Nz) data matrix back to the regular grid (Nx,Nz,Ny)
+  '''
+  
+  # Initialize matrix (Nx*Ny*Nz)
+  vecmatrix = numpy.zeros((numpy.shape(matrix)[0]*numpy.shape(matrix)[1]*numpy.shape(matrix)[2]))
+  
+  matrix_code = """
+  int count=0;
+  for (int i=0; i<Nmatrix[0]; i++)
+  {
+    for (int j=0; j<Nmatrix[1]; j++)
+    {
+      for (int k=0; k<Nmatrix[2]; k++)
+      {
+        VECMATRIX1(count) = MATRIX3(i,j,k);
+        count += 1;
+      }  
+    }
+  }
+  """
+  weave.inline(matrix_code, ['vecmatrix','matrix'], verbose = 1, support_code = cSupportCode.math)
+
+  return vecmatrix
+  # matrix_grid2vector
+
 def matrix_vector2grid(matrix=None,Nx=None,Ny=None,Nz=None): 
   '''Converts the (Nx*Ny*Nz) data matrix back to the (Nx,Nz,Ny)
   '''
@@ -281,7 +303,10 @@ def matrix_vector2grid(matrix=None,Nx=None,Ny=None,Nz=None):
 def mv2g(**kwargs):
   '''Converts all `numpy.ndarrays` from passed to the keyword arguments 
   (`**kwargs`) from a vector grid of `shape=(..., Nx*Ny*Nz, ...,)` to a regular 
-  grid of `shape=(..., Nx, Ny, Nz, ...,)` and returns it as a dictionary.  
+  grid of `shape=(..., Nx, Ny, Nz, ...,)` and returns it as a dictionary.
+  
+  Hint: The global values for the grid dimensionality, i.e., :mod:`grid.N_`,
+  are used for reshaping.
   '''
   import itertools
   return_val = {}
@@ -297,32 +322,6 @@ def mv2g(**kwargs):
                                           **dict(zip(['Nx','Ny','Nz'],N_)))
   
   return return_val 
-
-def matrix_grid2vector(matrix=None): 
-  '''Converts the (Nx,Ny,Nz) data matrix back to the regular grid (Nx,Nz,Ny)
-  '''
-  
-  # Initialize matrix (Nx*Ny*Nz)
-  vecmatrix = numpy.zeros((numpy.shape(matrix)[0]*numpy.shape(matrix)[1]*numpy.shape(matrix)[2]))
-  
-  matrix_code = """
-  int count=0;
-  for (int i=0; i<Nmatrix[0]; i++)
-  {
-    for (int j=0; j<Nmatrix[1]; j++)
-    {
-      for (int k=0; k<Nmatrix[2]; k++)
-      {
-        VECMATRIX1(count) = MATRIX3(i,j,k);
-        count += 1;
-      }  
-    }
-  }
-  """
-  weave.inline(matrix_code, ['vecmatrix','matrix'], verbose = 1, support_code = cSupportCode.math)
-
-  return vecmatrix
-  # matrix_grid2vector
 
 def grid_sym_op(grid=None,symop=None,is_vector=None):
   '''Executes given symmetry operation on vector grid 
@@ -470,7 +469,7 @@ def random_grid(geo_spec,N=1e6,scale=0.5):
   **Parameters:**
 
     geo_spec : 
-        See `Central Variables`_ for details.
+        See :ref:`Central Variables` for details.
     N : int
         Number of points distributed around each atom
     scale : float
@@ -516,15 +515,29 @@ def read(filename, comment='#'):
 
   **Supported Formats:**
   
-    Regular Grid:
+    Regular Grid::
     
-      .. literalinclude:: ../examples/grid_reg.txt
-            :language: bash
+      # Regular Grid Example File
+      # Format:
+      # x xmin xmax Nx
+      # y ymin ymax Ny
+      # z zmin zmax Nz
+      
+      x -5 5 101
+      y -2 2  51
+      z  0 0   1 
     
-    Vector Grid:
+    Vector Grid::
     
-      .. literalinclude:: ../examples/grid_vec.txt
-            :language: bash
+      # Vectorized Grid Example File
+      # The header 'x y z' is mandatory!
+
+      x       y       z
+      -5      -5      0
+      -4      -5      0
+      -3      -5      0
+      0       0       0
+      2       -1e-1   9.78
   
   **Hint:** If a line starts with '#', it will be skipped. Please, do not use '#' at the end of a line!
   '''
@@ -581,7 +594,7 @@ def adjust_to_geo(qc,extend=5.0,step=0.1):
   **Parameters:**
   
   qc : QCinfo class
-    See `Central Variables`_ for details.
+    See :ref:`Central Variables` for details.
   extend : float
     Specifies the value by which the grid boundaries are extended in each 
     direction.
@@ -640,6 +653,16 @@ def center_grid(ac,display=sys.stdout.write):
   
   return 0
   # center_grid 
+
+def reset_grid():
+  '''Resets the grid parameters.'''
+  global is_initialized, min_, max_, N_
+  is_initialized = False
+  is_vector = False  
+  min_ = [-8.0, -8.0, -8.0]
+  max_ = [ 8.0,  8.0,  8.0]
+  N_   = [ 101,  101,  101]
+  # reset_grid 
 
 # Default values for the grid parameters 
 min_ = [-8.0, -8.0, -8.0]   #: Specifies minimum grid values (regular grid).

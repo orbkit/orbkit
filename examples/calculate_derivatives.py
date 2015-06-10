@@ -16,7 +16,7 @@ import numpy as np
 
 # import the functions of orbkit (import function 
 # ok that imports all other functions)
-from orbkit import ok
+import orbkit as ok
 
 # defining some grid in spherical coordinates
 r     = np.arange(0.1,    3.,              0.2)
@@ -24,7 +24,7 @@ theta = np.arange(0,      np.pi+0.1, np.pi/10.)
 phi   = np.arange(-np.pi, np.pi+0.1, np.pi/10.)
 
 # initialize orbkit with default parameters and options
-ok.main.init()
+ok.init()
 
 # Setting up a spherical grid -> also sets option for vector grid
 ok.grid.sph2cart_vector(r,theta,phi)
@@ -44,7 +44,7 @@ ok.options.drv        = None           # do not calculate derivative
 ok.options.no_output  = True           # we will create our own output
 
 # run orbkit
-mo_list,mo = ok.main.main()
+mo_list,mo = ok.run_orbkit()
 
 # create output: molecular orbital data
 ok.output.HDF5_creator(\
@@ -60,7 +60,7 @@ ok.options.drv       = ['x', 'y', 'z'] # calculate derivatives along x, y and z
 ok.options.no_output = True            # we will create our own output
 
 # run orbkit
-delta_mo_list,mo = ok.main.main()
+delta_mo_list,mo = ok.run_orbkit()
 
 # append output: derivative data
 ok.output.HDF5_creator(delta_mo_list,ok.options.outputname,None,None,

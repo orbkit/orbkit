@@ -1,3 +1,5 @@
+.. _installation-instructions:
+
 Installation Instructions for orbkit
 ====================================
 
@@ -19,51 +21,59 @@ The package h5py is not mandatory but strongly recommended.
 Installation
 ------------
 
-Currently, no setup.py file is available. So, if you want to use orbkit as a 
-standalone program or a Python module, a manual installation is prerequisite. 
-An instruction for linux using bash follows in the subsequent section.
+orbkit has to be manually installed. This is a simple procedure and can 
+be carried out in Linux using ``bash`` as follows:
 
-Two ways will be described: An installation via git and an installation 
-using the tarball provided.
+Choose the directory, where you want to install orbkit. Open a terminal window, 
+e.g. ``gnome-terminal``, and navigate to this directory. In this example we 
+will use the home directory. If you use a different directory simply replace 
+``$HOME`` by your preferred folder throughout the whole section.
 
-First, choose the directory, where you want to install orbkit. 
-In this example we will use the home directory.
-Second, follow the subsequent instructions either for git or for tarball. 
+    .. code-block:: bash
 
-- Using git:
-  Clone the repository and set a path variable for orbkit to that directory:
+        $ cd $HOME
 
-.. code-block:: bash
+Get a copy of orbkit, either with `git`_ or using a `tarball`_. It is strongly
+recommended to use `git`_, since this version always contains the newest 
+bug fixes and features. If git is not available on your system, the newest 
+version can additionally be cloned from http://sourceforge.net/p/orbkit/code.
 
-    $ cd $HOME
-    $ git clone http://git.code.sf.net/p/orbkit/code orbkit
-    $ export ORBKITPATH=$HOME/orbkit
+  .. _git:
 
-- Using a tarball:
-  Download the latest orbkit release, extract the file (`v0.2.0` has to be replaced
-  by your version number), and set a path variable for orbkit to that directory:
+  * Using **git**:
 
-.. code-block:: bash
+    Clone the repository:
 
-    $ cd $HOME
-    $ wget http://sourceforge.net/projects/orbkit/files/latest/download 
-    $ tar xzvf orbkit.v0.2.0.tar.gz
-    $ export ORBKITPATH=$HOME/orbkit
+    .. code-block:: bash
 
-**orbkit Modules:**
+        $ git clone http://git.code.sf.net/p/orbkit/code orbkit
 
-In order to use orbkit, you must add the orbkit directory to your PYTHONPATH 
+  .. _tarball:
+
+  * Using a **tarball**:
+
+    Download the latest orbkit release and extract the file (``v0.2.0`` has to be 
+    replaced by your version number):
+
+    .. code-block:: bash
+
+        $ wget http://sourceforge.net/projects/orbkit/files/latest/download 
+        $ tar xzvf orbkit.v0.2.0.tar.gz
+
+In order to use orbkit, you have to add the orbkit directory to your ``PYTHONPATH``
 environment variable either temporarily by typing
 
 .. code-block:: bash
 
+    $ export ORBKITPATH=$HOME/orbkit
     $ export PYTHONPATH=$PYHONPATH:$ORBKITPATH
 
-or permanently by adding this line to your ~/.bashrc file.
+or permanently by adding these lines to your ~/.bashrc file.
 
-To use the orbkit standalone program, you have to modify additionally your PATH 
-variable in the same way:
+To use orbkit as a standalone program, you have to modify your 
+``PATH`` variable in the same way:
 
 .. code-block:: bash
 
+    $ export ORBKITPATH=$HOME/orbkit
     $ export PATH=$PATH:$ORBKITPATH/tools

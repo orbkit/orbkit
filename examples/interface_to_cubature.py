@@ -10,17 +10,17 @@ from orbkit.analytical_integrals import get_ao_overlap,get_mo_overlap
 from time import time
 import resource
 
-create_plot = False #: Warning! Do not create plots when using a high precision.
+create_plot = False     #: Warning! Do not create plots when using a high precision.
 save_data_values = False #: Saves the grid and output values computed. This requires more RAM and time.
 
 # create_plot needs the data values
 if create_plot and not save_data_values:
   save_data_values = True
 
-vector = 1e4
-numproc = 4
+vector = 1e4            #: Specifies number of points per subprocess.
+numproc = 4             #: Specifies number of subprocesses.
 
-in_fid  = 'h2o.md'
+in_fid  = 'h2o.md'      #: Specifies input file name.
 
 # Open molden file and read parameters
 qc = read.main_read(in_fid,itype='molden',all_mo=False)
@@ -40,6 +40,7 @@ print('Analytical Integral: %.12f' % analytical_integral)
 # Disable orbkit terminal output for each run
 options.quiet = True
 options.no_log = True
+
 
 # Initialize some variables
 t = [time()]
@@ -66,6 +67,10 @@ def func(x_array,*args):
     |  If True, computes the molecular orbkitals, and integrates their squared
     |  values iteratively.
   
+  ** Returns:**
+  
+  out : 1-D numpy.ndarray, shape[0]=ndim*npt if vectorized=True else ndim
+    Contains the output data.  
   '''
   global count_calls,vec,rho,vec_mo,mos
   
@@ -86,6 +91,10 @@ def func(x_array,*args):
     
     count_calls += 1
   
+  # We have already initialized a grid for orbkit
+  grid.is_initialized = True
+  
+  # Run orbkit
   out = core.rho_compute(qc,
                          calc_mo=args[-1],
                          vector=vector,
@@ -106,30 +115,48 @@ def func(x_array,*args):
   
   return out
 
+'''
+Cubature
+========
+'''
 from cubature import cubature
 ndim = 3                                         #: Specifies the number of dimensions being integrated
 xmin = numpy.array([-20.,-20.,-20.],dtype=float) #: Specifies the minimum integration limit for each variable
 xmax = numpy.array([ 20., 20., 20.],dtype=float) #: Specifies the maximum integration limit for each variable
-abserr = 1e-8                                    #: Specifies the absolute error: |error| < abserr requested (If zero, it will be ignored.)
-relerr = 1e-8                                    #: Specifies the relative error: |error| < relerr*|integral| requested (If zero, it will be ignored.)
+abserr = 1e-3                                    #: Specifies the absolute error: |error| < abserr requested (If zero, it will be ignored.)
+relerr = 1e-3                                    #: Specifies the relative error: |error| < relerr*|integral| requested (If zero, it will be ignored.)
 is_vector = True                                 #: If True, uses a vector of points in cubature, instead of a single point calculation. (Much faster!)
 
-# Example one: Run the cubature routine together with orbkit and integrate the density.
+'''
+Example One
+===========
+Run the cubature routine together with orbkit and integrate the density.
+'''
 count_calls = 0
 calc_mo = False
+
 # Call the cubature routine together with orbkit.
 integral,error = cubature(ndim, func, xmin, xmax, 
                           args=[is_vector,calc_mo], 
                           adaptive='h', abserr=abserr, relerr=relerr, 
-                          norm=0, maxEval=0, vectorized=is_vector)
+                          norm=0, maxEval=0,
+                          vectorized=is_vector)
 
 print('After %d function calls the integral is %.14f. (Error: %.4e)' % 
       (count_calls,integral,error))
 
-# Example two: Run the cubature routine together with orbkit  and integrate all MOs (squared) at once.
-# Note: The function saves the molecular orbital values. (Not the squared values!)
+'''
+Example Two
+===========
+Run the cubature routine together with orbkit  and integrate all MOs (squared) 
+at once.
+
+Note: The function saves the molecular orbital values. (Not the squared values!)
+'''
 count_calls = 0
 calc_mo = True
+
+# Call the cubature routine together with orbkit.
 integral_mo,error_mo = cubature(ndim, func, xmin, xmax, 
                                 args=[is_vector,calc_mo], 
                                 adaptive='h', abserr=abserr, relerr=relerr, 
@@ -139,6 +166,7 @@ print('After %d function calls the integral of...' % count_calls)
 for i,(inte,err) in enumerate(zip(integral_mo,error_mo)):
   print('\tMO %s is %.14f. (Error: %.4e)' % (qc.mo_spec[i]['sym'],inte,err))
 
+# Print a final comment on the required time and RAM usage.
 t.append(time())
 print('The calculation took %.3fs' % (t[-1]-t[0]))
 ram_requirement = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
@@ -153,7 +181,8 @@ if create_plot and save_data_values:
   fig = plt.figure()
   ax = fig.add_subplot(111, projection='3d')
   
-  ax.scatter(vec[:,0],vec[:,1], vec[:,2], c=numpy.log10(rho), cmap='cool',marker='.',linewidths=0,alpha=0.6)
+  ax.scatter(vec[:,0],vec[:,1], vec[:,2], c=numpy.log10(rho), cmap='cool',
+             marker='.',linewidths=0,alpha=0.6)
   
   # Plot the geometry
   c = qc.geo_spec

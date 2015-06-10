@@ -17,7 +17,7 @@ mayavi_yes = False
 
 # import the functions of orbkit (import function 
 # ok that imports all other functions)
-from orbkit import ok
+import orbkit as ok
 
 # name and type of input file
 fid_in  = 'h2o.md'
@@ -32,13 +32,13 @@ ok.grid.max_ = [ 6.5,  6.5,   6.5]
 ok.grid.min_ = [-6.5, -6.5,  -6.5]
 
 # open molden file and read parameters
-qc = ok.read.main_read(fid_in,itype=itype)
+qc = ok.main_read(fid_in,itype=itype)
 
 # initialize grid
-ok.grid.grid_init()
+ok.grid_init()
 
 # print grid information
-print(ok.grid.get_grid())
+print(ok.get_grid())
 
 # define the molecular orbital to be calculated
 selected_MO = ['3.1']
@@ -53,7 +53,7 @@ for k in range(len(qc.mo_spec)):
     qc_select['mo_spec'].append(qc.mo_spec[k])
 
 # calculate MO
-mo_list = ok.core.rho_compute(qc_select,calc_mo=True,numproc=numproc)    
+mo_list = ok.rho_compute(qc_select,calc_mo=True,numproc=numproc)    
 
 # plot the results
 x = ok.grid.x

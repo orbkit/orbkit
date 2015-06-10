@@ -12,12 +12,12 @@ Contents:
 ---------
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 4
 
    index
    install
-   manual
-   funcref
+   documentation/index
+   examples/vis
    licence
    impressum
 

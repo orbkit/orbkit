@@ -51,7 +51,7 @@ def l_creator(geo_spec,ao_spec,sel_ao,exp_list=None,coeff_list=None,
   **Parameters:**
   
   geo_spec,ao_spec :
-    See `Central Variables`_ for details.
+    See :ref:`Central Variables` for details.
   sel_ao : int
     Index of the requested atomic orbitals
   exp_list : array_like, shape=(NDEG, 3), optional
@@ -168,7 +168,7 @@ def ao_creator(geo_spec,ao_spec,
   **Parameters:**
   
   geo_spec,ao_spec :
-    See `Central Variables`_ in the manual for details.
+    See :ref:`Central Variables` in the manual for details.
   sel_ao : int
     Index of the requested atomic orbital
   is_vector : bool, optional
@@ -233,7 +233,7 @@ def calc_single_mo(xx):
   Spec : dict, global
     Dictionary containing all required varibles:
       :ao_list: : List of atomic orbitals on a grid.
-      :mo_spec: : List of dictionaries (see `Central Variables`_ for details).
+      :mo_spec: : List of dictionaries (see :ref:`Central Variables` for details).
       :N: : Tuple containing the shape of the grid.
 
   **Returns:**
@@ -268,7 +268,7 @@ def mo_creator(ao_list,mo_spec,is_vector=False,
   ao_list : numpy.ndarray, shape=((NAO,) + N)
     Contains the NAO atomic orbitals on a grid.
   mo_spec : List of dictionaries
-    See `Central Variables`_ for details.
+    See :ref:`Central Variables` for details.
   is_vector : bool, optional
     If True, a vectorized grid will be applied.
   x,y,z : None or list of floats, optional
@@ -368,9 +368,9 @@ def slice_rho(xx):
       
   Spec : dict, global
     Dictionary containing all required varibles:
-      :geo_spec: List of floats, shape=(NATOMS, 3) (see `Central Variables`_ for details).
-      :ao_spec: List of dictionaries (see `Central Variables`_ for details).
-      :mo_spec: List of dictionaries (see `Central Variables`_ for details).
+      :geo_spec: List of floats, shape=(NATOMS, 3) (see :ref:`Central Variables` for details).
+      :ao_spec: List of dictionaries (see :ref:`Central Variables` for details).
+      :mo_spec: List of dictionaries (see :ref:`Central Variables` for details).
       :calc_mo: Bool if only the molecular orbitals are requested.
       :is_vector: Bool if a vectorized grid is used.
       :Derivative: List of strings, choices={'x','y', or 'z'}. 
@@ -485,13 +485,13 @@ def rho_compute(qc,calc_mo=False,vector=None,drv=None,numproc=1):
   
   qc : class or dict
     QCinfo class or dictionary containing the following attributes/keys.
-    See `Central Variables`_ for details.
+    See :ref:`Central Variables` for details.
   qc.geo_spec : array_like, shape=(3,NATOMS) 
-    See `Central Variables`_ for details.
+    See :ref:`Central Variables` for details.
   qc.ao_spec : List of dictionaries
-    See `Central Variables`_ for details.
+    See :ref:`Central Variables` for details.
   qc.mo_spec : List of dictionaries
-    See `Central Variables`_ for details.
+    See :ref:`Central Variables` for details.
   calc_mo : bool, optional
     If True, the computation of  the molecular orbitals requested is only
     carried out.
@@ -504,7 +504,8 @@ def rho_compute(qc,calc_mo=False,vector=None,drv=None,numproc=1):
   numproc : int
     Specifies number of subprocesses for multiprocessing.
   grid : module or class, global
-    Contains the grid, i.e., grid.x, grid.y, and grid.z.
+    Contains the grid, i.e., grid.x, grid.y, and grid.z. If grid.is_initialized
+    is not True, functions runs grid.grid_init().
 
   **Returns:**
   
@@ -553,6 +554,11 @@ def rho_compute(qc,calc_mo=False,vector=None,drv=None,numproc=1):
   Spec['is_vector'] = (vector is not None)
   
   mo_num = len(Spec['mo_spec'])
+  
+  if not grid.is_initialized:
+    display('\nSetting up the grid...')
+    grid.grid_init(is_vector=(vector is not None))
+    display(grid.get_grid())   # Display the grid
   
   if vector is None:
     is_vector = False
@@ -710,13 +716,13 @@ def rho_compute_no_slice(qc,calc_mo=False,is_vector=False,drv=None,
   
   qc : class or dict
     QCinfo class or dictionary containing the following attributes/keys.
-    See `Central Variables`_ for details.
+    See :ref:`Central Variables` for details.
   qc.geo_spec : array_like, shape=(3,NATOMS) 
-    See `Central Variables`_ for details.
+    See :ref:`Central Variables` for details.
   qc.ao_spec : List of dictionaries
-    See `Central Variables`_ for details.
+    See :ref:`Central Variables` for details.
   qc.mo_spec : List of dictionaries
-    See `Central Variables`_ for details.
+    See :ref:`Central Variables` for details.
   calc_mo : bool, optional
     If True, the computation of  the molecular orbitals requested is only
     carried out.

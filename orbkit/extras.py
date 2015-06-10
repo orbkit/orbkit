@@ -4,7 +4,8 @@
 orbkit
 Gunter Hermann, Vincent Pohl, and Axel Schild
 
-Institut fuer Chemie und Biochemie, Freie Universitaet Berlin, 14195 Berlin, Germany
+Institut fuer Chemie und Biochemie, Freie Universitaet Berlin, 14195 Berlin, 
+Germany
 
 This file is part of orbkit.
 
@@ -33,18 +34,21 @@ from orbkit import core,grid,output,options
 from orbkit.display import display
 from orbkit.read import mo_select
 
-def calc_mo(qc, fid_mo_list, drv=None, vector=None, otype=None):
+def calc_mo(qc, fid_mo_list, drv=None, vector=None, otype=None, ofid=None):
   '''Calculates and saves the selected molecular orbitals or the derivatives thereof.
 
   **Parameters:**
    
     qc.geo_spec, qc.geo_info, qc.ao_spec, qc.mo_spec :
-      See `Central Variables`_ for details.
+      See :ref:`Central Variables` for details.
     fid_mo_list : str
       Specifies the filename of the molecular orbitals list. 
       If fid_mo_list is 'all_mo', creates a list containing all molecular orbitals.
     otype : str or list of str, optional
       Specifies output file type. See :data:`otypes` for details.
+    ofid : str, optional
+      Specifies output file name. If None, the filename will be based on
+      :mod:`orbkit.options.outputname`.
     drv : int or string, {None, 'x', 'y', 'z', 0, 1, 2}, optional
       If not None, a derivative calculation of the atomic orbitals 
       is requested.
@@ -55,25 +59,29 @@ def calc_mo(qc, fid_mo_list, drv=None, vector=None, otype=None):
     
   **Returns:**
     mo_list :        
-      See `Central Variables`_ for details.
-    mo : dict 
+      See :ref:`Central Variables` for details.
+    mo_info : dict 
       Contains information of the selected molecular orbitals and has following Members:
         :mo: - List of molecular orbital labels.
         :mo_ii: - List of molecular orbital indices.
-        :mo_spec: - Selected elements of mo_spec. See `Central Variables`_ for details.
+        :mo_spec: - Selected elements of mo_spec. See :ref:`Central Variables` for details.
         :mo_in_file: - List of molecular orbital labels within the fid_mo_list file.
         :sym_select: - If True, symmetry labels have been used. 
       
   '''
-  mo = mo_select(qc.mo_spec, fid_mo_list, strict=True)
+  mo_info = mo_select(qc.mo_spec, fid_mo_list, strict=True)
   qc_select = qc.todict()
-  qc_select['mo_spec'] = mo['mo_spec']
+  qc_select['mo_spec'] = mo_info['mo_spec']
   
   # Calculate the AOs and MOs 
   mo_list = core.rho_compute(qc_select,calc_mo=True,drv=drv,vector=vector,
                              numproc=options.numproc)
   
-  fid = '%s_MO' % (options.outputname)
+  if otype is None:
+    return mo_list, mo_info
+  
+  if ofid is None:
+    ofid = '%s_MO' % (options.outputname)
   if 'vmd' in otype and not 'cb' in otype:
     if isinstance(otype,list):
       otype.append('cb')
@@ -83,13 +91,13 @@ def calc_mo(qc, fid_mo_list, drv=None, vector=None, otype=None):
   if not options.no_output:
     if 'h5' in otype:    
       output.main_output(mo_list,qc.geo_info,qc.geo_spec,data_id='MO',
-                    outputname=fid,
+                    outputname=ofid,
                     mo_spec=qc_select['mo_spec'],drv=drv,is_mo_output=True)
     # Create Output     
     cube_files = []
     for i,j in enumerate(qc_select['mo_spec']):
-      outputname = '%s_%s' % (fid,mo['mo'][i])
-      comments = ('%s,Occ=%.1f,E=%+.4f' % (mo['mo'][i],
+      outputname = '%s_%s' % (ofid,mo_info['mo'][i])
+      comments = ('%s,Occ=%.1f,E=%+.4f' % (mo_info['mo'][i],
                                            j['occ_num'],
                                            j['energy']))
       index = numpy.index_exp[:,i] if drv is not None else i
@@ -97,7 +105,8 @@ def calc_mo(qc, fid_mo_list, drv=None, vector=None, otype=None):
                                       qc.geo_info,qc.geo_spec,
                                       outputname=outputname,
                                       comments=comments,
-                                      otype=otype,omit=['h5','vmd'],drv=drv,
+                                      otype=otype,omit=['h5','vmd','mayavi'],
+                                      drv=drv,
                                       is_vector=(options.vector is not None))
       
       for i in output_written:
@@ -106,24 +115,40 @@ def calc_mo(qc, fid_mo_list, drv=None, vector=None, otype=None):
     
     if 'vmd' in otype and options.vector is None:
       display('\nCreating VMD network file...' +
-                      '\n\t%(o)s.vmd' % {'o': fid})
-      output.vmd_network_creator(fid,cube_files=cube_files)
-  return mo_list, mo
+                      '\n\t%(o)s.vmd' % {'o': ofid})
+      output.vmd_network_creator(ofid,cube_files=cube_files)
+  if 'mayavi' in otype and (options.vector is None):
+    datalabels = ['MO %(sym)s, Occ=%(occ_num).2f, E=%(energy)+.4f E_h' % 
+                  i for i in qc_select['mo_spec']]
+    if drv is not None:
+      tmp = []
+      for i in drv:
+        for j in datalabels:
+          tmp.append('d/d%s of %s' % (i,j))
+      datalabels = tmp
+    data = mo_list.reshape((-1,) + tuple(grid.N_))
+    output.view_with_mayavi(grid.x,grid.y,grid.z,data,geo_spec=qc.geo_spec,
+                            datalabels=datalabels)
+  
+  return mo_list, mo_info
   
 def mo_set(qc, fid_mo_list, 
-            drv=None, vector=None, otype=None):
+            drv=None, vector=None, otype=None, ofid=None, return_all=False):
   '''Calculates and saves the density or the derivative thereof 
   using selected molecular orbitals.
   
   **Parameters:**
    
     qc.geo_spec, qc.geo_info, qc.ao_spec, qc.mo_spec :
-      See `Central Variables`_ for details.
+      See :ref:`Central Variables` for details.
     fid_mo_list : str
       Specifies the filename of the molecular orbitals list. 
       If fid_mo_list is 'all_mo', creates a list containing all molecular orbitals.
     otype : str or list of str, optional
       Specifies output file type. See :data:`otypes` for details.
+    ofid : str, optional
+      Specifies output file name. If None, the filename will be based on
+      :mod:`orbkit.options.outputname`.
     drv : int or string, {None, 'x', 'y', 'z', 0, 1, 2}, optional
       If not None, a derivative calculation of the atomic orbitals 
       is requested.
@@ -133,29 +158,31 @@ def mo_set(qc, fid_mo_list,
     
   '''
 
-  mo = mo_select(qc.mo_spec, fid_mo_list, strict=False)
+  mo_info = mo_select(qc.mo_spec, fid_mo_list, strict=False)
   qc_select = qc.todict()
   
+  if ofid is None:
+    ofid = options.outputname
   if 'h5' in otype:
     try:
-      os.remove('%s.h5' % options.outputname)
+      os.remove('%s.h5' % ofid)
     except OSError:
       pass
-       
+  
   cube_files = []
-  for i_file,j_file in enumerate(mo['mo_in_file']):
+  for i_file,j_file in enumerate(mo_info['mo_in_file']):
     display('Starting with the %d. element of the molecular orbital list (%s)...\n\t' % 
                 (i_file+1,fid_mo_list) + str(j_file) + 
                 '\n\t(Only regarding existing and occupied mos.)\n')
     
     qc_select['mo_spec'] = []
-    for i_mo,j_mo in enumerate(mo['mo']):
+    for i_mo,j_mo in enumerate(mo_info['mo']):
       if j_mo in j_file:
-        if mo['sym_select']: 
-          ii_mo = numpy.argwhere(mo['mo_ii'] == j_mo)
+        if mo_info['sym_select']: 
+          ii_mo = numpy.argwhere(mo_info['mo_ii'] == j_mo)
         else: 
           ii_mo = i_mo
-        qc_select['mo_spec'].append(mo['mo_spec'][int(ii_mo)])
+        qc_select['mo_spec'].append(mo_info['mo_spec'][int(ii_mo)])
     
     data = core.rho_compute(qc_select,
                             drv=drv,vector=vector,
@@ -178,8 +205,8 @@ def mo_set(qc, fid_mo_list,
       if 'h5' in otype:
         display('Saving to Hierarchical Data Format file (HDF5)...')
         group = '/mo_set:%03d' % (i_file+1)	
-        display('\n\t%s.h5 in the group "%s"' % (options.outputname,group))	
-        output.HDF5_creator(rho,options.outputname,qc.geo_info,qc.geo_spec,data_id='rho',
+        display('\n\t%s.h5 in the group "%s"' % (ofid,group))	
+        output.HDF5_creator(rho,ofid,qc.geo_info,qc.geo_spec,data_id='rho',
           append=group,mo_spec=qc_select['mo_spec'])
         if options.drv is not None:
           for i,j in enumerate(options.drv):
@@ -188,37 +215,44 @@ def mo_set(qc, fid_mo_list,
                                 data_id=data_id,data_only=True,
                                 append=group,mo_spec=qc_select['mo_spec'])
       
-      fid = '%s_%03d' % (options.outputname, i_file+1) 
+      fid = '%s_%03d' % (ofid, i_file+1) 
       cube_files.append('%s.cb' % fid)
       comments = ('mo_set:'+','.join(j_file))
       output.main_output(rho,qc.geo_info,qc.geo_spec,outputname=fid,
-                         otype=otype,omit=['h5','vmd'],
+                         otype=otype,omit=['h5','vmd','mayavi'],
                          comments=comments,is_vector=(vector is not None))
       if options.drv is not None:
         for i,j in enumerate(options.drv):
-          fid = '%s_%03d_d%s' % (options.outputname, i_file+1, j) 
+          fid = '%s_%03d_d%s' % (ofid, i_file+1, j) 
           cube_files.append('%s.cb' % fid)
           comments = ('d%s_of_mo_set:' % j + ','.join(j_file))
           output.main_output(delta_rho[i],qc.geo_info,qc.geo_spec,outputname=fid,
-                             otype=otype,omit=['h5','vmd'],
+                             otype=otype,omit=['h5','vmd','mayavi'],
                              comments=comments,is_vector=(vector is not None))
-  if not options.no_output:
-    if 'vmd' in otype and options.vector is None:
+  
+  if 'vmd' in otype and options.vector is None:
       display('\nCreating VMD network file...' +
-                      '\n\t%(o)s.vmd' % {'o': options.outputname})
-      output.vmd_network_creator(options.outputname,cube_files=cube_files)
+                      '\n\t%(o)s.vmd' % {'o': ofid})
+      output.vmd_network_creator(ofid,cube_files=cube_files)
+  
+  if 'mayavi' in otype and (options.vector is None):
+    data = mo_list.reshape((-1,) + tuple(grid.N_))
+    output.view_with_mayavi(grid.x,grid.y,grid.z,data,geo_spec=qc.geo_spec)
   return None
   # mo_select 
 
-def calc_ao(qc, drv=None, is_vector=False, otype=None):  
+def calc_ao(qc, drv=None, is_vector=False, otype=None, ofid=None):  
   '''Computes and saves all atomic orbital or a derivative thereof.
   
   **Parameters:**
    
     qc.geo_spec, qc.geo_info, qc.ao_spec :
-      See `Central Variables`_ for details.
+      See :ref:`Central Variables` for details.
     otype : str or list of str, optional
       Specifies output file type. See :data:`otypes` for details.
+    ofid : str, optional
+      Specifies output file name. If None, the filename will be based on
+      :mod:`orbkit.options.outputname`.
     drv : int or string, {None, 'x', 'y', 'z', 0, 1, 2}, optional
       If not None, a derivative calculation of the atomic orbitals 
       is requested.
@@ -235,6 +269,8 @@ def calc_ao(qc, drv=None, is_vector=False, otype=None):
   from omp_functions import run
   global global_val
   
+  if ofid is None:
+    ofid = options.outputname
   dstr = '' if drv is None else '_d%s' % drv
   
   ao_spec = []
@@ -265,7 +301,7 @@ def calc_ao(qc, drv=None, is_vector=False, otype=None):
       return ao_list
     
     import h5py
-    fid = '%s_AO%s.h5' % (options.outputname,dstr)
+    fid = '%s_AO%s.h5' % (ofid,dstr)
     output.hdf5_write(fid,mode='w',gname='general_info',
                       x=grid.x,y=grid.y,z=grid.z,N=grid.N_,
                       geo_info=qc.geo_info,geo_spec=qc.geo_spec,
@@ -277,11 +313,11 @@ def calc_ao(qc, drv=None, is_vector=False, otype=None):
     f.close()
   
   if 'vmd' in otype and options.vector is None:
-    fid = '%s_AO%s' % (options.outputname,dstr)
+    fid = '%s_AO%s' % (ofid,dstr)
     display('\nCreating VMD network file...' +
                     '\n\t%(o)s.vmd' % {'o': fid})
     output.vmd_network_creator(fid,
-                            cube_files=['%s_AO%s_%03d.cb' % (options.outputname,
+                            cube_files=['%s_AO%s_%03d.cb' % (ofid,
                                         dstr,x) for x in range(len(ao_spec))])
   return None
   # calc_ao
@@ -313,17 +349,17 @@ def save_mo_hdf5(filename,geo_info,geo_spec,ao_spec,mo_spec,
   energy=[]
   sym=[]
   
-  for mo in mo_spec:
-    mo_name.append(mo['sym'])
-    occ_num.append(mo['occ_num'])
-    energy.append(mo['energy'])
-    sym.append(mo['sym'])
+  for mo_info in mo_spec:
+    mo_name.append(mo_info['sym'])
+    occ_num.append(mo_info['occ_num'])
+    energy.append(mo_info['energy'])
+    sym.append(mo_info['sym'])
     
-    dID = 'mo:%s' % mo['sym']
+    dID = 'mo_info:%s' % mo_info['sym']
     dset = f.create_dataset(dID,N)
   
   
-  f.create_dataset('mo:Content',data=numpy.array(mo_name))
+  f.create_dataset('mo_info:Content',data=numpy.array(mo_name))
   
   mo_info = f.create_group('mo_info')
   mo_info.create_dataset('occ_num',((1,len(mo_spec))),data=occ_num)
@@ -366,9 +402,9 @@ def get_ao(x):
                        global_val['qc'].geo_info,
                        global_val['qc'].geo_spec,
                        comments=comments,
-                       outputname='%s_AO_%03d' % (options.outputname,x),
+                       outputname='%s_AO_%03d' % (ofid,x),
                        otype=global_val['otype'],
-                       omit=['h5','vmd'],
+                       omit=['h5','vmd','mayavi'],
                        drv = None if drv is None else [drv],
                        is_vector=global_val['is_vector'])
     return None
@@ -402,11 +438,11 @@ def atom2index(atom,geo_info=None):
 def atom_projected_density(atom,qc,
                     bReturnmo=False,ao_list=None,mo_list=None,
                     x=None,y=None,z=None,N=None,is_vector=False):
-  '''Computes the projected electron density with respect to the selected atoms.
+  r'''Computes the projected electron density with respect to the selected atoms.
   
   .. math::
   
-        \\rho^a(x,y,z) = \sum_i occ_i * mo_i^a * mo_i
+    \rho^a = \sum_i^{N_{\rm MO}} {\rm occ}_i \cdot \varphi_i^a \cdot \varphi_i
   
   
   **Parameters:**
@@ -414,7 +450,7 @@ def atom_projected_density(atom,qc,
     atom : 'all' or int or list of int
       Specifies the atoms to which the projected electron density will be computed.  
     geo_spec, geo_info, ao_spec, mo_spec :
-      See `Central Variables`_ for details.
+      See :ref:`Central Variables` for details.
     bReturnmo : bool, optional
       If True, the atom projected molecular orbitals are additionally returned.
 
@@ -478,11 +514,11 @@ def atom_projected_density(atom,qc,
         ll += 1
     
     for ii_mo,spec in enumerate(qc.mo_spec):
-      mo = numpy.zeros(N)
+      mo_info = numpy.zeros(N)
       for jj in range(len(ao_index)):
-        mo += spec['coeffs'][ao_index[jj]] * ao[jj]
-      rho_atom[i] += spec['occ_num'] * mo_list[ii_mo] * mo
-      if bReturnmo: mo_atom[i].append(mo)
+        mo_info += spec['coeffs'][ao_index[jj]] * ao[jj]
+      rho_atom[i] += spec['occ_num'] * mo_list[ii_mo] * mo_info
+      if bReturnmo: mo_atom[i].append(mo_info)
   
   if bReturnmo:
     display('Returning the atom-projected density and' +
@@ -493,15 +529,15 @@ def atom_projected_density(atom,qc,
     return rho_atom
   # atom_projected_density 
 
-def compute_mulliken_charges(atom,qc,
+def numerical_mulliken_charges(atom,qc,
             ao_list=None,mo_list=None,rho_atom=None,
             x=None,y=None,z=None,N=None,is_vector=False):
-  '''Compute the Mulliken charges of the selected atoms using
+  r'''Compute the Mulliken charges of the selected atoms *numerically* using
   the respective projected electron densities.
   
   .. math::
   
-    P^a = \int \\rho^a(x,y,z) d^3r
+    P^a = \int \rho^a(x,y,z) {\rm d}^3r
   
   **Parameters:**
   
@@ -511,7 +547,7 @@ def compute_mulliken_charges(atom,qc,
   **Returns:**
   
     geo_spec, geo_info, ao_spec, mo_spec :
-      See the `Central Variables`_ in the manual for details.
+      See the :ref:`Central Variables` in the manual for details.
         
   '''
   

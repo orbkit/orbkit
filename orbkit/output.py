@@ -35,6 +35,8 @@ def main_output(data,geo_info,geo_spec,outputname='new',otype='h5',
                 drv=None,omit=[],is_vector=False,**kwargs):
   '''Creates the requested output.
   '''
+  if 'mayavi' in otype and 'mayavi' not in omit:
+    view_with_mayavi(grid.x,grid.y,grid.z,data,geo_spec=geo_spec)
   print_waring = False
   output_written = []
   if drv is not None:
@@ -549,8 +551,10 @@ def HDF5_creator_MO(MO,filename,geo_info,geo_spec,mo_spec):
 
 def vmd_network_creator(filename,cube_files=None,render=False,iso=(-0.01,0.01),
                         abspath=True,**kwargs):
+  '''Creates a VMD script file from a list of cube files provided.  
+  '''
   from os import path,listdir
-  from linecache import getline
+  import linecache
   from orbkit import vmd_network_draft
   if cube_files is None:
     display('No list of cube (.cb) filenames provided. Checking the directory' + 
@@ -565,11 +569,12 @@ def vmd_network_creator(filename,cube_files=None,render=False,iso=(-0.01,0.01),
   title = []
   mo = ''
   for i,f in enumerate(cube_files):
-    title = getline(f,2)
+    title = linecache.getline(f,2)
     if title.split() == []:
       title = path.splitext(path.basename(title))[0]
     else:
       title = title.replace('\n','').replace(' ','')
+    linecache.clearcache()
     pid = path.abspath(f) if abspath else path.relpath(f,path.relpath(filename))
     mo += vmd_network_draft.mo_string % {
                                   'c': i, 
@@ -600,7 +605,8 @@ def determine_rho_range(rho,start=0.01,stop=0.999):
   
   return rho_min, rho_max
 
-def colormap_creator_peaks(filename,peaks,peak_width=0.02,peak_minus=None,peak_plus=None,alpha=0.2,rgb=0.2):  
+def colormap_creator_peaks(filename,peaks,peak_width=0.02,peak_minus=None,
+  peak_plus=None,alpha=0.2,rgb=0.2):  
   '''Creates a ZIBAmira colomap for selected data values.
   
   **Parameters:**
@@ -825,6 +831,115 @@ def output_creator(rho,filename,geo_info,geo_spec):
   
   return 0
   # output_creator 
+
+
+
+def view_with_mayavi(x,y,z,data,geo_spec=None,datalabels=None):
+  ''' Creates an interactive mayavi dialog showing isosurface plots of the input
+  data. 
+  
+  Components adapted from:
+  http://stackoverflow.com/a/1830192
+  http://docs.enthought.com/mayavi/mayavi/auto/example_mlab_interactive_dialog.html
+  '''
+  from traits.api import HasTraits, Range, Instance, on_trait_change, Bool, Str,List
+  from traitsui.api import View, Item, Group, ListStrEditor
+  
+  from mayavi import mlab
+  from mayavi.core.api import PipelineBase
+  from mayavi.core.ui.api import MayaviScene, SceneEditor, MlabSceneModel
+  
+  data = numpy.array(data)
+  
+  if data.ndim == 3:
+    data = data[numpy.newaxis]
+  elif data.ndim != 4:
+    raise ValueError('`data` has to be a ``numpy.array`` with four dimensions')
+  if datalabels is not None and len(datalabels) != len(data):
+    raise ValueError('`datalabels` has to be a list of strings with the same' +
+                     'length as `data`.')
+  if datalabels is not None:
+    datalabels = ['%03d: %s' % (i,j) for i,j in enumerate(datalabels)]
+  def meshgrid2(*arrs):
+    arrs = tuple(reversed(arrs)) 
+    lens = map(len, arrs)
+    dim = len(arrs)
+    
+    sz = 1
+    for s in lens:
+        sz*=s
+    
+    ans = []    
+    for i, arr in enumerate(arrs):
+      slc = [1]*dim
+      slc[i] = lens[i]
+      arr2 = numpy.asarray(arr).reshape(slc)
+      for j, sz in enumerate(lens):
+        if j!=i:
+          arr2 = arr2.repeat(sz, axis=j) 
+      ans.append(arr2)
+    
+    return tuple(ans[::-1])
+  
+  Z,Y,X = meshgrid2(z,y,x)
+  
+  class MyModel(HasTraits):  
+      select  = Range(0, len(data)-1, 0, mode='spinner')
+      iso_value  = Range(1e-8, 1.0, 0.01)
+      opacity    = Range(0, 1.0, 0.6)
+      show_atoms = Bool(True)
+      label = Str()
+      available = List(Str)
+      available = datalabels
+      
+      scene = Instance(MlabSceneModel, ())
+      
+      plot_atoms = Instance(PipelineBase)
+      plot0 = Instance(PipelineBase)
+      plot1 = Instance(PipelineBase)
+      
+      # When the scene is activated, or when the parameters are changed, we
+      # update the plot.
+      @on_trait_change('select,iso_value,show_atoms,opacity,label,scene.activated')
+      def update_plot(self):   
+          if self.plot0 is None:          
+            src = mlab.pipeline.scalar_field(X,Y,Z,data[self.select])
+            self.plot0 = self.scene.mlab.pipeline.iso_surface(\
+                        src, contours= [self.iso_value], opacity=self.opacity,color=(0, 0, 0.8))
+            self.plot1 = self.scene.mlab.pipeline.iso_surface(\
+                        src, contours= [-self.iso_value], opacity=self.opacity, color=(0.8, 0, 0))
+            self.plot0.contour.scene.background = (1,1,1)
+          else:
+            self.plot0.mlab_source.set(scalars=data[self.select])
+            self.plot0.contour.contours = [self.iso_value]
+            self.plot0.actor.property.opacity = self.opacity
+            self.plot1.mlab_source.set(scalars=data[self.select])
+            self.plot1.contour.contours = [-self.iso_value]
+            self.plot1.actor.property.opacity = self.opacity
+          if datalabels is not None:
+            self.label = datalabels[self.select]
+          if geo_spec is not None: 
+            if self.plot_atoms is None:            
+              self.plot_atoms = self.scene.mlab.points3d(geo_spec[:,0],geo_spec[:,1],geo_spec[:,2])
+            self.plot_atoms.visible = self.show_atoms
+      
+      # The layout of the dialog created
+      items = (Item('scene', editor=SceneEditor(scene_class=MayaviScene),
+                      height=250, width=300, show_label=False),                  
+                  Group(
+                          '_', 'select',Item('label',style='readonly', show_label=False), 'iso_value', 'opacity','show_atoms'
+                      ),
+              )
+      if datalabels is not None:        
+        items += (Item('available', 
+                       editor=ListStrEditor(title='Available Data',editable=True),
+                       show_label=False,style='readonly'),)
+      view = View(*items,
+                  resizable=True
+                  )
+  
+  my_model = MyModel()
+  my_model.configure_traits()
 
 # Class for the creation of a mo amira network 
 #### NOT FINISHED YET ###

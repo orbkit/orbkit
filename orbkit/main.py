@@ -30,42 +30,16 @@ lgpl_short = '''This is orbkit.
   under certain conditions. Type '-l' for details.
 '''
 
-
 # Import general modules
-import resource
 import time
 
 # Import orbkit modules
 from orbkit import core, grid, extras, read, output
-from orbkit import options, display
+from orbkit import options
+import orbkit.display as display_module
+from orbkit.display import display,good_bye_message
 
-def tForm(string,T,extra=''):
-  t_diff = int(round(T))
-  tF = {}
-  tF['str'] = string
-  tF['extra'] = extra
-  tF['min'] = t_diff/60
-  tF['sec'] = t_diff%60
-  tF['h']   = tF['min']/60
-  tF['min'] = tF['min']%60
-  if tF['h'] == 0:
-    if tF['min'] == 0: 
-      return ('\n%(str)s took %(sec).3fs%(extra)s.\n' % 
-            {'str':string, 'sec': T, 'extra':extra})
-    else: 
-      return ('\n%(str)s took %(min)dmin and %(sec)ds%(extra)s.\n' % tF)
-  else: return ('\n%(str)s took %(h)dh, %(min)dmin and %(sec)ds%(extra)s.\n' % tF)
-  # tForm 
-
-def good_bye_message(t):
-  ram_requirement = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
-  ram_req = '\nand required %.2f MB of RAM' % (ram_requirement/1000.)
-  msg = tForm('The calculation',t[-1]-t[0],extra=ram_req)
-  msg += '\nThank you. Good bye.'
-  display.display(msg)
-  return msg
-
-def main(use_qc=None):
+def run_orbkit(use_qc=None):
   ''' Controls the execution of all computational tasks.
   '''
   # Set some global variables
@@ -73,7 +47,7 @@ def main(use_qc=None):
   global rho, delta_rho
   
   # Display program information
-  display.display(lgpl_short)
+  display(lgpl_short)
   
   # Measurement of required execution time
   t=[time.time()]
@@ -90,7 +64,7 @@ def main(use_qc=None):
   else:
     qc = use_qc
   
-  display.display('\nSetting up the grid...')
+  display('\nSetting up the grid...')
   if options.grid_file is not None: 
     # Read the grid from an external file
     if grid.read(options.grid_file) and (options.vector is None):
@@ -107,16 +81,16 @@ def main(use_qc=None):
   
   # Initialize grid
   grid.grid_init(is_vector=(options.vector is not None))  
-  display.display(grid.get_grid())   # Display the grid
+  display(grid.get_grid())   # Display the grid
 
   if options.vector and options.center_grid is not None:
     raise IOError('The option --center is only supported for regular grids.')
   elif options.center_grid is not None:
     atom = options.center_grid
     if not((isinstance(atom, int)) and (0 < atom <= len(qc.geo_spec))):
-      display.display('Not a Valid atom number for centering the grid')
-      display.display('Coose a valid index:')
-      for i,j in enumerate(qc.geo_info): display.display('\t%s\t%d' % (j[0], i+1))
+      display('Not a Valid atom number for centering the grid')
+      display('Coose a valid index:')
+      for i,j in enumerate(qc.geo_info): display('\t%s\t%d' % (j[0], i+1))
       if options.interactive:
         while not((isinstance(atom, int)) and (0 < atom <= len(qc.geo_spec))):
           try:
@@ -126,13 +100,13 @@ def main(use_qc=None):
       else: raise IOError('Insert a correct filename for the MO list!')
 
     # Center the grid to a specific atom and (0,0,0) if requested
-    grid.center_grid(qc.geo_spec[atom-1],display=display.display)
+    grid.center_grid(qc.geo_spec[atom-1],display=display)
 
   if options.vector is not None:
     info = 'vectorized'
   else:
     info = 'regular'
-  display.display('The computations will be carried out applying ' +
+  display('The computations will be carried out applying ' +
                 'a %s grid...' % info)
   
   t.append(time.time()) # A new time step
@@ -189,7 +163,7 @@ def main(use_qc=None):
     if not options.no_output:
       from numpy import array
       fid = '%s.h5' % options.outputname
-      display.display('\nSaving to Hierarchical Data Format file (HDF5)...' +
+      display('\nSaving to Hierarchical Data Format file (HDF5)...' +
                 '\n\t%(o)s' % {'o': fid})
       HDF5_File = output.hdf5_open(fid,mode='w')
       data = {'geo_info': array(qc.geo_info), 
@@ -217,7 +191,7 @@ def main(use_qc=None):
       mo_tefd.append([])
       index.append([])
       for ii_d in options.drv:
-        display.display('\nMO-TEFD: %s->%s %s-component'%(i,j,ii_d))
+        display('\nMO-TEFD: %s->%s %s-component'%(i,j,ii_d))
         tefd = extras.mo_transition_flux_density(i, j,
                                          qc,
                                          drv=ii_d,
@@ -229,7 +203,7 @@ def main(use_qc=None):
     if not options.no_output:
       from numpy import array
       fid = '%s.h5' % options.outputname
-      display.display('\nSaving to Hierarchical Data Format file (HDF5)...' +
+      display('\nSaving to Hierarchical Data Format file (HDF5)...' +
                       '\n\t%(o)s' % {'o': fid})
       HDF5_File = output.hdf5_open(fid,mode='w')
       data = {'geo_info': array(qc.geo_info),
@@ -266,16 +240,16 @@ def main(use_qc=None):
   # Compute the reduced electron density if requested 
   if options.z_reduced_density:
     if options.vector is not None:
-      display.display(
+      display(
       '\nSo far, reducing the density is not supported for ' + 
       'vectorized grids.\nSkipping the reduction...\n')
     elif options.drv is not None:
-      display.display(
+      display(
       '\nSo far, reducing the density is not supported for ' + 
       'the derivative of the density.\nSkipping the reduction...\n')
     else:
       from scipy import integrate
-      display.display('\nReducing the density with respect to the z-axis.\n')
+      display('\nReducing the density with respect to the z-axis.\n')
       rho = integrate.simps(rho, grid.x, dx=grid.delta_[0], axis=0, even='avg')
       rho = integrate.simps(rho, grid.y, dx=grid.delta_[1], axis=0, even='avg')
   
@@ -305,14 +279,14 @@ def main(use_qc=None):
   # Return the computed data, i.e., rho for standard, and (rho,delta_rho)  
   # for derivative calculations 
   return data
-  # main 
+  # run_orbkit 
 
 def init(reset_display=True):  
   ''' Resets all :mod:`orbkit.options` and :mod:`orbkit.display`. 
   '''
   reload(options)
   if reset_display:
-    reload(display)
+    reload(display_module)
   
   return 
   # init
@@ -325,7 +299,7 @@ def run_standalone():
   options.init_parser()
   
   # Reset orbkit.display
-  display.is_initiated = False
+  is_initiated = False
 
   # Call the main loop
-  main()
+  run_orbkit()

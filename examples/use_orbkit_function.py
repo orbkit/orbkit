@@ -10,8 +10,7 @@ calculate electron densities.
 
 # import the functions of orbkit (import function 
 # ok that imports all other functions)
-from orbkit import ok
-
+import orbkit as ok
 
 #---- first scenario ----
 '''
@@ -25,7 +24,7 @@ in_fid  = 'h2o.md'
 out_fid = 'h2o_r1'
 
 # initialize orbkit with default parameters and options
-ok.main.init()
+ok.init()
 
 # set some options
 ok.grid.N_            = [  201,   201,   101]   # grid points (regular grid)
@@ -38,10 +37,10 @@ ok.options.otype      = 'h5'                    # output file type [default]
 ok.options.numproc    = 4                       # number of processes
 
 # run orbkit
-ok.main.main()
+rho = ok.run_orbkit()
 
 import numpy as np
-print('We have %.3f electrons.' % (np.sum(ok.main.rho)*ok.grid.d3r))
+print('We have %.3f electrons.' % (np.sum(rho)*ok.grid.d3r))
 
 #---- Second scenario ----
 '''
@@ -61,7 +60,7 @@ in_fid  = 'h2o.md'
 out_fid = 'h2o_r2'
 
 # initialize orbkit with default parameters and options
-ok.main.init()
+ok.init()
 
 # set some options
 ok.options.grid_file  = 'grid_reg.txt'          # grid file to read from (regular grid)
@@ -74,7 +73,7 @@ ok.options.drv        = ['x', 'z']              # derivatives along x and z
 ok.options.no_log     = True                    # do not write log this time
 
 # run orbkit
-ok.main.main()
+ok.run_orbkit()
 
 
 #---- third scenario ----
@@ -88,9 +87,10 @@ in_fid  = 'h2o.md'
 out_fid = 'h2o_r3'
 
 # initialize orbkit with default parameters and options
-ok.main.init()
+ok.init()
 
 # set some options
+ok.options.adjust_grid= [5, 0.1]                # adjust the grid to the geometry
 ok.options.otype      = ['hx', 'vmd']           # output file types
 ok.options.mo_set     = [[1,2,3],[5,4]]         # list of MO labels (Molden enumeration)
 ok.options.filename   = in_fid                  # input file name
@@ -99,4 +99,4 @@ ok.options.outputname = out_fid                 # output file (base) name
 ok.options.numproc    = 2                       # number of processes
 
 # run orbkit
-ok.main.main()
+ok.run_orbkit()

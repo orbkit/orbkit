@@ -50,7 +50,7 @@ itypes = ['molden',
           'gamess', 
           'gaussian.log', 
           'gaussian.fchk']                        #: Specifies possible input types.
-otypes = ['h5', 'cb', 'am', 'hx', 'vmd']       #: Specifies possible output types.
+otypes = ['h5', 'cb', 'am', 'hx', 'vmd','mayavi']       #: Specifies possible output types.
 drv_options = ['x','y','z']             #: Specifies possible derivative variables.
 
 def get_options():
@@ -105,18 +105,18 @@ def init_parser():
   group.add_option("-t", "--otype", dest="otype",
                       type="choice", action="append", choices=otypes,
                       help='''output formats (multiple calls possible):  
-                      '%s' (HDF5 file), '%s' (Gaussian cube file), 
-                      '%s' (ZIBAmiraMesh file), '%s' (ZIBAmira network), 
-                      '%s' (VMD network) '''
-                      % tuple(otypes) + "[default: 'h5']")
+                      '{0}' (HDF5 file), '{1}' (Gaussian cube file), 
+                      '{2}' (ZIBAmiraMesh file), '{3}' (ZIBAmira network), 
+                      '{4}' (VMD network) [default: 'h5']'''.format(*otypes))
   parser.add_option_group(group)
+  
   group = optparse.OptionGroup(parser, "Computational Options")
   group.add_option("-p", "--numproc",dest="numproc",
                       default=1, type="int",
                       help='''number of subprocesses to be started 
                       during the execution [default: %default]''')
   group.add_option("--mo_set",dest="mo_set",
-                      default=False, type="string", 
+                      default=[], type="string",action="append",
                       help='''read the plain text file MO_SET containing row 
                       vectors of molecular orbital indeces (delimiter=' ', 
                       Integer numbering or MOLPRO's symmetry numbering) 
@@ -126,7 +126,7 @@ def init_parser():
                       default=False,action="store_true", 
                       help="calculate and save all AOs.")  
   group.add_option("--calc_mo",dest="calc_mo",
-                      default=False, type="string", 
+                      default=[], type="string", action="append",
                       help=('''calculate and save the MOs specified in the 
                       plain text file CALC_MO by the indices (delimiter=' ') 
                       (Type 'all_mo' to store all occupied and virtual
@@ -142,6 +142,7 @@ def init_parser():
                       (multiple calls possible)'''
                       ).replace('  ','').replace('\n',''))
   parser.add_option_group(group)
+  
   group = optparse.OptionGroup(parser, "Grid-Related Options")      
   group.add_option("-v", "--vector",dest="vector",
                       action="callback",callback=default_if_called,
@@ -207,10 +208,8 @@ def init_parser():
   if kwargs.filename == '':
     parser.print_help()
     sys.exit(1)
-  
   for i,j in vars(kwargs).iteritems():
     setattr(thismodule,i,j)
-    #setattr(options,i,j)
   
   # Check the options for compatibility and correctness
   check_options(error=parser.error,
@@ -301,34 +300,43 @@ def check_options(error=sys.stdout.write,display=sys.stdout.write,
     error('The number of processes (--numproc) has to be an integer value.\n')
   
   # Check the files specified by --calc_mo or --mo_set for existance
-  if calc_mo != False and mo_set != False:
+  def check_mo(attr):
+    data = getattr(thismodule,attr)
+    checklen = len(data) == 1
+    if data == []:
+      setattr(thismodule,attr,False)
+      return False    
+    try:
+      for d in data:      
+        if not (',' in d.lower() or ':' in  d.lower()):        
+          i = deepcopy(d)
+          if i != 'homo' and i != 'lumo':
+            for r in ['homo','lumo','-','+']:
+              i = i.replace(r,'')
+            int(i.split('.')[0])
+    except ValueError: 
+      if len(data) == 1:
+        data = data[0]
+        if data.lower() != 'all_mo':        
+          setattr(thismodule,attr,
+                  check_if_exists(data,
+                  what='filename for the MO list',
+                  interactive=interactive))
+        else:
+          setattr(thismodule,attr,data)
+      else:
+        display('You have called `%s` multiple times. So, you have\n' % attr + 
+                'to give the molecular orbital labels explicitly, i.e.,\n' + 
+                'no filenames and no usage of the keyword `all_mo`.\n\n')
+        error('Entry `%s` is not valid!' % d)
+    return True
+  
+  i = check_mo('calc_mo')
+  j = check_mo('mo_set')
+  
+  if i and j:
     error('Please choose --calc_mo OR --mo_set, not both. \n'+
         '--calc_mo will be done.\n')
-  if calc_mo != False:
-    if not (calc_mo.lower() == 'all_mo' or ',' in calc_mo.lower() or ':' in  calc_mo.lower()):
-      try:
-        i = deepcopy(calc_mo)
-	if i != 'homo' and i != 'lumo':
-	  for r in ['homo','lumo','-','+']:
-            i = i.replace(r,'')
-          int(i.split('.')[0])
-      except ValueError: 
-        setattr(thismodule,'calc_mo',
-                check_if_exists(calc_mo,
-                what='filename for the MO list',
-                interactive=interactive))
-  if mo_set != False:
-    if not (mo_set.lower() == 'all_mo' or ',' in mo_set.lower() or ':' in  mo_set.lower()):
-      try:
-        i = deepcopy(mo_set)
-        for r in ['homo','lumo','-','+']:
-          i = i.replace(r,'')
-        int(i.split('.')[0])
-      except ValueError: 
-         setattr(thismodule,'mo_set',
-                check_if_exists(mo_set, 
-                what='filename for the MO list', 
-                interactive=interactive))
   
   if not isinstance(all_mo,bool):
     error('The option --all_mo has to be a boolean.\n')

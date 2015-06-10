@@ -2,6 +2,7 @@
 '''Module for writing the .oklog files and printing the terminal output.'''
 from orbkit import options
 from os import remove,path
+import resource
 
 is_initiated = False #: If True, logfile is initialized.
 log_fid = None #: Specifies the filename of the oklog file
@@ -36,3 +37,29 @@ def display(string):
     f = open(log_fid, 'a')
     f.write('%s\n' % string)
     f.close()
+
+def tForm(string,T,extra=''):
+  t_diff = int(round(T))
+  tF = {}
+  tF['str'] = string
+  tF['extra'] = extra
+  tF['min'] = t_diff/60
+  tF['sec'] = t_diff%60
+  tF['h']   = tF['min']/60
+  tF['min'] = tF['min']%60
+  if tF['h'] == 0:
+    if tF['min'] == 0: 
+      return ('\n%(str)s took %(sec).3fs%(extra)s.\n' % 
+            {'str':string, 'sec': T, 'extra':extra})
+    else: 
+      return ('\n%(str)s took %(min)dmin and %(sec)ds%(extra)s.\n' % tF)
+  else: return ('\n%(str)s took %(h)dh, %(min)dmin and %(sec)ds%(extra)s.\n' % tF)
+  # tForm 
+
+def good_bye_message(t):
+  ram_requirement = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+  ram_req = '\nand required %.2f MB of RAM' % (ram_requirement/1000.)
+  msg = tForm('The calculation',t[-1]-t[0],extra=ram_req)
+  msg += '\nThank you. Good bye.'
+  display(msg)
+  return msg

@@ -19,7 +19,7 @@ folder and need to be decompressed before running this example.
 import os
 from time import time
 from orbkit import multiple_files as mult
-from orbkit.display import init_display,display
+from orbkit.display import init_display,display,tForm
 
 create_plots = True # Specifies, if plots shall be created
 
@@ -131,22 +131,20 @@ r = 0                    # Index to be calculated
 out_fid = 'nacl_r%d' % r # Specifies the name of the output file
 
 display('Running orbkit for the structure %d' % r)
-from orbkit import ok
+import orbkit as ok
 
 
 # Initialize orbkit with default parameters and options
 ok.main.init(reset_display=False)
 
 # Set some options
-ok.grid.N_            = [  101,   101,   101]   # grid points (regular grid)
-ok.grid.max_          = [ 10.0,  10.0,  10.0]   # maximum grid value
-ok.grid.min_          = [-10.0, -10.0, -10.0]   # minimum grid value
+ok.options.adjust_grid= [5, 0.1]                # adjust the grid to the geometry
 ok.options.outputname = out_fid                 # output file (base) name
 ok.options.otype      = 'h5'                    # output file type [default]
 ok.options.numproc    = 4                       # number of processes
 
 # Run orbkit with qc as input
-ok.main.main(QC[r])
+ok.run_orbkit(QC[r])
 
 t.append(time())
 
@@ -154,6 +152,6 @@ t.append(time())
 string = '\n%s\nRequired time:\n\t' % (80*'-')
 for i,j in enumerate(run_id):
   if t[i+1]-t[i] > 1e-1:
-    string += ok.main.tForm(j,t[i+1]-t[i],extra='')[1:] + '\t'
+    string += tForm(j,t[i+1]-t[i],extra='')[1:] + '\t'
 
 display(string)

@@ -1,0 +1,271 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>orbkit’s High-Level Interface &mdash; orbkit 0.2.2 documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../_static/orbkit.ico"/>
+  
+
+  
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+    <link rel="top" title="orbkit 0.2.2 documentation" href="../index.html"/>
+        <link rel="up" title="Documentation" href="index.html"/>
+        <link rel="next" title="orbkit’s Low-Level Interface" href="ok_modules.html"/>
+        <link rel="prev" title="Usage via the Terminal" href="terminal.html"/> 
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        <a href="../toctree.html" class="fa fa-home"> orbkit</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+        
+            <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Overview</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#citation">Citation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installation Instructions for orbkit</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../install.html#installation">Installation</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Documentation</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="requirements.html">Requirements for the Input Files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="terminal.html">Usage via the Terminal</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="">orbkit&#8217;s High-Level Interface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ok_modules.html">orbkit&#8217;s Low-Level Interface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cvars.html">Central Variables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="options.html">Options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="funcref.html">Function Reference</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/vis.html">Tutorial for the Visualization</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../examples/vis.html#within-the-terminal">Within the Terminal</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../examples/vis.html#within-a-python-shell">Within a Python Shell</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../licence.html">Licence Note</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../impressum.html">Impressum - Legal Notice</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../impressum.html#impressum">Impressum</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../impressum.html#haftungsausschluss-disclaimer">Haftungsausschluss - Disclaimer</a></li>
+</ul>
+</li>
+</ul>
+
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../toctree.html">orbkit</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../toctree.html">Docs</a> &raquo;</li>
+      
+          <li><a href="index.html">Documentation</a> &raquo;</li>
+      
+    <li>orbkit&#8217;s High-Level Interface</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          <a href="../_sources/documentation/ok_main.txt" rel="nofollow"> View page source</a>
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            
+  <div class="section" id="orbkit-s-high-level-interface">
+<h1>orbkit&#8217;s High-Level Interface<a class="headerlink" href="#orbkit-s-high-level-interface" title="Permalink to this headline">¶</a></h1>
+<p>For an overview of all available features, refer to the chapter <a class="reference internal" href="options.html#options"><em>Options</em></a>.</p>
+<p>The following examples show exemplary how to use orbkit within your Python
+programs. These and more examples can be found in the <tt class="docutils literal"><span class="pre">orbkit/examples</span></tt>
+folder.</p>
+<div class="section" id="input-output">
+<h2>Input/Output<a class="headerlink" href="#input-output" title="Permalink to this headline">¶</a></h2>
+<p>For the standard density calculation including all occupied molecular
+orbitals on the default grid, the following command must be entered in the
+console:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">orbkit</span> <span class="kn">as</span> <span class="nn">ok</span>
+<span class="n">ok</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">filename</span>   <span class="o">=</span> <span class="s">&#39;h2o.md&#39;</span>                <span class="c"># input file name</span>
+<span class="n">ok</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">itype</span>      <span class="o">=</span> <span class="s">&#39;molden&#39;</span>                <span class="c"># input file type [default]</span>
+<span class="n">ok</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">outputname</span> <span class="o">=</span> <span class="s">&#39;h2o&#39;</span>                   <span class="c"># output file (base) name</span>
+<span class="n">ok</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">otype</span>      <span class="o">=</span> <span class="p">[</span><span class="s">&#39;h5&#39;</span><span class="p">,</span><span class="s">&#39;vmd&#39;</span><span class="p">]</span>            <span class="c"># output file type [default]</span>
+<span class="n">ok</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">numproc</span>    <span class="o">=</span> <span class="mi">4</span>                       <span class="c"># number of processes</span>
+<span class="c"># run orbkit</span>
+<span class="n">ok</span><span class="o">.</span><span class="n">run_orbkit</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="admonition hint">
+<p class="first admonition-title">Hint</p>
+<p>If you want to run several calculations with different options, you have to
+reset all options. This can be accomplished by calling <a class="reference internal" href="funcref.html#orbkit.main.init" title="orbkit.main.init"><tt class="xref py py-mod docutils literal"><span class="pre">orbkit.main.init</span></tt></a>
+between the calculations, e.g.:</p>
+<div class="last highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">orbkit</span> <span class="kn">as</span> <span class="nn">ok</span>
+<span class="c"># Set some options ...</span>
+<span class="c"># run orbkit</span>
+<span class="n">ok</span><span class="o">.</span><span class="n">run_orbkit</span><span class="p">()</span>
+
+<span class="c"># Reset all options</span>
+<span class="n">ok</span><span class="o">.</span><span class="n">main</span><span class="o">.</span><span class="n">init</span><span class="p">()</span>
+<span class="c"># Set some options ...</span>
+<span class="c"># run orbkit</span>
+<span class="n">ok</span><span class="o">.</span><span class="n">run_orbkit</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="grid-related-options">
+<h2>Grid Related Options<a class="headerlink" href="#grid-related-options" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">ok</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">adjust_grid</span><span class="o">=</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">]</span>                <span class="c"># adjust the grid to the geometry</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">ok</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">grid_file</span>  <span class="o">=</span> <span class="s">&#39;grid_reg.txt&#39;</span>          <span class="c"># grid file to read from (regular grid)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">ok</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">grid_file</span>  <span class="o">=</span> <span class="s">&#39;grid_vec.txt&#39;</span>          <span class="c"># grid file to read from (vector grid)</span>
+<span class="n">ok</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">vector</span>     <span class="o">=</span> <span class="mf">1e4</span>                     <span class="c"># number of points per subprocess</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">ok</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">N_</span>            <span class="o">=</span> <span class="p">[</span>  <span class="mi">201</span><span class="p">,</span>   <span class="mi">201</span><span class="p">,</span>   <span class="mi">101</span><span class="p">]</span>   <span class="c"># grid points (regular grid)</span>
+<span class="n">ok</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">max_</span>          <span class="o">=</span> <span class="p">[</span> <span class="mf">10.0</span><span class="p">,</span>  <span class="mf">10.0</span><span class="p">,</span>   <span class="mf">5.0</span><span class="p">]</span>   <span class="c"># maximum grid value</span>
+<span class="n">ok</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">min_</span>          <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mf">10.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">10.0</span><span class="p">,</span>  <span class="o">-</span><span class="mf">5.0</span><span class="p">]</span>   <span class="c"># minimum grid value</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="molecular-orbital-selection">
+<h2>Molecular Orbital Selection<a class="headerlink" href="#molecular-orbital-selection" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">ok</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">calc_mo</span>    <span class="o">=</span> <span class="p">[</span><span class="s">&#39;2.1&#39;</span><span class="p">,</span><span class="s">&#39;1.1&#39;</span><span class="p">,</span><span class="s">&#39;2.3&#39;</span><span class="p">]</span>     <span class="c"># list of MO labels (Molpro notation)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">ok</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">mo_set</span>     <span class="o">=</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">],[</span><span class="s">&#39;homo&#39;</span><span class="p">,</span>
+                         <span class="s">&#39;lumo+2:lumo+4&#39;</span><span class="p">]]</span>      <span class="c"># list of MO labels (Molden enumeration)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="derivative-calculation">
+<h2>Derivative Calculation<a class="headerlink" href="#derivative-calculation" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">ok</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">drv</span>        <span class="o">=</span> <span class="p">[</span><span class="s">&#39;x&#39;</span><span class="p">,</span> <span class="s">&#39;z&#39;</span><span class="p">]</span>              <span class="c"># derivatives along x and z</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="ok_modules.html" class="btn btn-neutral float-right" title="orbkit’s Low-Level Interface"/>Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="terminal.html" class="btn btn-neutral" title="Usage via the Terminal"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015, Gunter Hermann, Vincent Pohl, and Axel Schild.
+    </p>
+  </div>
+
+  <a href="https://github.com/snide/sphinx_rtd_theme">Sphinx theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'0.2.2',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

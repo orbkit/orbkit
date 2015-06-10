@@ -8,10 +8,12 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Overview &mdash; orbkit 0.2.0 documentation</title>
+  <title>Overview &mdash; orbkit 0.2.2 documentation</title>
   
 
   
+  
+    <link rel="shortcut icon" href="_static/orbkit.ico"/>
   
 
   
@@ -29,7 +31,7 @@
   
 
   
-    <link rel="top" title="orbkit 0.2.0 documentation" href="#"/>
+    <link rel="top" title="orbkit 0.2.2 documentation" href="#"/>
         <link rel="next" title="Installation Instructions for orbkit" href="install.html"/>
         <link rel="prev" title="Welcome to the orbkit Documentation!" href="toctree.html"/> 
 
@@ -67,25 +69,19 @@
 <li class="toctree-l2"><a class="reference internal" href="install.html#installation">Installation</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="manual.html">Manual</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="manual.html#requirements-for-the-input-files">Requirements for the Input Files</a></li>
-<li class="toctree-l2"><a class="reference internal" href="manual.html#usage-via-the-terminal">Usage via the Terminal</a></li>
-<li class="toctree-l2"><a class="reference internal" href="manual.html#usage-within-a-python-program">Usage Within a Python Program</a></li>
-<li class="toctree-l2"><a class="reference internal" href="manual.html#limitations-of-orbkit">Limitations of orbkit</a></li>
+<li class="toctree-l1"><a class="reference internal" href="documentation/index.html">Documentation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="documentation/requirements.html">Requirements for the Input Files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="documentation/terminal.html">Usage via the Terminal</a></li>
+<li class="toctree-l2"><a class="reference internal" href="documentation/ok_main.html">orbkit&#8217;s High-Level Interface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="documentation/ok_modules.html">orbkit&#8217;s Low-Level Interface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="documentation/cvars.html">Central Variables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="documentation/options.html">Options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="documentation/funcref.html">Function Reference</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="funcref.html">Function Reference</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="funcref.html#central-variables">Central Variables</a></li>
-<li class="toctree-l2"><a class="reference internal" href="funcref.html#module-orbkit.options">orbkit.options</a></li>
-<li class="toctree-l2"><a class="reference internal" href="funcref.html#module-orbkit.main">orbkit.main</a></li>
-<li class="toctree-l2"><a class="reference internal" href="funcref.html#module-orbkit.read">orbkit.read</a></li>
-<li class="toctree-l2"><a class="reference internal" href="funcref.html#module-orbkit.grid">orbkit.grid</a></li>
-<li class="toctree-l2"><a class="reference internal" href="funcref.html#module-orbkit.core">orbkit.core</a></li>
-<li class="toctree-l2"><a class="reference internal" href="funcref.html#module-orbkit.analytical_integrals">orbkit.analytical_integrals</a></li>
-<li class="toctree-l2"><a class="reference internal" href="funcref.html#module-orbkit.multiple_files">orbkit.multiple_files</a></li>
-<li class="toctree-l2"><a class="reference internal" href="funcref.html#module-orbkit.display">orbkit.display</a></li>
-<li class="toctree-l2"><a class="reference internal" href="funcref.html#module-orbkit.output">orbkit.output</a></li>
-<li class="toctree-l2"><a class="reference internal" href="funcref.html#module-orbkit.extras">orbkit.extras</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples/vis.html">Tutorial for the Visualization</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="examples/vis.html#within-the-terminal">Within the Terminal</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/vis.html#within-a-python-shell">Within a Python Shell</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="licence.html">Licence Note</a></li>
@@ -133,18 +129,16 @@
 <p>orbkit is a parallel Python program package for post-processing
 wavefunction data extracted from output files of <a class="reference external" href="https://www.molpro.net/">MOLPRO</a> (Molden File Format),
 <a class="reference external" href="http://www.turbomole.com/">TURBOMOLE</a> (Molden file format), <a class="reference external" href="http://www.msg.chem.iastate.edu/gamess/">GAMESS-US</a>, and <a class="reference external" href="http://www.gaussian.com/">Gaussian</a> (.log File and Formatted Checkpoint File).</p>
-<p>Computational capabilities using arbitrary grids:</p>
+<p>Computational capabilities:</p>
 <ul class="simple">
 <li>Atomic orbitals, molecular orbitals, electron density, and the spatial derivatives of these quantities</li>
 <li>Reduced electron density</li>
 <li>Electron density for selected molecular orbitals</li>
+<li>Mulliken and Lowdin population analysis</li>
+<li>Analytical overlap integrals between atomic and molecular orbitals</li>
 <li>Atom-projected electron density</li>
 <li>Molecular orbital transition electronic flux density</li>
 </ul>
-<p>The requirements for the input files, the usage via the terminal or within a
-Python program, as well as the limitations of orbkit are explained in the <a class="reference internal" href="manual.html"><em>Manual</em></a>.
-Information about the central variables and descriptions to all orbkit
-modules are presented under <a class="reference internal" href="funcref.html"><em>Function Reference</em></a>.</p>
 <p>The orbkit support team, Axel, Gunter, and Vincent, welcomes every new
 user and will be available to answer your questions. For any change
 requests, do not hesitate to contact the orbkit support team.</p>
@@ -159,8 +153,8 @@ requests, do not hesitate to contact the orbkit support team.</p>
 <div class="section" id="citation">
 <h2>Citation<a class="headerlink" href="#citation" title="Permalink to this headline">¶</a></h2>
 <p>If you use orbkit in your work, please cite it as follows:</p>
-<p>Gunter Hermann, Vincent Pohl, Axel Schild: orbkit: A Toolbox for Post-Processing
-Quantum Chemical Wavefunction Data, available via <a class="reference external" href="http://sourceforge.net/p/orbkit">http://sourceforge.net/p/orbkit</a> (2014).</p>
+<p>Gunter Hermann, Vincent Pohl, Axel Schild, &#8220;orbkit: A Toolbox for Post-Processing
+Quantum Chemical Wavefunction Data.&#8221; available via <a class="reference external" href="http://sourceforge.net/p/orbkit">http://sourceforge.net/p/orbkit</a> (2015).</p>
 </div>
 </div>
 
@@ -182,7 +176,7 @@ Quantum Chemical Wavefunction Data, available via <a class="reference external" 
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2014, Gunter Hermann, Vincent Pohl, and Axel Schild.
+        &copy; Copyright 2015, Gunter Hermann, Vincent Pohl, and Axel Schild.
     </p>
   </div>
 
@@ -202,7 +196,7 @@ Quantum Chemical Wavefunction Data, available via <a class="reference external" 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'',
-            VERSION:'0.2.0',
+            VERSION:'0.2.2',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true
