@@ -43,7 +43,7 @@ except:
 
 def l_creator(geo_spec,ao_spec,sel_ao,exp_list=None,coeff_list=None,
               at_pos=None,is_vector=False,drv=None,
-              x=None,y=None,z=None,N=None):
+              x=None,y=None,z=None):
   '''Calculates the contracted atomic orbitals of quantum number l or its
   derivative with respect to a specific variable (e.g. drv = 'x' or drv = 0)
   for the atomic orbitals: ao_spec[sel_ao].
@@ -54,16 +54,16 @@ def l_creator(geo_spec,ao_spec,sel_ao,exp_list=None,coeff_list=None,
     See :ref:`Central Variables` for details.
   sel_ao : int
     Index of the requested atomic orbitals
-  exp_list : array_like, shape=(NDEG, 3), optional
+  exp_list : numpy.ndarray, shape=(NDEG, 3), optional
     If not None, list of xyz-exponents of the NDEG 
     degenerate atomic orbitals ,i.e., NDEG=len(exp_list),
     else the standard molden exponents (exp) for quantum number l will be 
     used.
-  coeff_list : array_like, shape=(PNUM, 2), optional
+  coeff_list : numpy.ndarray, shape=(PNUM, 2), optional
     If not None, list of the PNUM primitive atomic orbital
     exponents [:,0] and coefficients [:,1],
     else the coefficients from ao_spec[sel_ao] will be used.
-  at_pos : array_like, shape=(3,), optional
+  at_pos : numpy.ndarray, shape=(3,), optional
     If not None, xyz-coordinates where the atomic orbital is centered,
     else the position geo_spec[ao_spec[sel_ao]['atom']] will be used.
   is_vector : bool, optional
@@ -73,12 +73,10 @@ def l_creator(geo_spec,ao_spec,sel_ao,exp_list=None,coeff_list=None,
     is requested.
   compile_only : bool, optional
     If True, compiles only the C++ code.
-  x,y,z : list of floats, optional
+  x,y,z : numpy.ndarray, optional
     If not None, provides a list of Cartesian coordinates, 
     else the respective coordinates of the module :mod:`orbkit.grid` will 
     be used.
-  N : tuple
-    If not None, provides the shape of the grid.
   
   **Returns:**
   
@@ -94,13 +92,12 @@ def l_creator(geo_spec,ao_spec,sel_ao,exp_list=None,coeff_list=None,
   if x is None: x = grid.x
   if y is None: y = grid.y
   if z is None: z = grid.z
-  
+
   if not is_vector:
-    if N is None: N = numpy.array(grid.N_)
+    N = (len(x),len(y),len(z))
   else:
     if len(x) != len(y) or len(x) != len(z):
-      display("Dimensions of x-, y-, and z- coordinate differ!")
-      return 0
+      raise ValueError("Dimensions of x-, y-, and z- coordinate differ!")
     else:
       N = (len(x),)
   
@@ -127,9 +124,8 @@ def l_creator(geo_spec,ao_spec,sel_ao,exp_list=None,coeff_list=None,
       drv = 'xyz'.find(drv)
     if drv == -1: # Was the selection valid? If not drv='x'
       drv = 0
-      display("The selection of the derivative variable was not valid!" +
-                " (drv = 'x' or 'y' or 'z')")
-      display("Calculating the derivative with respect to x...")
+      raise ValueError("The selection of the derivative variable was not valid!" +
+                       " (drv = 'x' or 'y' or 'z')")
   
   # Ask for respective the C++ code
   code = ao_code(is_vector=is_vector,is_drv=(drv is not None))  
@@ -159,9 +155,9 @@ def l_creator(geo_spec,ao_spec,sel_ao,exp_list=None,coeff_list=None,
   return ao_list
   # l_creator 
 
-def ao_creator(geo_spec,ao_spec,
+def ao_creator(geo_spec,ao_spec,ao_spherical=None,
                is_vector=False,drv=None,
-               x=None,y=None,z=None,N=None):
+               x=None,y=None,z=None):
   '''Calculates all contracted atomic orbitals or its
   derivatives with respect to a specific variable (e.g. drv = 'x' or drv = 0).
   
@@ -179,27 +175,12 @@ def ao_creator(geo_spec,ao_spec,
   x,y,z : None or list of floats, optional
     If not None, provides a list of Cartesian coordinates, 
     else the respective coordinates of grid. will be used
-  N : None or tuple, optional
-    If not None, provides the shape of the grid.
   
   **Returns:**
   
   ao_list : numpy.ndarray, shape=((NAO,) + N)
     Contains the computed NAO atomic orbitals on a grid.
   '''
-  # Create the grid
-  if x is None: x = grid.x
-  if y is None: y = grid.y
-  if z is None: z = grid.z
-
-  if not is_vector:
-    if N is None: N = numpy.array(grid.N_)
-  else:
-    if len(x) != len(y) or len(x) != len(z):
-      display("Dimensions of x-, y-, and z- coordinate differ!")
-      return 0
-    else:
-      N = (len(x),)
   
   # Generalized AO creator
   for ii in range(len(ao_spec)):
@@ -211,15 +192,60 @@ def ao_creator(geo_spec,ao_spec,
     # Compute the atomic orbitals
     if not ii:
       ao_list = l_creator(geo_spec,ao_spec,ii,drv=drv,
-                x=x,y=y,z=z,N=N,is_vector=is_vector,
+                x=x,y=y,z=z,is_vector=is_vector,
                 exp_list=ii_exp)
     else:
       ao_list = numpy.append(ao_list,l_creator(geo_spec,ao_spec,ii,drv=drv,
-                    x=x,y=y,z=z,N=N,is_vector=is_vector,
+                    x=x,y=y,z=z,is_vector=is_vector,
                     exp_list=ii_exp), axis = 0)
-    
+  
+  if ao_spherical is not None:
+    ao_list = cartesian2spherical(ao_list,ao_spec,ao_spherical)
+  
   return ao_list
   # ao_creator 
+
+def cartesian2spherical(ao_list,ao_spec,ao_spherical):
+  '''Transforms the atomic orbitals from a Cartesian Gaussian basis to a 
+  (real) pure spherical harmonic Gaussian basis set.
+  
+  Adapted from H.B. Schlegel and M.J. Frisch,
+  International Journal of Quantum Chemistry, Vol. 54, 83-87 (1995).
+  
+  **Parameters:**
+  
+  ao_list : numpy.ndarray, shape=((NAO,) + N)
+    Contains the NAO atomic orbitals on a grid.  
+  ao_spec,ao_spherical :
+    See :ref:`Central Variables` in the manual for details.
+  
+  **Returns:**
+  
+  ao_list_sph : numpy.ndarray, shape=((NAO,) + N)
+    Contains the NAO spherical atomic orbitals on a grid. 
+  
+  ..hint: 
+  
+    The conversion is currently only supported up to g atomic orbitals.
+  '''
+  exp_list,assign = get_lxlylz(ao_spec,get_assign=True)
+
+  l = [[] for i in ao_spec]
+  for i,j in enumerate(assign):
+    l[j].append(i) 
+  
+  shape = list(ao_list.shape)
+  shape[0] = len(ao_spherical)
+  ao_list_sph = numpy.zeros(shape)
+  for i0,(j0,k0) in enumerate(ao_spherical):
+    sph0 = get_cart2sph(*k0)
+    for c0 in range(len(sph0[0])):
+      for i,j in enumerate(l[j0]):
+        if tuple(exp_list[j]) == sph0[0][c0]:
+          index0 = i + l[j0][0]
+      ao_list_sph[i0,:] += sph0[1][c0]*sph0[2]*ao_list[index0,:]
+  
+  return ao_list_sph
 
 def calc_single_mo(xx):
   '''Computes a single molecular orbital. 
@@ -254,7 +280,7 @@ def calc_single_mo(xx):
     return 0
 
 def mo_creator(ao_list,mo_spec,is_vector=False,
-            x=None,y=None,z=None,N=None,mo_coeff=None,
+            x=None,y=None,z=None,mo_coeff=None,
             HDF5_save=False,h5py=False,
             numproc=1,s=0):
   '''Calculates the molecular orbitals.
@@ -274,8 +300,6 @@ def mo_creator(ao_list,mo_spec,is_vector=False,
   x,y,z : None or list of floats, optional
     If not None, provide a list of Cartesian coordinates, 
     else the respective coordinates of grid will be used.
-  N : None or tuple, optional
-    If not None, provides the shape of the grid.
   HDF5_save : False or string, optional
     If not False, filename of HDF5 file for storing the molecular orbitals.
     (Requires Parameters: h5py and s)
@@ -291,17 +315,16 @@ def mo_creator(ao_list,mo_spec,is_vector=False,
   mo_list : numpy.ndarray, shape=((NMO,) + N)
     Contains the NMO=len(mo_spec) molecular orbitals on a grid.
   '''
-  
+  # Create the grid
   if x is None: x = grid.x
   if y is None: y = grid.y
   if z is None: z = grid.z
-  
+
   if not is_vector:
-    if N is None: N = tuple(grid.N_)
+    N = (len(x),len(y),len(z))
   else:
     if len(x) != len(y) or len(x) != len(z):
-      display("Dimensions of x-, y-, and z- coordinate differ!")
-      return 0
+      raise ValueError("Dimensions of x-, y-, and z- coordinate differ!")
     else:
       N = (len(x),)
   
@@ -404,6 +427,7 @@ def slice_rho(xx):
     # All desired information is stored in the Global variable Spec 
     geo_spec = Spec['geo_spec']
     ao_spec = Spec['ao_spec']
+    ao_spherical = Spec['ao_spherical']
     mo_spec = Spec['mo_spec']
     is_vector = Spec['is_vector']
     drv = Spec['Derivative']
@@ -425,15 +449,16 @@ def slice_rho(xx):
       delta_mo_list = []
       for ii_d in drv:
         # Calculate the derivatives of the AOs and MOs for this slice 
-        delta_ao_list = ao_creator(geo_spec,ao_spec,drv=ii_d,
-                    x=x,y=y,z=z,N=N,is_vector=is_vector)
+        delta_ao_list = ao_creator(geo_spec,ao_spec,ao_spherical=ao_spherical,drv=ii_d,
+                    x=x,y=y,z=z,is_vector=is_vector)
         delta_mo_list.append(mo_creator(delta_ao_list,mo_spec,
-                    x=x,y=y,z=z,N=N,is_vector=is_vector))
+                    x=x,y=y,z=z,is_vector=is_vector))
       return numpy.array(delta_mo_list)
     
     # Calculate the MOs and AOs for this slice 
-    ao_list = ao_creator(geo_spec,ao_spec,x=x,y=y,z=z,N=N,is_vector=is_vector)
-    mo_list = mo_creator(ao_list,mo_spec,x=x,y=y,z=z,N=N,is_vector=is_vector)
+    ao_list = ao_creator(geo_spec,ao_spec,ao_spherical=ao_spherical,x=x,y=y,z=z,
+                         is_vector=is_vector)
+    mo_list = mo_creator(ao_list,mo_spec,x=x,y=y,z=z,is_vector=is_vector)
     
     if calc_mo:
       return numpy.array(mo_list)
@@ -457,10 +482,10 @@ def slice_rho(xx):
       delta_rho = numpy.zeros((len(drv),) + N)
       for i,ii_d in enumerate(drv):
         # Calculate the derivatives of the AOs and MOs for this slice 
-        delta_ao_list = ao_creator(geo_spec,ao_spec,drv=ii_d,
-                    x=x,y=y,z=z,N=N,is_vector=is_vector)
+        delta_ao_list = ao_creator(geo_spec,ao_spec,ao_spherical=ao_spherical,drv=ii_d,
+                                   x=x,y=y,z=z,is_vector=is_vector)
         delta_mo_list = mo_creator(delta_ao_list,mo_spec,
-                    x=x,y=y,z=z,N=N,is_vector=is_vector)
+                                   x=x,y=y,z=z,is_vector=is_vector)
         
         # Calculate the derivative of the density
         for ii_mo in range(len(mo_list)): 
@@ -486,7 +511,7 @@ def rho_compute(qc,calc_mo=False,vector=None,drv=None,numproc=1):
   qc : class or dict
     QCinfo class or dictionary containing the following attributes/keys.
     See :ref:`Central Variables` for details.
-  qc.geo_spec : array_like, shape=(3,NATOMS) 
+  qc.geo_spec : numpy.ndarray, shape=(3,NATOMS) 
     See :ref:`Central Variables` for details.
   qc.ao_spec : List of dictionaries
     See :ref:`Central Variables` for details.
@@ -552,7 +577,6 @@ def rho_compute(qc,calc_mo=False,vector=None,drv=None,numproc=1):
   Spec['calc_mo'] = calc_mo
   Spec['Derivative'] = drv
   Spec['is_vector'] = (vector is not None)
-  
   mo_num = len(Spec['mo_spec'])
   
   if not grid.is_initialized:
@@ -717,7 +741,7 @@ def rho_compute_no_slice(qc,calc_mo=False,is_vector=False,drv=None,
   qc : class or dict
     QCinfo class or dictionary containing the following attributes/keys.
     See :ref:`Central Variables` for details.
-  qc.geo_spec : array_like, shape=(3,NATOMS) 
+  qc.geo_spec : numpy.ndarray, shape=(3,NATOMS) 
     See :ref:`Central Variables` for details.
   qc.ao_spec : List of dictionaries
     See :ref:`Central Variables` for details.
@@ -735,8 +759,10 @@ def rho_compute_no_slice(qc,calc_mo=False,is_vector=False,drv=None,
   return_components : bool, optional
     If True, returns the atomic and molecular orbitals, and the density, 
     and if requested, the derivatives thereof as well.
-  grid : module or class, global
-    Contains the grid, i.e., grid.x, grid.y, and grid.z.
+  x,y,z : numpy.ndarray, optional
+    If not None, provides a list of Cartesian coordinates, 
+    else the respective coordinates of the module :mod:`orbkit.grid` will 
+    be used.
 
   **Returns:**
   
@@ -785,6 +811,14 @@ def rho_compute_no_slice(qc,calc_mo=False,is_vector=False,drv=None,
   if x is None: x = grid.x
   if y is None: y = grid.y
   if z is None: z = grid.z
+
+  if not is_vector:
+    N = (len(x),len(y),len(z))
+  else:
+    if len(x) != len(y) or len(x) != len(z):
+      raise ValueError("Dimensions of x-, y-, and z- coordinate differ!")
+    else:
+      N = (len(x),)
   
   if not isinstance(qc,dict):
     qc = qc.todict()
@@ -792,6 +826,7 @@ def rho_compute_no_slice(qc,calc_mo=False,is_vector=False,drv=None,
   #FIXME inaccurate implementation
   geo_spec = qc['geo_spec']
   ao_spec = qc['ao_spec']
+  ao_spherical = qc['ao_spherical']
   mo_spec = qc['mo_spec']
     
   if not is_vector:
@@ -811,19 +846,18 @@ def rho_compute_no_slice(qc,calc_mo=False,is_vector=False,drv=None,
     delta_mo_list = []
     for ii_d in drv:
       # Calculate the derivatives of the AOs and MOs for this slice 
-      delta_ao_list = ao_creator(geo_spec,ao_spec,drv=ii_d,
-                                 is_vector=is_vector,
-                                 x=x,y=y,z=z)
+      delta_ao_list = ao_creator(geo_spec,ao_spec,ao_spherical=ao_spherical,drv=ii_d,
+                                 is_vector=is_vector,x=x,y=y,z=z)
       delta_mo_list.append(mo_creator(delta_ao_list,mo_spec,
-                                      is_vector=is_vector,
-                                      x=x,y=y,z=z))
+                                      is_vector=is_vector,x=x,y=y,z=z))
     delta_mo_list = numpy.array(delta_mo_list)
     if calc_mo:
       return ((delta_ao_list, delta_mo_list) if return_components 
         else delta_mo_list)
   
   # Calculate the AOs and MOs 
-  ao_list = ao_creator(geo_spec,ao_spec,is_vector=is_vector,x=x,y=y,z=z)
+  ao_list = ao_creator(geo_spec,ao_spec,ao_spherical=ao_spherical,is_vector=is_vector,
+                       x=x,y=y,z=z)
   mo_list = mo_creator(ao_list,mo_spec,is_vector=is_vector,x=x,y=y,z=z)
   
   if not is_vector:
@@ -877,27 +911,7 @@ orbit = 'spd' + string.lowercase[5:].replace('s','').replace('p','')
 lquant = dict([(j, i) for i,j in enumerate(orbit)])
 del i,j
 
-# Molden AO order 
-exp = []
-exp.append([(0,0,0)])                   # s orbitals
-
-exp.append([(1,0,0), (0,1,0), (0,0,1)]) # p orbitals
-
-exp.append([(2,0,0), (0,2,0), (0,0,2),
-            (1,1,0), (1,0,1), (0,1,1)]) # d orbitals
-
-exp.append([(3,0,0), (0,3,0), (0,0,3),
-            (1,2,0), (2,1,0), (2,0,1),
-            (1,0,2), (0,1,2), (0,2,1),
-            (1,1,1)])                   # f orbitals
-    
-exp.append([(4,0,0), (0,4,0), (0,0,4),
-            (3,1,0), (3,0,1), (1,3,0),
-            (0,3,1), (1,0,3), (0,1,3),
-            (2,2,0), (2,0,2), (0,2,2),
-            (2,1,1), (1,2,1), (1,1,2)]) # g orbitals
-
-def l_deg(l=0,ao=None):
+def l_deg(l=0,ao=None,cartesian_basis=True):
   '''Calculates the degeneracy of a given atomic orbitals.
   
   **Options:**
@@ -919,8 +933,134 @@ def l_deg(l=0,ao=None):
       l = len(ao)
   elif isinstance(l,str):
     l = lquant[l]
-  return (l+1)*(l+2)/2
+  return (l+1)*(l+2)/2 if cartesian_basis else (2*l+1)
   # l_deg 
+
+# Molden AO order 
+exp = []
+exp.append([(0,0,0)])                   # s orbitals
+
+exp.append([(1,0,0), (0,1,0), (0,0,1)]) # p orbitals
+
+exp.append([(2,0,0), (0,2,0), (0,0,2),
+            (1,1,0), (1,0,1), (0,1,1)]) # d orbitals
+
+exp.append([(3,0,0), (0,3,0), (0,0,3),
+            (1,2,0), (2,1,0), (2,0,1),
+            (1,0,2), (0,1,2), (0,2,1),
+            (1,1,1)])                   # f orbitals
+    
+exp.append([(4,0,0), (0,4,0), (0,0,4),
+            (3,1,0), (3,0,1), (1,3,0),
+            (0,3,1), (1,0,3), (0,1,3),
+            (2,2,0), (2,0,2), (0,2,2),
+            (2,1,1), (1,2,1), (1,1,2)]) # g orbitals
+
+
+'''
+Transformation Between Cartesian and (Real) Pure Spherical Harmonic Gaussians
+
+adapted from H.B. Schlegel and M.J. Frisch 
+International Journal of Quantum Chemistry, Vol. 54, 83-87 (1995).
+'''
+sqrt = numpy.sqrt
+cart2sph = [ #: Transformation Between Cartesian and (Real) Pure Spherical Harmonic Gaussians
+  [
+  [[(0,0,0)], [1.], 1.]
+  ],                                    # s orbitals
+  [
+  [[(0,1,0)], [1.], 1.],
+  [[(0,0,1)], [1.], 1.],
+  [[(1,0,0)], [1.], 1.],
+  ],                                    # p orbitals
+  [
+  [[(1,1,0)], [1.], 1.],
+  [[(0,1,1)], [1.], 1.],
+  [[(0,0,2),(2,0,0),(0,2,0)], [1., -1/2., -1/2.], 1.],
+  [[(1,0,1)], [1.], 1.],
+  [[(2,0,0),(0,2,0)], [1.,-1.], sqrt(3)/2.],
+  ],                                    # d orbitals
+  [
+  [[(0,3,0),(2,1,0)], [-sqrt(5), 3.], 1/(2.*sqrt(2))],
+  [[(1,1,1)], [1.], 1.],
+  [[(0,1,2),(0,3,0),(2,1,0)], [sqrt(3/5.), -sqrt(3)/4., -sqrt(3)/(4.*sqrt(5))], sqrt(2)] ,
+  [[(0,0,3),(2,0,1),(0,2,1)], [1.,-3/(2*sqrt(5)),-3/(2*sqrt(5))], 1.],
+  [[(1,0,2),(3,0,0),(1,2,0)], [sqrt(3/5.), -sqrt(3)/4., -sqrt(3)/(4.*sqrt(5))], sqrt(2)],
+  [[(2,0,1),(0,2,1)], [1.,-1.], sqrt(3)/2.],
+  [[(3,0,0),(1,2,0)], [sqrt(5), -3.], 1/(2.*sqrt(2))],
+  ],                                    # f orbitals
+  [
+  [[(3,1,0), (1,3,0)], [1.,-1.], sqrt(2) * sqrt(5/8.)],
+  [[(0,3,1), (2,1,1)], [-sqrt(5)/4.,3/4.], sqrt(2)],
+  [[(1,1,2), (3,1,0), (1,3,0)], [3/sqrt(14), -sqrt(5)/(2*sqrt(14)), -sqrt(5)/(2*sqrt(14))], sqrt(2)],
+  [[(0,3,1), (0,3,1), (2,1,1)], [sqrt(5/7.), -3*sqrt(5)/(4.*sqrt(7)), -3/(4.*sqrt(7))], sqrt(2)],
+  [[(0,0,4), (4,0,0), (0,4,0), (2,0,2), (0,2,2), (2,2,0)], [1., 3/8., 3/8., -3*sqrt(3)/sqrt(35), -3*sqrt(3)/sqrt(35), -1/4.], sqrt(2)],
+  [[(1,0,3), (3,0,1), (1,2,1)], [sqrt(5/7.), -3*sqrt(5)/(4.*sqrt(7)), -3/(4.*sqrt(7))], sqrt(2)],
+  [[(2,0,2), (0,2,2), (4,0,0), (0,4,0)], [3*sqrt(3)/(2.*sqrt(14)), -3*sqrt(3)/(2.*sqrt(14)), -sqrt(5)/(4.*sqrt(2)), sqrt(5)/(4.*sqrt(2))], sqrt(2)],
+  [[(3,0,1), (1,2,1)], [sqrt(5)/4., -3/4.], sqrt(2)],
+  [[(4,0,0), (0,4,0), (2,2,0)], [sqrt(35)/(8.*sqrt(2)), sqrt(35)/(8.*sqrt(2)), -3*sqrt(3)/(4.*sqrt(2))], sqrt(2)],
+  ],                                    # g orbitals
+]
+
+def get_cart2sph(l,m):
+  '''Returns the linear combination required for the transformation Between 
+  the Cartesian and (Real) Pure Spherical Harmonic Gaussian basis.
+  
+  Adapted from H.B. Schlegel and M.J. Frisch,
+  International Journal of Quantum Chemistry, Vol. 54, 83-87 (1995).
+  
+  **Parameters:**
+  
+  l : int
+    Angular momentum quantum number.
+  m : int
+    Magnetic quantum number.
+  
+  **Returns:**
+  
+  cart2sph[l][l+m] : list
+    Contains the conversion instructions with three elements
+      
+      1. Exponents of Cartesian basis functions (cf. `core.exp`): list of tuples
+      2. The corresponding expansion coefficients: list of floats 
+      3. Global factor  
+  
+  ..hint: 
+  
+    The conversion is currently only supported up to g atomic orbitals.
+  '''
+  return cart2sph[l][l+m]
+
+def get_lxlylz(ao_spec,get_assign=False):
+  '''Extracts the exponents lx, ly, lz for the Cartesian Gaussians.
+  
+  **Parameters:**
+  
+  ao_spec : 
+    See :ref:`Central Variables` in the manual for details.
+  get_assign : bool, optional
+    Specifies, if the index of the atomic orbital shall be returned as well.
+  
+  **Returns:**
+  
+  lxlylz : numpy.ndarray, dtype=numpy.int64, shape = (N_AO,3)
+    Contains the expontents lx, ly, lz for the Cartesian Gaussians.
+  assign : list of int, optional
+    Contains the index of the atomic orbital in ao_spec.
+  '''
+  lxlylz = []
+  assign = []
+  for sel_ao in range(len(ao_spec)):
+    if 'exp_list' in ao_spec[sel_ao].keys():
+      l = ao_spec[sel_ao]['exp_list']
+    else:
+      l = exp[lquant[ao_spec[sel_ao]['type']]]
+    lxlylz.extend(l)
+    assign.extend([sel_ao]*len(l))
+  if get_assign:
+    return numpy.array(lxlylz,dtype=numpy.int64), assign
+  
+  return numpy.array(lxlylz,dtype=numpy.int64) 
 
 def integration(matrix,x=None,y=None,z=None):
   from scipy import integrate

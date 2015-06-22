@@ -4,9 +4,13 @@ Requirements for the Input Files
 In order to operate without problems, the input files of orbkit have to fulfill
 some requirements.
 
-orbkit requires Cartesian Harmonic Gaussian basis sets. Unless otherwise 
-stated (cf. :ref:`Central Variables <qc.ao_spec>` for details), it assumes the 
-standard Molden basis function order for the exponents :math:`(l_x,l_y,l_z)`:
+Cartesian Harmonic Gaussian basis sets
+--------------------------------------
+
+Internally, orbkit works with Cartesian Harmonic Gaussian basis sets. Unless 
+otherwise stated (cf. :ref:`Central Variables <qc.ao_spec>` for details), it 
+assumes the standard Molden basis function order for the exponents 
+:math:`(l_x,l_y,l_z)`:
 
   * s:
     (0,0,0)
@@ -33,6 +37,20 @@ standard Molden basis function order for the exponents :math:`(l_x,l_y,l_z)`:
   ``qc.ao_spec`` (cf. :ref:`Central Variables <qc.ao_spec>` for details), 
   orbkit is restricted to s, p, d, f, and g atomic orbitals (Molden file 
   limitation).
+
+Real-Valued (Pure) Spherical Harmonic Gaussian basis sets
+---------------------------------------------------------
+
+orbkit supports Spherical Harmonic Gaussian basis sets currently for 
+Gaussian .log files (up to g atomic orbitals). After computing the Cartesian Gaussian basis set,
+it converts the atomic orbitals to a Spherical Harmonic Gaussian basis. 
+The conversion procedure is adapted from
+
+  H.B. Schlegel and M.J. Frisch, *International Journal of Quantum Chemistry*, 
+  **54**, 83 (1995).
+
+Notes on the Input File Formats
+-------------------------------
 
 Subsequently, you can find a brief overview of all available input file formats 
 and some advices for the input file preparation.
@@ -72,14 +90,14 @@ and some advices for the input file preparation.
 
 **GAUSSIAN .log File:**
 
-  * Spherical Harmonics are chosen by default! You have to switch **manually** 
-    to Cartesian Harmonics (:literal:`6D 10F`)!
+  * Spherical Harmonics are chosen by default
   * Use the following parameters in your root section
 
     .. code-block:: bash
 
-        6D 10F gfinput IOP(6/7=3)
+        gfinput IOP(6/7=3)
 
-  * If more than one geometry/atomic orbitals/molecular orbitals section is 
-    present in the .log file, orbkit provides an interactive selection.
+  * You may switch manually to Cartesian Harmonics using `6D 10F`
+  * If more than one "linked" file/geometry/atomic orbitals/molecular orbitals 
+    section is present in the .log file, orbkit provides an interactive selection.
 

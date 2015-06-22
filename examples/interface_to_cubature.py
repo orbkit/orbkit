@@ -64,7 +64,7 @@ def func(x_array,*args):
     |args[-2] : bool
     |  If True, assumes a vectorized grid. (vectorized=True)
     |args[-1] : bool
-    |  If True, computes the molecular orbkitals, and integrates their squared
+    |  If True, computes the molecular orbitals, and integrates their squared
     |  values iteratively.
   
   ** Returns:**

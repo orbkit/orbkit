@@ -131,9 +131,12 @@
 <h1>Requirements for the Input Files<a class="headerlink" href="#requirements-for-the-input-files" title="Permalink to this headline">¶</a></h1>
 <p>In order to operate without problems, the input files of orbkit have to fulfill
 some requirements.</p>
-<p>orbkit requires Cartesian Harmonic Gaussian basis sets. Unless otherwise
-stated (cf. <a class="reference internal" href="cvars.html#qc-ao-spec"><em>Central Variables</em></a> for details), it assumes the
-standard Molden basis function order for the exponents <img class="math" src="../_images/math/6fb99a272f00dc1e9a39202a2afe72fa93dcaf1b.png" alt="(l_x,l_y,l_z)"/>:</p>
+<div class="section" id="cartesian-harmonic-gaussian-basis-sets">
+<h2>Cartesian Harmonic Gaussian basis sets<a class="headerlink" href="#cartesian-harmonic-gaussian-basis-sets" title="Permalink to this headline">¶</a></h2>
+<p>Internally, orbkit works with Cartesian Harmonic Gaussian basis sets. Unless
+otherwise stated (cf. <a class="reference internal" href="cvars.html#qc-ao-spec"><em>Central Variables</em></a> for details), it
+assumes the standard Molden basis function order for the exponents
+<img class="math" src="../_images/math/6fb99a272f00dc1e9a39202a2afe72fa93dcaf1b.png" alt="(l_x,l_y,l_z)"/>:</p>
 <blockquote>
 <div><ul class="simple">
 <li>s:
@@ -163,6 +166,19 @@ standard Molden basis function order for the exponents <img class="math" src="..
 orbkit is restricted to s, p, d, f, and g atomic orbitals (Molden file
 limitation).</p>
 </div>
+</div>
+<div class="section" id="real-valued-pure-spherical-harmonic-gaussian-basis-sets">
+<h2>Real-Valued (Pure) Spherical Harmonic Gaussian basis sets<a class="headerlink" href="#real-valued-pure-spherical-harmonic-gaussian-basis-sets" title="Permalink to this headline">¶</a></h2>
+<p>orbkit supports Spherical Harmonic Gaussian basis sets currently for
+Gaussian .log files (up to g atomic orbitals). After computing the Cartesian Gaussian basis set,
+it converts the atomic orbitals to a Spherical Harmonic Gaussian basis.
+The conversion procedure is adapted from</p>
+<blockquote>
+<div>H.B. Schlegel and M.J. Frisch, <em>International Journal of Quantum Chemistry</em>,
+<strong>54</strong>, 83 (1995).</div></blockquote>
+</div>
+<div class="section" id="notes-on-the-input-file-formats">
+<h2>Notes on the Input File Formats<a class="headerlink" href="#notes-on-the-input-file-formats" title="Permalink to this headline">¶</a></h2>
 <p>Subsequently, you can find a brief overview of all available input file formats
 and some advices for the input file preparation.</p>
 <p><strong>Molden File Format:</strong></p>
@@ -212,19 +228,21 @@ provides an interactive selection.</li>
 <p><strong>GAUSSIAN .log File:</strong></p>
 <blockquote>
 <div><ul>
-<li><p class="first">Spherical Harmonics are chosen by default! You have to switch <strong>manually</strong>
-to Cartesian Harmonics (<tt class="docutils literal"><span class="pre">6D</span> <span class="pre">10F</span></tt>)!</p>
+<li><p class="first">Spherical Harmonics are chosen by default</p>
 </li>
 <li><p class="first">Use the following parameters in your root section</p>
-<div class="highlight-bash"><div class="highlight"><pre>6D 10F gfinput IOP<span class="o">(</span>6/7<span class="o">=</span>3<span class="o">)</span>
+<div class="highlight-bash"><div class="highlight"><pre>gfinput IOP<span class="o">(</span>6/7<span class="o">=</span>3<span class="o">)</span>
 </pre></div>
 </div>
 </li>
-<li><p class="first">If more than one geometry/atomic orbitals/molecular orbitals section is
-present in the .log file, orbkit provides an interactive selection.</p>
+<li><p class="first">You may switch manually to Cartesian Harmonics using <cite>6D 10F</cite></p>
+</li>
+<li><p class="first">If more than one &#8220;linked&#8221; file/geometry/atomic orbitals/molecular orbitals
+section is present in the .log file, orbkit provides an interactive selection.</p>
 </li>
 </ul>
 </div></blockquote>
+</div>
 </div>
 
 

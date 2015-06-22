@@ -25,16 +25,17 @@ Second Part:
 with :math:`r_l = \sqrt{(x-X_l)^2 + (y-Y_l)^2 + (z - Z_l)^2)}`
 '''
 from orbkit.read import main_read
-from orbkit.core import exp,lquant
+from orbkit.core import get_lxlylz,l_deg
 from orbkit.analytical_integrals import get_ao_overlap,get_mo_overlap,print2D
-from orbkit.analytical_integrals import get_lxlylz,contract_ao_overlap_matrix
+from orbkit.analytical_integrals import contract_ao_overlap_matrix,cartesian2spherical
 
 in_fid = 'h2o.md'
 # Read the input file
 qc = main_read(in_fid,itype='molden',all_mo=False)
 
 # Compute atomic orbital overlap matrix 
-ao_overlap_matrix = get_ao_overlap(qc.geo_spec,qc.geo_spec,qc.ao_spec)
+ao_overlap_matrix = get_ao_overlap(qc.geo_spec,qc.geo_spec,qc.ao_spec,
+                                   ao_order=qc.ao_order)
 
 # Compute the overlap of the molecular orbitals and weight it with the occupation number
 electron_number = 0.
@@ -44,7 +45,6 @@ for i_mo in qc.mo_spec:
                                                       ao_overlap_matrix)
 
 print('The total number of electrons is %.8f' % electron_number)
-
 # Compute the x-, y-, and z-component of the dipole moment
 dipole_moment = []
 for component in range(3):
@@ -55,23 +55,24 @@ for component in range(3):
   lxlylz_b = get_lxlylz(qc.ao_spec)
   lxlylz_b[:,component] += 1
 
-  ao_part_1 = get_ao_overlap(qc.geo_spec,qc.geo_spec,qc.ao_spec,lxlylz_b=lxlylz_b,contraction=False)
+  ao_part_1 = get_ao_overlap(qc.geo_spec,qc.geo_spec,qc.ao_spec,
+                             lxlylz_b=lxlylz_b,ao_order=qc.ao_order)
 
   # Compute the second part of the expectation value:
-  ao_part_2 = get_ao_overlap(qc.geo_spec,qc.geo_spec,qc.ao_spec,contraction=False) 
+  ao_part_2 = get_ao_overlap(qc.geo_spec,qc.geo_spec,qc.ao_spec,
+                             ao_order=qc.ao_order)
 
   i = 0
   for sel_ao in range(len(qc.ao_spec)):
-    l = exp[lquant[qc.ao_spec[sel_ao]['type']]]
-    for ll in l:
-      for j in qc.ao_spec[sel_ao]['coeffs']:
-        ao_part_2[:,i] *= qc.geo_spec[qc.ao_spec[sel_ao]['atom'],component]
-        i += 1
+    l = l_deg(l=qc.ao_spec[sel_ao]['type'].lower(),
+              cartesian_basis=(qc.ao_order is None))
+    for ll in range(l):
+      ao_part_2[:,i] *= qc.geo_spec[qc.ao_spec[sel_ao]['atom'],component]
+      i += 1
   
-  # Contract the atomic orbital overlap matrix
-  ao_dipole_matrix = contract_ao_overlap_matrix((ao_part_1+ao_part_2),qc.ao_spec)
+  ao_dipole_matrix = (ao_part_1+ao_part_2)
   
-  # Print the overlap matrix
+  # Print the atomic orbital dipole matrix
   if 0:
     print2D(ao_dipole_matrix) 
   
@@ -82,7 +83,7 @@ for component in range(3):
   
   # Add the nuclear part
   for i_nuc in range(len(qc.geo_spec)):
-    dm += float(qc.geo_info[i_nuc,2])*qc.geo_spec[i_nuc,component] # 1.04735647
+    dm += float(qc.geo_info[i_nuc,2])*qc.geo_spec[i_nuc,component]
   
   dipole_moment.append(dm)
 

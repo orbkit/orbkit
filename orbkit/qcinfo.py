@@ -124,11 +124,14 @@ class CIinfo:
 class QCinfo:
   '''Class managing all information from the from the output 
   files of quantum chemical software.
+  
+  See :ref:`Central Variables` in the manual for details.
   '''
   def __init__(self):
     self.geo_spec = []
     self.geo_info = []
     self.ao_spec  = []
+    self.ao_spherical = None
     self.mo_spec  = []
     self.etot     = 0.
     self.com      = 'Center of mass can be calculated with self.get_com().'
@@ -186,6 +189,7 @@ class QCinfo:
     keys = ['geo_spec',
             'geo_info',
             'ao_spec',
+            'ao_spherical',
             'mo_spec']
     for key in keys:
       dct[key] = getattr(self,key)

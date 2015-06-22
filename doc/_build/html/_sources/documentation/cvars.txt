@@ -13,17 +13,19 @@ In orbkit, all central variables are extracted from quantum chemistry outputs
 This class stores all the information required for subsequent
 computations and is organized as follows:
 
-+---------------+-----------------------------------+-----------------------------------------------+
-| Member        | Type                              | Shape/Members                                 |
-+===============+===================================+===============================================+
-| `qc.geo_info`_| ``numpy.ndarray`` (dtype= ``str``)| (N\ :sub:`atoms`, 3)                          |
-+---------------+-----------------------------------+-----------------------------------------------+
-| `qc.geo_spec`_| ``numpy.ndarray`` (dtype= ``str``)| (N\ :sub:`atoms`, 3)                          |
-+---------------+-----------------------------------+-----------------------------------------------+
-| `qc.ao_spec`_ | ``list`` of ``dict``              | "pnum", "atom", "type", "coeffs", ("exp_list")|
-+---------------+-----------------------------------+-----------------------------------------------+
-| `qc.mo_spec`_ | ``list`` of ``dict``              | "energy", "occ_num", "sym", "coeffs"          |
-+---------------+-----------------------------------+-----------------------------------------------+
++-------------------+-----------------------------------+-----------------------------------------------+
+| Member            | Type                              | Shape/Members                                 |
++===================+===================================+===============================================+
+| `qc.geo_info`_    | ``numpy.ndarray`` (dtype= ``str``)| (N\ :sub:`atoms`, 3)                          |
++-------------------+-----------------------------------+-----------------------------------------------+
+| `qc.geo_spec`_    | ``numpy.ndarray`` (dtype= ``str``)| (N\ :sub:`atoms`, 3)                          |
++-------------------+-----------------------------------+-----------------------------------------------+
+| `qc.ao_spec`_     | ``list`` of ``dict``              | "pnum", "atom", "type", "coeffs", ("exp_list")|
++-------------------+-----------------------------------+-----------------------------------------------+
+| `qc.ao_spherical`_| ``list`` of ``tuple``             | (N\ :sub:`spherical AOs`, 2)                  |
++-------------------+-----------------------------------+-----------------------------------------------+
+| `qc.mo_spec`_     | ``list`` of ``dict``              | "energy", "occ_num", "sym", "coeffs"          |
++-------------------+-----------------------------------+-----------------------------------------------+
 
 .. _`qc.geo_info`:
 
@@ -70,6 +72,16 @@ computations and is organized as follows:
         molden order
       * ``list`` of ``tuple``, i.e., ``[(l_x1,l_y1,l_z1), (l_x2,l_y2,l_z2), ...]``
 
+
+.. _`qc.ao_spherical`:
+
+:qc.ao_spherical:
+
+  * Contains the order of the spherical harmonic basis functions within the
+    input file
+  * ``list`` of ``tuple``, i.e., ``[(l_1,m_1), (l_2,m_2), ...]`` with
+    the angular momentum quantum number ``m`` and the magnetic quantum number 
+    ``l``
 
 .. _`qc.mo_spec`:
 

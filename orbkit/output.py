@@ -848,7 +848,7 @@ def view_with_mayavi(x,y,z,data,geo_spec=None,datalabels=None):
   from mayavi import mlab
   from mayavi.core.api import PipelineBase
   from mayavi.core.ui.api import MayaviScene, SceneEditor, MlabSceneModel
-  
+  from copy import deepcopy
   data = numpy.array(data)
   
   if data.ndim == 3:
@@ -885,6 +885,7 @@ def view_with_mayavi(x,y,z,data,geo_spec=None,datalabels=None):
   
   class MyModel(HasTraits):  
       select  = Range(0, len(data)-1, 0, mode='spinner')
+      last_select = deepcopy(select)
       iso_value  = Range(1e-8, 1.0, 0.01)
       opacity    = Range(0, 1.0, 0.6)
       show_atoms = Bool(True)
@@ -901,27 +902,28 @@ def view_with_mayavi(x,y,z,data,geo_spec=None,datalabels=None):
       # When the scene is activated, or when the parameters are changed, we
       # update the plot.
       @on_trait_change('select,iso_value,show_atoms,opacity,label,scene.activated')
-      def update_plot(self):   
-          if self.plot0 is None:          
-            src = mlab.pipeline.scalar_field(X,Y,Z,data[self.select])
-            self.plot0 = self.scene.mlab.pipeline.iso_surface(\
-                        src, contours= [self.iso_value], opacity=self.opacity,color=(0, 0, 0.8))
-            self.plot1 = self.scene.mlab.pipeline.iso_surface(\
-                        src, contours= [-self.iso_value], opacity=self.opacity, color=(0.8, 0, 0))
-            self.plot0.contour.scene.background = (1,1,1)
-          else:
-            self.plot0.mlab_source.set(scalars=data[self.select])
-            self.plot0.contour.contours = [self.iso_value]
-            self.plot0.actor.property.opacity = self.opacity
-            self.plot1.mlab_source.set(scalars=data[self.select])
-            self.plot1.contour.contours = [-self.iso_value]
-            self.plot1.actor.property.opacity = self.opacity
-          if datalabels is not None:
-            self.label = datalabels[self.select]
-          if geo_spec is not None: 
-            if self.plot_atoms is None:            
-              self.plot_atoms = self.scene.mlab.points3d(geo_spec[:,0],geo_spec[:,1],geo_spec[:,2])
-            self.plot_atoms.visible = self.show_atoms
+      def update_plot(self): 
+        if self.plot0 is None:          
+          src = mlab.pipeline.scalar_field(X,Y,Z,data[self.select])
+          self.plot0 = self.scene.mlab.pipeline.iso_surface(\
+                      src, contours= [self.iso_value], opacity=self.opacity,color=(0, 0, 0.8))
+          self.plot1 = self.scene.mlab.pipeline.iso_surface(\
+                      src, contours= [-self.iso_value], opacity=self.opacity, color=(0.8, 0, 0))
+          self.plot0.contour.scene.background = (1,1,1)
+        elif self.select != self.last_select:
+          self.plot0.mlab_source.set(scalars=data[self.select])
+          self.plot0.contour.contours = [self.iso_value]
+          self.plot0.actor.property.opacity = self.opacity
+          self.plot1.mlab_source.set(scalars=data[self.select])
+          self.plot1.contour.contours = [-self.iso_value]
+          self.plot1.actor.property.opacity = self.opacity
+        self.last_select = deepcopy(self.select)
+        if datalabels is not None:
+          self.label = datalabels[self.select]
+        if geo_spec is not None: 
+          if self.plot_atoms is None:            
+            self.plot_atoms = self.scene.mlab.points3d(geo_spec[:,0],geo_spec[:,1],geo_spec[:,2])
+          self.plot_atoms.visible = self.show_atoms
       
       # The layout of the dialog created
       items = (Item('scene', editor=SceneEditor(scene_class=MayaviScene),

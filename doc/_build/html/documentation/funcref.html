@@ -140,6 +140,7 @@ software.</p>
 <em class="property">class </em><tt class="descclassname">orbkit.qcinfo.</tt><tt class="descname">QCinfo</tt><a class="headerlink" href="#orbkit.qcinfo.QCinfo" title="Permalink to this definition">¶</a></dt>
 <dd><p>Class managing all information from the from the output 
 files of quantum chemical software.</p>
+<p>See <a class="reference internal" href="cvars.html#central-variables"><em>Central Variables</em></a> in the manual for details.</p>
 <dl class="method">
 <dt id="orbkit.qcinfo.QCinfo.get_coc">
 <tt class="descname">get_coc</tt><big>(</big><big>)</big><a class="headerlink" href="#orbkit.qcinfo.QCinfo.get_coc" title="Permalink to this definition">¶</a></dt>
@@ -203,7 +204,7 @@ see <a class="reference external" href="http://physics.nist.gov">http://physics.
 
 <dl class="function">
 <dt id="orbkit.options.check_options">
-<tt class="descclassname">orbkit.options.</tt><tt class="descname">check_options</tt><big>(</big><em>error=&lt;built-in method write of file object at 0x2aca84f121e0&gt;</em>, <em>display=&lt;built-in method write of file object at 0x2aca84f121e0&gt;</em>, <em>interactive=False</em>, <em>info=True</em><big>)</big><a class="headerlink" href="#orbkit.options.check_options" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">orbkit.options.</tt><tt class="descname">check_options</tt><big>(</big><em>error=&lt;built-in method write of file object at 0x2ae6600b31e0&gt;</em>, <em>display=&lt;built-in method write of file object at 0x2ae6600b31e0&gt;</em>, <em>interactive=False</em>, <em>info=True</em><big>)</big><a class="headerlink" href="#orbkit.options.check_options" title="Permalink to this definition">¶</a></dt>
 <dd><p>Checks options for errors.</p>
 <p><strong>Parameters:</strong></p>
 <blockquote>
@@ -232,7 +233,7 @@ existing file.</dd>
 
 <dl class="function">
 <dt id="orbkit.options.check_if_exists">
-<tt class="descclassname">orbkit.options.</tt><tt class="descname">check_if_exists</tt><big>(</big><em>fid</em>, <em>what=''</em>, <em>error=&lt;type 'exceptions.IOError'&gt;</em>, <em>display=&lt;built-in method write of file object at 0x2aca84f121e0&gt;</em>, <em>interactive=False</em><big>)</big><a class="headerlink" href="#orbkit.options.check_if_exists" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">orbkit.options.</tt><tt class="descname">check_if_exists</tt><big>(</big><em>fid</em>, <em>what=''</em>, <em>error=&lt;type 'exceptions.IOError'&gt;</em>, <em>display=&lt;built-in method write of file object at 0x2ae6600b31e0&gt;</em>, <em>interactive=False</em><big>)</big><a class="headerlink" href="#orbkit.options.check_if_exists" title="Permalink to this definition">¶</a></dt>
 <dd><p>Checks the existence of a file.</p>
 <p><strong>Parameters:</strong></p>
 <blockquote>
@@ -454,7 +455,7 @@ homo    lumo+2:lumo+4</pre>
 
 <dl class="function">
 <dt id="orbkit.read.read_gaussian_log">
-<tt class="descclassname">orbkit.read.</tt><tt class="descname">read_gaussian_log</tt><big>(</big><em>filename</em>, <em>all_mo=False</em>, <em>orientation='standard'</em>, <em>i_geo=-1</em>, <em>i_ao=-1</em>, <em>i_mo=-1</em>, <em>interactive=True</em><big>)</big><a class="headerlink" href="#orbkit.read.read_gaussian_log" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">orbkit.read.</tt><tt class="descname">read_gaussian_log</tt><big>(</big><em>filename</em>, <em>all_mo=False</em>, <em>orientation='standard'</em>, <em>i_link=-1</em>, <em>i_geo=-1</em>, <em>i_ao=-1</em>, <em>i_mo=-1</em>, <em>interactive=True</em><big>)</big><a class="headerlink" href="#orbkit.read.read_gaussian_log" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reads all information desired from a Gaussian .log file.</p>
 <blockquote>
 <div><p><strong>Parameters:</strong></p>
@@ -466,6 +467,8 @@ homo    lumo+2:lumo+4</pre>
 <dd>If True, all molecular orbitals are returned.</dd>
 <dt>orientation <span class="classifier-delimiter">:</span> <span class="classifier">string, choices={&#8216;input&#8217;, &#8216;standard&#8217;}, optional</span></dt>
 <dd>Specifies orientation of the molecule in Gaussian nomenclature. <a class="footnote-reference" href="#first" id="id2">[1]</a></dd>
+<dt>i_link <span class="classifier-delimiter">:</span> <span class="classifier">int, default=-1</span></dt>
+<dd>Selects the file for linked Gaussian jobs.</dd>
 <dt>i_geo <span class="classifier-delimiter">:</span> <span class="classifier">int, default=-1</span></dt>
 <dd>Selects the geometry section of the output file.</dd>
 <dt>i_ao <span class="classifier-delimiter">:</span> <span class="classifier">int, default=-1</span></dt>
@@ -479,7 +482,7 @@ homo    lumo+2:lumo+4</pre>
 <p><strong>Returns:</strong></p>
 <blockquote>
 <div><dl class="docutils">
-<dt>qc (class QCinfo) with attributes geo_spec, geo_info, ao_spec, mo_spec, etot :</dt>
+<dt>qc (class QCinfo) with attributes geo_spec, geo_info, ao_spec, ao_spherical, mo_spec, etot :</dt>
 <dd>See <a class="reference internal" href="cvars.html#central-variables"><em>Central Variables</em></a> for details.</dd>
 </dl>
 </div></blockquote>
@@ -569,7 +572,7 @@ direction.</dd>
 
 <dl class="function">
 <dt id="orbkit.grid.center_grid">
-<tt class="descclassname">orbkit.grid.</tt><tt class="descname">center_grid</tt><big>(</big><em>ac</em>, <em>display=&lt;built-in method write of file object at 0x2aca84f121e0&gt;</em><big>)</big><a class="headerlink" href="#orbkit.grid.center_grid" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">orbkit.grid.</tt><tt class="descname">center_grid</tt><big>(</big><em>ac</em>, <em>display=&lt;built-in method write of file object at 0x2ae6600b31e0&gt;</em><big>)</big><a class="headerlink" href="#orbkit.grid.center_grid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Centers the grid to the point ac and to the origin (0,0,0).</p>
 </dd></dl>
 
@@ -846,7 +849,7 @@ derivative of an atomic orbital.</dd>
 
 <dl class="function">
 <dt id="orbkit.core.ao_creator">
-<tt class="descclassname">orbkit.core.</tt><tt class="descname">ao_creator</tt><big>(</big><em>geo_spec</em>, <em>ao_spec</em>, <em>is_vector=False</em>, <em>drv=None</em>, <em>x=None</em>, <em>y=None</em>, <em>z=None</em>, <em>N=None</em><big>)</big><a class="headerlink" href="#orbkit.core.ao_creator" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">orbkit.core.</tt><tt class="descname">ao_creator</tt><big>(</big><em>geo_spec</em>, <em>ao_spec</em>, <em>ao_spherical=None</em>, <em>is_vector=False</em>, <em>drv=None</em>, <em>x=None</em>, <em>y=None</em>, <em>z=None</em><big>)</big><a class="headerlink" href="#orbkit.core.ao_creator" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates all contracted atomic orbitals or its
 derivatives with respect to a specific variable (e.g. drv = &#8216;x&#8217; or drv = 0).</p>
 <p><strong>Parameters:</strong></p>
@@ -863,8 +866,6 @@ the atomic orbitals with respect to DRV is requested.</dd>
 <dt>x,y,z <span class="classifier-delimiter">:</span> <span class="classifier">None or list of floats, optional</span></dt>
 <dd>If not None, provides a list of Cartesian coordinates, 
 else the respective coordinates of grid. will be used</dd>
-<dt>N <span class="classifier-delimiter">:</span> <span class="classifier">None or tuple, optional</span></dt>
-<dd>If not None, provides the shape of the grid.</dd>
 </dl>
 <p><strong>Returns:</strong></p>
 <dl class="docutils">
@@ -909,6 +910,82 @@ else the respective coordinates of grid. will be used</dd>
 </dd></dl>
 
 <dl class="function">
+<dt id="orbkit.core.cartesian2spherical">
+<tt class="descclassname">orbkit.core.</tt><tt class="descname">cartesian2spherical</tt><big>(</big><em>ao_list</em>, <em>ao_spec</em>, <em>ao_spherical</em><big>)</big><a class="headerlink" href="#orbkit.core.cartesian2spherical" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transforms the atomic orbitals from a Cartesian Gaussian basis to a 
+(real) pure spherical harmonic Gaussian basis set.</p>
+<p>Adapted from H.B. Schlegel and M.J. Frisch,
+International Journal of Quantum Chemistry, Vol. 54, 83-87 (1995).</p>
+<p><strong>Parameters:</strong></p>
+<dl class="docutils">
+<dt>ao_list <span class="classifier-delimiter">:</span> <span class="classifier">numpy.ndarray, shape=((NAO,) + N)</span></dt>
+<dd>Contains the NAO atomic orbitals on a grid.</dd>
+<dt>ao_spec,ao_spherical :</dt>
+<dd>See <a class="reference internal" href="cvars.html#central-variables"><em>Central Variables</em></a> in the manual for details.</dd>
+</dl>
+<p><strong>Returns:</strong></p>
+<dl class="docutils">
+<dt>ao_list_sph <span class="classifier-delimiter">:</span> <span class="classifier">numpy.ndarray, shape=((NAO,) + N)</span></dt>
+<dd>Contains the NAO spherical atomic orbitals on a grid.</dd>
+</dl>
+<p>..hint:</p>
+<blockquote>
+<div>The conversion is currently only supported up to g atomic orbitals.</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="orbkit.core.get_cart2sph">
+<tt class="descclassname">orbkit.core.</tt><tt class="descname">get_cart2sph</tt><big>(</big><em>l</em>, <em>m</em><big>)</big><a class="headerlink" href="#orbkit.core.get_cart2sph" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the linear combination required for the transformation Between 
+the Cartesian and (Real) Pure Spherical Harmonic Gaussian basis.</p>
+<p>Adapted from H.B. Schlegel and M.J. Frisch,
+International Journal of Quantum Chemistry, Vol. 54, 83-87 (1995).</p>
+<p><strong>Parameters:</strong></p>
+<dl class="docutils">
+<dt>l <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>Angular momentum quantum number.</dd>
+<dt>m <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>Magnetic quantum number.</dd>
+</dl>
+<p><strong>Returns:</strong></p>
+<dl class="docutils">
+<dt>cart2sph[l][l+m] <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
+<dd><p class="first">Contains the conversion instructions with three elements</p>
+<blockquote class="last">
+<div><ol class="arabic simple">
+<li>Exponents of Cartesian basis functions (cf. <cite>core.exp</cite>): list of tuples</li>
+<li>The corresponding expansion coefficients: list of floats</li>
+<li>Global factor</li>
+</ol>
+</div></blockquote>
+</dd>
+</dl>
+<p>..hint:</p>
+<blockquote>
+<div>The conversion is currently only supported up to g atomic orbitals.</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="orbkit.core.get_lxlylz">
+<tt class="descclassname">orbkit.core.</tt><tt class="descname">get_lxlylz</tt><big>(</big><em>ao_spec</em>, <em>get_assign=False</em><big>)</big><a class="headerlink" href="#orbkit.core.get_lxlylz" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extracts the exponents lx, ly, lz for the Cartesian Gaussians.</p>
+<p><strong>Parameters:</strong></p>
+<dl class="docutils">
+<dt>ao_spec <span class="classifier-delimiter">:</span> <span class="classifier"></span></dt>
+<dd>See <a class="reference internal" href="cvars.html#central-variables"><em>Central Variables</em></a> in the manual for details.</dd>
+<dt>get_assign <span class="classifier-delimiter">:</span> <span class="classifier">bool, optional</span></dt>
+<dd>Specifies, if the index of the atomic orbital shall be returned as well.</dd>
+</dl>
+<p><strong>Returns:</strong></p>
+<dl class="docutils">
+<dt>lxlylz <span class="classifier-delimiter">:</span> <span class="classifier">numpy.ndarray, dtype=numpy.int64, shape = (N_AO,3)</span></dt>
+<dd>Contains the expontents lx, ly, lz for the Cartesian Gaussians.</dd>
+<dt>assign <span class="classifier-delimiter">:</span> <span class="classifier">list of int, optional</span></dt>
+<dd>Contains the index of the atomic orbital in ao_spec.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
 <dt id="orbkit.core.is_compiled">
 <tt class="descclassname">orbkit.core.</tt><tt class="descname">is_compiled</tt><big>(</big><em>code</em><big>)</big><a class="headerlink" href="#orbkit.core.is_compiled" title="Permalink to this definition">¶</a></dt>
 <dd><p>Checks if the C++ code is already compiled.</p>
@@ -917,7 +994,7 @@ else the respective coordinates of grid. will be used</dd>
 
 <dl class="function">
 <dt id="orbkit.core.l_creator">
-<tt class="descclassname">orbkit.core.</tt><tt class="descname">l_creator</tt><big>(</big><em>geo_spec</em>, <em>ao_spec</em>, <em>sel_ao</em>, <em>exp_list=None</em>, <em>coeff_list=None</em>, <em>at_pos=None</em>, <em>is_vector=False</em>, <em>drv=None</em>, <em>x=None</em>, <em>y=None</em>, <em>z=None</em>, <em>N=None</em><big>)</big><a class="headerlink" href="#orbkit.core.l_creator" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">orbkit.core.</tt><tt class="descname">l_creator</tt><big>(</big><em>geo_spec</em>, <em>ao_spec</em>, <em>sel_ao</em>, <em>exp_list=None</em>, <em>coeff_list=None</em>, <em>at_pos=None</em>, <em>is_vector=False</em>, <em>drv=None</em>, <em>x=None</em>, <em>y=None</em>, <em>z=None</em><big>)</big><a class="headerlink" href="#orbkit.core.l_creator" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates the contracted atomic orbitals of quantum number l or its
 derivative with respect to a specific variable (e.g. drv = &#8216;x&#8217; or drv = 0)
 for the atomic orbitals: ao_spec[sel_ao].</p>
@@ -927,16 +1004,16 @@ for the atomic orbitals: ao_spec[sel_ao].</p>
 <dd>See <a class="reference internal" href="cvars.html#central-variables"><em>Central Variables</em></a> for details.</dd>
 <dt>sel_ao <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
 <dd>Index of the requested atomic orbitals</dd>
-<dt>exp_list <span class="classifier-delimiter">:</span> <span class="classifier">array_like, shape=(NDEG, 3), optional</span></dt>
+<dt>exp_list <span class="classifier-delimiter">:</span> <span class="classifier">numpy.ndarray, shape=(NDEG, 3), optional</span></dt>
 <dd>If not None, list of xyz-exponents of the NDEG 
 degenerate atomic orbitals ,i.e., NDEG=len(exp_list),
 else the standard molden exponents (exp) for quantum number l will be 
 used.</dd>
-<dt>coeff_list <span class="classifier-delimiter">:</span> <span class="classifier">array_like, shape=(PNUM, 2), optional</span></dt>
+<dt>coeff_list <span class="classifier-delimiter">:</span> <span class="classifier">numpy.ndarray, shape=(PNUM, 2), optional</span></dt>
 <dd>If not None, list of the PNUM primitive atomic orbital
 exponents [:,0] and coefficients [:,1],
 else the coefficients from ao_spec[sel_ao] will be used.</dd>
-<dt>at_pos <span class="classifier-delimiter">:</span> <span class="classifier">array_like, shape=(3,), optional</span></dt>
+<dt>at_pos <span class="classifier-delimiter">:</span> <span class="classifier">numpy.ndarray, shape=(3,), optional</span></dt>
 <dd>If not None, xyz-coordinates where the atomic orbital is centered,
 else the position geo_spec[ao_spec[sel_ao][&#8216;atom&#8217;]] will be used.</dd>
 <dt>is_vector <span class="classifier-delimiter">:</span> <span class="classifier">bool, optional</span></dt>
@@ -946,12 +1023,10 @@ else the position geo_spec[ao_spec[sel_ao][&#8216;atom&#8217;]] will be used.</d
 is requested.</dd>
 <dt>compile_only <span class="classifier-delimiter">:</span> <span class="classifier">bool, optional</span></dt>
 <dd>If True, compiles only the C++ code.</dd>
-<dt>x,y,z <span class="classifier-delimiter">:</span> <span class="classifier">list of floats, optional</span></dt>
+<dt>x,y,z <span class="classifier-delimiter">:</span> <span class="classifier">numpy.ndarray, optional</span></dt>
 <dd>If not None, provides a list of Cartesian coordinates, 
 else the respective coordinates of the module <a class="reference internal" href="#module-orbkit.grid" title="orbkit.grid"><tt class="xref py py-mod docutils literal"><span class="pre">orbkit.grid</span></tt></a> will 
 be used.</dd>
-<dt>N <span class="classifier-delimiter">:</span> <span class="classifier">tuple</span></dt>
-<dd>If not None, provides the shape of the grid.</dd>
 </dl>
 <p><strong>Returns:</strong></p>
 <dl class="docutils">
@@ -965,7 +1040,7 @@ be used.</dd>
 
 <dl class="function">
 <dt id="orbkit.core.l_deg">
-<tt class="descclassname">orbkit.core.</tt><tt class="descname">l_deg</tt><big>(</big><em>l=0</em>, <em>ao=None</em><big>)</big><a class="headerlink" href="#orbkit.core.l_deg" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">orbkit.core.</tt><tt class="descname">l_deg</tt><big>(</big><em>l=0</em>, <em>ao=None</em>, <em>cartesian_basis=True</em><big>)</big><a class="headerlink" href="#orbkit.core.l_deg" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates the degeneracy of a given atomic orbitals.</p>
 <p><strong>Options:</strong></p>
 <dl class="docutils">
@@ -981,7 +1056,7 @@ e.g., l_deg(ao=&#8217;xxy&#8217;)</dd>
 
 <dl class="function">
 <dt id="orbkit.core.mo_creator">
-<tt class="descclassname">orbkit.core.</tt><tt class="descname">mo_creator</tt><big>(</big><em>ao_list</em>, <em>mo_spec</em>, <em>is_vector=False</em>, <em>x=None</em>, <em>y=None</em>, <em>z=None</em>, <em>N=None</em>, <em>mo_coeff=None</em>, <em>HDF5_save=False</em>, <em>h5py=False</em>, <em>numproc=1</em>, <em>s=0</em><big>)</big><a class="headerlink" href="#orbkit.core.mo_creator" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">orbkit.core.</tt><tt class="descname">mo_creator</tt><big>(</big><em>ao_list</em>, <em>mo_spec</em>, <em>is_vector=False</em>, <em>x=None</em>, <em>y=None</em>, <em>z=None</em>, <em>mo_coeff=None</em>, <em>HDF5_save=False</em>, <em>h5py=False</em>, <em>numproc=1</em>, <em>s=0</em><big>)</big><a class="headerlink" href="#orbkit.core.mo_creator" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates the molecular orbitals.</p>
 <p>If a string (filename) is given for the argument <tt class="docutils literal"><span class="pre">HDF5_save</span></tt>, the slice s of each
 molecular orbital will be saved to the disk. This module is used by
@@ -997,8 +1072,6 @@ molecular orbital will be saved to the disk. This module is used by
 <dt>x,y,z <span class="classifier-delimiter">:</span> <span class="classifier">None or list of floats, optional</span></dt>
 <dd>If not None, provide a list of Cartesian coordinates, 
 else the respective coordinates of grid will be used.</dd>
-<dt>N <span class="classifier-delimiter">:</span> <span class="classifier">None or tuple, optional</span></dt>
-<dd>If not None, provides the shape of the grid.</dd>
 <dt>HDF5_save <span class="classifier-delimiter">:</span> <span class="classifier">False or string, optional</span></dt>
 <dd>If not False, filename of HDF5 file for storing the molecular orbitals.
 (Requires Parameters: h5py and s)</dd>
@@ -1029,7 +1102,7 @@ The computational tasks are distributed to the worker processes.</p>
 <dt>qc <span class="classifier-delimiter">:</span> <span class="classifier">class or dict</span></dt>
 <dd>QCinfo class or dictionary containing the following attributes/keys.
 See <a class="reference internal" href="cvars.html#central-variables"><em>Central Variables</em></a> for details.</dd>
-<dt>qc.geo_spec <span class="classifier-delimiter">:</span> <span class="classifier">array_like, shape=(3,NATOMS) </span></dt>
+<dt>qc.geo_spec <span class="classifier-delimiter">:</span> <span class="classifier">numpy.ndarray, shape=(3,NATOMS) </span></dt>
 <dd>See <a class="reference internal" href="cvars.html#central-variables"><em>Central Variables</em></a> for details.</dd>
 <dt>qc.ao_spec <span class="classifier-delimiter">:</span> <span class="classifier">List of dictionaries</span></dt>
 <dd>See <a class="reference internal" href="cvars.html#central-variables"><em>Central Variables</em></a> for details.</dd>
@@ -1107,7 +1180,7 @@ without slicing the grid.</p>
 <dt>qc <span class="classifier-delimiter">:</span> <span class="classifier">class or dict</span></dt>
 <dd>QCinfo class or dictionary containing the following attributes/keys.
 See <a class="reference internal" href="cvars.html#central-variables"><em>Central Variables</em></a> for details.</dd>
-<dt>qc.geo_spec <span class="classifier-delimiter">:</span> <span class="classifier">array_like, shape=(3,NATOMS) </span></dt>
+<dt>qc.geo_spec <span class="classifier-delimiter">:</span> <span class="classifier">numpy.ndarray, shape=(3,NATOMS) </span></dt>
 <dd>See <a class="reference internal" href="cvars.html#central-variables"><em>Central Variables</em></a> for details.</dd>
 <dt>qc.ao_spec <span class="classifier-delimiter">:</span> <span class="classifier">List of dictionaries</span></dt>
 <dd>See <a class="reference internal" href="cvars.html#central-variables"><em>Central Variables</em></a> for details.</dd>
@@ -1125,8 +1198,10 @@ quantities with respect to DRV.</dd>
 <dt>return_components <span class="classifier-delimiter">:</span> <span class="classifier">bool, optional</span></dt>
 <dd>If True, returns the atomic and molecular orbitals, and the density, 
 and if requested, the derivatives thereof as well.</dd>
-<dt>grid <span class="classifier-delimiter">:</span> <span class="classifier">module or class, global</span></dt>
-<dd>Contains the grid, i.e., grid.x, grid.y, and grid.z.</dd>
+<dt>x,y,z <span class="classifier-delimiter">:</span> <span class="classifier">numpy.ndarray, optional</span></dt>
+<dd>If not None, provides a list of Cartesian coordinates, 
+else the respective coordinates of the module <a class="reference internal" href="#module-orbkit.grid" title="orbkit.grid"><tt class="xref py py-mod docutils literal"><span class="pre">orbkit.grid</span></tt></a> will 
+be used.</dd>
 </dl>
 <p><strong>Returns:</strong></p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -1338,6 +1413,31 @@ derivative of an atomic orbital.</dd>
 </dd></dl>
 
 <dl class="function">
+<dt id="orbkit.analytical_integrals.cartesian2spherical_aoom">
+<tt class="descclassname">orbkit.analytical_integrals.</tt><tt class="descname">cartesian2spherical_aoom</tt><big>(</big><em>ao_overlap_matrix</em>, <em>ao_spec</em>, <em>ao_spherical</em><big>)</big><a class="headerlink" href="#orbkit.analytical_integrals.cartesian2spherical_aoom" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transforms the atomic orbitals overlap matrix from a Cartesian Gaussian 
+basis set to a (real) pure spherical harmonic Gaussian basis set.</p>
+<p>Adapted from H.B. Schlegel and M.J. Frisch,
+International Journal of Quantum Chemistry, Vol. 54, 83-87 (1995).</p>
+<p><strong>Parameters:</strong></p>
+<dl class="docutils">
+<dt>ao_overlap_matrix <span class="classifier-delimiter">:</span> <span class="classifier">numpy.ndarray, shape = (NAO,NAO)</span></dt>
+<dd>Contains the overlap matrix of the Cartesian basis set.</dd>
+<dt>ao_spec,ao_spherical :</dt>
+<dd>See <a class="reference internal" href="cvars.html#central-variables"><em>Central Variables</em></a> in the manual for details.</dd>
+</dl>
+<p><strong>Returns:</strong></p>
+<dl class="docutils">
+<dt>aoom_sph <span class="classifier-delimiter">:</span> <span class="classifier">numpy.ndarray, shape = (NAO,NAO)</span></dt>
+<dd>Contains the overlap matrix of the spherical harmonic Gaussian basis set.</dd>
+</dl>
+<p>..hint:</p>
+<blockquote>
+<div>Only supported up to g atomic orbitals and only for contracted 
+atomic orbitals.</div></blockquote>
+</dd></dl>
+
+<dl class="function">
 <dt id="orbkit.analytical_integrals.contract_ao_overlap_matrix">
 <tt class="descclassname">orbkit.analytical_integrals.</tt><tt class="descname">contract_ao_overlap_matrix</tt><big>(</big><em>ao_uncontracted</em>, <em>ao_spec</em><big>)</big><a class="headerlink" href="#orbkit.analytical_integrals.contract_ao_overlap_matrix" title="Permalink to this definition">¶</a></dt>
 <dd><p>Converts an overlap matrix built up from primitive (uncontracted) Cartesian 
@@ -1395,7 +1495,7 @@ all atomic orbitals.</p>
 
 <dl class="function">
 <dt id="orbkit.analytical_integrals.get_ao_overlap">
-<tt class="descclassname">orbkit.analytical_integrals.</tt><tt class="descname">get_ao_overlap</tt><big>(</big><em>coord_a</em>, <em>coord_b</em>, <em>ao_spec</em>, <em>lxlylz_b=None</em>, <em>contraction=True</em>, <em>drv=None</em><big>)</big><a class="headerlink" href="#orbkit.analytical_integrals.get_ao_overlap" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">orbkit.analytical_integrals.</tt><tt class="descname">get_ao_overlap</tt><big>(</big><em>coord_a</em>, <em>coord_b</em>, <em>ao_spec</em>, <em>lxlylz_b=None</em>, <em>contraction=True</em>, <em>drv=None</em>, <em>ao_spherical=None</em><big>)</big><a class="headerlink" href="#orbkit.analytical_integrals.get_ao_overlap" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes the overlap matrix of a basis set, where <cite>Bra</cite> basis set
 corresponds to the geometry <tt class="docutils literal"><span class="pre">coord_a</span></tt> and <cite>Ket</cite> basis set corresponds 
 to the geometry <tt class="docutils literal"><span class="pre">coord_b</span></tt>.</p>
@@ -1420,6 +1520,9 @@ the <cite>Ket</cite> basis set.</dd>
 <dt>contraction <span class="classifier-delimiter">:</span> <span class="classifier">bool, optional</span></dt>
 <dd>If True, the basis set will be contracted after the computation of the 
 overlap matrix.</dd>
+<dt>ao_spherical <span class="classifier-delimiter">:</span> <span class="classifier">optional</span></dt>
+<dd>Specifies if the input is given in a spherical harmonic Gaussian basis set.
+See <a class="reference internal" href="cvars.html#central-variables"><em>Central Variables</em></a> in the manual for details.</dd>
 </dl>
 <p><strong>Returns:</strong></p>
 <dl class="docutils">
@@ -1447,8 +1550,8 @@ overlap matrix.</dd>
 </dd></dl>
 
 <dl class="function">
-<dt id="orbkit.analytical_integrals.get_lxlylz">
-<tt class="descclassname">orbkit.analytical_integrals.</tt><tt class="descname">get_lxlylz</tt><big>(</big><em>ao_spec</em><big>)</big><a class="headerlink" href="#orbkit.analytical_integrals.get_lxlylz" title="Permalink to this definition">¶</a></dt>
+<dt id="orbkit.analytical_integrals.get_lxlylz_old">
+<tt class="descclassname">orbkit.analytical_integrals.</tt><tt class="descname">get_lxlylz_old</tt><big>(</big><em>ao_spec</em><big>)</big><a class="headerlink" href="#orbkit.analytical_integrals.get_lxlylz_old" title="Permalink to this definition">¶</a></dt>
 <dd><p>Extracts the exponents lx, ly, lz for the primitive Cartesian Gaussians.</p>
 <p><strong>Parameters:</strong></p>
 <dl class="docutils">

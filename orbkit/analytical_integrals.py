@@ -16,9 +16,10 @@ except:
     import weave
 
 from orbkit import cSupportCode
-from orbkit.core import exp,lquant,slicer
+from orbkit.core import exp,lquant,slicer,get_lxlylz,get_cart2sph
 
-def get_ao_overlap(coord_a,coord_b,ao_spec,lxlylz_b=None,contraction=True,drv=None):
+def get_ao_overlap(coord_a,coord_b,ao_spec,lxlylz_b=None,contraction=True,
+                   drv=None,ao_spherical=None):
   '''Computes the overlap matrix of a basis set, where `Bra` basis set
   corresponds to the geometry :literal:`coord_a` and `Ket` basis set corresponds 
   to the geometry :literal:`coord_b`.
@@ -32,15 +33,15 @@ def get_ao_overlap(coord_a,coord_b,ao_spec,lxlylz_b=None,contraction=True,drv=No
   **Parameters:**
   
   coord_a : geo_spec
-     Specifies the geometry of the `Bra` basis set. 
-     See :ref:`Central Variables` in the manual for details.
+    Specifies the geometry of the `Bra` basis set. 
+    See :ref:`Central Variables` in the manual for details.
   
   coord_b : geo_spec
-     Specifies the geometry of the `Ket` basis set. 
-     See :ref:`Central Variables` in the manual for details.
+    Specifies the geometry of the `Ket` basis set. 
+    See :ref:`Central Variables` in the manual for details.
   
   ao_spec : 
-     See :ref:`Central Variables` in the manual for details.
+    See :ref:`Central Variables` in the manual for details.
   
   lxlylz_b : numpy.ndarray, dtype=numpy.int64, shape = (N_primitve_AO,3), optional
     Contains the expontents lx, ly, lz for the primitive Cartesian Gaussians of
@@ -49,6 +50,10 @@ def get_ao_overlap(coord_a,coord_b,ao_spec,lxlylz_b=None,contraction=True,drv=No
   contraction : bool, optional
     If True, the basis set will be contracted after the computation of the 
     overlap matrix.
+  
+  ao_spherical : optional
+    Specifies if the input is given in a spherical harmonic Gaussian basis set.
+    See :ref:`Central Variables` in the manual for details.
   
   **Returns:**
   
@@ -123,6 +128,14 @@ def get_ao_overlap(coord_a,coord_b,ao_spec,lxlylz_b=None,contraction=True,drv=No
                support_code = support_code,
                headers=["<vector>"],verbose = 1)
   
+  if ao_spherical is not None:
+    if not contraction:
+      raise IOError('No contraction is currently not supported for a '+ 
+                    'spherical harmonics. Please apply `cartesian2spherical()`'+
+                    ' manually after the contraction.')
+    # Convert the overlap matrix to the real-valued spherical harmonic basis.
+    ao_overlap_matrix = cartesian2spherical(ao_overlap_matrix,ao_spec,ao_spherical)
+  
   return ao_overlap_matrix
 
 def contract_ao_overlap_matrix(ao_uncontracted,ao_spec):
@@ -178,6 +191,60 @@ def contract_ao_overlap_matrix(ao_uncontracted,ao_spec):
     
   return ao_overlap_matrix
 
+def cartesian2spherical_aoom(ao_overlap_matrix,ao_spec,ao_spherical):
+  '''Transforms the atomic orbitals overlap matrix from a Cartesian Gaussian 
+  basis set to a (real) pure spherical harmonic Gaussian basis set.
+  
+  Adapted from H.B. Schlegel and M.J. Frisch,
+  International Journal of Quantum Chemistry, Vol. 54, 83-87 (1995).
+  
+  **Parameters:**
+  
+  ao_overlap_matrix : numpy.ndarray, shape = (NAO,NAO)
+    Contains the overlap matrix of the Cartesian basis set. 
+  ao_spec,ao_spherical :
+    See :ref:`Central Variables` in the manual for details.
+  
+  **Returns:**
+  
+  aoom_sph : numpy.ndarray, shape = (NAO,NAO)
+    Contains the overlap matrix of the spherical harmonic Gaussian basis set.
+  
+  ..hint: 
+  
+    Only supported up to g atomic orbitals and only for contracted 
+    atomic orbitals.
+  '''
+  # Get the exponents of the Cartesian basis functions
+  exp_list,assign = get_lxlylz(ao_spec,get_assign=True)
+  
+  if ao_overlap_matrix.shape != (len(exp_list),len(exp_list)):
+    raise IOError('No contraction is currently not supported for a '+ 
+                  'spherical harmonics. Please come back'+
+                  ' manually after calling `contract_ao_overlap_matrix()`.')
+  
+  l = [[] for i in ao_spec]
+  for i,j in enumerate(assign):
+    l[j].append(i) 
+  
+  aoom_sph = numpy.zeros((len(ao_spherical),len(ao_spherical)))
+  for i0,(j0,k0) in enumerate(ao_spherical):
+    sph0 = get_cart2sph(*k0)
+    for i1,(j1,k1) in enumerate(ao_spherical):
+      sph1 = get_cart2sph(*k1)
+      for c0 in range(len(sph0[0])):
+        for i,j in enumerate(l[j0]):
+          if tuple(exp_list[j]) == sph0[0][c0]:
+            index0 = i + l[j0][0]
+        for c1 in range(len(sph1[0])):
+          for i,j in enumerate(l[j1]):
+            if tuple(exp_list[j]) == sph1[0][c1]:
+              index1 = i + l[j1][0]
+          
+          aoom_sph[i0,i1] += (sph0[1][c0]*sph0[2]*sph1[1][c1]*sph1[2]
+                              *ao_overlap_matrix[index0,index1])
+  return aoom_sph
+  
 def get_mo_overlap(mo_a,mo_b,ao_overlap_matrix):
   '''Computes the overlap of two molecular orbitals.
   
@@ -397,29 +464,6 @@ def get_nuclear_dipole_moment(qc,component='x'):
   for i_nuc in range(len(qc.geo_spec)):
     nuclear_dipole_moment += float(qc.geo_info[i_nuc,2])*qc.geo_spec[i_nuc,component]
   return nuclear_dipole_moment
-  
-def get_lxlylz(ao_spec):
-  '''Extracts the exponents lx, ly, lz for the primitive Cartesian Gaussians.
-  
-  **Parameters:**
-  
-  ao_spec : 
-     See :ref:`Central Variables` in the manual for details.
-  
-  **Returns:**
-  
-  lxlylz : numpy.ndarray, dtype=numpy.int64, shape = (N_primitve_AO,3)
-    Contains the expontents lx, ly, lz for the primitive Cartesian Gaussians.
-  '''
-  lxlylz = []
-  for sel_ao in range(len(ao_spec)):
-    if 'exp_list' in ao_spec[sel_ao].keys():
-      l = ao_spec[sel_ao]['exp_list']
-    else:
-      l = exp[lquant[ao_spec[sel_ao]['type']]]
-    lxlylz.extend(l)
-
-  return numpy.array(lxlylz,dtype=numpy.int64)
 
 def is_mo_spec(mo):
   '''Checks if :literal:`mo` is of :literal:`mo_spec` type. 

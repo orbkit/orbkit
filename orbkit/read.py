@@ -152,7 +152,7 @@ def read_molden(filename, all_mo=False, i_md=-1, interactive=True):
     thisline = line.split()        # The current line split into segments
     
     # Check the file for keywords 
-    if '[Molden Format]' in line:
+    if '[molden format]' in line.lower():
       # A new file begins 
       # Initialize the variables 
       if i_md == count:
@@ -169,7 +169,7 @@ def read_molden(filename, all_mo=False, i_md=-1, interactive=True):
           qc.etot = float(thisline[1])
         except IndexError:
           pass
-      elif '[Atoms]' in line:
+      elif '[atoms]' in line.lower():
         # The section containing information about 
         # the molecular geometry begins 
         sec_flag = 'geo_info'
@@ -180,17 +180,17 @@ def read_molden(filename, all_mo=False, i_md=-1, interactive=True):
         else:
           # The length are given in Bohr radii 
           aa_to_au = 1.0
-      elif '[GTO]' in line:
+      elif '[gto]' in line.lower():
         # The section containing information about 
         # the atomic orbitals begins 
         sec_flag = 'ao_info'
         bNew = True                  # Indication for start of new AO section
-      elif '[MO]' in line:
+      elif '[mo]' in line.lower():
         # The section containing information about 
         # the molecular orbitals begins 
         sec_flag = 'mo_info'
         bNew = True                  # Indication for start of new MO section
-      elif '[STO]' in line:
+      elif '[sto]' in line.lower():
         # The orbkit does not support Slater type orbitals 
         display('orbkit does not work for STOs!\nEXIT\n');
         raise IOError('Not a valid input file')
@@ -286,7 +286,7 @@ def read_molden(filename, all_mo=False, i_md=-1, interactive=True):
     for ii_mo in mo_range:
       if ii_mo['occ_num'] > 0.0000001:
         qc.mo_spec.append(ii_mo)
-  
+    
   # Convert geo_info and geo_spec to numpy.ndarrays
   qc.geo_info = numpy.array(qc.geo_info)
   qc.geo_spec = numpy.array(qc.geo_spec)
@@ -794,7 +794,7 @@ def read_gaussian_fchk(filename, all_mo=False):
   # read_gaussian_fchk 
 
 def read_gaussian_log(filename,all_mo=False,orientation='standard',
-                      i_geo=-1,i_ao=-1,i_mo=-1,interactive=True):
+                      i_link=-1,i_geo=-1,i_ao=-1,i_mo=-1,interactive=True):
   '''Reads all information desired from a Gaussian .log file.
 
   **Parameters:**
@@ -805,6 +805,8 @@ def read_gaussian_log(filename,all_mo=False,orientation='standard',
       If True, all molecular orbitals are returned.
     orientation : string, choices={'input', 'standard'}, optional
       Specifies orientation of the molecule in Gaussian nomenclature. [#first]_ 
+    i_link : int, default=-1
+      Selects the file for linked Gaussian jobs.
     i_geo : int, default=-1
       Selects the geometry section of the output file.
     i_ao : int, default=-1
@@ -816,7 +818,7 @@ def read_gaussian_log(filename,all_mo=False,orientation='standard',
   
   **Returns:**
   
-    qc (class QCinfo) with attributes geo_spec, geo_info, ao_spec, mo_spec, etot :
+    qc (class QCinfo) with attributes geo_spec, geo_info, ao_spec, ao_spherical, mo_spec, etot :
         See :ref:`Central Variables` for details.
 
 .. [#first] Attention: The MOs in the output are only valid for the standard orientation!
@@ -827,8 +829,9 @@ def read_gaussian_log(filename,all_mo=False,orientation='standard',
   flines = fid.readlines()         # Read the WHOLE file into RAM
   fid.close()                      # Close the file
   
+  
   # Search the file the specific sections
-  count = {'geometry': 0, 'geometry_input': 0, 'atomic orbitals': 0, 
+  count = {'link': 0, 'geometry': 0, 'geometry_input': 0, 'atomic orbitals': 0, 
            'molecular orbitals': [], 'state': []}
 
   def check_sel(count,i,interactive=False):
@@ -851,29 +854,51 @@ def read_gaussian_log(filename,all_mo=False,orientation='standard',
   
   # Go through the file line by line 
   for il in range(len(flines)):
+      line = flines[il]            # The current line as string  
+      # Check the file for keywords 
+      if ' Entering Link 1' in line:
+        count['link'] += 1
+  
+  try:
+    display('\tFound %d linked GAUSSIAN files.' % count['link'])
+    i_link = check_sel(count['link'],i_link,interactive=interactive)
+  except IndexError:
+    raise IOError('Found no `Entering Link 1` keyword!')
+  
+  cartesian_basis = True
+  c_link = 0
+  # Go through the file line by line 
+  for il in range(len(flines)):
       line = flines[il]            # The current line as string
       thisline = line.split()      # The current line split into segments
       
+      
       # Check the file for keywords 
-      if ' orientation:' in line:
-        if '%s orientation:' % orientation in line.lower():
-          count['geometry'] += 1
-        if 'input orientation:' in line.lower():
-          count['geometry_input'] += 1
-      elif 'Standard basis:' in line or 'General basis read from cards:' in line:
-        # Check if a cartesian basis has been applied
-        if '(6D, 10F)' not in line:
-          raise IOError('Please apply a Cartesian Gaussian Basis Sets (6D, 10F)!')
-      elif 'AO basis set' in line:
-        count['atomic orbitals'] += 1
-      elif 'The electronic state is ' in line:
-        count['state'].append(thisline[-1][:-1])
-      elif 'Orbital Coefficients:' in line:
-        mo_type = thisline[0]
-        if mo_type != 'Beta':
-          count['molecular orbitals'].append(mo_type)
-        else:
-          count['molecular orbitals'][-1] = 'Alpha&Beta'
+      if ' Entering Link 1' in line:
+        c_link += 1
+      if i_link == (c_link-1):
+        if ' orientation:' in line:
+          if '%s orientation:' % orientation in line.lower():
+            count['geometry'] += 1
+          if 'input orientation:' in line.lower():
+            count['geometry_input'] += 1
+        elif 'Standard basis:' in line or 'General basis read from cards:' in line:
+          # Check if a cartesian basis has been applied
+          if '(5D, 7F)' in line:
+            cartesian_basis = False
+          elif '(6D, 10F)' not in line:
+            raise IOError('Please apply a Spherical Harmonics (5D, 7F) or '+
+                          'a Cartesian Gaussian Basis Set (6D, 10F)!')
+        elif 'AO basis set' in line:
+          count['atomic orbitals'] += 1
+        elif 'The electronic state is ' in line:
+          count['state'].append(thisline[-1][:-1])
+        elif 'Orbital Coefficients:' in line:
+          mo_type = thisline[0]
+          if mo_type != 'Beta':
+            count['molecular orbitals'].append(mo_type)
+          else:
+            count['molecular orbitals'][-1] = 'Alpha&Beta'
  
   display('\nContent of the GAUSSIAN .log file:')
   display('\tFound %d geometry section(s). (%s orientation)' % 
@@ -894,7 +919,9 @@ def read_gaussian_log(filename,all_mo=False,orientation='standard',
     
   
   try:
-    display('\tFound %d atomic orbitals section(s).' % count['atomic orbitals'])
+    display('\tFound %d atomic orbitals section(s) %s.' % 
+            (count['atomic orbitals'],
+             '(6D, 10F)' if cartesian_basis else '(5D, 7F)'))
     i_ao = check_sel(count['atomic orbitals'],i_ao,interactive=interactive)
   except IndexError:
     raise IOError('Write GFINPUT in your GAUSSIAN route section to print' + 
@@ -923,9 +950,12 @@ def read_gaussian_log(filename,all_mo=False,orientation='standard',
   # Initialize some variables 
   sec_flag = None
   skip = 0
+  c_link = 0
   c_geo = 0
   c_ao = 0
   c_mo = 0
+  c_sao = 0
+  old_ao = -1
   orb_sym = []
   qc = QCinfo()
   index = []
@@ -936,145 +966,168 @@ def read_gaussian_log(filename,all_mo=False,orientation='standard',
     thisline = line.split()        # The current line split into segments
     
     # Check the file for keywords 
-    if '%s orientation:' % orientation in line.lower():
-      # The section containing information about 
-      # the molecular geometry begins 
-      if i_geo == c_geo:
-        qc.geo_info = []
-        qc.geo_spec = []
-        sec_flag = 'geo_info'
-      c_geo += 1
-      skip = 4
-    elif 'Standard basis:' in line:
-      # Check if a cartesian basis has been applied
-      if '(6D, 10F)' not in line:
-        raise IOError('Please apply a Cartesian Gaussian Basis Sets (6D, 10F)!')
-    elif 'AO basis set' in line:
-      # The section containing information about 
-      # the atomic orbitals begins
-      if i_ao == c_ao:
-        qc.ao_spec = []
-        sec_flag = 'ao_info'
-      c_ao += 1
-      basis_count = 0
-      bNew = True                  # Indication for start of new AO section
-    elif 'Orbital symmetries:' in line:
-        sec_flag = 'mo_sym'
-        add = ''
-        orb_sym = []
-    elif 'Orbital Coefficients:' in line:
-      # The section containing information about 
-      # the molecular orbitals begins 
-      if (i_mo == c_mo):
-        sec_flag = 'mo_info'
-        mo_type = count['molecular orbitals'][i_mo]
-        qc.mo_spec = []
-        offset = 0
-        add = ''
-        if orb_sym == []:
-          if 'Alpha' in mo_type:
-            add = '(a)'
-          orb_sym = ['A1'+add] * basis_count
-          if 'Beta' in mo_type:
-            add = '(b)'
-            orb_sym += ['A1'+add] * basis_count
-        for i in range(len(orb_sym)):
-          # for numpy version < 1.6 
-          c = ((numpy.array(orb_sym[:i+1]) == orb_sym[i]) != 0).sum()
-          # for numpy version >= 1.6 this could be used:
-          #c = numpy.count_nonzero(numpy.array(orb_sym[:i+1]) == orb_sym[i])
-          qc.mo_spec.append({'coeffs': numpy.zeros(basis_count),
-                          'energy': 0.,
-                          'sym': '%d.%s' % (c,orb_sym[i])})
-      if mo_type != 'Beta':
-        c_mo += 1
-      bNew = True                  # Indication for start of new MO section
-    elif 'E(' in line:
-      qc.etot = float(line.split('=')[1].split()[0])
-    else:
-      # Check if we are in a specific section 
-      if sec_flag == 'geo_info':
-        if not skip:
-          qc.geo_info.append([thisline[1],thisline[0],thisline[1]])
-          qc.geo_spec.append([aa_to_au*float(ij) for ij in thisline[3:]])
-          if '-----------' in flines[il+1]:
-            sec_flag = None
-        else:
-          skip -= 1
-      if sec_flag == 'ao_info':
-        # Atomic orbital section 
-        if ' ****' in line: 
-          # There is a line with stars after every AO 
-          bNew = True
-          # If there is an additional blank line, the AO section is complete
-          if flines[il+1].split() == []:
-            sec_flag = None
-        elif bNew:
-          # The following AOs are for which atom? 
-          bNew = False
-          at_num = int(thisline[0]) - 1
-          ao_num = 0
-        elif len(thisline) == 4:
-          # AO information section 
-          # Initialize a new dict for this AO 
-          ao_num = 0               # Initialize number of atomic orbiatls 
-          ao_type = thisline[0].lower()   # Type of atomic orbital
-          pnum = int(thisline[1])  # Number of primatives
-          for i_ao in ao_type:
-            # Calculate the degeneracy of this AO and increase basis_count 
-            basis_count += l_deg(lquant[i_ao])
-            qc.ao_spec.append({'atom': at_num,
-                            'type': i_ao,
-                            'pnum': pnum,
-                            'coeffs': numpy.zeros((pnum, 2))
-                            })
-        else:
-          # Append the AO coefficients 
-          coeffs = numpy.array(line.replace('D','e').split(), dtype=numpy.float64)
-          for i_ao in range(len(ao_type)):
-            qc.ao_spec[-len(ao_type)+i_ao]['coeffs'][ao_num,:] = [coeffs[0],
-                                                               coeffs[1+i_ao]]
-          ao_num += 1
-      if sec_flag == 'mo_sym':
-        if 'The electronic state is' in line:
-          sec_flag = None
-        else:
-          info = line[18:].replace('(','').replace(')','').split()
-          if 'Alpha' in line:
-            add = '(a)'
-          elif 'Beta' in line:
-            add = '(b)'
-          for i in info:
-            orb_sym.append(i + add)   
-      if sec_flag == 'mo_info':
-        # Molecular orbital section 
-        info = line[:21].split()
-        coeffs = line[21:].replace('-',' -').split()
-        if info == []:
-          if bNew:
-            index = [offset+i for i in range(len(coeffs))]
-            bNew = False
-          else:
-            for i,j in enumerate(index):
-              qc.mo_spec[j]['occ_num'] = int('O' in coeffs[i])
-              if mo_type not in 'Alpha&Beta':
-                qc.mo_spec[j]['occ_num'] *= 2
-        elif 'Eigenvalues' in info:
-          if mo_type == 'Natural':
-            key = 'occ_num'
-          else:
-            key = 'energy'
-          for i,j in enumerate(index):
-            qc.mo_spec[j][key] = float(coeffs[i])
-        else:
-          for i,j in enumerate(index):
-            qc.mo_spec[j]['coeffs'][int(info[0])-1] = float(coeffs[i])
-          if int(info[0]) == basis_count:
-            bNew = True
-            offset = index[-1]+1
-            if index[-1]+1 == len(orb_sym):
+    if ' Entering Link 1' in line:
+      c_link += 1
+    if i_link == (c_link-1):
+      if '%s orientation:' % orientation in line.lower():
+        # The section containing information about 
+        # the molecular geometry begins 
+        if i_geo == c_geo:
+          qc.geo_info = []
+          qc.geo_spec = []
+          sec_flag = 'geo_info'
+        c_geo += 1
+        skip = 4
+      elif 'Standard basis:' in line or 'General basis read from cards:' in line:
+        # Check if a cartesian basis has been applied
+        if '(5D, 7F)' in line:
+          cartesian_basis = False
+        elif '(6D, 10F)' not in line:
+          raise IOError('Please apply a Spherical Harmonics (5D, 7F) or '+
+                        'a Cartesian Gaussian Basis Sets (6D, 10F)!')
+      elif 'AO basis set' in line:
+        # The section containing information about 
+        # the atomic orbitals begins
+        if i_ao == c_ao:
+          qc.ao_spec = []
+          if not cartesian_basis:
+            qc.ao_spherical = []
+          sec_flag = 'ao_info'
+        c_ao += 1
+        basis_count = 0
+        bNew = True                  # Indication for start of new AO section
+      elif 'Orbital symmetries:' in line:
+          sec_flag = 'mo_sym'
+          add = ''
+          orb_sym = []
+      elif 'Orbital Coefficients:' in line:
+        # The section containing information about 
+        # the molecular orbitals begins 
+        if (i_mo == c_mo):
+          sec_flag = 'mo_info'
+          mo_type = count['molecular orbitals'][i_mo]
+          qc.mo_spec = []
+          offset = 0
+          add = ''
+          if orb_sym == []:
+            if 'Alpha' in mo_type:
+              add = '(a)'
+            orb_sym = ['A1'+add] * basis_count
+            if 'Beta' in mo_type:
+              add = '(b)'
+              orb_sym += ['A1'+add] * basis_count
+          for i in range(len(orb_sym)):
+            # for numpy version < 1.6 
+            c = ((numpy.array(orb_sym[:i+1]) == orb_sym[i]) != 0).sum()
+            # for numpy version >= 1.6 this could be used:
+            #c = numpy.count_nonzero(numpy.array(orb_sym[:i+1]) == orb_sym[i])
+            qc.mo_spec.append({'coeffs': numpy.zeros(basis_count),
+                            'energy': 0.,
+                            'sym': '%d.%s' % (c,orb_sym[i])})
+        if mo_type != 'Beta':
+          c_mo += 1
+        bNew = True                  # Indication for start of new MO section
+      elif 'E(' in line:
+        qc.etot = float(line.split('=')[1].split()[0])
+      else:
+        # Check if we are in a specific section 
+        if sec_flag == 'geo_info':
+          if not skip:
+            qc.geo_info.append([thisline[1],thisline[0],thisline[1]])
+            qc.geo_spec.append([aa_to_au*float(ij) for ij in thisline[3:]])
+            if '-----------' in flines[il+1]:
               sec_flag = None
-              orb_sym = []
+          else:
+            skip -= 1
+        if sec_flag == 'ao_info':
+          # Atomic orbital section 
+          if ' ****' in line: 
+            # There is a line with stars after every AO 
+            bNew = True
+            # If there is an additional blank line, the AO section is complete
+            if flines[il+1].split() == []:
+              sec_flag = None
+          elif bNew:
+            # The following AOs are for which atom? 
+            bNew = False
+            at_num = int(thisline[0]) - 1
+            ao_num = 0
+          elif len(thisline) == 4:
+            # AO information section 
+            # Initialize a new dict for this AO 
+            ao_num = 0               # Initialize number of atomic orbiatls 
+            ao_type = thisline[0].lower()   # Type of atomic orbital
+            pnum = int(thisline[1])  # Number of primatives
+            for i_ao in ao_type:
+              # Calculate the degeneracy of this AO and increase basis_count 
+              basis_count += l_deg(lquant[i_ao],cartesian_basis=cartesian_basis)
+              qc.ao_spec.append({'atom': at_num,
+                              'type': i_ao,
+                              'pnum': pnum,
+                              'coeffs': numpy.zeros((pnum, 2))
+                              })
+          else:
+            # Append the AO coefficients 
+            coeffs = numpy.array(line.replace('D','e').split(), dtype=numpy.float64)
+            for i_ao in range(len(ao_type)):
+              qc.ao_spec[-len(ao_type)+i_ao]['coeffs'][ao_num,:] = [coeffs[0],
+                                                                coeffs[1+i_ao]]
+            ao_num += 1
+        if sec_flag == 'mo_sym':
+          if 'The electronic state is' in line:
+            sec_flag = None
+          else:
+            info = line[18:].replace('(','').replace(')','').split()
+            if 'Alpha' in line:
+              add = '(a)'
+            elif 'Beta' in line:
+              add = '(b)'
+            for i in info:
+              orb_sym.append(i + add)   
+        if sec_flag == 'mo_info':
+          # Molecular orbital section 
+          info = line[:21].split()
+          coeffs = line[21:].replace('-',' -').split()
+          if info == []:
+            if bNew:
+              index = [offset+i for i in range(len(coeffs))]
+              bNew = False
+            else:
+              for i,j in enumerate(index):
+                qc.mo_spec[j]['occ_num'] = int('O' in coeffs[i])
+                if mo_type not in 'Alpha&Beta':
+                  qc.mo_spec[j]['occ_num'] *= 2
+          elif 'Eigenvalues' in info:
+            if mo_type == 'Natural':
+              key = 'occ_num'
+            else:
+              key = 'energy'
+            for i,j in enumerate(index):
+              qc.mo_spec[j][key] = float(coeffs[i])
+          else:
+            if not cartesian_basis and offset == 0:
+              if old_ao != line[:13].split()[-1]:
+                old_ao = line[:13].split()[-1]
+                c_sao += 1
+              i = c_sao-1
+              l = lquant[line[13].lower()] 
+              m = line[14:21].replace(' ', '').lower()
+              p = 'yzx'.find(m) if len(m) == 1 else -1
+              if p != -1:
+                m = p - 1
+              elif m == '':
+                m = 0
+              else:
+                m = int(m)
+              qc.ao_spherical.append([i,(l,m)])
+            for i,j in enumerate(index):
+              qc.mo_spec[j]['coeffs'][int(info[0])-1] = float(coeffs[i])
+            if int(info[0]) == basis_count:
+              bNew = True
+              offset = index[-1]+1
+              if index[-1]+1 == len(orb_sym):
+                sec_flag = None
+                orb_sym = []
   
   # Are all MOs requested for the calculation? 
   if not all_mo:

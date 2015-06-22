@@ -140,9 +140,9 @@
 computations and is organized as follows:</p>
 <table border="1" class="docutils">
 <colgroup>
-<col width="15%" />
-<col width="36%" />
-<col width="48%" />
+<col width="19%" />
+<col width="35%" />
+<col width="47%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Member</th>
@@ -163,7 +163,11 @@ computations and is organized as follows:</p>
 <td><tt class="docutils literal"><span class="pre">list</span></tt> of <tt class="docutils literal"><span class="pre">dict</span></tt></td>
 <td>&#8220;pnum&#8221;, &#8220;atom&#8221;, &#8220;type&#8221;, &#8220;coeffs&#8221;, (&#8220;exp_list&#8221;)</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#qc-mo-spec">qc.mo_spec</a></td>
+<tr class="row-odd"><td><a class="reference internal" href="#qc-ao-spherical">qc.ao_spherical</a></td>
+<td><tt class="docutils literal"><span class="pre">list</span></tt> of <tt class="docutils literal"><span class="pre">tuple</span></tt></td>
+<td>(N<sub>spherical AOs</sub>, 2)</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#qc-mo-spec">qc.mo_spec</a></td>
 <td><tt class="docutils literal"><span class="pre">list</span></tt> of <tt class="docutils literal"><span class="pre">dict</span></tt></td>
 <td>&#8220;energy&#8221;, &#8220;occ_num&#8221;, &#8220;sym&#8221;, &#8220;coeffs&#8221;</td>
 </tr>
@@ -230,6 +234,22 @@ molden order</li>
 </li>
 </ul>
 </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<table class="docutils field-list" frame="void" id="qc-ao-spherical" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name" colspan="2">qc.ao_spherical:</th></tr>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body"><ul class="first last simple">
+<li>Contains the order of the spherical harmonic basis functions within the
+input file</li>
+<li><tt class="docutils literal"><span class="pre">list</span></tt> of <tt class="docutils literal"><span class="pre">tuple</span></tt>, i.e., <tt class="docutils literal"><span class="pre">[(l_1,m_1),</span> <span class="pre">(l_2,m_2),</span> <span class="pre">...]</span></tt> with
+the angular momentum quantum number <tt class="docutils literal"><span class="pre">m</span></tt> and the magnetic quantum number
+<tt class="docutils literal"><span class="pre">l</span></tt></li>
 </ul>
 </td>
 </tr>
