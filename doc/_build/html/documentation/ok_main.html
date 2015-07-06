@@ -128,78 +128,245 @@
           <div role="main">
             
   <div class="section" id="orbkit-s-high-level-interface">
-<h1>orbkit&#8217;s High-Level Interface<a class="headerlink" href="#orbkit-s-high-level-interface" title="Permalink to this headline">¶</a></h1>
-<p>For an overview of all available features, refer to the chapter <a class="reference internal" href="options.html#options"><em>Options</em></a>.</p>
-<p>The following examples show exemplary how to use orbkit within your Python
-programs. These and more examples can be found in the <tt class="docutils literal"><span class="pre">orbkit/examples</span></tt>
-folder.</p>
-<div class="section" id="input-output">
-<h2>Input/Output<a class="headerlink" href="#input-output" title="Permalink to this headline">¶</a></h2>
-<p>For the standard density calculation including all occupied molecular
-orbitals on the default grid, the following command must be entered in the
-console:</p>
+<span id="high-level-interface"></span><h1>orbkit&#8217;s High-Level Interface<a class="headerlink" href="#orbkit-s-high-level-interface" title="Permalink to this headline">¶</a></h1>
+<p>This chapter should serve as an overview of how to use orbkit&#8217;s high-level
+interface within your Python programs. For clarity, it is structured
+equivalently to <a class="reference internal" href="terminal.html#terminal-interface"><em>Usage via the Terminal</em></a>.</p>
+<div class="section" id="general-aspects">
+<h2>General Aspects<a class="headerlink" href="#general-aspects" title="Permalink to this headline">¶</a></h2>
+<p>To access the main features of orbkit, you have to import it using:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">orbkit</span> <span class="kn">as</span> <span class="nn">ok</span>
-<span class="n">ok</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">filename</span>   <span class="o">=</span> <span class="s">&#39;h2o.md&#39;</span>                <span class="c"># input file name</span>
-<span class="n">ok</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">itype</span>      <span class="o">=</span> <span class="s">&#39;molden&#39;</span>                <span class="c"># input file type [default]</span>
-<span class="n">ok</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">outputname</span> <span class="o">=</span> <span class="s">&#39;h2o&#39;</span>                   <span class="c"># output file (base) name</span>
-<span class="n">ok</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">otype</span>      <span class="o">=</span> <span class="p">[</span><span class="s">&#39;h5&#39;</span><span class="p">,</span><span class="s">&#39;vmd&#39;</span><span class="p">]</span>            <span class="c"># output file type [default]</span>
-<span class="n">ok</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">numproc</span>    <span class="o">=</span> <span class="mi">4</span>                       <span class="c"># number of processes</span>
-<span class="c"># run orbkit</span>
-<span class="n">ok</span><span class="o">.</span><span class="n">run_orbkit</span><span class="p">()</span>
 </pre></div>
 </div>
+<p>Now, you can specify all options for the computation analogously to
+<a class="reference internal" href="terminal.html#terminal-interface"><em>Usage via the Terminal</em></a>, e.g.:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">ok</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">numproc</span> <span class="o">=</span> <span class="mi">4</span>                       <span class="c"># number of processes</span>
+</pre></div>
+</div>
+<p>Within this chapter we will discuss the most important options.
+For an overview of all available options, please refer to the chapter
+<a class="reference internal" href="options.html#options"><em>Options</em></a>.</p>
+<p>Finally, you have to run orbkit with:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">data</span> <span class="o">=</span> <span class="n">ok</span><span class="o">.</span><span class="n">run_orbkit</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>This function will not only save the results to the requested output formats,
+it will also return the results for further post-processing.</p>
 <div class="admonition hint">
 <p class="first admonition-title">Hint</p>
 <p>If you want to run several calculations with different options, you have to
-reset all options. This can be accomplished by calling <a class="reference internal" href="funcref.html#orbkit.main.init" title="orbkit.main.init"><tt class="xref py py-mod docutils literal"><span class="pre">orbkit.main.init</span></tt></a>
+reset all options. This can be accomplished by calling <tt class="docutils literal"><span class="pre">ok.init()</span></tt>
 between the calculations, e.g.:</p>
 <div class="last highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">orbkit</span> <span class="kn">as</span> <span class="nn">ok</span>
 <span class="c"># Set some options ...</span>
 <span class="c"># run orbkit</span>
-<span class="n">ok</span><span class="o">.</span><span class="n">run_orbkit</span><span class="p">()</span>
+<span class="n">data_1</span> <span class="o">=</span> <span class="n">ok</span><span class="o">.</span><span class="n">run_orbkit</span><span class="p">()</span>
 
 <span class="c"># Reset all options</span>
-<span class="n">ok</span><span class="o">.</span><span class="n">main</span><span class="o">.</span><span class="n">init</span><span class="p">()</span>
+<span class="n">ok</span><span class="o">.</span><span class="n">init</span><span class="p">()</span>
 <span class="c"># Set some options ...</span>
 <span class="c"># run orbkit</span>
-<span class="n">ok</span><span class="o">.</span><span class="n">run_orbkit</span><span class="p">()</span>
+<span class="n">data_2</span> <span class="o">=</span> <span class="n">ok</span><span class="o">.</span><span class="n">run_orbkit</span><span class="p">()</span>
 </pre></div>
 </div>
+</div>
+</div>
+<div class="section" id="input-output">
+<h2>Input/Output<a class="headerlink" href="#input-output" title="Permalink to this headline">¶</a></h2>
+<p>The input filename can be specified by:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">ok</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">filename</span> <span class="o">=</span> <span class="s">&#39;h2o.md&#39;</span>
+</pre></div>
+</div>
+<p>The file type has to be specified via:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">ok</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">itype</span> <span class="o">=</span> <span class="s">&#39;molden&#39;</span>
+</pre></div>
+</div>
+<p>The available file types are <strong>&#8216;molden&#8217;</strong> (default), <strong>&#8216;gamess&#8217;</strong> (GAMESS-US
+output file), <strong>&#8216;gaussian.log&#8217;</strong> (GAUSSIAN output file),
+<strong>&#8216;gaussian.fchk&#8217;</strong> (GAUSSIAN formatted checkpoint file).</p>
+<p>Concerning orbkit&#8217;s output, you can choose between several following options:</p>
+<blockquote>
+<div><ul class="simple">
+<li><strong>&#8216;h5&#8217;</strong> (HDF5 file)</li>
+<li><strong>&#8216;cb&#8217;</strong> (Gaussian cube file)</li>
+<li><strong>&#8216;vmd&#8217;</strong> (VMD network)</li>
+<li><strong>&#8216;am&#8217;</strong> (ZIBAmiraMesh file)</li>
+<li><strong>&#8216;hx&#8217;</strong> (ZIBAmira network)</li>
+<li><strong>&#8216;vmd&#8217;</strong> (VMD network)</li>
+<li><strong>&#8216;mayavi&#8217;</strong> (opens a simple interactive Mayavi interface)</li>
+</ul>
+</div></blockquote>
+<p>Several output types can be considered at once:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">ok</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">otype</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;h5&#39;</span><span class="p">,</span><span class="s">&#39;vmd&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>orbkit assumes the input file, if not otherwise stated, e.g.:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">ok</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">outputname</span> <span class="o">=</span> <span class="s">&#39;h2o&#39;</span> <span class="c"># output file (base) name</span>
+</pre></div>
+</div>
+<p>For more information on the different output types, refer to
+<a class="reference internal" href="terminal.html#io"><em>Input/Output</em></a> (Usage via the Terminal).</p>
+<div class="admonition hint">
+<p class="first admonition-title">Hint</p>
+<p class="last">You can omit the creation of an output file by either setting
+<tt class="docutils literal"><span class="pre">ok.options.otype</span> <span class="pre">=</span> <span class="pre">None</span></tt> or by setting
+<tt class="docutils literal"><span class="pre">ok.options.no_output</span> <span class="pre">=</span> <span class="pre">True</span></tt>. Furthermore, you can disable the creation of
+.oklog file can with <tt class="docutils literal"><span class="pre">ok.options.no_log</span> <span class="pre">=</span> <span class="pre">True</span></tt>, and the terminal output can
+be disabled with <tt class="docutils literal"><span class="pre">ok.options.quiet</span> <span class="pre">=</span> <span class="pre">True</span></tt>.</p>
 </div>
 </div>
 <div class="section" id="grid-related-options">
 <h2>Grid Related Options<a class="headerlink" href="#grid-related-options" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">ok</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">adjust_grid</span><span class="o">=</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">]</span>                <span class="c"># adjust the grid to the geometry</span>
+<p>By default orbkit carries out all computations on a regular grid, i.e.,
+<img class="math" src="../_images/math/b2ac4fabfd6b5a14cafbccb775ed025af707d27d.png" alt="N_{\sf data points} = N_{\sf x} \times N_{\sf y} \times N_{\sf z}"/>.
+In order invoke the application of a vector grid, i.e.,
+<img class="math" src="../_images/math/f62a0edf5c4ae4918c2be2717f785d99c3bb82f9.png" alt="N_{\sf data points} = N_{\sf x} = N_{\sf y} = N_{\sf z}"/>,
+the following option, containing the number of points per subprocess,
+has to be set:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">ok</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">vector</span> <span class="o">=</span> <span class="mf">1e4</span>
 </pre></div>
 </div>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">ok</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">grid_file</span>  <span class="o">=</span> <span class="s">&#39;grid_reg.txt&#39;</span>          <span class="c"># grid file to read from (regular grid)</span>
+<p>There are several ways to specify the grid in orbkit (in a.u.):</p>
+<p><strong>Adjusting the grid to the geometry</strong>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">ok</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">adjust_grid</span> <span class="o">=</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">]</span>
 </pre></div>
 </div>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">ok</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">grid_file</span>  <span class="o">=</span> <span class="s">&#39;grid_vec.txt&#39;</span>          <span class="c"># grid file to read from (vector grid)</span>
-<span class="n">ok</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">vector</span>     <span class="o">=</span> <span class="mf">1e4</span>                     <span class="c"># number of points per subprocess</span>
+<p>Here, orbkit creates a grid with a grid spacing of 0.1 a<sub>0</sub> and the size
+of the molecule plus 5 a<sub>0</sub> in each direction.</p>
+<p><strong>Reading the grid parameters from a file</strong>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">ok</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">grid_file</span>  <span class="o">=</span> <span class="s">&#39;grid.txt&#39;</span>
 </pre></div>
 </div>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">ok</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">N_</span>            <span class="o">=</span> <span class="p">[</span>  <span class="mi">201</span><span class="p">,</span>   <span class="mi">201</span><span class="p">,</span>   <span class="mi">101</span><span class="p">]</span>   <span class="c"># grid points (regular grid)</span>
-<span class="n">ok</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">max_</span>          <span class="o">=</span> <span class="p">[</span> <span class="mf">10.0</span><span class="p">,</span>  <span class="mf">10.0</span><span class="p">,</span>   <span class="mf">5.0</span><span class="p">]</span>   <span class="c"># maximum grid value</span>
-<span class="n">ok</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">min_</span>          <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mf">10.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">10.0</span><span class="p">,</span>  <span class="o">-</span><span class="mf">5.0</span><span class="p">]</span>   <span class="c"># minimum grid value</span>
+<p>This file can have two possible formats. It can be represented either by the boundary
+conditions of an equidistant rectangular grid (<strong>regular grid</strong>) or by a list of
+grid points (<strong>vector grid</strong>). For more information, refer to
+<a class="reference internal" href="terminal.html#grid"><em>Grid Related Options</em></a> (Usage via the Terminal).</p>
+<p><strong>Specifying the boundary conditions manually</strong>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">ok</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">N_</span>   <span class="o">=</span> <span class="p">[</span>  <span class="mi">201</span><span class="p">,</span>   <span class="mi">201</span><span class="p">,</span>   <span class="mi">101</span><span class="p">]</span>   <span class="c"># grid points (regular grid)</span>
+<span class="n">ok</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">max_</span> <span class="o">=</span> <span class="p">[</span> <span class="mf">10.0</span><span class="p">,</span>  <span class="mf">10.0</span><span class="p">,</span>   <span class="mf">5.0</span><span class="p">]</span>   <span class="c"># maximum grid value</span>
+<span class="n">ok</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">min_</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mf">10.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">10.0</span><span class="p">,</span>  <span class="o">-</span><span class="mf">5.0</span><span class="p">]</span>   <span class="c"># minimum grid value</span>
 </pre></div>
+</div>
+<p><strong>Specifying the grid manually</strong>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">numpy</span>
+<span class="n">ok</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">10</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">201</span><span class="p">)</span>
+<span class="n">ok</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">],</span><span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+<span class="n">ok</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">z</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span><span class="mf">1.1</span><span class="p">])</span>
+<span class="c"># We have already initialized a grid for orbkit:</span>
+<span class="n">ok</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">is_initialized</span> <span class="o">=</span> <span class="bp">True</span>
+</pre></div>
+</div>
+<p>where x, y and z have to be one-dimensional <tt class="docutils literal"><span class="pre">numpy.array</span></tt> of type <tt class="docutils literal"><span class="pre">float</span></tt>
+(<tt class="docutils literal"><span class="pre">numpy.float64</span></tt>).</p>
+<div class="admonition attention">
+<p class="first admonition-title">Attention</p>
+<p class="last">The last line is <strong>mandatory</strong>, i.e., we have to tell orbkit, that there is no
+need to initialize the grid.</p>
+</div>
+<div class="admonition hint">
+<p class="first admonition-title">Hint</p>
+<p class="last">Please keep in mind that for a vector grid the relation
+<img class="math" src="../_images/math/f62a0edf5c4ae4918c2be2717f785d99c3bb82f9.png" alt="N_{\sf data points} = N_{\sf x} = N_{\sf y} = N_{\sf z}"/>
+has to hold.</p>
 </div>
 </div>
 <div class="section" id="molecular-orbital-selection">
 <h2>Molecular Orbital Selection<a class="headerlink" href="#molecular-orbital-selection" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">ok</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">calc_mo</span>    <span class="o">=</span> <span class="p">[</span><span class="s">&#39;2.1&#39;</span><span class="p">,</span><span class="s">&#39;1.1&#39;</span><span class="p">,</span><span class="s">&#39;2.3&#39;</span><span class="p">]</span>     <span class="c"># list of MO labels (Molpro notation)</span>
+<p>orbkit is capable of calculating a selected set of molecular orbitals:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">ok</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">calc_mo</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;3.1&#39;</span><span class="p">,</span><span class="s">&#39;1.1&#39;</span><span class="p">,</span><span class="s">&#39;2.3&#39;</span><span class="p">]</span>
 </pre></div>
 </div>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">ok</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">mo_set</span>     <span class="o">=</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">],[</span><span class="s">&#39;homo&#39;</span><span class="p">,</span>
-                         <span class="s">&#39;lumo+2:lumo+4&#39;</span><span class="p">]]</span>      <span class="c"># list of MO labels (Molden enumeration)</span>
+<p>and of calculating the density with a selected set of molecular orbitals:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">ok</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">mo_set</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">],</span>                   <span class="c"># first set</span>
+                     <span class="p">[</span><span class="s">&#39;homo&#39;</span><span class="p">,</span> <span class="s">&#39;lumo+2:lumo+4&#39;</span><span class="p">]]</span> <span class="c"># second set</span>
 </pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>While the first example uses the <strong>MOLPRO-like nomenclature</strong>, e.g., <tt class="docutils literal"><span class="pre">3.1</span></tt> for
+the third orbital in symmetry one, the second example uses the
+<strong>index within the input file</strong> (counting from one).</p>
+<p class="last">For more information, refer to <a class="reference internal" href="terminal.html#mo"><em>Molecular Orbital Selection</em></a> (Usage via the Terminal).</p>
 </div>
 </div>
 <div class="section" id="derivative-calculation">
 <h2>Derivative Calculation<a class="headerlink" href="#derivative-calculation" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">ok</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">drv</span>        <span class="o">=</span> <span class="p">[</span><span class="s">&#39;x&#39;</span><span class="p">,</span> <span class="s">&#39;z&#39;</span><span class="p">]</span>              <span class="c"># derivatives along x and z</span>
+<p>orbkit can compute analytical spatial derivatives with respect to <em>x</em>,
+<em>y</em>, or <em>z</em> for the atomic and molecular orbitals, as well
+as for the electron density:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">ok</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">drv</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;x&#39;</span><span class="p">,</span> <span class="s">&#39;z&#39;</span><span class="p">]</span>
 </pre></div>
 </div>
+<p>This invokes the computation of the derivatives with respect to <em>x</em>
+and the computation of the derivatives with respect to <em>z</em>.</p>
+</div>
+<div class="section" id="return-values">
+<h2>Return Values<a class="headerlink" href="#return-values" title="Permalink to this headline">¶</a></h2>
+<p>Besides writing the requested output, the function <tt class="docutils literal"><span class="pre">run_orbkit()</span></tt>,
+returns all data computed:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">data</span> <span class="o">=</span> <span class="n">ok</span><span class="o">.</span><span class="n">run_orbkit</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Depending on your options, this data set has a different structure.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="33%" />
+<col width="67%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>Computed Quantity</td>
+<td>Returned Data</td>
+</tr>
+<tr class="row-even"><td>density</td>
+<td><tt class="docutils literal"><span class="pre">numpy.ndarray</span></tt> with <tt class="docutils literal"><span class="pre">shape=(N)</span></tt></td>
+</tr>
+<tr class="row-odd"><td>derivative of density</td>
+<td><ol class="first last arabic simple">
+<li>density <tt class="docutils literal"><span class="pre">numpy.ndarray</span></tt> with <tt class="docutils literal"><span class="pre">shape=(N)</span></tt></li>
+<li>derivative of density <tt class="docutils literal"><span class="pre">numpy.ndarray</span></tt> with <tt class="docutils literal"><span class="pre">shape=(NDRV,N)</span></tt></li>
+</ol>
+</td>
+</tr>
+<tr class="row-even"><td>molecular orbitals</td>
+<td><ol class="first last arabic simple">
+<li><tt class="docutils literal"><span class="pre">numpy.ndarray</span></tt> with <tt class="docutils literal"><span class="pre">shape=((NMO,)</span> <span class="pre">+</span> <span class="pre">N)</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">dict</span></tt> with information on selected molecular orbitals</li>
+</ol>
+</td>
+</tr>
+<tr class="row-odd"><td>derivative of molecular orbitals</td>
+<td><ol class="first last arabic simple">
+<li><tt class="docutils literal"><span class="pre">numpy.ndarray</span></tt> with <tt class="docutils literal"><span class="pre">shape=((NDRV,NMO,)</span> <span class="pre">+</span> <span class="pre">N)</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">dict</span></tt> with information on selected molecular orbitals</li>
+</ol>
+</td>
+</tr>
+<tr class="row-even"><td><p class="first">density from a set of</p>
+<p class="last">molecular orbitals</p>
+</td>
+<td><ol class="first last arabic simple">
+<li><tt class="docutils literal"><span class="pre">numpy.ndarray</span></tt> with <tt class="docutils literal"><span class="pre">shape=((NSET,)</span> <span class="pre">+</span> <span class="pre">N)</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">dict</span></tt> with information on selected molecular orbitals</li>
+</ol>
+</td>
+</tr>
+<tr class="row-odd"><td><p class="first">derivative of density from a</p>
+<p class="last">set of molecular orbitals</p>
+</td>
+<td><ol class="first last arabic simple">
+<li><tt class="docutils literal"><span class="pre">numpy.ndarray</span></tt> with <tt class="docutils literal"><span class="pre">shape=((NSET,NDRV,)</span> <span class="pre">+</span> <span class="pre">N)</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">dict</span></tt> with information on selected molecular orbitals</li>
+</ol>
+</td>
+</tr>
+</tbody>
+</table>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">N</span></tt> is shape as the grid.</li>
+<li><tt class="docutils literal"><span class="pre">NDRV</span></tt> is the number derivatives requested.</li>
+<li><tt class="docutils literal"><span class="pre">NMO</span></tt> is the number of molecular orbitals requested.</li>
+<li><tt class="docutils literal"><span class="pre">NSET</span></tt> is the number of molecular orbital sets requested.</li>
+</ul>
 </div>
 </div>
 

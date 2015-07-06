@@ -10,6 +10,7 @@ required:
 2) SciPy_ Library of algorithms and mathematical tools
 3) NumPy_ Library of high-level mathematical functions
 4) h5py_ Interface to the HDF5 binary data format
+5) mayavi_ Tool for 3D scientific data visualization (optional)
 
 The package h5py is not mandatory but strongly recommended.
 
@@ -17,6 +18,7 @@ The package h5py is not mandatory but strongly recommended.
 .. _SciPy: http://www.scipy.org/
 .. _NumPy: http://www.numpy.org/
 .. _h5py: http://www.h5py.org/
+.. _mayavi: http://docs.enthought.com/mayavi/mayavi/index.html
 
 Installation
 ------------

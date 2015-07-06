@@ -845,9 +845,15 @@ def view_with_mayavi(x,y,z,data,geo_spec=None,datalabels=None):
   from traits.api import HasTraits, Range, Instance, on_trait_change, Bool, Str,List
   from traitsui.api import View, Item, Group, ListStrEditor
   
-  from mayavi import mlab
-  from mayavi.core.api import PipelineBase
-  from mayavi.core.ui.api import MayaviScene, SceneEditor, MlabSceneModel
+  try:
+    from enthought.mayavi import mlab
+    from enthought.mayavi.core.api import PipelineBase
+    from enthought.mayavi.core.ui.api import MayaviScene, SceneEditor, MlabSceneModel
+  except ImportError:
+    from mayavi import mlab
+    from mayavi.core.api import PipelineBase
+    from mayavi.core.ui.api import MayaviScene, SceneEditor, MlabSceneModel
+  
   from copy import deepcopy
   data = numpy.array(data)
   
@@ -912,11 +918,11 @@ def view_with_mayavi(x,y,z,data,geo_spec=None,datalabels=None):
           self.plot0.contour.scene.background = (1,1,1)
         elif self.select != self.last_select:
           self.plot0.mlab_source.set(scalars=data[self.select])
-          self.plot0.contour.contours = [self.iso_value]
-          self.plot0.actor.property.opacity = self.opacity
           self.plot1.mlab_source.set(scalars=data[self.select])
-          self.plot1.contour.contours = [-self.iso_value]
-          self.plot1.actor.property.opacity = self.opacity
+        self.plot0.contour.contours = [self.iso_value]
+        self.plot0.actor.property.opacity = self.opacity
+        self.plot1.contour.contours = [-self.iso_value]
+        self.plot1.actor.property.opacity = self.opacity
         self.last_select = deepcopy(self.select)
         if datalabels is not None:
           self.label = datalabels[self.select]

@@ -88,6 +88,11 @@ def standard_mass(atom):
     return dict(nist_mass)[atom.title()] * u_to_me
 
 class CIinfo:
+  '''Class managing all information from the from the output 
+  files of quantum chemical software for CI calculations.
+  
+  The CI related features are in ongoing development.
+  '''
   def __init__(self,method='ci'):
     self.coeffs = []
     self.occ    = []

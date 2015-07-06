@@ -42,8 +42,8 @@ Grid-Related Options
 ....................
 
 .. autodata:: orbkit.options.vector
-.. autodata:: orbkit.options.grid_file
 .. autodata:: orbkit.options.center_grid
+.. autodata:: orbkit.options.grid_file
 .. autodata:: orbkit.options.random_grid
 
 Computational Options

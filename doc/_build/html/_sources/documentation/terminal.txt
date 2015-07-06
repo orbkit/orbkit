@@ -1,3 +1,5 @@
+.. _`terminal_interface`:
+
 Usage via the Terminal
 ======================
 
@@ -12,6 +14,8 @@ called in the terminal by using the command:
 
   orbkit creates a logfile (:literal:`.oklog`) containing all information printed
   during the calculation.
+
+.. _io:
 
 Input/Output
 ------------
@@ -60,6 +64,15 @@ the user can easily load and read the HDF5_ files.
 
 The last available plain text data format are the ZIBAmira_ Mesh files. Those 
 can be directly opened in ZIBAmira_.
+
+If you want to simply visualize the data created by orbkit, you can also use 
+a simple mayavi_ interface (:literal:`--otype=mayavi`). Here, no data will be
+saved to disc, if no other output type is specified.
+
+.. hint::
+
+  If you want to use orbkit for visualization, you may want to read the 
+  :ref:`Tutorial for the Visualization`.
 
 .. _grid:
 
@@ -117,6 +130,7 @@ the existing CPUs, can be modified with the subsequent command:
 
     $ orbkit -i INPUT --numproc=4
 
+.. _mo:
 
 Molecular Orbital Selection
 ---------------------------
@@ -178,10 +192,10 @@ external file or each call of ``--mo_set`` corresponds to one density calculatio
 Derivative Calculation
 ----------------------
 
-orbkit can compute analytical spatial derivatives with respect to :literal:`x`,
-:literal:`y`, and/or :literal:`z` for the atomic and molecular orbitals, as well
+orbkit can compute analytical spatial derivatives with respect to :math:`x`,
+:math:`y`, or :math:`z` for the atomic and molecular orbitals, as well
 as for the electron density. For instance, a derivative of the density with 
-respect to :literal:`x` can be invoked as follows:
+respect to :math:`x` can be invoked as follows:
 
 .. code-block:: bash
 
@@ -218,3 +232,4 @@ is capable of calculating the molecular orbital transition electronic flux densi
 .. _ZIBAmira: http://amira.zib.de/
 .. _VMD: http://www.ks.uiuc.edu/Research/vmd/
 .. _Matlab: http://www.mathworks.de/products/matlab/
+.. _mayavi: http://docs.enthought.com/mayavi/mayavi/index.html

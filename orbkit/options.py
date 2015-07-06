@@ -96,8 +96,8 @@ def init_parser():
                       help="input file")
   group.add_option("--itype", dest="itype",
                       default='molden', type="choice",choices=itypes,
-                      help='''input type: ''' + ', '.join(itypes) + 
-                      " [default: '%default']")
+                      help="input type: '" + "', '".join(itypes) + 
+                      "' [default: '%default']")
   group.add_option("-o", "--output",dest="outputname",
                       type="string",
                       help='''name of the output file 
@@ -105,9 +105,13 @@ def init_parser():
   group.add_option("-t", "--otype", dest="otype",
                       type="choice", action="append", choices=otypes,
                       help='''output formats (multiple calls possible):  
-                      '{0}' (HDF5 file), '{1}' (Gaussian cube file), 
-                      '{2}' (ZIBAmiraMesh file), '{3}' (ZIBAmira network), 
-                      '{4}' (VMD network) [default: 'h5']'''.format(*otypes))
+                      '{0}' (HDF5 file),                             
+                      '{1}' (Gaussian cube file),                     
+                      '{4}' (VMD network),                           
+                      '{2}' (ZIBAmiraMesh file),                     
+                      '{3}' (ZIBAmira network),                      
+                      '{5}' (simple interactive Mayavi interface) 
+                      [default: 'h5']'''.format(*otypes))
   parser.add_option_group(group)
   
   group = optparse.OptionGroup(parser, "Computational Options")
@@ -415,7 +419,7 @@ def check_if_exists(fid, what='',error=IOError,display=sys.stdout.write,
 filename        = ''            #: Specifies input file name. (str)
 itype           = 'molden'      #: Specifies input file type. See :data:`itypes` for details. (str) 
 outputname      = None          #: Specifies output file (base) name. (str)
-otype           = 'h5'          #: Specifies output file type. See :data:`otypes` for details. (str or list of str)
+otype           = 'h5'          #: Specifies output file type. See :data:`otypes` for details. (str or list of str or None)
 #--- Computational Options ---
 numproc         = 1             #: Specifies number of subprocesses for multiprocessing. (int)
 mo_set          = False         #: Specifies molecular orbitals used for density calculation. (filename)

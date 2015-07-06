@@ -40,7 +40,20 @@ import orbkit.display as display_module
 from orbkit.display import display,good_bye_message
 
 def run_orbkit(use_qc=None):
-  ''' Controls the execution of all computational tasks.
+  '''Controls the execution of all computational tasks.
+  
+  **Parameters:**
+  
+  use_qc : QCinfo, optional
+    If not None, the reading of a quantum chemistry output is omitted and
+    the given QCinfo class is used for all computational tasks. 
+    (See :ref:`Central Variables` in the manual for details on QCinfo.) 
+  
+  **Returns:**
+  
+  data : type and shape depend on the options.
+    Contains orbkit's output. 
+    See :ref:`High-Level Interface` in the manual for details.
   '''
   # Set some global variables
   global qc
@@ -62,6 +75,7 @@ def run_orbkit(use_qc=None):
                         itype=options.itype,
                         all_mo=options.all_mo)
   else:
+    # Use a user defined QCinfo class.
     qc = use_qc
   
   display('\nSetting up the grid...')

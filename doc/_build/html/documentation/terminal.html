@@ -128,7 +128,7 @@
           <div role="main">
             
   <div class="section" id="usage-via-the-terminal">
-<h1>Usage via the Terminal<a class="headerlink" href="#usage-via-the-terminal" title="Permalink to this headline">¶</a></h1>
+<span id="terminal-interface"></span><h1>Usage via the Terminal<a class="headerlink" href="#usage-via-the-terminal" title="Permalink to this headline">¶</a></h1>
 <p>For an overview of all available features, a general help text can be
 called in the terminal by using the command:</p>
 <div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>orbkit -h
@@ -140,7 +140,7 @@ called in the terminal by using the command:</p>
 during the calculation.</p>
 </div>
 <div class="section" id="input-output">
-<h2>Input/Output<a class="headerlink" href="#input-output" title="Permalink to this headline">¶</a></h2>
+<span id="io"></span><h2>Input/Output<a class="headerlink" href="#input-output" title="Permalink to this headline">¶</a></h2>
 <p>For the standard density calculation including all occupied molecular
 orbitals on the default grid, the following command must be entered in the
 console:</p>
@@ -178,6 +178,14 @@ program package (examples/HDF5_Examples). With the JAVA program, <a class="refer
 the user can easily load and read the <a class="reference external" href="http://www.hdfgroup.org/HDF5/">HDF5</a> files.</p>
 <p>The last available plain text data format are the <a class="reference external" href="http://amira.zib.de/">ZIBAmira</a> Mesh files. Those
 can be directly opened in <a class="reference external" href="http://amira.zib.de/">ZIBAmira</a>.</p>
+<p>If you want to simply visualize the data created by orbkit, you can also use
+a simple <a class="reference external" href="http://docs.enthought.com/mayavi/mayavi/index.html">mayavi</a> interface (<tt class="docutils literal"><span class="pre">--otype=mayavi</span></tt>). Here, no data will be
+saved to disc, if no other output type is specified.</p>
+<div class="admonition hint">
+<p class="first admonition-title">Hint</p>
+<p class="last">If you want to use orbkit for visualization, you may want to read the
+<a class="reference internal" href="../examples/vis.html#tutorial-for-the-visualization"><em>Tutorial for the Visualization</em></a>.</p>
+</div>
 </div>
 <div class="section" id="grid-related-options">
 <span id="grid"></span><h2>Grid Related Options<a class="headerlink" href="#grid-related-options" title="Permalink to this headline">¶</a></h2>
@@ -255,7 +263,7 @@ the existing CPUs, can be modified with the subsequent command:</p>
 </div>
 </div>
 <div class="section" id="molecular-orbital-selection">
-<h2>Molecular Orbital Selection<a class="headerlink" href="#molecular-orbital-selection" title="Permalink to this headline">¶</a></h2>
+<span id="mo"></span><h2>Molecular Orbital Selection<a class="headerlink" href="#molecular-orbital-selection" title="Permalink to this headline">¶</a></h2>
 <p>orbkit is capable of calculating a selected set of molecular orbitals. This set
 can be specified either <strong>inline</strong> or by using an <strong>external file</strong>.</p>
 <p>You can use the <strong>MOLPRO-like nomenclature</strong>, e.g., <tt class="docutils literal"><span class="pre">3.1</span></tt> for the third orbital
@@ -332,10 +340,10 @@ external file or each call of <tt class="docutils literal"><span class="pre">--m
 </div>
 <div class="section" id="derivative-calculation">
 <h2>Derivative Calculation<a class="headerlink" href="#derivative-calculation" title="Permalink to this headline">¶</a></h2>
-<p>orbkit can compute analytical spatial derivatives with respect to <tt class="docutils literal"><span class="pre">x</span></tt>,
-<tt class="docutils literal"><span class="pre">y</span></tt>, and/or <tt class="docutils literal"><span class="pre">z</span></tt> for the atomic and molecular orbitals, as well
+<p>orbkit can compute analytical spatial derivatives with respect to <img class="math" src="../_images/math/26eeb5258ca5099acf8fe96b2a1049c48c89a5e6.png" alt="x"/>,
+<img class="math" src="../_images/math/092e364e1d9d19ad5fffb0b46ef4cc7f2da02c1c.png" alt="y"/>, or <img class="math" src="../_images/math/b13f21416d84e13708696f34dea81026cda583c9.png" alt="z"/> for the atomic and molecular orbitals, as well
 as for the electron density. For instance, a derivative of the density with
-respect to <tt class="docutils literal"><span class="pre">x</span></tt> can be invoked as follows:</p>
+respect to <img class="math" src="../_images/math/26eeb5258ca5099acf8fe96b2a1049c48c89a5e6.png" alt="x"/> can be invoked as follows:</p>
 <div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>orbkit -i INPUT --drv<span class="o">=</span>x
 </pre></div>
 </div>

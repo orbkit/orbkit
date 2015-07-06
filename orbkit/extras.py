@@ -56,10 +56,9 @@ def calc_mo(qc, fid_mo_list, drv=None, vector=None, otype=None, ofid=None):
       If not None, performs the computations on a vectorized grid, i.e., 
       with x, y, and z as vectors.
     
-    
   **Returns:**
-    mo_list :        
-      See :ref:`Central Variables` for details.
+    mo_list : numpy.ndarray, shape=((NMO,) + N)
+      Contains the NMO=len(qc.mo_spec) molecular orbitals on a grid.
     mo_info : dict 
       Contains information of the selected molecular orbitals and has following Members:
         :mo: - List of molecular orbital labels.
@@ -133,7 +132,7 @@ def calc_mo(qc, fid_mo_list, drv=None, vector=None, otype=None, ofid=None):
   return mo_list, mo_info
   
 def mo_set(qc, fid_mo_list, 
-            drv=None, vector=None, otype=None, ofid=None, return_all=False):
+            drv=None, vector=None, otype=None, ofid=None, return_all=True):
   '''Calculates and saves the density or the derivative thereof 
   using selected molecular orbitals.
   
@@ -155,7 +154,22 @@ def mo_set(qc, fid_mo_list,
     vector : None or int, optional
       If not None, performs the computations on a vectorized grid, i.e., 
       with x, y, and z as vectors.
-    
+    return_all : bool
+      If False, no data will be returned.
+  
+  **Returns:**
+    datasets : numpy.ndarray, shape=((NSET,) + N)
+      Contains the NSET molecular orbital sets on a grid.
+    delta_datasets : numpy.ndarray, shape=((NSET,NDRV) + N)
+      Contains the NDRV NSET molecular orbital set on a grid. This is only 
+      present if derivatives are requested.
+    mo_info : dict 
+      Contains information of the selected molecular orbitals and has following Members:
+        :mo: - List of molecular orbital labels.
+        :mo_ii: - List of molecular orbital indices.
+        :mo_spec: - Selected elements of mo_spec. See :ref:`Central Variables` for details.
+        :mo_in_file: - List of molecular orbital labels within the fid_mo_list file.
+        :sym_select: - If True, symmetry labels have been used. 
   '''
 
   mo_info = mo_select(qc.mo_spec, fid_mo_list, strict=False)
@@ -169,6 +183,8 @@ def mo_set(qc, fid_mo_list,
     except OSError:
       pass
   
+  datasets = []
+  delta_datasets = []
   cube_files = []
   for i_file,j_file in enumerate(mo_info['mo_in_file']):
     display('Starting with the %d. element of the molecular orbital list (%s)...\n\t' % 
@@ -187,10 +203,12 @@ def mo_set(qc, fid_mo_list,
     data = core.rho_compute(qc_select,
                             drv=drv,vector=vector,
                             numproc=options.numproc)
+    datasets.append(data)
     if drv is None:
       rho = data
     else:
       rho, delta_rho = data
+      delta_datasets.append(delta_rho)
     
     if options.z_reduced_density:
       if vector is not None:
@@ -234,12 +252,25 @@ def mo_set(qc, fid_mo_list,
       display('\nCreating VMD network file...' +
                       '\n\t%(o)s.vmd' % {'o': ofid})
       output.vmd_network_creator(ofid,cube_files=cube_files)
-  
-  if 'mayavi' in otype and (options.vector is None):
-    data = mo_list.reshape((-1,) + tuple(grid.N_))
-    output.view_with_mayavi(grid.x,grid.y,grid.z,data,geo_spec=qc.geo_spec)
-  return None
-  # mo_select 
+    
+  datasets = numpy.array(datasets)
+  if drv is None:
+    if 'mayavi' in otype and (options.vector is None):
+      output.view_with_mayavi(grid.x,grid.y,grid.z,datasets,geo_spec=qc.geo_spec,
+                               datalabels=mo_info['mo_in_file'])
+    return datasets, mo_info
+  else:
+    delta_datasets = numpy.array(delta_datasets)
+    if 'mayavi' in otype and (options.vector is None):
+      datalabels = []
+      for i in mo_info['mo_in_file']:
+        datalabels.extend(['d/d%s of %s' % (j,i) for j in drv])
+      output.view_with_mayavi(grid.x,grid.y,grid.z,
+                               delta_datasets.reshape((-1,) + tuple(grid.N_)),
+                               geo_spec=qc.geo_spec,
+                               datalabels=datalabels)
+    return datasets, delta_datasets, mo_info
+  # mo_set 
 
 def calc_ao(qc, drv=None, is_vector=False, otype=None, ofid=None):  
   '''Computes and saves all atomic orbital or a derivative thereof.
