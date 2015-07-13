@@ -43,7 +43,7 @@ def get_ao_overlap(coord_a,coord_b,ao_spec,lxlylz_b=None,contraction=True,
   ao_spec : 
     See :ref:`Central Variables` in the manual for details.
   
-  lxlylz_b : numpy.ndarray, dtype=numpy.int64, shape = (N_primitve_AO,3), optional
+  lxlylz_b : numpy.ndarray, dtype=numpy.int64, shape = (NAO,3), optional
     Contains the expontents lx, ly, lz for the primitive Cartesian Gaussians of
     the `Ket` basis set.
   
@@ -506,6 +506,55 @@ def create_mo_coeff(mo,name='mo'):
   if mo.ndim != 2:
     raise ValueError('%s has to be 2-dimensional.'%s)  
   return mo
+  
+def get_atom2mo(qc):
+  '''Assigns atoms to molecular orbital coefficients.
+  
+  **Parameters:**
+  
+  qc.ao_spec :
+      See :ref:`Central Variables` for details.
+  
+  **Returns:**
+  
+  atom2mo : numpy.ndarray, shape = (NAO)
+    Contains indices of atoms assigned to the molecular orbital coefficients.
+  '''
+  atom2mo = []
+  a2mo_type = []
+  b = 0
+  for sel_ao in range(len(qc.ao_spec)):
+    a = qc.ao_spec[sel_ao]['atom']
+    l = exp[lquant[qc.ao_spec[sel_ao]['type']]]
+    for i in l:
+      atom2mo.append(a)
+      a2mo_type.append([a,qc.ao_spec[sel_ao]['type'],l])
+      b += 1
+  
+  return numpy.array(atom2mo,dtype=int)
+  
+def get_lc(indices,atom2mo):
+  '''Converts the input variable to an :literal:`mo_coeff` numpy.ndarray.
+  
+  **Parameters:**
+  
+  mo : list, numpy.ndarray, or mo_spec (cf. :ref:`Central Variables`)
+    Contains the molecular orbital coefficients of all orbitals.
+  name : string, optional
+    Contains a string describing the input variable. 
+  
+  **Returns:**
+  
+  mo : numpy.ndarray, shape = (NMO,NAO)
+    Contains the molecular orbital coefficients of all orbitals.
+  '''
+  if isinstance(indices,int):
+    indices = [indices]
+  lc = numpy.zeros(len(atom2mo),dtype=bool)
+  for i in indices:
+    lc = numpy.logical_or(atom2mo==i,lc)
+
+  return numpy.nonzero(lc)[0]
 
 def print2D(x,format='%+.2f ',start='\t'):
   '''Prints a 2D matrix.

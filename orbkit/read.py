@@ -58,6 +58,7 @@ def main_read(filename,itype='molden',all_mo=False,**kwargs):
             'gamess': read_gamess, 
             'gaussian.log': read_gaussian_log, 
             'gaussian.fchk': read_gaussian_fchk,
+            'aomix' : read_aomix,
             'wfn': read_wfn}
   display('Loading %s file...' % itype)
   
@@ -467,7 +468,7 @@ def read_gamess(filename, all_mo=False,read_properties=False):
                   qc.mo_spec[-ii]['sym'] = '%d.%s' % (sym[a], thisline[init_len-ii])
                 info_key = 'coeffs'
               elif thisline != [] and info_key == 'coeffs':
-                exp_list.append(thisline[3])
+                exp_list.append((line[11:17]))
                 for ii in range(init_len,0,-1):
                   qc.mo_spec[-ii]['coeffs'].append(float(line[16:].split()[init_len-ii]))
           elif mo_skip:
@@ -1143,6 +1144,282 @@ def read_gaussian_log(filename,all_mo=False,orientation='standard',
   
   return qc
   # read_gaussian_log 
+  
+def read_aomix(filename, all_mo=False, i_md=-1, interactive=True):
+  '''Reads all information desired from a aomix file.
+  
+  **Parameters:**
+  
+    filename : str
+      Specifies the filename for the input file.
+    all_mo : bool, optional
+      If True, all molecular orbitals are returned.
+    i_md : int, default=-1
+      Selects the `[Molden Format]` section of the output file.
+    interactive : bool
+      If True, the user is asked to select the different sets.
+  
+  **Returns:**
+  
+    qc (class QCinfo) with attributes geo_spec, geo_info, ao_spec, mo_spec, etot :
+        See :ref:`Central Variables` for details.
+  '''
+
+  fid    = open(filename,'r')      # Open the file
+  flines = fid.readlines()         # Read the WHOLE file into RAM
+  fid.close()                      # Close the file
+  
+  # Is this really a molden file? 
+  if not '[AOMix Format]\n' in flines:
+    display('The input file %s is no valid aomix file!\nIt does' +
+          ' not contain the keyword: [AOMix Format]\nEXIT\n' % filename)
+    raise IOError('Not a valid input file')
+  
+  def check_sel(count,i,interactive=False):
+    if count == 0:
+      raise IndexError
+    elif count == 1:
+      return 0
+    message = '\tPlease give an integer from 0 to %d: ' % (count-1)
+    
+    try:
+      if interactive:
+        i = int(raw_input(message))
+      i = range(count)[i]
+    except (IndexError,ValueError):
+      raise IOError(message.replace(':','!'))
+    else:
+      display('\tSelecting the %s' %
+              ('last element.' if (i == count-1) else 'element %d.' % i))
+    return i
+  
+  count = 0
+  # Go through the file line by line 
+  for il in range(len(flines)):
+    line = flines[il]            # The current line as string
+    
+    # Check the file for keywords 
+    if '[AOMix Format]' in line:
+      count += 1
+  
+  if count == 0:
+    display('The input file %s is no valid aomix file!\nIt does' % filename +
+          ' not contain the keyword: [AOMix Format]\nEXIT\n' )
+    raise IOError('Not a valid input file')
+  else:
+    if count > 1:
+      display('\nContent of the aomix file:')
+      display('\tFound %d [AOMix Format] keywords, i.e., ' % count + 
+              'this file contains %d aomix files.' % count)
+    i_md = check_sel(count,i_md,interactive=interactive)
+  
+  
+  # Set a counter for the AOs 
+  basis_count = 0
+
+  # Declare synonyms for molden keywords 
+  synonyms = {'Sym': 'sym',
+              'Ene': 'energy',
+              'Occup': 'occ_num',
+             }
+  MO_keys = synonyms.keys()
+  
+  exp_list = []
+  count = 0
+  start_reading = False
+  # Go through the file line by line 
+  for il in range(len(flines)):
+    line = flines[il]              # The current line as string
+    thisline = line.split()        # The current line split into segments
+    
+    # Check the file for keywords 
+    if '[aomix format]' in line.lower():
+      # A new file begins 
+      # Initialize the variables 
+      if i_md == count:
+        qc = QCinfo()
+        sec_flag = False           # A Flag specifying the current section 
+        start_reading = True       # Found the selected section
+      else:
+        start_reading = False
+      count += 1
+      continue
+    if start_reading:
+      if '[SCF Energy / Hartree]' in line:
+        try:
+          qc.etot = float(flines[il+1].split()[0])
+        except IndexError:
+          pass
+      elif '[atoms]' in line.lower():
+        # The section containing information about 
+        # the molecular geometry begins 
+        sec_flag = 'geo_info'
+        if 'Angs' in line:
+          # The length are given in Angstroem 
+          # and have to be converted to Bohr radii --
+          aa_to_au = 1/0.52917720859
+        else:
+          # The length are given in Bohr radii 
+          aa_to_au = 1.0
+      elif '[gto]' in line.lower():
+        # The section containing information about 
+        # the atomic orbitals begins 
+        sec_flag = 'ao_info'
+        bNew = True                  # Indication for start of new AO section
+      elif '[mo]' in line.lower():
+        # The section containing information about 
+        # the molecular orbitals begins 
+        sec_flag = 'mo_info'
+        bNew = True                  # Indication for start of new MO section
+      elif '[sto]' in line.lower():
+        # The orbkit does not support Slater type orbitals 
+        display('orbkit does not work for STOs!\nEXIT\n');
+        raise IOError('Not a valid input file')
+      else:
+        # Check if we are in a specific section 
+        if sec_flag == 'geo_info':
+          # Geometry section 
+          qc.geo_info.append(thisline[0:3])
+          qc.geo_spec.append([float(ii)*aa_to_au for ii in thisline[3:]])
+        if sec_flag == 'ao_info':
+          # Atomic orbital section 
+          def check_int(i):
+            try:
+              int(i)
+              return True
+            except ValueError:
+              return False
+          
+          if thisline == []:
+            # There is a blank line after every AO 
+            bNew = True
+          elif bNew:
+            # The following AOs are for which atom? 
+            bNew = False
+            at_num = int(thisline[0]) - 1
+            ao_num = 0
+          elif len(thisline) == 3 and check_int(thisline[1]):
+            # AO information section 
+            # Initialize a new dict for this AO 
+            ao_num = 0               # Initialize number of atomic orbiatls 
+            ao_type = thisline[0]    # Which type of atomic orbital do we have
+            pnum = int(thisline[1])  # Number of primatives
+            # Calculate the degeneracy of this AO and increase basis_count 
+            for i_ao in ao_type:
+              # Calculate the degeneracy of this AO and increase basis_count 
+              basis_count += l_deg(lquant[i_ao])
+              qc.ao_spec.append({'atom': at_num,
+                              'type': i_ao,
+                              'pnum': pnum,
+                              'coeffs': numpy.zeros((pnum, 2))
+                              })
+          else:
+            # Append the AO coefficients 
+            coeffs = numpy.array(line.replace('D','e').split(), dtype=numpy.float64)
+            for i_ao in range(len(ao_type)):
+              qc.ao_spec[-len(ao_type)+i_ao]['coeffs'][ao_num,:] = [coeffs[0],
+                                                                coeffs[1+i_ao]]
+            ao_num += 1
+        if sec_flag == 'mo_info':
+          # Molecular orbital section 
+          if '=' in line:
+            # MO information section 
+            if bNew:
+              # Create a numpy array for the MO coefficients and 
+              # for backward compability create a simple counter for 'sym'
+              qc.mo_spec.append({'coeffs': numpy.zeros(basis_count),
+                                'sym': '%d.1' % (len(qc.mo_spec)+1)})
+              bNew = False
+            # Append information to dict of this MO 
+            info = line.replace('\n','').replace(' ','')
+            info = info.split('=')
+            if info[0] in MO_keys: 
+              if info[0] != 'Sym':
+                info[1] = float(info[1])
+              elif not '.' in info[1]:
+                from re import search
+                a = search(r'\d+', info[1]).group()
+                if a == info[1]:
+                  info[1] = '%s.1' % a
+                else:
+                  info[1] = info[1].replace(a, '%s.' % a)
+              qc.mo_spec[-1][synonyms[info[0]]] = info[1]
+          else:
+            if ('[' or ']') in line:
+              # start of another section that is not (yet) read
+              sec_flag = None
+            else:
+              # Append the MO coefficients 
+              bNew = True            # Reset bNew
+              index = int(thisline[0])-1
+              try: 
+                # Try to convert coefficient to float 
+                qc.mo_spec[-1]['coeffs'][index] = float(thisline[-1])
+                if len(qc.mo_spec) == 1:
+                  exp_list.append(thisline[-2])
+              except ValueError:
+                # If it cannot be converted print error message 
+                display('Error in coefficient %d of MO %s!' % (index, 
+                  qc.mo_spec[-1]['sym']) + '\nSetting this coefficient to zero...')
+
+  # Check usage of same atomic basis sets
+  for ii in range(len(exp_list)):
+    s = exp_list[ii]
+    exp = [0,0,0]
+    c_last = None
+    for jj in s[1:]:
+      try:
+        c = int(jj)
+        exp[c_last] += 1
+      except ValueError:
+        for kk,ll in enumerate('xyz'):
+          if jj == ll:
+            exp[kk] += 1
+            c_last = kk
+    exp_list[ii] = exp
+
+  count = 0
+  for i,j in enumerate(qc.ao_spec):    
+    l = l_deg(lquant[j['type']])
+    j['exp_list'] = []
+    for i in range(l):
+      j['exp_list'].append((exp_list[count][0],
+                      exp_list[count][1],
+                      exp_list[count][2]))
+      count += 1
+
+  # Are all MOs requested for the calculation? 
+  if not all_mo:
+    mo_range   = copy.deepcopy(qc.mo_spec)
+    qc.mo_spec = []
+    for ii_mo in mo_range:
+      if ii_mo['occ_num'] > 0.0000001:
+        qc.mo_spec.append(ii_mo)
+    
+  # Convert geo_info and geo_spec to numpy.ndarrays
+  qc.geo_info = numpy.array(qc.geo_info)
+  qc.geo_spec = numpy.array(qc.geo_spec)
+  
+  # Convert MO coefficients
+  from orbkit import cSupportCode
+  from orbkit.analytical_integrals import create_mo_coeff, get_lxlylz
+  def dfact(n):
+    if n <= 0:
+      return 1;
+    else:
+      return n * dfact(n-2)
+
+  mo = create_mo_coeff(qc.mo_spec)
+  for i,j in enumerate(get_lxlylz(qc.ao_spec)):
+    norm = (dfact(2*j[0] - 1) * dfact(2*j[1] - 1) * dfact(2*j[2] - 1))
+    j = sum(j)
+    if j >1: 
+      mo[:,i] *= numpy.sqrt(norm)   
+  for ii in range(len(qc.mo_spec)):
+    qc.mo_spec[ii]['coeffs'] = mo[ii]
+  
+  return qc
+  # read_aomix
   
 
 def read_wfn(filename, all_mo=False):

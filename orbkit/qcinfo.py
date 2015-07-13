@@ -86,6 +86,23 @@ def standard_mass(atom):
     return nist_mass[atom][1] * u_to_me
   except ValueError:
     return dict(nist_mass)[atom.title()] * u_to_me
+    
+def get_atom_symbol(atom):
+  '''Returns the atomic symbol of a given atom.
+    
+  **Parameters:**
+  
+  atom : int or str
+    Contains the atomic number of the atom.
+  
+  **Returns:**
+  
+  symbol : float
+    Contains the atomic symbol.
+  '''
+  if nist_mass is None:
+    read_nist()  
+  return nist_mass[int(atom)-1][0]  
 
 class CIinfo:
   '''Class managing all information from the from the output 

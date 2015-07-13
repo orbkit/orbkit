@@ -1043,7 +1043,7 @@ def get_lxlylz(ao_spec,get_assign=False):
   
   **Returns:**
   
-  lxlylz : numpy.ndarray, dtype=numpy.int64, shape = (N_AO,3)
+  lxlylz : numpy.ndarray, dtype=numpy.int64, shape = (NAO,3)
     Contains the expontents lx, ly, lz for the Cartesian Gaussians.
   assign : list of int, optional
     Contains the index of the atomic orbital in ao_spec.
