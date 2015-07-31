@@ -1,0 +1,367 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Tutorial for Processing Multiple Input Files &mdash; orbkit 0.2.2 documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../_static/orbkit.ico"/>
+  
+
+  
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+    <link rel="top" title="orbkit 0.2.2 documentation" href="../index.html"/>
+        <link rel="up" title="Tutorials" href="index.html"/>
+        <link rel="next" title="Licence Note" href="../licence.html"/>
+        <link rel="prev" title="Tutorial for the Integration with Cubature" href="cubature.html"/> 
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        <a href="../toctree.html" class="fa fa-home"> orbkit</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+        
+            <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Overview</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#citation">Citation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installation Instructions for orbkit</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../install.html#installation">Installation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../documentation/index.html">Documentation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../documentation/requirements.html">Requirements for the Input Files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../documentation/terminal.html">Usage via the Terminal</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../documentation/ok_main.html">orbkit&#8217;s High-Level Interface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../documentation/ok_modules.html">orbkit&#8217;s Low-Level Interface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../documentation/ok_analytical.html">Analytical Integrals with orbkit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../documentation/cvars.html">Central Variables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../documentation/options.html">Options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../documentation/funcref.html">Function Reference</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Tutorials</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="vis.html">Tutorial for the Visualization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cubature.html">Tutorial for the Integration with Cubature</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="">Tutorial for Processing Multiple Input Files</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../licence.html">Licence Note</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../impressum.html">Impressum - Legal Notice</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../impressum.html#impressum">Impressum</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../impressum.html#haftungsausschluss-disclaimer">Haftungsausschluss - Disclaimer</a></li>
+</ul>
+</li>
+</ul>
+
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../toctree.html">orbkit</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../toctree.html">Docs</a> &raquo;</li>
+      
+          <li><a href="index.html">Tutorials</a> &raquo;</li>
+      
+    <li>Tutorial for Processing Multiple Input Files</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          <a href="../_sources/tutorials/multiple_files.txt" rel="nofollow"> View page source</a>
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            
+  <div class="section" id="tutorial-for-processing-multiple-input-files">
+<h1>Tutorial for Processing Multiple Input Files<a class="headerlink" href="#tutorial-for-processing-multiple-input-files" title="Permalink to this headline">¶</a></h1>
+<div class="contents local topic" id="this-is-an-advanced-tutorial-which-shows">
+<p class="topic-title first">This is an advanced tutorial which shows...</p>
+<ul class="simple">
+<li><a class="reference internal" href="#how-to-read-a-list-of-files" id="id1">how to read a list of files</a></li>
+<li><a class="reference internal" href="#how-to-order-the-molecular-orbital-coefficients" id="id2">how to order the molecular orbital coefficients</a></li>
+<li><a class="reference internal" href="#how-to-save-and-read-the-information-obtained-to-and-from-an-hdf5-file" id="id3">how to save and read the information obtained to and from an HDF5-file</a></li>
+<li><a class="reference internal" href="#how-to-depict-several-molecular-orbitals" id="id4">how to depict several molecular orbitals</a></li>
+<li><a class="reference internal" href="#how-to-perform-a-standard-orbkit-computation-for-one-molecular-structures" id="id5">how to perform a standard orbkit computation for one molecular structures</a></li>
+</ul>
+</div>
+<p>We assume that you have followed the <a class="reference internal" href="../install.html#installation-instructions"><em>Installation Instructions for orbkit</em></a> and that
+you have navigated to the folder <tt class="docutils literal"><span class="pre">$ORBKITPATH/examples</span></tt>.
+Please note that the input files are compressed in .tar.gz file in the examples
+folder (<tt class="docutils literal"><span class="pre">$ORBKITPATH/examples/NaCl_molden_files.tar.gz</span></tt>) and need to be
+decompressed before performing this tutorial.</p>
+<div class="admonition hint">
+<p class="first admonition-title">Hint</p>
+<p class="last">This tutorial explains parts of the example file
+<tt class="docutils literal"><span class="pre">$ORBKITPATH/examples/use_for_ordering.py</span></tt>.</p>
+</div>
+<div class="section" id="how-to-read-a-list-of-files">
+<h2><a class="toc-backref" href="#id1">how to read a list of files</a><a class="headerlink" href="#how-to-read-a-list-of-files" title="Permalink to this headline">¶</a></h2>
+<p>As a starting point, you have to import the orbkit module for processing
+multiple files:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">orbkit</span> <span class="kn">import</span> <span class="n">multiple_files</span>
+</pre></div>
+</div>
+<p>Now, we have to create a list of input file names:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">os</span>
+<span class="n">path</span> <span class="o">=</span> <span class="s">&#39;NaCl_molden_files&#39;</span>
+<span class="c"># How are input files formatted?</span>
+<span class="n">fid</span> <span class="o">=</span> <span class="s">&#39;nacl.</span><span class="si">%03d</span><span class="s">.molden&#39;</span>
+<span class="n">fid_list</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">16</span><span class="p">,</span><span class="mi">1</span><span class="p">):</span>
+  <span class="n">f</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span><span class="n">fid</span> <span class="o">%</span> <span class="n">i</span><span class="p">)</span>
+  <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
+    <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%s</span><span class="s"> does not exist!&#39;</span> <span class="o">%</span> <span class="n">f</span><span class="p">)</span>
+  <span class="n">fid_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Here, we have used the <tt class="docutils literal"><span class="pre">os</span></tt> module to get sure that all input files exist.</p>
+<p>The input files can be read with:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">multiple_files</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">fid_list</span><span class="p">,</span><span class="n">itype</span><span class="o">=</span><span class="s">&#39;molden&#39;</span><span class="p">,</span><span class="n">all_mo</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span><span class="n">nosym</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Now, all input variables are global values in the module <tt class="docutils literal"><span class="pre">multiple_files</span></tt>.
+These variables are named according to their analogue in the <tt class="docutils literal"><span class="pre">QCinfo</span></tt> class
+(cf. <a class="reference internal" href="../documentation/cvars.html#central-variables"><em>Central Variables</em></a>):</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="14%" />
+<col width="86%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>Variable</td>
+<td>Contents</td>
+</tr>
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">geo_spec_all</span></tt></td>
+<td>Contains all molecular <strong>geometries</strong>, see <a class="reference internal" href="../documentation/cvars.html#qc-geo-spec"><em>geo_spec</em></a> in <a class="reference internal" href="../documentation/cvars.html#central-variables"><em>Central Variables</em></a>.</td>
+</tr>
+<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">geo_info</span></tt></td>
+<td>See <a class="reference internal" href="../documentation/cvars.html#qc-geo-info"><em>geo_info</em></a> in <a class="reference internal" href="../documentation/cvars.html#central-variables"><em>Central Variables</em></a>.</td>
+</tr>
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">ao_spec</span></tt></td>
+<td>See <a class="reference internal" href="../documentation/cvars.html#qc-ao-spec"><em>ao_spec</em></a> in <a class="reference internal" href="../documentation/cvars.html#central-variables"><em>Central Variables</em></a>.</td>
+</tr>
+<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">ao_spherical</span></tt></td>
+<td>See <a class="reference internal" href="../documentation/cvars.html#qc-ao-spherical"><em>ao_spherical</em></a> in <a class="reference internal" href="../documentation/cvars.html#central-variables"><em>Central Variables</em></a>.</td>
+</tr>
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">mo_coeff_all</span></tt></td>
+<td>Contains all molecular orbital <strong>coefficients</strong>. List of <tt class="docutils literal"><span class="pre">numpy.ndarray</span></tt>.</td>
+</tr>
+<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">mo_energy_all</span></tt></td>
+<td>Contains all molecular orbital <strong>energies</strong>. List of <tt class="docutils literal"><span class="pre">numpy.ndarray</span></tt>.</td>
+</tr>
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">mo_occ_all</span></tt></td>
+<td>Contains all molecular orbital <strong>occupations</strong>. List of <tt class="docutils literal"><span class="pre">numpy.ndarray</span></tt>.</td>
+</tr>
+<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">sym</span></tt></td>
+<td>Python dictionary containing the molecular orbital <strong>symmetries</strong> and the
+corresponding position in <tt class="docutils literal"><span class="pre">mo_coeff_all</span></tt>, <tt class="docutils literal"><span class="pre">mo_energy_all</span></tt>, and <tt class="docutils literal"><span class="pre">mo_occ_all</span></tt>, respectively.</td>
+</tr>
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">index_list</span></tt></td>
+<td>After the execution of the ordering routine, it contains the new <strong>indices</strong> of the
+molecular orbitals. If index &lt; 0, the molecular orbital changes its <strong>sign</strong>. <tt class="docutils literal"><span class="pre">shape=(Nfiles,NMO)</span></tt>.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="how-to-order-the-molecular-orbital-coefficients">
+<h2><a class="toc-backref" href="#id2">how to order the molecular orbital coefficients</a><a class="headerlink" href="#how-to-order-the-molecular-orbital-coefficients" title="Permalink to this headline">¶</a></h2>
+<p>orbkit provides different schemes to order molecular orbitals, of which the
+best shall be presented here: the ordering using analytical integrals between
+neighboring molecular orbitals.</p>
+<p>This procedure is a black box procedure and can be called with:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">index_list</span><span class="p">,</span> <span class="n">mo_overlap</span> <span class="o">=</span> <span class="n">multiple_files</span><span class="o">.</span><span class="n">order_using_analytical_overlap</span><span class="p">(</span><span class="bp">None</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The input argument <tt class="docutils literal"><span class="pre">None</span></tt> has been used since we have read already the
+input files.</p>
+<p>This function changes all global variables and returns an index list containing
+the new indices of the molecular orbitals.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If the index is negative, the molecular orbital changes its sign.</p>
+</div>
+<p>Moreover, it returns the molecular orbital
+overlap matrix between the molecular orbitals of two neighboring
+geometries, i.e., <tt class="docutils literal"><span class="pre">mo_overlap[i,j,k]</span></tt> corresponds to overlap between the
+<img class="math" src="../_images/math/8122aa89ea6e80784c6513d22787ad86e36ad0cc.png" alt="j"/> th molecular orbital at geometry <img class="math" src="../_images/math/34857b3ba74ce5cd8607f3ebd23e9015908ada71.png" alt="i"/> to the <img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> th molecular orbital at
+geometry <img class="math" src="../_images/math/03c724ff4c149a75e0dabfe498b5d54a13097ee8.png" alt="(i+1)"/>.</p>
+</div>
+<div class="section" id="how-to-save-and-read-the-information-obtained-to-and-from-an-hdf5-file">
+<h2><a class="toc-backref" href="#id3">how to save and read the information obtained to and from an HDF5-file</a><a class="headerlink" href="#how-to-save-and-read-the-information-obtained-to-and-from-an-hdf5-file" title="Permalink to this headline">¶</a></h2>
+<p>All global variables of the module <tt class="docutils literal"><span class="pre">multiple_files</span></tt> can be stored to an
+HDF5-file by:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">multiple_files</span><span class="o">.</span><span class="n">save_hdf5</span><span class="p">(</span><span class="s">&#39;nacl.h5&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>To read this file and recover the global variables, simply call:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">multiple_files</span><span class="o">.</span><span class="n">read_hdf5</span><span class="p">(</span><span class="s">&#39;nacl.h5&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="how-to-depict-several-molecular-orbitals">
+<h2><a class="toc-backref" href="#id4">how to depict several molecular orbitals</a><a class="headerlink" href="#how-to-depict-several-molecular-orbitals" title="Permalink to this headline">¶</a></h2>
+<p>You can use this module to depict snapshots of selected molecular orbitals
+with simple contour plots:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">selected_mos</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;24.1&#39;</span><span class="p">,</span><span class="s">&#39;23.2&#39;</span><span class="p">]</span> <span class="c"># Specifies, which MOs to be plotted</span>
+<span class="n">r0</span> <span class="o">=</span> <span class="mi">1</span>                         <span class="c"># Specifies the starting structure geo_spec_all[r0]</span>
+<span class="n">steps</span> <span class="o">=</span> <span class="mi">5</span>                      <span class="c"># Specifies, how many steps to printed in one graph</span>
+
+<span class="n">select_slice</span> <span class="o">=</span> <span class="s">&#39;xz&#39;</span>            <span class="c"># Selects which plane to be plotted</span>
+<span class="n">where</span> <span class="o">=</span> <span class="mf">0.0</span>                    <span class="c"># Selects where to place the plane (Here, y=0)</span>
+
+<span class="n">multiple_files</span><span class="o">.</span><span class="n">show_selected_mos</span><span class="p">(</span><span class="n">selected_mos</span><span class="p">,</span><span class="n">r0</span><span class="o">=</span><span class="n">r0</span><span class="p">,</span><span class="n">steps</span><span class="o">=</span><span class="n">steps</span><span class="p">,</span>
+                                 <span class="n">select_slice</span><span class="o">=</span><span class="n">select_slice</span><span class="p">,</span><span class="n">where</span><span class="o">=</span><span class="n">where</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="how-to-perform-a-standard-orbkit-computation-for-one-molecular-structures">
+<h2><a class="toc-backref" href="#id5">how to perform a standard orbkit computation for one molecular structures</a><a class="headerlink" href="#how-to-perform-a-standard-orbkit-computation-for-one-molecular-structures" title="Permalink to this headline">¶</a></h2>
+<p>You can cast the global variables of <tt class="docutils literal"><span class="pre">multiple_files</span></tt> automatically to a list
+of <tt class="docutils literal"><span class="pre">QCinfo</span></tt> classes (cf. <a class="reference internal" href="../documentation/cvars.html#central-variables"><em>Central Variables</em></a>) by:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">QC</span> <span class="o">=</span> <span class="n">multiple_files</span><span class="o">.</span><span class="n">construct_qc</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Now, you can access every data point separately and perform orbkit calculations,
+e.g.:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">orbkit</span> <span class="kn">as</span> <span class="nn">ok</span>
+
+<span class="n">r</span> <span class="o">=</span> <span class="mi">0</span>                    <span class="c"># Index to be calculated</span>
+<span class="n">out_fid</span> <span class="o">=</span> <span class="s">&#39;nacl_r</span><span class="si">%d</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">r</span> <span class="c"># Specifies the name of the output file</span>
+
+<span class="c"># Initialize orbkit with default parameters and options</span>
+<span class="n">ok</span><span class="o">.</span><span class="n">init</span><span class="p">()</span>
+
+<span class="c"># Set some options</span>
+<span class="n">ok</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">adjust_grid</span><span class="o">=</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">]</span>                <span class="c"># adjust the grid to the geometry</span>
+<span class="n">ok</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">otype</span>      <span class="o">=</span> <span class="s">&#39;mayavi&#39;</span>                  <span class="c"># output file (base) name</span>
+
+<span class="c"># Run orbkit with one instance of qc as input</span>
+<span class="n">ok</span><span class="o">.</span><span class="n">run_orbkit</span><span class="p">(</span><span class="n">QC</span><span class="p">[</span><span class="mi">10</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../licence.html" class="btn btn-neutral float-right" title="Licence Note"/>Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="cubature.html" class="btn btn-neutral" title="Tutorial for the Integration with Cubature"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015, Gunter Hermann, Vincent Pohl, and Axel Schild.
+    </p>
+  </div>
+
+  <a href="https://github.com/snide/sphinx_rtd_theme">Sphinx theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'0.2.2',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

@@ -13,6 +13,7 @@
    documentation/terminal
    documentation/ok_main
    documentation/ok_modules
+   documentation/ok_analytical
    documentation/cvars
    documentation/options
    licence

@@ -17,8 +17,8 @@ save_data_values = False #: Saves the grid and output values computed. This requ
 if create_plot and not save_data_values:
   save_data_values = True
 
-vector = 1e4            #: Specifies number of points per subprocess.
 numproc = 4             #: Specifies number of subprocesses.
+vector = 1e4            #: Specifies number of points per subprocess.
 
 in_fid  = 'h2o.md'      #: Specifies input file name.
 

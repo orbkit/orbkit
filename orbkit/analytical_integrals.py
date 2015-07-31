@@ -6,7 +6,27 @@ adapted from
 
   M. Hô, J. M. Hernandez-Perez: "Evaluation of Gaussian Molecular Integrals", DOI:10.3888/tmj.14-3
 '''
+'''
+orbkit
+Gunter Hermann, Vincent Pohl, and Axel Schild
 
+Institut fuer Chemie und Biochemie, Freie Universitaet Berlin, 14195 Berlin, Germany
+
+This file is part of orbkit.
+
+orbkit is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as 
+published by the Free Software Foundation, either version 3 of 
+the License, or any later version.
+
+orbkit is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public 
+License along with orbkit.  If not, see <http://www.gnu.org/licenses/>.
+'''
 import numpy
 from multiprocessing import Pool
 # test how to import weave
@@ -420,10 +440,12 @@ def get_ao_dipole_matrix(qc,component='x'):
   lxlylz_b = get_lxlylz(qc.ao_spec)
   lxlylz_b[:,component] += 1
 
-  ao_part_1 = get_ao_overlap(qc.geo_spec,qc.geo_spec,qc.ao_spec,lxlylz_b=lxlylz_b,contraction=False)
+  ao_part_1 = get_ao_overlap(qc.geo_spec,qc.geo_spec,qc.ao_spec,
+                             lxlylz_b=lxlylz_b,ao_spherical=qc.ao_spherical)
 
   # Compute the second part of the expectation value:
-  ao_part_2 = get_ao_overlap(qc.geo_spec,qc.geo_spec,qc.ao_spec,contraction=False) 
+  ao_part_2 = get_ao_overlap(qc.geo_spec,qc.geo_spec,qc.ao_spec,
+                             ao_spherical=qc.ao_spherical) 
 
   i = 0
   for sel_ao in range(len(qc.ao_spec)):
@@ -436,8 +458,8 @@ def get_ao_dipole_matrix(qc,component='x'):
         ao_part_2[:,i] *= qc.geo_spec[qc.ao_spec[sel_ao]['atom'],component]
         i += 1
   
-  # Contract the atomic orbital overlap matrix  
-  return contract_ao_overlap_matrix((ao_part_1+ao_part_2),qc.ao_spec)  
+  # the atomic orbital overlap matrix  
+  return (ao_part_1+ao_part_2) 
 
 def get_nuclear_dipole_moment(qc,component='x'):
   '''Computes the nuclear part of the dipole moment.

@@ -24,7 +24,7 @@ License along with orbkit.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
 lgpl_short = '''This is orbkit.
-  Copyright (C) 2014 Gunter Hermann, Vincent Pohl, and Axel Schild
+  Copyright (C) 2015 Gunter Hermann, Vincent Pohl, and Axel Schild
   This program comes with ABSOLUTELY NO WARRANTY.
   This is free software, and you are welcome to redistribute it
   under certain conditions. Type '-l' for details.
@@ -39,7 +39,7 @@ from orbkit import options
 import orbkit.display as display_module
 from orbkit.display import display,good_bye_message
 
-def run_orbkit(use_qc=None):
+def run_orbkit(use_qc=None,check_options=True):
   '''Controls the execution of all computational tasks.
   
   **Parameters:**
@@ -48,6 +48,8 @@ def run_orbkit(use_qc=None):
     If not None, the reading of a quantum chemistry output is omitted and
     the given QCinfo class is used for all computational tasks. 
     (See :ref:`Central Variables` in the manual for details on QCinfo.) 
+  check_options : bool, optional
+    If True, the specified options will be validated. 
   
   **Returns:**
   
@@ -57,10 +59,16 @@ def run_orbkit(use_qc=None):
   '''
   # Set some global variables
   global qc
-  global rho, delta_rho
   
   # Display program information
   display(lgpl_short)
+  
+  # Check for the correctness of orbkit.options
+  if check_options:
+    display('Checking orbkit.options...\n')
+    options.check_options(display=display,
+                          interactive=False,
+                          info=True,check_io=(use_qc is None))
   
   # Measurement of required execution time
   t=[time.time()]
@@ -116,12 +124,8 @@ def run_orbkit(use_qc=None):
     # Center the grid to a specific atom and (0,0,0) if requested
     grid.center_grid(qc.geo_spec[atom-1],display=display)
 
-  if options.vector is not None:
-    info = 'vectorized'
-  else:
-    info = 'regular'
-  display('The computations will be carried out applying ' +
-                'a %s grid...' % info)
+  display('The computations will be carried out applying a ' +
+          '%s grid.' % ('regular' if options.vector is None else 'vector'))
   
   t.append(time.time()) # A new time step
   
@@ -161,6 +165,7 @@ def run_orbkit(use_qc=None):
       data = extras.mo_set(qc,
                            fid_mo_list,
                            drv=options.drv,
+                           laplacian=options.laplacian,
                            vector=options.vector,
                            otype=options.otype)
     
@@ -238,16 +243,20 @@ def run_orbkit(use_qc=None):
   if options.no_slice:
     data = core.rho_compute_no_slice(qc,
                                      drv=options.drv,
+                                     laplacian=options.laplacian,
                                      is_vector=(options.vector is not None),
                                      return_components = False)
   
   else:
     data = core.rho_compute(qc,
                             drv=options.drv,
+                            laplacian=options.laplacian,
                             vector=options.vector,
                             numproc=options.numproc)
   if options.drv is None:
     rho = data
+  elif options.laplacian:
+    rho, delta_rho, laplacian_rho = data    
   else:
     rho, delta_rho = data
   
@@ -256,7 +265,7 @@ def run_orbkit(use_qc=None):
     if options.vector is not None:
       display(
       '\nSo far, reducing the density is not supported for ' + 
-      'vectorized grids.\nSkipping the reduction...\n')
+      'vector grids.\nSkipping the reduction...\n')
     elif options.drv is not None:
       display(
       '\nSo far, reducing the density is not supported for ' + 
@@ -271,27 +280,58 @@ def run_orbkit(use_qc=None):
 
   # Generate the output requested 
   if not options.no_output:
-    output.main_output(rho,qc.geo_info,qc.geo_spec,
+    output_written = output.main_output(rho,qc.geo_info,qc.geo_spec,
                        outputname=options.outputname,
                        otype=options.otype,
                        data_id='rho',
+                       omit=['vmd','mayavi'],
                        mo_spec=qc.mo_spec,
                        is_vector=(options.vector is not None))
     if options.drv is not None:
-      output.main_output(delta_rho,qc.geo_info,qc.geo_spec,
+      output_written.extend(output.main_output(delta_rho,qc.geo_info,qc.geo_spec,
                          outputname=options.outputname,
                          otype=options.otype,
                          data_id='delta_rho',
+                         omit=['vmd','mayavi'],
                          mo_spec=qc.mo_spec,
                          drv=options.drv,
-                         is_vector=(options.vector is not None))
-      
+                         is_vector=(options.vector is not None)))
+    if options.laplacian:
+      output_written.extend(output.main_output(laplacian_rho,qc.geo_info,qc.geo_spec,
+                         outputname=options.outputname + '_laplacian',
+                         otype=options.otype,
+                         data_id='laplacian_rho',
+                         omit=['vmd','mayavi'],
+                         mo_spec=qc.mo_spec,
+                         is_vector=(options.vector is not None)))
+    if 'vmd' in options.otype:
+      # Create VMD network 
+      display('\nCreating VMD network file...' +
+                    '\n\t%(o)s.vmd' % {'o': options.outputname})     
+      cube_files = []
+      for i in output_written:
+        if i.endswith('.cb'):
+          cube_files.append(i)
+      output.vmd_network_creator(options.outputname,cube_files=cube_files)
+    
   t.append(time.time()) # Final time
   
   good_bye_message(t)
-    
+  
+  if 'mayavi' in options.otype and options.vector is None:
+    plt_data = [rho]
+    datalabels = ['rho']
+    if options.drv is not None:
+      plt_data.extend(delta_rho)    
+      datalabels.extend(['d/d%s of %s' % (ii_d,'rho') for ii_d in options.drv])
+    if options.laplacian:
+      plt_data.append(laplacian_rho)
+      datalabels.append('laplacian of rho')
+    output.view_with_mayavi(grid.x,grid.y,grid.z,plt_data,geo_spec=qc.geo_spec,
+                            datalabels=datalabels)
+  
   # Return the computed data, i.e., rho for standard, and (rho,delta_rho)  
-  # for derivative calculations 
+  # for derivative calculations. For laplacian (rho,delta_rho,laplacian_rho) 
   return data
   # run_orbkit 
 
@@ -312,8 +352,5 @@ def run_standalone():
   # Call the parser
   options.init_parser()
   
-  # Reset orbkit.display
-  is_initiated = False
-
   # Call the main loop
-  run_orbkit()
+  run_orbkit(check_options=False)

@@ -45,7 +45,7 @@ def l_creator(geo_spec,ao_spec,sel_ao,exp_list=None,coeff_list=None,
               at_pos=None,is_vector=False,drv=None,
               x=None,y=None,z=None):
   '''Calculates the contracted atomic orbitals of quantum number l or its
-  derivative with respect to a specific variable (e.g. drv = 'x' or drv = 0)
+  derivative with respect to a specific variable (e.g. drv = 'x')
   for the atomic orbitals: ao_spec[sel_ao].
   
   **Parameters:**
@@ -67,8 +67,8 @@ def l_creator(geo_spec,ao_spec,sel_ao,exp_list=None,coeff_list=None,
     If not None, xyz-coordinates where the atomic orbital is centered,
     else the position geo_spec[ao_spec[sel_ao]['atom']] will be used.
   is_vector : bool, optional
-    If True, a vectorized grid will be applied.
-  drv : int or string, {None, 'x', 'y', 'z', 0, 1, 2}, optional
+    If True, a vector grid will be applied.
+  drv : None or string, {None, 'x', 'y', 'z', 'xx', 'yy', 'zz', 'xy', 'xz', 'yz'}, optional
     If not None, a derivative calculation of the atomic orbitals 
     is requested.
   compile_only : bool, optional
@@ -118,23 +118,27 @@ def l_creator(geo_spec,ao_spec,sel_ao,exp_list=None,coeff_list=None,
   ao_num = numpy.shape(coeff_list)[0]
   
   # Derivative Calculation requested? 
-  if drv is not None:
-    # With respect to which variable the derivative shall be computed?
-    if not isinstance(drv, (int, long)):
-      drv = 'xyz'.find(drv)
-    if drv == -1: # Was the selection valid? If not drv='x'
-      drv = 0
-      raise ValueError("The selection of the derivative variable was not valid!" +
-                       " (drv = 'x' or 'y' or 'z')")
+  if drv is None or drv == '': drv = 0
+  elif drv == 'x': drv = 1
+  elif drv == 'y': drv = 2
+  elif drv == 'z': drv = 3
+  elif drv == 'xx' or drv == 'x2': drv = 4
+  elif drv == 'yy' or drv == 'y2': drv = 5
+  elif drv == 'zz' or drv == 'z2': drv = 6
+  elif drv == 'xy' or drv == 'yx': drv = 7
+  elif drv == 'xz' or drv == 'zx': drv = 8
+  elif drv == 'yz' or drv == 'zy': drv = 9
+  elif not (isinstance(drv,int) and 0 <= drv <= 9):
+    raise ValueError("The selection `drv=%s` is not valid!"  % drv)
   
   # Ask for respective the C++ code
-  code = ao_code(is_vector=is_vector,is_drv=(drv is not None))  
+  code = ao_code(is_vector=is_vector,is_drv=drv)  
   # A list of Python variable names that should be transferred from
   # Python into the C/C++ code. 
   arg_names = ['x','y','z','ao_num','exp_list',
                'coeff_list','at_pos','ao_list','drv']
   # A string of valid C++ code declaring extra code
-  support_code = cSupportCode.norm + cSupportCode.xyz
+  support_code = cSupportCode.norm + cSupportCode.xyz + cSupportCode.ao_xyz
   
   try:
     # Compute the atomic orbitals
@@ -168,7 +172,7 @@ def ao_creator(geo_spec,ao_spec,ao_spherical=None,
   sel_ao : int
     Index of the requested atomic orbital
   is_vector : bool, optional
-    If True, a vectorized grid will be applied
+    If True, a vector grid will be applied
   drv : int or string, {None, 'x', 'y', 'z', 0, 1, 2}, optional
     If not None, an analytical  calculation of the derivatives for 
     the atomic orbitals with respect to DRV is requested.
@@ -199,7 +203,7 @@ def ao_creator(geo_spec,ao_spec,ao_spherical=None,
                     x=x,y=y,z=z,is_vector=is_vector,
                     exp_list=ii_exp), axis = 0)
   
-  if ao_spherical is not None:
+  if not (ao_spherical is None or ao_spherical == []):
     ao_list = cartesian2spherical(ao_list,ao_spec,ao_spherical)
   
   return ao_list
@@ -279,10 +283,10 @@ def calc_single_mo(xx):
     # Catch keybord interrupt signal to prevent a hangup of the worker processes 
     return 0
 
-def mo_creator(ao_list,mo_spec,is_vector=False,
-            x=None,y=None,z=None,mo_coeff=None,
-            HDF5_save=False,h5py=False,
-            numproc=1,s=0):
+def mo_creator(ao_list,mo_spec,mo_coeff=None,
+               is_vector=False,x=None,y=None,z=None,
+               HDF5_save=False,h5py=False,
+               numproc=1,s=0):
   '''Calculates the molecular orbitals.
   
   If a string (filename) is given for the argument :literal:`HDF5_save`, the slice s of each
@@ -295,8 +299,10 @@ def mo_creator(ao_list,mo_spec,is_vector=False,
     Contains the NAO atomic orbitals on a grid.
   mo_spec : List of dictionaries
     See :ref:`Central Variables` for details.
+  mo_coeff : numpy.ndarray, shape = (NMO,NAO)
+    Contains the molecular orbital coefficients of all orbitals.
   is_vector : bool, optional
-    If True, a vectorized grid will be applied.
+    If True, a vector grid will be applied.
   x,y,z : None or list of floats, optional
     If not None, provide a list of Cartesian coordinates, 
     else the respective coordinates of grid will be used.
@@ -395,7 +401,7 @@ def slice_rho(xx):
       :ao_spec: List of dictionaries (see :ref:`Central Variables` for details).
       :mo_spec: List of dictionaries (see :ref:`Central Variables` for details).
       :calc_mo: Bool if only the molecular orbitals are requested.
-      :is_vector: Bool if a vectorized grid is used.
+      :is_vector: Bool if a vector grid is used.
       :Derivative: List of strings, choices={'x','y', or 'z'}. 
                    If not None, derivative calculation will be carried out.
   grid : module or class, global
@@ -485,12 +491,28 @@ def slice_rho(xx):
         delta_ao_list = ao_creator(geo_spec,ao_spec,ao_spherical=ao_spherical,drv=ii_d,
                                    x=x,y=y,z=z,is_vector=is_vector)
         delta_mo_list = mo_creator(delta_ao_list,mo_spec,
-                                   x=x,y=y,z=z,is_vector=is_vector)
-        
+                                   x=x,y=y,z=z,is_vector=is_vector)        
+        if len(ii_d) == 2:
+          ao_0 = ao_creator(geo_spec,ao_spec,ao_spherical=ao_spherical,drv=ii_d[0],
+                                  is_vector=is_vector,x=x,y=y,z=z)
+          if '2' in ii_d or ii_d[0] == ii_d[1]:          
+            delta2_mo_list = numpy.array(mo_creator(ao_0,mo_spec,
+                                        is_vector=is_vector,x=x,y=y,z=z))**2
+          else:
+            ao_1 = ao_creator(geo_spec,ao_spec,ao_spherical=ao_spherical,drv=ii_d[1],
+                                  is_vector=is_vector,x=x,y=y,z=z)
+            delta2_mo_list = (numpy.array(mo_creator(ao_0,mo_spec,
+                                         is_vector=is_vector,
+                                         x=x,y=y,z=z)) *
+                              numpy.array(mo_creator(ao_1,mo_spec,
+                                         is_vector=is_vector,
+                                         x=x,y=y,z=z)))
         # Calculate the derivative of the density
         for ii_mo in range(len(mo_list)): 
           delta_rho[i] += (mo_spec[ii_mo]['occ_num'] * 
                     2 * delta_mo_list[ii_mo]*mo_list[ii_mo])
+          if len(ii_d) == 2:
+            delta_rho[i] += mo_spec[ii_mo]['occ_num'] * 2 * delta2_mo_list[ii_mo]
       # Return the derivative of the density 
       return rho, mo_norm, delta_rho
   except KeyboardInterrupt:
@@ -498,8 +520,9 @@ def slice_rho(xx):
     return 0
   # slice_rho 
 
-def rho_compute(qc,calc_mo=False,vector=None,drv=None,numproc=1):
-  '''Calculate the density, the molecular orbitals, or the derivatives thereof.
+def rho_compute(qc,calc_mo=False,vector=None,drv=None,laplacian=False,
+                numproc=1):
+  r'''Calculate the density, the molecular orbitals, or the derivatives thereof.
   
   orbkit divides 3-dimensional regular grids into 2-dimensional slices and 
   1-dimensional vector grids into 1-dimensional slices of equal length. By default,
@@ -521,11 +544,13 @@ def rho_compute(qc,calc_mo=False,vector=None,drv=None,numproc=1):
     If True, the computation of  the molecular orbitals requested is only
     carried out.
   vector : None or int, optional
-    If not None, performs the computations on a vectorized grid, i.e., 
+    If not None, performs the computations on a vector grid, i.e., 
     with x, y, and z as vectors.
   drv : string or list of strings {None,'x','y', or 'z'}, optional
     If not None, computes the analytical derivative of the requested 
     quantities with respect to DRV.
+  laplacian : bool, optional
+    If True, computes the laplacian of the density.
   numproc : int
     Specifies number of subprocesses for multiprocessing.
   grid : module or class, global
@@ -542,6 +567,8 @@ def rho_compute(qc,calc_mo=False,vector=None,drv=None,numproc=1):
     - rho
   :if not calc_mo and drv is not None: 
     - rho, delta_rho
+  :if not calc_mo and laplacian:
+    - rho, delta_rho, laplacian_rho      
   
   mo_list : numpy.ndarray, shape=((NMO,) + N)
     Contains the NMO=len(qc.mo_spec) molecular orbitals on a grid.
@@ -555,7 +582,17 @@ def rho_compute(qc,calc_mo=False,vector=None,drv=None,numproc=1):
   delta_rho : numpy.ndarray, shape=((NDRV,) + N)
     Contains derivatives with respect to drv (NDRV=len(drv)) of 
     the density on a grid.
+  laplacian_rho : numpy.ndarray, shape=(N)
+    Contains the laplacian of the density on a grid, i.e. 
+    :math:`\nabla^2 \rho = \nabla^2_x \rho + \nabla^2_y \rho + \nabla^2_z \rho`.
   '''
+  
+  if laplacian:
+    if not (drv is None or drv == ['xx','yy','zz'] or drv == ['x2','y2','z2']):
+      display('Note: You have set the option `laplacian` and specified values\n' +
+              'for `drv`. Both options are not compatible.\n' +
+              'The option `drv` has been changed to `drv=["xx","yy","zz"]`.')
+    drv = ['xx','yy','zz']
   
   if drv is not None:
     is_drv = True
@@ -662,7 +699,7 @@ def rho_compute(qc,calc_mo=False,vector=None,drv=None,numproc=1):
     
     if (s == 0):
       # Check if the code for the atomic orbitals is compiled already
-      if not is_compiled(ao_code(is_vector=is_vector,is_drv=is_drv)):
+      if not is_compiled(ao_code(is_vector=is_vector)):
         display(('-'*80) + '''
         The C++ atomic orbital code seems not to be compiled yet.
         Running the first slice on one CPU...\n''' + ('-'*80))
@@ -693,10 +730,10 @@ def rho_compute(qc,calc_mo=False,vector=None,drv=None,numproc=1):
     
     
     # Print out the progress of the computation 
-    status = round(s*100/float(sNum))
-    if not status % 20 and status != status_old: 
+    status = numpy.floor(s*10/float(sNum))*10
+    if not status % 10 and status != status_old:
       t.append(time.time())
-      display("\tFinished %(f)d%% (%(s)d slices in %(t).3fs)" 
+      display("\tFinished %(f)d %% (%(s)d slices in %(t).3f s)" 
                 % {'f': status,
                 's': s + 1 - s_old,
                 't': t[-1]-t[-2]})
@@ -727,13 +764,16 @@ def rho_compute(qc,calc_mo=False,vector=None,drv=None,numproc=1):
     display("We have " + str(numpy.sum(rho)*grid.d3r) + " electrons.")
   if not is_drv:
     return rho
+  elif laplacian:    
+    return rho, delta_rho, delta_rho.sum(axis=0)
   else:
     return rho, delta_rho
   # rho_compute 
 
 def rho_compute_no_slice(qc,calc_mo=False,is_vector=False,drv=None,
-                         return_components=False,x=None,y=None,z=None):
-  '''Calculates the density, the molecular orbitals, or the derivatives thereof
+                         laplacian=False,return_components=False,
+                         x=None,y=None,z=None):
+  r'''Calculates the density, the molecular orbitals, or the derivatives thereof
   without slicing the grid.
   
   **Parameters:**
@@ -751,11 +791,13 @@ def rho_compute_no_slice(qc,calc_mo=False,is_vector=False,drv=None,
     If True, the computation of  the molecular orbitals requested is only
     carried out.
   is_vector : bool, optional
-    If True, performs the computations for a vectorized grid, i.e., 
+    If True, performs the computations for a vector grid, i.e., 
     with x, y, and z as vectors.
   drv : string or list of strings {None,'x','y', or 'z'}, optional
     If not None, computes the analytical derivative of the requested 
     quantities with respect to DRV.
+  laplacian : bool, optional
+    If True, computes the laplacian of the density.
   return_components : bool, optional
     If True, returns the atomic and molecular orbitals, and the density, 
     and if requested, the derivatives thereof as well.
@@ -776,6 +818,8 @@ def rho_compute_no_slice(qc,calc_mo=False,is_vector=False,drv=None,
       - rho
     :if not calc_mo and drv is not None: 
       - rho, delta_rho
+    :if not calc_mo and laplacian:
+      - rho, delta_rho, laplacian_rho      
   
   :else:
     | 
@@ -788,6 +832,8 @@ def rho_compute_no_slice(qc,calc_mo=False,is_vector=False,drv=None,
       - ao_list,mo_list,rho
     :if not calc_mo and drv is not None: 
       - ao_list, mo_list, rho, delta_ao_list, delta_mo_list, delta_rho
+    :if not calc_mo and laplacian: 
+      - ao_list, mo_list, rho, delta_ao_list, delta_mo_list, delta_rho, laplacian_rho
   
   ao_list : numpy.ndarray, shape=((NAO,) + N)
     Contains the NAO=len(ao_spec) atomic orbitals on a grid.
@@ -806,6 +852,9 @@ def rho_compute_no_slice(qc,calc_mo=False,is_vector=False,drv=None,
   delta_rho : numpy.ndarray, shape=((NDRV,) + N)
     Contains the derivatives with respect to drv (NDRV=len(drv)) of 
     the density on a grid.
+  laplacian_rho : numpy.ndarray, shape=(N)
+    Contains the laplacian of the density on a grid, i.e. 
+    :math:`\nabla^2 \rho = \nabla^2_x \rho + \nabla^2_y \rho + \nabla^2_z \rho`.
   '''
   # Create the grid
   if x is None: x = grid.x
@@ -837,6 +886,13 @@ def rho_compute_no_slice(qc,calc_mo=False,is_vector=False,drv=None,
       return 0
     else:
       N = (len(x),)
+    
+  if laplacian:
+    if not (drv is None or drv == ['xx','yy','zz'] or drv == ['x2','y2','z2']):
+      display('Note: You have set the option `laplacian` and specified values\n' +
+              'for `drv`. Both options are not compatible.\n' +
+              'The option `drv` has been changed to `drv=["xx","yy","zz"]`.')
+    drv = ['xx','yy','zz']
   
   if drv is not None:
     try:
@@ -854,6 +910,24 @@ def rho_compute_no_slice(qc,calc_mo=False,is_vector=False,drv=None,
     if calc_mo:
       return ((delta_ao_list, delta_mo_list) if return_components 
         else delta_mo_list)
+    delta2_mo_list = [None for ii_d in drv]
+    for i,ii_d in enumerate(drv):
+      if len(ii_d) == 2:
+        ao_0 = ao_creator(geo_spec,ao_spec,ao_spherical=ao_spherical,drv=ii_d[0],
+                                 is_vector=is_vector,x=x,y=y,z=z)
+        if '2' in ii_d or ii_d == 'xx'  or ii_d == 'yy' or ii_d == 'zz':
+          delta2_mo_list[i] = numpy.array(mo_creator(ao_0,mo_spec,
+                                      is_vector=is_vector,x=x,y=y,z=z))**2
+        else: 
+          ao_1 = ao_creator(geo_spec,ao_spec,ao_spherical=ao_spherical,drv=ii_d[1],
+                                 is_vector=is_vector,x=x,y=y,z=z)
+          delta2_mo_list[i] = (numpy.array(mo_creator(ao_0,mo_spec,
+                                           is_vector=is_vector,
+                                           x=x,y=y,z=z)) *
+                               numpy.array(mo_creator(ao_1,mo_spec,
+                                           is_vector=is_vector,
+                                           x=x,y=y,z=z)))
+    
   
   # Calculate the AOs and MOs 
   ao_list = ao_creator(geo_spec,ao_spec,ao_spherical=ao_spherical,is_vector=is_vector,
@@ -890,17 +964,21 @@ def rho_compute_no_slice(qc,calc_mo=False,is_vector=False,drv=None,
   # Print information 
   display('\nCalculating the derivative of the density...')
   delta_rho = numpy.zeros((len(drv),) + N)
-  
+  d2 =  numpy.zeros((len(drv),) + N)
   # Loop over spatial directions 
-  for ii_d in range(len(drv)):
-    display('\t...with respect to %s' % drv[ii_d])
+  for i,ii_d in enumerate(drv):
+    display('\t...with respect to %s' % ii_d)
     # Calculate the derivative of the density
     for ii_mo in range(len(mo_list)): 
-      delta_rho[ii_d] += (mo_spec[ii_mo]['occ_num'] * 
-            2 * delta_mo_list[ii_d,ii_mo]*mo_list[ii_mo])
+      delta_rho[i] += (mo_spec[ii_mo]['occ_num'] * 
+            2 * delta_mo_list[i,ii_mo]*mo_list[ii_mo])
+      if len(ii_d) == 2:
+        delta_rho[i] += mo_spec[ii_mo]['occ_num'] * 2 * delta2_mo_list[i][ii_mo]
   
-  return ((ao_list, mo_list, rho, delta_ao_list, delta_mo_list, delta_rho) 
-        if return_components else (rho, delta_rho))
+  delta = (delta_rho,delta_rho.sum(axis=0)) if laplacian else (delta_rho,)
+  
+  return ((ao_list, mo_list, rho, delta_ao_list, delta_mo_list,) + delta 
+        if return_components else (rho,) + delta)
   # rho_compute_no_slice 
 
 
@@ -1103,291 +1181,190 @@ def ao_code(is_vector=False,is_drv=False):
     If True, returns the code for the computation of the
     derivative of an atomic orbital.
   '''
-  if not is_vector and not is_drv:
-    code =  '''
-    double Norm[ao_num][Nao_list[0]];
-    double X, Y, Z;
-    int lx[Nao_list[0]], ly[Nao_list[0]], lz[Nao_list[0]];
-    double rr, ao_l0[ao_num], ao_xyz[Nao_list[0]];
-    
-
-    for (int il=0; il<Nao_list[0]; il++)
-    {
-      lx[il] = EXP_LIST2(il,0);
-      ly[il] = EXP_LIST2(il,1);
-      lz[il] = EXP_LIST2(il,2);
+  if not is_drv:
+    if is_vector: 
+      code =  '''
+      // vector grid without derivative
+      double Norm[ao_num][Nao_list[0]];
+      double X, Y, Z;
+      int lx[Nao_list[0]], ly[Nao_list[0]], lz[Nao_list[0]];
+      double rr, ao_l0[ao_num], ao_xyz[Nao_list[0]];
       
-      for (int ii=0; ii<ao_num; ii++)
+
+      for (int il=0; il<Nao_list[0]; il++)
       {
-        Norm[ii][il] = ao_norm(lx[il],ly[il],lz[il],&COEFF_LIST2(ii,0));
-      }
-    }
-    
-    for (int i=0; i<Nx[0]; i++)
-    {
-      for (int j=0; j<Ny[0]; j++)
-      {
-        for (int k=0; k<Nz[0]; k++)
+        lx[il] = EXP_LIST2(il,0);
+        ly[il] = EXP_LIST2(il,1);
+        lz[il] = EXP_LIST2(il,2);
+        
+        for (int ii=0; ii<ao_num; ii++)
         {
+          Norm[ii][il] = ao_norm(lx[il],ly[il],lz[il],&COEFF_LIST2(ii,0));
+        }
+      }
+      
+      for (int i=0; i<Nx[0]; i++)
+      {
         X = x[i]-at_pos[0];
-        Y = y[j]-at_pos[1];
-        Z = z[k]-at_pos[2];
+        Y = y[i]-at_pos[1];
+        Z = z[i]-at_pos[2];
         
         rr = pow(X,2)+pow(Y,2)+pow(Z,2);
         
         for (int il=0; il<Nao_list[0]; il++)
-        {
-            ao_xyz[il] = xyz(X, Y, Z, lx[il], ly[il], lz[il]);
+        { 
+          ao_xyz[il] = xyz(X, Y, Z, lx[il], ly[il], lz[il]);
         }
         
         for (int ii=0; ii<ao_num; ii++)
         {
-            ao_l0[ii] = COEFF_LIST2(ii,1) * exp(-COEFF_LIST2(ii,0) * rr);
-            
-            for (int il=0; il<Nao_list[0]; il++)
-            {
-            AO_LIST4(il,i,j,k) += Norm[ii][il] * ao_xyz[il] * ao_l0[ii];
-            }
+          ao_l0[ii] = COEFF_LIST2(ii,1) * exp(-COEFF_LIST2(ii,0) * rr);
+          
+          for (int il=0; il<Nao_list[0]; il++)
+          {
+          AO_LIST2(il,i) += Norm[ii][il] * ao_xyz[il] * ao_l0[ii];
           }
         }
       }
-    }
-    '''
-  elif is_vector and not is_drv:
-    code =  '''
-    double Norm[ao_num][Nao_list[0]];
-    double X, Y, Z;
-    int lx[Nao_list[0]], ly[Nao_list[0]], lz[Nao_list[0]];
-    double rr, ao_l0[ao_num], ao_xyz[Nao_list[0]];
-    
+      '''
+    else:
+      code =  '''
+      // regular grid without derivative
+      double Norm[ao_num][Nao_list[0]];
+      double X, Y, Z;
+      int lx[Nao_list[0]], ly[Nao_list[0]], lz[Nao_list[0]];
+      double rr, ao_l0[ao_num], ao_xyz[Nao_list[0]];
+      
 
-    for (int il=0; il<Nao_list[0]; il++)
-    {
-      lx[il] = EXP_LIST2(il,0);
-      ly[il] = EXP_LIST2(il,1);
-      lz[il] = EXP_LIST2(il,2);
-      
-      for (int ii=0; ii<ao_num; ii++)
-      {
-        Norm[ii][il] = ao_norm(lx[il],ly[il],lz[il],&COEFF_LIST2(ii,0));
-      }
-    }
-    
-    for (int i=0; i<Nx[0]; i++)
-    {
-      X = x[i]-at_pos[0];
-      Y = y[i]-at_pos[1];
-      Z = z[i]-at_pos[2];
-      
-      rr = pow(X,2)+pow(Y,2)+pow(Z,2);
-      
       for (int il=0; il<Nao_list[0]; il++)
-      { 
-        ao_xyz[il] = xyz(X, Y, Z, lx[il], ly[il], lz[il]);
-      }
-      
-      for (int ii=0; ii<ao_num; ii++)
       {
-        ao_l0[ii] = COEFF_LIST2(ii,1) * exp(-COEFF_LIST2(ii,0) * rr);
-        
-        for (int il=0; il<Nao_list[0]; il++)
-        {
-        AO_LIST2(il,i) += Norm[ii][il] * ao_xyz[il] * ao_l0[ii];
-        }
-      }
-    }
-    '''
-  elif not is_vector and is_drv:
-    code = '''
-    double Norm[ao_num][Nao_list[0]];
-    double X, Y, Z;
-    int lx[Nao_list[0]], ly[Nao_list[0]], lz[Nao_list[0]];
-    double rr, ao_l0[ao_num], ao_xyz;
-    
-
-    for (int il=0; il<Nao_list[0]; il++)
-    {
-      lx[il] = EXP_LIST2(il,0);
-      ly[il] = EXP_LIST2(il,1);
-      lz[il] = EXP_LIST2(il,2);
-      
-      for (int ii=0; ii<ao_num; ii++)
-      {
-        Norm[ii][il] = ao_norm(lx[il],ly[il],lz[il],&COEFF_LIST2(ii,0));
-      }
-    }
-    
-    for (int i=0; i<Nao_list[1]; i++)
-    {
-      for (int j=0; j<Nao_list[2]; j++)
-      {
-        for (int k=0; k<Nao_list[3]; k++)
-        {
-        X = x[i]-at_pos[0];
-        Y = y[j]-at_pos[1];
-        Z = z[k]-at_pos[2];
-        
-        rr = pow(X,2)+pow(Y,2)+pow(Z,2);
+        lx[il] = EXP_LIST2(il,0);
+        ly[il] = EXP_LIST2(il,1);
+        lz[il] = EXP_LIST2(il,2);
         
         for (int ii=0; ii<ao_num; ii++)
         {
-            ao_l0[ii] = COEFF_LIST2(ii,1) * exp(-COEFF_LIST2(ii,0) * rr);
-            
-            for (int il=0; il<Nao_list[0]; il++)
-            {
-              switch(drv)
-              {
-              case 0:
-              {
-                if (lx[il] == 0)
-                {
-                    ao_xyz = - 2 * COEFF_LIST2(ii,0) * 
-                        xyz(X, Y, Z, lx[il]+1, ly[il], lz[il]);
-                }
-                else
-                {
-                    ao_xyz = lx[il] * xyz(X, Y, Z, lx[il]-1, ly[il], lz[il]) - 
-                        2 * COEFF_LIST2(ii,0) * 
-                        xyz(X, Y, Z, lx[il]+1, ly[il], lz[il]);    
-                }
-              } break;
+          Norm[ii][il] = ao_norm(lx[il],ly[il],lz[il],&COEFF_LIST2(ii,0));
+        }
+      }
+      
+      for (int i=0; i<Nx[0]; i++)
+      {
+        for (int j=0; j<Ny[0]; j++)
+        {
+          for (int k=0; k<Nz[0]; k++)
+          {
+          X = x[i]-at_pos[0];
+          Y = y[j]-at_pos[1];
+          Z = z[k]-at_pos[2];
+          
+          rr = pow(X,2)+pow(Y,2)+pow(Z,2);
+          
+          for (int il=0; il<Nao_list[0]; il++)
+          {
+              ao_xyz[il] = xyz(X, Y, Z, lx[il], ly[il], lz[il]);
+          }
+          
+          for (int ii=0; ii<ao_num; ii++)
+          {
+              ao_l0[ii] = COEFF_LIST2(ii,1) * exp(-COEFF_LIST2(ii,0) * rr);
               
-              case 1:
+              for (int il=0; il<Nao_list[0]; il++)
               {
-              if (ly[il] == 0)
-                {
-                    ao_xyz = - 2 * COEFF_LIST2(ii,0) * 
-                        xyz(X, Y, Z, lx[il], ly[il]+1, lz[il]);
-                }
-                else
-                {
-                    ao_xyz = ly[il] * xyz(X, Y, Z, lx[il], ly[il]-1, lz[il]) 
-                        - 2 * COEFF_LIST2(ii,0) * 
-                        xyz(X, Y, Z, lx[il], ly[il]+1, lz[il]);   
-                }
-              } break;
-              
-              case 2:
-              {
-                if (lz[il] == 0)
-                {
-                    ao_xyz = - 2 * COEFF_LIST2(ii,0) *
-                        xyz(X, Y, Z, lx[il], ly[il], lz[il]+1);
-                }
-                else
-                {
-                    ao_xyz = lz[il] * xyz(X, Y, Z, lx[il], ly[il], lz[il]-1) 
-                            - 2 * COEFF_LIST2(ii,0) * 
-                            xyz(X, Y, Z, lx[il], ly[il], lz[il]+1);    
-                }
-              } break;
-              
-              default:
-              {
-                std::cout << "False statement for derivative variable!" 
-                          << std::endl;
+              AO_LIST4(il,i,j,k) += Norm[ii][il] * ao_xyz[il] * ao_l0[ii];
               }
             }
-            AO_LIST4(il,i,j,k) += Norm[ii][il] * ao_xyz * ao_l0[ii];
-            }
           }
         }
       }
-    }
-    
-    '''
+      '''
   else:
-    code = '''
-    double Norm[ao_num][Nao_list[0]];
-    double X, Y, Z;
-    int lx[Nao_list[0]], ly[Nao_list[0]], lz[Nao_list[0]];
-    double rr, ao_l0[ao_num], ao_xyz;
-    
+    if is_vector:
+      code = '''
+      // vector grid with derivative
+      double Norm[ao_num][Nao_list[0]];
+      double X, Y, Z;
+      int lx[Nao_list[0]], ly[Nao_list[0]], lz[Nao_list[0]];
+      double rr, ao_l0, ao_xyz;
+      
 
-    for (int il=0; il<Nao_list[0]; il++)
-    {
-      lx[il] = EXP_LIST2(il,0);
-      ly[il] = EXP_LIST2(il,1);
-      lz[il] = EXP_LIST2(il,2);
-      
-      for (int ii=0; ii<ao_num; ii++)
+      for (int il=0; il<Nao_list[0]; il++)
       {
-        Norm[ii][il] = ao_norm(lx[il],ly[il],lz[il],&COEFF_LIST2(ii,0));
-      }
-    }
-    
-    for (int i=0; i<Nx[0]; i++)
-    {
-      X = x[i]-at_pos[0];
-      Y = y[i]-at_pos[1];
-      Z = z[i]-at_pos[2];
-      
-      rr = pow(X,2)+pow(Y,2)+pow(Z,2);
-      
-      for (int ii=0; ii<ao_num; ii++)
-      {
-        ao_l0[ii] = COEFF_LIST2(ii,1) * exp(-COEFF_LIST2(ii,0) * rr);
+        lx[il] = EXP_LIST2(il,0);
+        ly[il] = EXP_LIST2(il,1);
+        lz[il] = EXP_LIST2(il,2);
         
-        for (int il=0; il<Nao_list[0]; il++)
+        for (int ii=0; ii<ao_num; ii++)
         {
-        switch(drv)
+          Norm[ii][il] = ao_norm(lx[il],ly[il],lz[il],&COEFF_LIST2(ii,0));
+        }
+      }
+      
+      for (int i=0; i<Nx[0]; i++)
+      {
+        X = x[i]-at_pos[0];
+        Y = y[i]-at_pos[1];
+        Z = z[i]-at_pos[2];
+        
+        rr = pow(X,2)+pow(Y,2)+pow(Z,2);
+        
+        for (int ii=0; ii<ao_num; ii++)
         {
-            case 0:
-            {
-            if (lx[il] == 0)
-            {
-            ao_xyz = - 2 * COEFF_LIST2(ii,0) * 
-                xyz(X, Y, Z, lx[il]+1, ly[il], lz[il]);
-            }
-            else
-            {
-            ao_xyz = lx[il] * xyz(X, Y, Z, lx[il]-1, ly[il], lz[il]) 
-                    - 2 * COEFF_LIST2(ii,0) * 
-                    xyz(X, Y, Z, lx[il]+1, ly[il], lz[il]);     
+          ao_l0 = COEFF_LIST2(ii,1) * exp(-COEFF_LIST2(ii,0) * rr);
+          
+          for (int il=0; il<Nao_list[0]; il++)
+          {
+            ao_xyz = get_ao_xyz(X, Y, Z, lx[il], ly[il], lz[il], COEFF_LIST2(ii,0), drv);
+            AO_LIST2(il,i) += Norm[ii][il] * ao_xyz * ao_l0;
           }
-        } break;
-        
-            case 1:
-            {
-            if (ly[il] == 0)
-            {
-            ao_xyz = - 2 * COEFF_LIST2(ii,0) * 
-                    xyz(X, Y, Z, lx[il], ly[il]+1, lz[il]);
-            }
-            else
-            {
-            ao_xyz = ly[il] * xyz(X, Y, Z, lx[il], ly[il]-1, lz[il]) 
-                    - 2 * COEFF_LIST2(ii,0) * 
-                    xyz(X, Y, Z, lx[il], ly[il]+1, lz[il]);    
-            }
-            } break;
-            
-            case 2:
-            {
-            if (lz[il] == 0)
-            {
-            ao_xyz = - 2 * COEFF_LIST2(ii,0) * 
-                    xyz(X, Y, Z, lx[il], ly[il], lz[il]+1);
-            }
-            else
-            {
-            ao_xyz = lz[il] * xyz(X, Y, Z, lx[il], ly[il], lz[il]-1) 
-                    - 2 * COEFF_LIST2(ii,0) * 
-                    xyz(X, Y, Z, lx[il], ly[il], lz[il]+1);    
-            }
-            } break;
-            
-            default:
-            {
-            std::cout << "False statement for derivative variable!" 
-                        << std::endl;
-            }
-        }
-        AO_LIST2(il,i) += Norm[ii][il] * ao_xyz * ao_l0[ii];
         }
       }
-    }
-    '''
+      '''
+    else:
+      code = '''
+      // regular grid with derivative
+      double Norm[ao_num][Nao_list[0]];
+      double X, Y, Z;
+      int lx[Nao_list[0]], ly[Nao_list[0]], lz[Nao_list[0]];
+      double rr, ao_l0, ao_xyz,alpha;
+      
+      for (int il=0; il<Nao_list[0]; il++)
+      {
+        lx[il] = EXP_LIST2(il,0);
+        ly[il] = EXP_LIST2(il,1);
+        lz[il] = EXP_LIST2(il,2);      
+        for (int ii=0; ii<ao_num; ii++)
+        {
+          Norm[ii][il] = ao_norm(lx[il],ly[il],lz[il],&COEFF_LIST2(ii,0));
+        }
+      }
+      for (int i=0; i<Nx[0]; i++)
+      {
+        for (int j=0; j<Ny[0]; j++)
+        {
+          for (int k=0; k<Nz[0]; k++)
+          {
+            X = x[i]-at_pos[0];
+            Y = y[j]-at_pos[1];
+            Z = z[k]-at_pos[2];
+            
+            rr = pow(X,2)+pow(Y,2)+pow(Z,2);
+            
+            for (int ii=0; ii<ao_num; ii++)
+            {
+              ao_l0 = COEFF_LIST2(ii,1) * exp(-COEFF_LIST2(ii,0) * rr);
+              
+              for (int il=0; il<Nao_list[0]; il++)
+              {
+                ao_xyz = get_ao_xyz(X, Y, Z, lx[il], ly[il], lz[il], COEFF_LIST2(ii,0), drv);
+                AO_LIST4(il,i,j,k) += Norm[ii][il] * ao_xyz * ao_l0;
+              }
+            }
+          }
+        }
+      }    
+      '''
+    
   return code
 
 def is_compiled(code):

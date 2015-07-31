@@ -92,7 +92,8 @@ ok.init()
 # set some options
 ok.options.adjust_grid= [5, 0.1]                # adjust the grid to the geometry
 ok.options.otype      = ['hx', 'vmd']           # output file types
-ok.options.mo_set     = [[1,2,3],[5,4]]         # list of MO labels (Molden enumeration)
+ok.options.mo_set     = [[1,2,'homo-2'],
+                         ['homo-1:lumo']]       # list of MO labels (Molden enumeration)
 ok.options.filename   = in_fid                  # input file name
 ok.options.itype      = 'molden'                # input file type [default]
 ok.options.outputname = out_fid                 # output file (base) name

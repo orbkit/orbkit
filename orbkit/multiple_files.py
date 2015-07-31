@@ -35,6 +35,7 @@ from orbkit.analytical_integrals import get_ao_overlap, get_mo_overlap_matrix
 geo_spec_all  = [] #: Contains all molecular geometries, i.e., :literal:`geo_spec`. (See :ref:`Central Variables` for details.)
 geo_info      = [] #: See :ref:`Central Variables` for details.
 ao_spec       = [] #: See :ref:`Central Variables` for details.
+ao_spherical  = [] #: See :ref:`Central Variables` for details.
 mo_coeff_all  = [] #: Contains all molecular orbital coefficients. List of numpy.ndarray
 mo_energy_all = [] #: Contains all molecular orbital energies. List of numpy.ndarray
 mo_occ_all    = [] #: Contains all molecular orbital occupations. List of numpy.ndarray
@@ -58,9 +59,9 @@ def read(fid_list,itype='molden',all_mo=True,nosym=False,**kwargs):
   
   **Global Variables:**
   
-  geo_spec_all, geo_info, ao_spec, mo_coeff_all, mo_energy_all, mo_occ_all, sym
+  geo_spec_all, geo_info, ao_spec, ao_spherical, mo_coeff_all, mo_energy_all, mo_occ_all, sym
   '''
-  global geo_spec_all, geo_info, ao_spec, mo_coeff_all, mo_energy_all, mo_occ_all, sym
+  global geo_spec_all, geo_info, ao_spec, ao_spherical, mo_coeff_all, mo_energy_all, mo_occ_all, sym
   
   geo_spec_all = []
   MO_Spec = []
@@ -113,6 +114,7 @@ def read(fid_list,itype='molden',all_mo=True,nosym=False,**kwargs):
   geo_spec_all = numpy.array(geo_spec_all)
   geo_info = qc.geo_info
   ao_spec = qc.ao_spec
+  ao_spherical = qc.ao_spherical
   # Presorting of the MOs according to their symmetry
   
   sym = []
@@ -196,16 +198,16 @@ def order_using_analytical_overlap(fid_list,itype='molden',deg=0,**kwargs):
     Contains the new indices of the molecular orbitals. If index < 0, the 
     molecular orbital changes its sign.
   mo_overlap : numpy.ndarray, shape=((Nfiles - 1),NMO,NMO)
-    Contains the overlap matrix between the molecular orbitals of two subsequent
+    Contains the overlap matrix between the molecular orbitals of two neighboring
     geometries, i.e., mo_overlap[i,j,k] corresponds to overlap between the 
     jth molecular orbital at geometry i to the kth molecular orbital at 
     geometry (i+1).
   
   **Global Variables:**
   
-  geo_spec_all, geo_info, ao_spec, mo_coeff_all, mo_energy_all, mo_occ_all, sym, index_list
+  geo_spec_all, geo_info, ao_spec, ao_spherical, mo_coeff_all, mo_energy_all, mo_occ_all, sym, index_list
   '''
-  global geo_spec_all, geo_info, ao_spec, mo_coeff_all, mo_energy_all, mo_occ_all, sym, index_list
+  global geo_spec_all, geo_info, ao_spec, ao_spherical, mo_coeff_all, mo_energy_all, mo_occ_all, sym, index_list
   
   if fid_list is not None:
     read(fid_list,itype=itype,**kwargs)
@@ -233,9 +235,11 @@ def order_using_analytical_overlap(fid_list,itype='molden',deg=0,**kwargs):
     r2 = rr
     
     if deg > 0 and r1 >= deg:
-      ao_overlap = get_ao_overlap(geo_spec_all[r2],geo_spec_all[r2],ao_spec)
+      ao_overlap = get_ao_overlap(geo_spec_all[r2],geo_spec_all[r2],ao_spec,
+                                  ao_spherical=ao_spherical)
     else:
-      ao_overlap = get_ao_overlap(geo_spec_all[r1],geo_spec_all[r2],ao_spec)
+      ao_overlap = get_ao_overlap(geo_spec_all[r1],geo_spec_all[r2],ao_spec,
+                                  ao_spherical=ao_spherical)
     
     cs = 0
     for s in sym.itervalues():
@@ -330,9 +334,9 @@ def order_using_extrapolation(fid_list,itype='molden',deg=1,
   
   **Global Variables:**
   
-  geo_spec_all, geo_info, ao_spec, mo_coeff_all, mo_energy_all, mo_occ_all, sym, index_list
+  geo_spec_all, geo_info, ao_spec, ao_spherical, mo_coeff_all, mo_energy_all, mo_occ_all, sym, index_list
   '''
-  global geo_spec_all, geo_info, ao_spec, mo_coeff_all, mo_energy_all, mo_occ_all, sym, index_list
+  global geo_spec_all, geo_info, ao_spec, ao_spherical, mo_coeff_all, mo_energy_all, mo_occ_all, sym, index_list
   
   # Read all input files
   if fid_list is not None:
@@ -364,7 +368,9 @@ def order_using_extrapolation(fid_list,itype='molden',deg=1,
     matrix = mo_coeff_all[ii_s]
     if use_mo_values:
       display('\tComputing molecular orbitals at the nuclear positions')
-      matrix = compute_mo_list(geo_spec_all,ao_spec,matrix,iter_drv=[None, 'x', 'y', 'z'])
+      matrix = compute_mo_list(geo_spec_all,ao_spec,matrix,
+                               ao_spherical=ao_spherical,
+                               iter_drv=[None, 'x', 'y', 'z'])
     
     
     display('\tOdering backward')
@@ -590,11 +596,12 @@ def order_pm(x,y,backward=True,mu=1e-1,use_factor=False):
 def save_hdf5(fid,variables=['geo_info',
                              'geo_spec_all',
                              'ao_spec',
+                             'ao_spherical',
                              'mo_coeff_all', 
                              'mo_energy_all', 
                              'mo_occ_all', 
                              'sym',
-                             'index_list'],**kwargs):
+                             'index_list'],hdf5mode='w',**kwargs):
   '''Writes all global variables specified in :literal:`variables` and all
   additional :literal:`kwargs` to an HDF5 file. 
   '''
@@ -602,28 +609,30 @@ def save_hdf5(fid,variables=['geo_info',
   from orbkit.output import hdf5_open,hdf5_append
   
   # Save HDF5 File
-  display('Saving HDF5 File to %s' % fid)
-  for HDF5_file in hdf5_open(fid,mode='w'):
+  display('Saving Hierarchical Data Format file (HDF5) to %s...' % fid)
+  data_stored = []
+  for HDF5_file in hdf5_open(fid,mode=hdf5mode):
     for i in variables:
-      if i == 'sym':
-        s = globals()[i]
-        sym = []
-        for k,l in s.iteritems():
-          sym.append([k,l])
-        hdf5_append(numpy.array(sym),HDF5_file,name=i)
-      elif i in globals():
-        hdf5_append(globals()[i],HDF5_file,name=i)
+      if i in globals():
+        data = globals()[i]
+        if not (data == [] or data is None):          
+          if i == 'sym':
+            data = numpy.array([[k,l] for k,l in data.iteritems()])
+          hdf5_append(data,HDF5_file,name=i)
+          data_stored.append(i)
       elif i not in kwargs:
         raise ValueError('Variable `%s` is not in globals() or in **kwargs' % i)
     
     for j in kwargs.iterkeys():
       hdf5_append(kwargs[j],HDF5_file,name=j)
+      data_stored.append(j)
     
-  
+  display('\tContent: ' + ', '.join(data_stored))
 
 def read_hdf5(fid,variables=['geo_info',
                              'geo_spec_all',
                              'ao_spec',
+                             'ao_spherical',
                              'mo_coeff_all', 
                              'mo_energy_all', 
                              'mo_occ_all', 
@@ -637,18 +646,29 @@ def read_hdf5(fid,variables=['geo_info',
   from orbkit.output import hdf5_open,hdf52dict
   
   # Read HDF5 File
-  display('Reading HDF5 File to %s' % fid)
+  display('Reading Hierarchical Data Format file (HDF5) File from %s' % fid)
+  data_stored = []
   for HDF5_file in hdf5_open(fid,mode='r'):
     for i in variables:
-      globals()[i] = hdf52dict(i,HDF5_file)
-      if i == 'sym':
-        s = dict(globals()[i])
-        globals()[i] = {}
-        for k,l in s.iteritems():
-          globals()[i][k] = int(l)
+      try:
+        globals()[i] = hdf52dict(i,HDF5_file)
+        data_stored.append(i)
+        if i == 'sym':
+          s = dict(globals()[i])
+          globals()[i] = {}
+          for k,l in s.iteritems():
+            globals()[i][k] = int(l)
+      except KeyError:
+        pass
+  
+  if not data_stored:
+    raise IOError('Could not find any data in `%s` for the selected `variables`.' 
+                  % fid)
+  
+  display('\tFound: ' + ', '.join(data_stored))
 
 def construct_qc():
-  '''Converts all global variables to a list of `QCinfo` classses.
+  '''Converts all global variables to a list of `QCinfo` classes.
   '''
   from orbkit.qcinfo import QCinfo
   QC = []
@@ -657,6 +677,7 @@ def construct_qc():
     QC[rr].geo_spec = geo_spec_all[rr]
     QC[rr].geo_info = geo_info
     QC[rr].ao_spec = ao_spec
+    QC[rr].ao_spherical = ao_spherical
     QC[rr].mo_spec = []
     for s,ii_s in sym.iteritems():
       for i,coeffs in enumerate(mo_coeff_all[ii_s][rr]):
@@ -667,7 +688,8 @@ def construct_qc():
   
   return QC
 
-def compute_mo_list(geo_spec_all,ao_spec,mo_matrix,iter_drv=[None, 'x', 'y', 'z']):
+def compute_mo_list(geo_spec_all,ao_spec,mo_matrix,ao_spherical=None,
+                    iter_drv=[None, 'x', 'y', 'z']):
   '''Computes the values of the molecular orbitals and, if requested, their 
   derivatives at the nuclear positions for a complete 
   mo_matrix (shape=(Nfiles,NMO,NAO)).'''
@@ -678,15 +700,16 @@ def compute_mo_list(geo_spec_all,ao_spec,mo_matrix,iter_drv=[None, 'x', 'y', 'z'
 
   for rr in range(shape[0]):
     geo_spec = geo_spec_all[rr]
-    ao_spec = ao_spec
     x = geo_spec[:,0]
     y = geo_spec[:,1]
     z = geo_spec[:,2]
     N = len(x)
     for i,drv in enumerate(iter_drv):
-      ao_list = ao_creator(geo_spec,ao_spec,exp_list=False,
-                    is_vector=True,drv=drv,
-                    x=x,y=y,z=z,N=len(x))
+      ao_list = ao_creator(geo_spec,ao_spec,ao_spherical=ao_spherical,
+                           exp_list=False,
+                           is_vector=True,
+                           drv=drv,
+                           x=x,y=y,z=z)
       for i_mo in range(shape[1]):
         for i_ao in range(shape[2]):
           mo_list[rr,i_mo,N*i+numpy.arange(N)] += mo_matrix[rr,i_mo,i_ao] * ao_list[i_ao,:]
@@ -872,7 +895,7 @@ def show_selected_mos(selected_mos,r0=0,steps=1,select_slice='xz',where=0.0,
     i,j = mo_sel.split('.')
     mo = []
     for rr in r:
-      ao_list = ao_creator(geo_spec_all[rr],ao_spec)
+      ao_list = ao_creator(geo_spec_all[rr],ao_spec,ao_spherical=ao_spherical)
       mo.append(mo_creator(ao_list,None,
                 mo_coeff=mo_coeff_all[sym[j]][rr,int(i)-1,numpy.newaxis])[0].reshape(tuple(npts)))
     

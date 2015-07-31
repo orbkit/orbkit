@@ -48,7 +48,7 @@ Using Mayavi
 ............
 
 To get a rough overview over the shape of the quantities computed, you can use a 
-simple interface to mayavi_. Although, no output file is created with that option,
+simple interface to Mayavi_. Although, no output file is created with that option,
 you can combine it with other output options, e.g., ``--otype=vmd``.
 
 .. code-block:: bash
@@ -68,7 +68,7 @@ Within a Python Shell
 All tasks mentioned above can be directly performed within a Python shell.
 This will be shown in the following, i.e., we will compute a set of molecular orbitals 
 on a grid adjusted to the molecular geometry, and for the depiction, we will create a 
-VMD_ script and a mayavi_ scene.
+VMD_ script and a Mayavi_ scene.
 
 Method One
 ..........
@@ -136,5 +136,5 @@ directly, you have to create the output by your own:
 
 
 .. _VMD: http://www.ks.uiuc.edu/Research/vmd/
-.. _mayavi: http://docs.enthought.com/mayavi/mayavi/auto/examples.html
+.. _Mayavi: http://docs.enthought.com/mayavi/mayavi/auto/examples.html
  

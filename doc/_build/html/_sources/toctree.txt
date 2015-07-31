@@ -5,7 +5,7 @@
 
 Welcome to the orbkit Documentation!
 ====================================
-:orbkit: Copyright (C) 2014, Gunter Hermann, Vincent Pohl, and Axel Schild.
+:orbkit: Copyright (C) 2015, Gunter Hermann, Vincent Pohl, and Axel Schild.
 :Website: http://sourceforge.net/p/orbkit
 
 Contents:
@@ -17,7 +17,7 @@ Contents:
    index
    install
    documentation/index
-   examples/vis
+   tutorials/index
    licence
    impressum
 

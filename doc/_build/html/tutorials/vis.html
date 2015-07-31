@@ -32,8 +32,9 @@
 
   
     <link rel="top" title="orbkit 0.2.2 documentation" href="../index.html"/>
-        <link rel="next" title="Licence Note" href="../licence.html"/>
-        <link rel="prev" title="Function Reference" href="../documentation/funcref.html"/> 
+        <link rel="up" title="Tutorials" href="index.html"/>
+        <link rel="next" title="Tutorial for the Integration with Cubature" href="cubature.html"/>
+        <link rel="prev" title="Tutorials" href="index.html"/> 
 
   
   <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
@@ -74,14 +75,16 @@
 <li class="toctree-l2"><a class="reference internal" href="../documentation/terminal.html">Usage via the Terminal</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../documentation/ok_main.html">orbkit&#8217;s High-Level Interface</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../documentation/ok_modules.html">orbkit&#8217;s Low-Level Interface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../documentation/ok_analytical.html">Analytical Integrals with orbkit</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../documentation/cvars.html">Central Variables</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../documentation/options.html">Options</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../documentation/funcref.html">Function Reference</a></li>
 </ul>
 </li>
-<li class="toctree-l1 current"><a class="current reference internal" href="">Tutorial for the Visualization</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#within-the-terminal">Within the Terminal</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#within-a-python-shell">Within a Python Shell</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Tutorials</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="">Tutorial for the Visualization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cubature.html">Tutorial for the Integration with Cubature</a></li>
+<li class="toctree-l2"><a class="reference internal" href="multiple_files.html">Tutorial for Processing Multiple Input Files</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../licence.html">Licence Note</a></li>
@@ -113,10 +116,12 @@
   <ul class="wy-breadcrumbs">
     <li><a href="../toctree.html">Docs</a> &raquo;</li>
       
+          <li><a href="index.html">Tutorials</a> &raquo;</li>
+      
     <li>Tutorial for the Visualization</li>
       <li class="wy-breadcrumbs-aside">
         
-          <a href="../_sources/examples/vis.txt" rel="nofollow"> View page source</a>
+          <a href="../_sources/tutorials/vis.txt" rel="nofollow"> View page source</a>
         
       </li>
   </ul>
@@ -159,7 +164,7 @@ This can be displayed using VMD by calling</p>
 <div class="section" id="using-mayavi">
 <h3>Using Mayavi<a class="headerlink" href="#using-mayavi" title="Permalink to this headline">¶</a></h3>
 <p>To get a rough overview over the shape of the quantities computed, you can use a
-simple interface to <a class="reference external" href="http://docs.enthought.com/mayavi/mayavi/auto/examples.html">mayavi</a>. Although, no output file is created with that option,
+simple interface to <a class="reference external" href="http://docs.enthought.com/mayavi/mayavi/auto/examples.html">Mayavi</a>. Although, no output file is created with that option,
 you can combine it with other output options, e.g., <tt class="docutils literal"><span class="pre">--otype=vmd</span></tt>.</p>
 <div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>orbkit -i h2o.md --otype<span class="o">=</span>mayavi --adjust_grid<span class="o">=</span>5 0.5 --calc_mo<span class="o">=</span>homo-1:lumo+2
 </pre></div>
@@ -173,7 +178,7 @@ you can combine it with other output options, e.g., <tt class="docutils literal"
 <p>All tasks mentioned above can be directly performed within a Python shell.
 This will be shown in the following, i.e., we will compute a set of molecular orbitals
 on a grid adjusted to the molecular geometry, and for the depiction, we will create a
-<a class="reference external" href="http://www.ks.uiuc.edu/Research/vmd/">VMD</a> script and a <a class="reference external" href="http://docs.enthought.com/mayavi/mayavi/auto/examples.html">mayavi</a> scene.</p>
+<a class="reference external" href="http://www.ks.uiuc.edu/Research/vmd/">VMD</a> script and a <a class="reference external" href="http://docs.enthought.com/mayavi/mayavi/auto/examples.html">Mayavi</a> scene.</p>
 <div class="section" id="method-one">
 <h3>Method One<a class="headerlink" href="#method-one" title="Permalink to this headline">¶</a></h3>
 <p>First, import the required python modules:</p>
@@ -231,10 +236,10 @@ directly, you have to create the output by your own:</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="../licence.html" class="btn btn-neutral float-right" title="Licence Note"/>Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="cubature.html" class="btn btn-neutral float-right" title="Tutorial for the Integration with Cubature"/>Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="../documentation/funcref.html" class="btn btn-neutral" title="Function Reference"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="index.html" class="btn btn-neutral" title="Tutorials"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

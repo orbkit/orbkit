@@ -11,6 +11,11 @@ equivalently to :ref:`terminal_interface`.
    programs. These and more examples can be found in the :literal:`orbkit/examples` 
    folder. 
 
+
+.. contents:: Table of Contents:
+  :local:
+  :depth: 1
+
 General Aspects
 ---------------
 
@@ -62,8 +67,8 @@ The file type has to be specified via::
 
   ok.options.itype = 'molden'
 
-The available file types are **'molden'** (default), **'gamess'** (GAMESS-US 
-output file), **'gaussian.log'** (GAUSSIAN output file), 
+The available file types are **'molden'** (default),**aomix** (AOMix file),
+**'gamess'** (GAMESS-US output file), **'gaussian.log'** (GAUSSIAN output file), 
 **'gaussian.fchk'** (GAUSSIAN formatted checkpoint file). 
 
 Concerning orbkit's output, you can choose between several following options:
@@ -90,7 +95,7 @@ For more information on the different output types, refer to
 .. hint::
 
   You can omit the creation of an output file by either setting 
-  ``ok.options.otype = None`` or by setting 
+  ``ok.options.otype = []`` or by setting 
   ``ok.options.no_output = True``. Furthermore, you can disable the creation of 
   .oklog file can with ``ok.options.no_log = True``, and the terminal output can 
   be disabled with ``ok.options.quiet = True``.
@@ -150,9 +155,16 @@ where x, y and z have to be one-dimensional ``numpy.array`` of type ``float``
 
 .. hint ::
 
-  Please keep in mind that for a vector grid the relation
+  Please keep in mind that for a  **vector grid** the relation
   :math:`N_{\sf data points} = N_{\sf x} = N_{\sf y} = N_{\sf z}`
   has to hold.
+  
+  If you have initialized a **vector grid** manually, do not forget to  
+  also set the variable ``grid.is_vector = True``. You can use this 
+  standard variable as input parameter in other orbkit functions.
+
+
+.. _`mo high-level`:
 
 Molecular Orbital Selection
 ---------------------------
@@ -177,14 +189,15 @@ and of calculating the density with a selected set of molecular orbitals::
 Derivative Calculation
 ----------------------
 
-orbkit can compute analytical spatial derivatives with respect to *x*,
-*y*, or *z* for the atomic and molecular orbitals, as well
+orbkit can compute analytical spatial derivatives with respect to :math:`x`,
+:math:`y`, and :math:`z` for the atomic and molecular orbitals, as well
 as for the electron density::
 
   ok.options.drv = ['x', 'z']
 
-This invokes the computation of the derivatives with respect to *x*
-and the computation of the derivatives with respect to *z*.
+This invokes the computation of the derivatives with respect to :math:`x`
+and the computation of the derivatives with respect to :math:`z`. 
+For second derivatives, specify the respective combinations,e.g., 'xx' or 'yz'.
 
 Return Values
 -------------
@@ -197,7 +210,7 @@ returns all data computed::
 Depending on your options, this data set has a different structure.
 
 +---------------------------------+-------------------------------------------------------------------+
-|Computed Quantity                | Returned Data                                                     |
+|**Computed Quantity**            | **Returned Data**                                                 |
 +---------------------------------+-------------------------------------------------------------------+
 |density                          | ``numpy.ndarray`` with ``shape=(N)``                              |
 +---------------------------------+-------------------------------------------------------------------+

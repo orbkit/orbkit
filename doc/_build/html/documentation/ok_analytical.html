@@ -1,0 +1,334 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Analytical Integrals with orbkit &mdash; orbkit 0.2.2 documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../_static/orbkit.ico"/>
+  
+
+  
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+    <link rel="top" title="orbkit 0.2.2 documentation" href="../index.html"/>
+        <link rel="up" title="Documentation" href="index.html"/>
+        <link rel="next" title="Central Variables" href="cvars.html"/>
+        <link rel="prev" title="orbkit’s Low-Level Interface" href="ok_modules.html"/> 
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        <a href="../toctree.html" class="fa fa-home"> orbkit</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+        
+            <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Overview</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#citation">Citation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installation Instructions for orbkit</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../install.html#installation">Installation</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Documentation</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="requirements.html">Requirements for the Input Files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="terminal.html">Usage via the Terminal</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ok_main.html">orbkit&#8217;s High-Level Interface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ok_modules.html">orbkit&#8217;s Low-Level Interface</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="">Analytical Integrals with orbkit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cvars.html">Central Variables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="options.html">Options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="funcref.html">Function Reference</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/index.html">Tutorials</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/vis.html">Tutorial for the Visualization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/cubature.html">Tutorial for the Integration with Cubature</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/multiple_files.html">Tutorial for Processing Multiple Input Files</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../licence.html">Licence Note</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../impressum.html">Impressum - Legal Notice</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../impressum.html#impressum">Impressum</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../impressum.html#haftungsausschluss-disclaimer">Haftungsausschluss - Disclaimer</a></li>
+</ul>
+</li>
+</ul>
+
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../toctree.html">orbkit</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../toctree.html">Docs</a> &raquo;</li>
+      
+          <li><a href="index.html">Documentation</a> &raquo;</li>
+      
+    <li>Analytical Integrals with orbkit</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          <a href="../_sources/documentation/ok_analytical.txt" rel="nofollow"> View page source</a>
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            
+  <div class="section" id="analytical-integrals-with-orbkit">
+<span id="analytical-integrals"></span><h1>Analytical Integrals with orbkit<a class="headerlink" href="#analytical-integrals-with-orbkit" title="Permalink to this headline">¶</a></h1>
+<p>orbkit is able to perform analytical integrals between atomic and molecular
+orbitals. This feature enables the user to compute different quantities,
+like partial charges or dipole moments, analytically.</p>
+<div class="admonition hint">
+<p class="first admonition-title">Hint</p>
+<p class="last">The algorithms are adapted from M. Hô and J. M. Hernández-Pérez,
+&#8220;Evaluation of Gaussian Molecular Integrals,&#8221; <em>The Mathematica Journal</em>,
+2012. dx.doi.org/doi:10.3888/tmj.14-3.</p>
+</div>
+<div class="contents local topic" id="table-of-contents">
+<p class="topic-title first">Table of Contents:</p>
+<ul class="simple">
+<li><a class="reference internal" href="#computational-functions" id="id1">Computational Functions</a></li>
+<li><a class="reference internal" href="#computing-the-dipole-moment-analytically" id="id2">Computing the Dipole Moment Analytically</a></li>
+</ul>
+</div>
+<div class="section" id="computational-functions">
+<h2><a class="toc-backref" href="#id1">Computational Functions</a><a class="headerlink" href="#computational-functions" title="Permalink to this headline">¶</a></h2>
+<p>The computation of analytical integrals is organized by the
+module <tt class="docutils literal"><span class="pre">orbkit.analytical_integrals</span></tt>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">orbkit</span> <span class="kn">import</span> <span class="n">analytical_integrals</span>
+</pre></div>
+</div>
+<p>The atomic orbital overlap matrix can be computed using:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">ao_overlap_matrix</span> <span class="o">=</span> <span class="n">analytical_integrals</span><span class="o">.</span><span class="n">get_ao_overlap</span><span class="p">(</span><span class="n">coord_a</span><span class="p">,</span><span class="n">coord_b</span><span class="p">,</span>
+                          <span class="n">ao_spec</span><span class="p">,</span><span class="n">lxlylz_b</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">contraction</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span><span class="n">drv</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                          <span class="n">ao_spherical</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>where <tt class="docutils literal"><span class="pre">coord_a</span></tt> and <tt class="docutils literal"><span class="pre">coord_b</span></tt> are the coordinates (<a class="reference internal" href="cvars.html#qc-geo-spec"><em>geo_spec</em></a>)
+of the atomic orbital set <strong>a</strong> and <strong>b</strong>, respectively.
+The variables <a class="reference internal" href="cvars.html#qc-geo-spec"><em>geo_spec</em></a>, <a class="reference internal" href="cvars.html#qc-ao-spec"><em>ao_spec</em></a> and
+<a class="reference internal" href="cvars.html#qc-ao-spherical"><em>ao_spherical</em></a> are members of orbkit&#8217;s <a class="reference internal" href="cvars.html#central-variables"><em>Central Variables</em></a>.</p>
+<p>In order to apply operators to the atomic orbitals, it might be necessary to
+change the exponents <img class="math" src="../_images/math/6fb99a272f00dc1e9a39202a2afe72fa93dcaf1b.png" alt="(l_x,l_y,l_z)"/> of the Ket atomic orbitals. This can
+be done by setting the variable <tt class="docutils literal"><span class="pre">lxlylz_b</span></tt>, containing the exponents
+explicitly.</p>
+<p>The format of <tt class="docutils literal"><span class="pre">lxlylz_b</span></tt> is the same as the <tt class="docutils literal"><span class="pre">exp_list</span></tt> in
+<a class="reference internal" href="cvars.html#qc-ao-spec"><em>qc.ao_spec</em></a> (Central Variables).
+To get the original list of exponents, use:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">orbkit.core</span> <span class="kn">import</span> <span class="n">get_lxlylz</span>
+<span class="n">lxlylz_b</span> <span class="o">=</span> <span class="n">get_lxlylz</span><span class="p">(</span><span class="n">ao_spec</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The analytical overlap between two molecular orbitals <strong>a</strong> and <strong>b</strong> can be
+computed with:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">mo_overlap</span> <span class="o">=</span> <span class="n">analytical_integrals</span><span class="o">.</span><span class="n">get_mo_overlap</span><span class="p">(</span><span class="n">mo_a</span><span class="p">,</span><span class="n">mo_b</span><span class="p">,</span><span class="n">ao_overlap_matrix</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>where <tt class="docutils literal"><span class="pre">mo_a</span></tt> and <tt class="docutils literal"><span class="pre">mo_b</span></tt> are either entries of <a class="reference internal" href="cvars.html#qc-mo-spec"><em>qc.mo_spec</em></a>
+or vectors of molecular orbital coefficients.</p>
+<p>The complete molecular orbital overlap matrix between two sets of molecular
+orbital coefficients <strong>a</strong> and <strong>b</strong> may be computed with:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">mo_overlap_matrix</span> <span class="o">=</span> <span class="n">analytical_integrals</span><span class="o">.</span><span class="n">get_mo_overlap_matrix</span><span class="p">(</span><span class="n">mo_a</span><span class="p">,</span><span class="n">mo_b</span><span class="p">,</span>
+                          <span class="n">ao_overlap_matrix</span><span class="p">,</span><span class="n">numproc</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>with <tt class="docutils literal"><span class="pre">mo_a</span></tt> and <tt class="docutils literal"><span class="pre">mo_b</span></tt> being instances of <a class="reference internal" href="cvars.html#qc-mo-spec"><em>qc.mo_spec</em></a> or
+<tt class="docutils literal"><span class="pre">numpy.ndarrays</span></tt>. The latter can be constructed from an instance of
+<a class="reference internal" href="cvars.html#qc-mo-spec"><em>qc.mo_spec</em></a> (Central Variables) with:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">mo_coeff</span> <span class="o">=</span> <span class="n">analytical_integrals</span><span class="o">.</span><span class="n">create_mo_coeff</span><span class="p">(</span><span class="n">qc</span><span class="o">.</span><span class="n">mo_spec</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="computing-the-dipole-moment-analytically">
+<h2><a class="toc-backref" href="#id2">Computing the Dipole Moment Analytically</a><a class="headerlink" href="#computing-the-dipole-moment-analytically" title="Permalink to this headline">¶</a></h2>
+<p>To obtain the dipole moment, you can call the function:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">dm</span> <span class="o">=</span> <span class="n">analytical_integrals</span><span class="o">.</span><span class="n">get_dipole_moment</span><span class="p">(</span><span class="n">qc</span><span class="p">,</span><span class="n">component</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;x&#39;</span><span class="p">,</span><span class="s">&#39;y&#39;</span><span class="p">,</span><span class="s">&#39;z&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>which basically calls and combines the electronic with the nuclear dipole moment.</p>
+<p>First, it computes the atomic orbital dipole matrix for each components:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">ao_dipole_matrix</span> <span class="o">=</span> <span class="n">analytical_integrals</span><span class="o">.</span><span class="n">get_ao_dipole_matrix</span><span class="p">(</span><span class="n">qc</span><span class="p">,</span><span class="n">component</span><span class="o">=</span><span class="s">&#39;x&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Then, it obtains the molecular orbital dipole moment with:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">mo_dm</span> <span class="o">=</span> <span class="n">analytical_integrals</span><span class="o">.</span><span class="n">get_mo_overlap</span><span class="p">(</span><span class="n">mo_a</span><span class="p">,</span><span class="n">mo_b</span><span class="p">,</span><span class="n">ao_dipole_matrix</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Finally, it calculates the nuclear dipole moment:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">nuc_dm</span> <span class="o">=</span> <span class="n">analytical_integrals</span><span class="o">.</span><span class="n">get_nuclear_dipole_moment</span><span class="p">(</span><span class="n">qc</span><span class="p">,</span><span class="n">component</span><span class="o">=</span><span class="s">&#39;x&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>and combines everything, i.e. for the <img class="math" src="../_images/math/26eeb5258ca5099acf8fe96b2a1049c48c89a5e6.png" alt="x"/>-component:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># Compute the nuclear part</span>
+<span class="n">dm</span> <span class="o">=</span> <span class="n">analytical_integrals</span><span class="o">.</span><span class="n">get_nuclear_dipole_moment</span><span class="p">(</span><span class="n">qc</span><span class="p">,</span><span class="n">component</span><span class="o">=</span><span class="s">&#39;x&#39;</span><span class="p">)</span>
+<span class="c"># Substract the electronic part</span>
+<span class="n">ao_dipole_matrix</span> <span class="o">=</span> <span class="n">analytical_integrals</span><span class="o">.</span><span class="n">get_ao_dipole_matrix</span><span class="p">(</span><span class="n">qc</span><span class="p">,</span><span class="n">component</span><span class="o">=</span><span class="s">&#39;x&#39;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">mo</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">qc</span><span class="o">.</span><span class="n">mo_spec</span><span class="p">):</span>
+  <span class="n">dm</span> <span class="o">-=</span> <span class="n">mo</span><span class="p">[</span><span class="s">&#39;occ_num&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="n">analytical_integrals</span><span class="o">.</span><span class="n">get_mo_overlap</span><span class="p">(</span><span class="n">mo</span><span class="p">,</span><span class="n">mo</span><span class="p">,</span><span class="n">ao_dipole_matrix</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Besides using these high-level functions you can also do everything by hand,
+e.g., for computing the <img class="math" src="../_images/math/b13f21416d84e13708696f34dea81026cda583c9.png" alt="z"/>-component of the <tt class="docutils literal"><span class="pre">ao_dipole_matrix</span></tt> between
+two primitive <img class="math" src="../_images/math/3dbab13484761ac283c461cebca946cafcd06268.png" alt="p_z"/> orbitals (or between two orbitals with
+<img class="math" src="../_images/math/0bdd50d77cbcdc9f0bc30a28003c25c56a4dd131.png" alt="l=l_z^n"/>), you have to compute:</p>
+<div class="math">
+<p><img src="../_images/math/313f7278a192827b13a48fc00e3d87a426908b27.png" alt="\begin{eqnarray}
+ &lt;\phi_k|z|\phi_l&gt; &amp;=&amp; \int {\rm d}x{\rm d}y{\rm d}z ~ (z - Z_k)^{k_z} \exp(\alpha_k r_k^2) z (z - Z_l)^{l_z} \exp(\alpha_l r_l^2) \\
+                   &amp;=&amp; \int {\rm d}x{\rm d}y{\rm d}z ~ (z - Z_k)^{k_z} \exp(\alpha_k r_k^2) (z - Z_l)^{l_z+1} \exp(\alpha_l r_l^2) \\
+                   &amp; &amp; + Z_l \int {\rm d}x{\rm d}y{\rm d}z ~ (z - Z_k)^{k_z} \exp(\alpha_k r_k^2) (z - Z_l)^{l_z} \exp(\alpha_l r_l^2) \\
+                   &amp;=&amp; {\rm ao\_part\_1} + {\rm ao\_part\_2}
+\end{eqnarray}"/></p>
+</div><p>with <img class="math" src="../_images/math/dfd4629d4cd07f3308d1d193921de3ab8c555ee3.png" alt="r_l = \sqrt{(x-X_l)^2 + (y-Y_l)^2 + (z - Z_l)^2)}"/>. In python
+this would look like:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">orbkit.core</span> <span class="kn">import</span> <span class="n">get_lxlylz</span><span class="p">,</span><span class="n">l_deg</span>
+<span class="kn">from</span> <span class="nn">orbkit.analytical_integrals</span> <span class="kn">import</span> <span class="n">get_ao_overlap</span><span class="p">,</span><span class="n">get_mo_overlap</span>
+<span class="n">component</span> <span class="o">=</span> <span class="mi">2</span> <span class="c">#: z-component</span>
+<span class="c"># Compute the first part of the expectation value:</span>
+<span class="c"># Get the the exponents lx, ly, lz for the primitive Cartesian Gaussians of</span>
+<span class="c"># the `Ket` basis set, and increase lz by one.</span>
+<span class="n">lxlylz_b</span> <span class="o">=</span> <span class="n">get_lxlylz</span><span class="p">(</span><span class="n">qc</span><span class="o">.</span><span class="n">ao_spec</span><span class="p">)</span>
+<span class="n">lxlylz_b</span><span class="p">[:,</span><span class="n">component</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+
+<span class="n">ao_part_1</span> <span class="o">=</span> <span class="n">get_ao_overlap</span><span class="p">(</span><span class="n">qc</span><span class="o">.</span><span class="n">geo_spec</span><span class="p">,</span><span class="n">qc</span><span class="o">.</span><span class="n">geo_spec</span><span class="p">,</span><span class="n">qc</span><span class="o">.</span><span class="n">ao_spec</span><span class="p">,</span>
+                           <span class="n">lxlylz_b</span><span class="o">=</span><span class="n">lxlylz_b</span><span class="p">,</span><span class="n">ao_spherical</span><span class="o">=</span><span class="n">qc</span><span class="o">.</span><span class="n">ao_spherical</span><span class="p">)</span>
+
+<span class="c"># Compute the second part of the expectation value:</span>
+<span class="n">ao_part_2</span> <span class="o">=</span> <span class="n">get_ao_overlap</span><span class="p">(</span><span class="n">qc</span><span class="o">.</span><span class="n">geo_spec</span><span class="p">,</span><span class="n">qc</span><span class="o">.</span><span class="n">geo_spec</span><span class="p">,</span><span class="n">qc</span><span class="o">.</span><span class="n">ao_spec</span><span class="p">,</span>
+                           <span class="n">ao_spherical</span><span class="o">=</span><span class="n">qc</span><span class="o">.</span><span class="n">ao_spherical</span><span class="p">)</span>
+
+<span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="k">for</span> <span class="n">sel_ao</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">qc</span><span class="o">.</span><span class="n">ao_spec</span><span class="p">)):</span>
+  <span class="n">l</span> <span class="o">=</span> <span class="n">l_deg</span><span class="p">(</span><span class="n">l</span><span class="o">=</span><span class="n">qc</span><span class="o">.</span><span class="n">ao_spec</span><span class="p">[</span><span class="n">sel_ao</span><span class="p">][</span><span class="s">&#39;type&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">(),</span>
+            <span class="n">cartesian_basis</span><span class="o">=</span><span class="p">(</span><span class="n">qc</span><span class="o">.</span><span class="n">ao_spherical</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">))</span>
+  <span class="k">for</span> <span class="n">ll</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">l</span><span class="p">):</span>
+    <span class="n">ao_part_2</span><span class="p">[:,</span><span class="n">i</span><span class="p">]</span> <span class="o">*=</span> <span class="n">qc</span><span class="o">.</span><span class="n">geo_spec</span><span class="p">[</span><span class="n">qc</span><span class="o">.</span><span class="n">ao_spec</span><span class="p">[</span><span class="n">sel_ao</span><span class="p">][</span><span class="s">&#39;atom&#39;</span><span class="p">],</span><span class="n">component</span><span class="p">]</span>
+    <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+
+<span class="n">ao_dipole_matrix</span> <span class="o">=</span> <span class="p">(</span><span class="n">ao_part_1</span><span class="o">+</span><span class="n">ao_part_2</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="cvars.html" class="btn btn-neutral float-right" title="Central Variables"/>Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="ok_modules.html" class="btn btn-neutral" title="orbkit’s Low-Level Interface"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015, Gunter Hermann, Vincent Pohl, and Axel Schild.
+    </p>
+  </div>
+
+  <a href="https://github.com/snide/sphinx_rtd_theme">Sphinx theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'0.2.2',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

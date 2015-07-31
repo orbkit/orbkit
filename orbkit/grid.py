@@ -109,7 +109,7 @@ def todict():
   return {'x': x, 'y': y, 'z': z}
 
 def set_grid(grid):
-  '''Returns a string describing the current x-, y-, z-grid.
+  '''Sets the x-, y-, z-grid.
   '''
   global x, y, z
   coord = ['x', 'y', 'z']
@@ -676,4 +676,4 @@ z = numpy.array([0])        #: Contains the z-coordinates.
 delta_ = numpy.zeros((3,1)) #: Contains the grid spacing.
 
 is_initialized = False      #: If True, the grid is assumed to be initialized.
-is_vector = False           #: If True, the grid is assumed to be vectorized.
+is_vector = False           #: If True, the grid is assumed to be vector grid.

@@ -15,6 +15,11 @@ called in the terminal by using the command:
   orbkit creates a logfile (:literal:`.oklog`) containing all information printed
   during the calculation.
 
+
+.. contents:: Table of Contents:
+  :local:
+  :depth: 1
+
 .. _io:
 
 Input/Output
@@ -30,11 +35,15 @@ console:
 
 The only option required by orbkit is the definition of the input file with 
 :literal:`-i INPUT`. Unless otherwise stated, orbkit assumes a Molden input file
-(:literal:`--itype=molden`) and an HDF5 file as output type 
-(:literal:`--otype=h5`). As output name (:literal:`-o OUTPUTNAME`) it assumes 
+(:literal:`--itype=molden`) and an HDF5 file as output type (:literal:`--otype=h5`). 
+As output name (:literal:`-o OUTPUTNAME`) it assumes 
 the base name of :literal:`INPUT`. The file extension of the output is 
 automatically added by the program. In order to produce different output types 
-within one run, multiple calls of the option :literal:`--otype=OTYPE` are possible. 
+within one run, multiple calls of the option :literal:`--otype=OTYPE` are possible.
+
+The available input file types (``--itype=ITYPE``) are **molden** (default), 
+**aomix** (AOMix file), **gamess** (GAMESS-US output file), **gaussian.log** 
+(GAUSSIAN output file) and **gaussian.fchk** (GAUSSIAN formatted checkpoint file). 
 
 You can choose between standard Gaussian_ cube files (:literal:`--otype=cb`), 
 HDF5_ files (:literal:`--otype=h5`), or ZIBAmira_ Mesh files (:literal:`--otype=am`).
@@ -59,14 +68,14 @@ informations about this file format can be found at:
 Another advantage of this file format is the easy readability with Matlab_, Python
 and many other languages. 
 Example files for loading HDF5_ files via Matlab_ or Python are available in our 
-program package (examples/HDF5_Examples). With the JAVA program, HDFVIEW_, 
+program package (``examples/HDF5_Examples``). With the JAVA program, HDFVIEW_, 
 the user can easily load and read the HDF5_ files. 
 
 The last available plain text data format are the ZIBAmira_ Mesh files. Those 
 can be directly opened in ZIBAmira_.
 
 If you want to simply visualize the data created by orbkit, you can also use 
-a simple mayavi_ interface (:literal:`--otype=mayavi`). Here, no data will be
+a simple Mayavi_ interface (:literal:`--otype=mayavi`). Here, no data will be
 saved to disc, if no other output type is specified.
 
 .. hint::
@@ -110,13 +119,13 @@ data points (**vector grid**):
 
 .. note:: A :literal:`#` at the beginning of a line implicates a comment line.
 
-By default, orbkit divides 3-dimensional `regular grids` into 2-dimensional 
-slices or 1-dimensional `vector grids` into 1-dimensional slices of equal length. 
+By default, orbkit divides 3-dimensional **regular grids** into 2-dimensional 
+slices or 1-dimensional **vector grids** into 1-dimensional slices of equal length. 
 The atomic orbitals, the molecular orbitals, and the density are calculated for 
 each slice separately. At the end of the calculation, the data
 is reassembled and stored in an output file. 
 
-For `vector grids`, the length of the 1-dimensional slices can be defined with
+For **vector grids**, the length of the 1-dimensional slices can be defined with
 
 .. code-block:: bash
 
@@ -140,7 +149,7 @@ can be specified either **inline** or by using an **external file**.
 
 You can use the **MOLPRO-like nomenclature**, e.g., ``3.1`` for the third orbital 
 in symmetry one, or you choose it by the 
-**index within the input file** (counting from one). 
+**index within the input file** (counting from **one**!). 
 
 .. hint:: 
   
@@ -192,9 +201,10 @@ external file or each call of ``--mo_set`` corresponds to one density calculatio
 Derivative Calculation
 ----------------------
 
-orbkit can compute analytical spatial derivatives with respect to :math:`x`,
-:math:`y`, or :math:`z` for the atomic and molecular orbitals, as well
-as for the electron density. For instance, a derivative of the density with 
+orbkit can compute analytical spatial derivatives up to second order
+with respect to :math:`x`, :math:`y`, or :math:`z` for the atomic and 
+molecular orbitals, as well as for the electron density. 
+For instance, a derivative of the density with 
 respect to :math:`x` can be invoked as follows:
 
 .. code-block:: bash
@@ -202,6 +212,17 @@ respect to :math:`x` can be invoked as follows:
     $ orbkit -i INPUT --drv=x
 
 Multiple calls of the option :literal:`--drv=DRV` are possible.
+
+For second derivatives, you can specify the respective combinations, 
+e.g., 'xx' or 'yz'.
+
+The computation of the laplacian, i.e., 
+:math:`\nabla^2 \rho = \nabla^2_x \rho + \nabla^2_y \rho + \nabla^2_z \rho`,
+can be invoked by
+
+.. code-block:: bash
+
+    $ orbkit -i INPUT --laplacian
 
 Additional Options
 ------------------
@@ -222,6 +243,14 @@ is capable of calculating the molecular orbital transition electronic flux densi
 
     $ orbkit -i INPUT --mo_tefd=I J --drv=x --drv=y --drv=z
 
+In order to compute and store **all** atomic orbitals or a derivative thereof,
+you can call
+
+.. code-block:: bash
+
+    $ orbkit -i INPUT --calc_ao
+
+Here, the calculation of only one derivative at once is possible.
 
 .. _HDF5: http://www.hdfgroup.org/HDF5/
 .. _HDFVIEW: http://www.hdfgroup.org/products/java/hdf-java-html/hdfview/
@@ -232,4 +261,4 @@ is capable of calculating the molecular orbital transition electronic flux densi
 .. _ZIBAmira: http://amira.zib.de/
 .. _VMD: http://www.ks.uiuc.edu/Research/vmd/
 .. _Matlab: http://www.mathworks.de/products/matlab/
-.. _mayavi: http://docs.enthought.com/mayavi/mayavi/index.html
+.. _Mayavi: http://docs.enthought.com/mayavi/mayavi/index.html

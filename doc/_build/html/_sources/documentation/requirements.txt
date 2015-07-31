@@ -4,6 +4,10 @@ Requirements for the Input Files
 In order to operate without problems, the input files of orbkit have to fulfill
 some requirements.
 
+.. contents:: Table of Contents:
+  :local:
+  :depth: 1
+
 Cartesian Harmonic Gaussian basis sets
 --------------------------------------
 
@@ -62,10 +66,22 @@ and some advices for the input file preparation.
   * Contains the sections :literal:`[Atoms]`, :literal:`[GTO]`, :literal:`[MO]`
   * If more than one :literal:`[Molden Format]` keyword is present, orbkit 
     provides an interactive selection.
-  * How to create Molden Files:
+  * How to create Molden files:
 
     * MOLPRO: http://www.molpro.net/info/2012.1/doc/manual/node102.html
-    * TURBOMOLE: tm2molden
+
+    .. * TURBOMOLE: tm2molden
+
+**AOMix File Format:**
+
+  * Contains Cartesian Harmonics by default
+  * Starts with :literal:`[AOMix Format]`
+  * Contains the sections :literal:`[Atoms]`, :literal:`[GTO]`, :literal:`[MO]`
+  * If more than one :literal:`[AOMix Format]` keyword is present, orbkit 
+    provides an interactive selection.
+  * How to create AOMix files:
+
+    * TURBOMOLE: t2aomix
 
 
 **GAMESS-US Output File:**
@@ -74,19 +90,6 @@ and some advices for the input file preparation.
   * Hint: GAMESS-US uses a non-standard order of basis functions. Thus, the 
     "exp_list" is explicitly defined in ``qc.ao_spec`` 
     (cf. :ref:`Central Variables <qc.ao_spec>` for details)
-
-**GAUSSIAN Formatted Checkpoint File:**
-
-  * Contains Cartesian Harmonics by default
-  * Not applicable for natural orbitals => occupation numbers are not printed
-  * How to create FChk files:
-
-    * Add :literal:`%Chk=chkpt-file` to your Gaussian input file
-    * Use :literal:`formchk` to convert the chk file:
-
-      .. code-block:: bash
-
-          $ formchk chkpt-file formatted-file
 
 **GAUSSIAN .log File:**
 
@@ -101,3 +104,15 @@ and some advices for the input file preparation.
   * If more than one "linked" file/geometry/atomic orbitals/molecular orbitals 
     section is present in the .log file, orbkit provides an interactive selection.
 
+**GAUSSIAN Formatted Checkpoint File:**
+
+  * Contains Cartesian Harmonics by default
+  * Not applicable for natural orbitals => occupation numbers are not printed
+  * How to create FChk files:
+
+    * Add :literal:`%Chk=chkpt-file` to your Gaussian input file
+    * Use :literal:`formchk` to convert the chk file:
+
+      .. code-block:: bash
+
+          $ formchk chkpt-file formatted-file

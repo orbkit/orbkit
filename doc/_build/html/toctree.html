@@ -73,14 +73,16 @@
 <li class="toctree-l2"><a class="reference internal" href="documentation/terminal.html">Usage via the Terminal</a></li>
 <li class="toctree-l2"><a class="reference internal" href="documentation/ok_main.html">orbkit&#8217;s High-Level Interface</a></li>
 <li class="toctree-l2"><a class="reference internal" href="documentation/ok_modules.html">orbkit&#8217;s Low-Level Interface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="documentation/ok_analytical.html">Analytical Integrals with orbkit</a></li>
 <li class="toctree-l2"><a class="reference internal" href="documentation/cvars.html">Central Variables</a></li>
 <li class="toctree-l2"><a class="reference internal" href="documentation/options.html">Options</a></li>
 <li class="toctree-l2"><a class="reference internal" href="documentation/funcref.html">Function Reference</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="examples/vis.html">Tutorial for the Visualization</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="examples/vis.html#within-the-terminal">Within the Terminal</a></li>
-<li class="toctree-l2"><a class="reference internal" href="examples/vis.html#within-a-python-shell">Within a Python Shell</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/index.html">Tutorials</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/vis.html">Tutorial for the Visualization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/cubature.html">Tutorial for the Integration with Cubature</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/multiple_files.html">Tutorial for Processing Multiple Input Files</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="licence.html">Licence Note</a></li>
@@ -129,7 +131,7 @@
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">orbkit:</th><td class="field-body">Copyright (C) 2014, Gunter Hermann, Vincent Pohl, and Axel Schild.</td>
+<tr class="field-odd field"><th class="field-name">orbkit:</th><td class="field-body">Copyright (C) 2015, Gunter Hermann, Vincent Pohl, and Axel Schild.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Website:</th><td class="field-body"><a class="reference external" href="http://sourceforge.net/p/orbkit">http://sourceforge.net/p/orbkit</a></td>
 </tr>
@@ -173,11 +175,15 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="documentation/ok_modules.html">orbkit&#8217;s Low-Level Interface</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="documentation/ok_modules.html#reading-qc-input">Reading QC Input</a></li>
-<li class="toctree-l3"><a class="reference internal" href="documentation/ok_modules.html#input-output-modules">Input/Output Modules</a></li>
-<li class="toctree-l3"><a class="reference internal" href="documentation/ok_modules.html#grid-related-modules">Grid Related Modules</a></li>
-<li class="toctree-l3"><a class="reference internal" href="documentation/ok_modules.html#computational-modules">Computational Modules</a></li>
-<li class="toctree-l3"><a class="reference internal" href="documentation/ok_modules.html#modules-for-analytical-integrals">Modules for Analytical Integrals</a></li>
-<li class="toctree-l3"><a class="reference internal" href="documentation/ok_modules.html#additional-options">Additional Options</a></li>
+<li class="toctree-l3"><a class="reference internal" href="documentation/ok_modules.html#initializing-the-grid">Initializing the Grid</a></li>
+<li class="toctree-l3"><a class="reference internal" href="documentation/ok_modules.html#operations-on-the-grid">Operations on the Grid</a></li>
+<li class="toctree-l3"><a class="reference internal" href="documentation/ok_modules.html#computational-functions">Computational Functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="documentation/ok_modules.html#output-functions">Output Functions</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="documentation/ok_analytical.html">Analytical Integrals with orbkit</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="documentation/ok_analytical.html#computational-functions">Computational Functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="documentation/ok_analytical.html#computing-the-dipole-moment-analytically">Computing the Dipole Moment Analytically</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="documentation/cvars.html">Central Variables</a></li>
@@ -209,15 +215,32 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="examples/vis.html">Tutorial for the Visualization</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="examples/vis.html#within-the-terminal">Within the Terminal</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="examples/vis.html#using-vmd">Using VMD</a></li>
-<li class="toctree-l3"><a class="reference internal" href="examples/vis.html#using-mayavi">Using Mayavi</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/index.html">Tutorials</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/vis.html">Tutorial for the Visualization</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/vis.html#within-the-terminal">Within the Terminal</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="tutorials/vis.html#using-vmd">Using VMD</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tutorials/vis.html#using-mayavi">Using Mayavi</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="examples/vis.html#within-a-python-shell">Within a Python Shell</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="examples/vis.html#method-one">Method One</a></li>
-<li class="toctree-l3"><a class="reference internal" href="examples/vis.html#method-two">Method Two</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/vis.html#within-a-python-shell">Within a Python Shell</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="tutorials/vis.html#method-one">Method One</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tutorials/vis.html#method-two">Method Two</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/cubature.html">Tutorial for the Integration with Cubature</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/cubature.html#initialization-of-the-program">Initialization of the Program</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/cubature.html#setting-up-a-function-for-cubature">Setting up a Function for Cubature</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/cubature.html#run-cubature">Run Cubature</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/multiple_files.html">Tutorial for Processing Multiple Input Files</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/multiple_files.html#how-to-read-a-list-of-files">how to read a list of files</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/multiple_files.html#how-to-order-the-molecular-orbital-coefficients">how to order the molecular orbital coefficients</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/multiple_files.html#how-to-save-and-read-the-information-obtained-to-and-from-an-hdf5-file">how to save and read the information obtained to and from an HDF5-file</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/multiple_files.html#how-to-depict-several-molecular-orbitals">how to depict several molecular orbitals</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/multiple_files.html#how-to-perform-a-standard-orbkit-computation-for-one-molecular-structures">how to perform a standard orbkit computation for one molecular structures</a></li>
 </ul>
 </li>
 </ul>

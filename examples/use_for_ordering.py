@@ -28,6 +28,9 @@ selected_mos = ['24.1','23.2'] # Specifies, which MOs to be plotted
 r0 = 1                         # Specifies the starting structure geo_spec_all[r0]
 steps = 5                      # Specifies, how many steps to printed in one graph
 
+select_slice = 'xz'            # Selects which plane to be plotted (Here, xz-plane)
+where = 0.0                    # Selects where to place the plane (Here, y=0)
+
 # A list containing all steps to be performed. Is not mandatory for the execution
 run_id = ['Reading',
           'Plotting before ordering',
@@ -57,7 +60,7 @@ for i in range(0,16,1):
   fid_list.append(f)
 
 # Read all input files
-mult.read(fid_list,itype='molden')
+mult.read(fid_list,itype='molden',all_mo=True,nosym=False)
 
 t.append(time())
 
@@ -135,7 +138,7 @@ import orbkit as ok
 
 
 # Initialize orbkit with default parameters and options
-ok.main.init(reset_display=False)
+ok.init(reset_display=False)
 
 # Set some options
 ok.options.adjust_grid= [5, 0.1]                # adjust the grid to the geometry

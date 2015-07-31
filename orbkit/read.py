@@ -37,7 +37,7 @@ def main_read(filename,itype='molden',all_mo=False,**kwargs):
   
     filename : str
       Specifies the filename for the input file.
-    itype : str, choices={'molden', 'gamess', 'gaussian.log', 'gaussian.fchk'}
+    itype : str, choices={'molden', 'gamess', 'gaussian.log', 'gaussian.fchk', 'aomix'}
       Specifies the type of the input file.
     all_mo : bool, optional
       If True, all molecular orbitals are returned.
@@ -49,7 +49,7 @@ def main_read(filename,itype='molden',all_mo=False,**kwargs):
   
   **Note:**
   
-  
+    All additional keyword arguments are forwarded to the reading functions.
   '''
   display('Opened \n\t%s\n' % filename)
   
@@ -1155,7 +1155,7 @@ def read_aomix(filename, all_mo=False, i_md=-1, interactive=True):
     all_mo : bool, optional
       If True, all molecular orbitals are returned.
     i_md : int, default=-1
-      Selects the `[Molden Format]` section of the output file.
+      Selects the `[AOMix Format]` section of the output file.
     interactive : bool
       If True, the user is asked to select the different sets.
   
@@ -1511,7 +1511,8 @@ def read_wfn(filename, all_mo=False):
 
 
 def mo_select(mo_spec, fid_mo_list, strict=False):
-  '''Selects molecular orbitals from an external file.
+  '''Selects molecular orbitals from an external file or a list of molecular 
+  orbital labels.
 
   **Parameters:**
    
@@ -1529,7 +1530,7 @@ def mo_select(mo_spec, fid_mo_list, strict=False):
 
   **Supported Formats:**
   
-    Integer List::
+    Integer List (Counting from **ONE**!)::
     
       1       2       3
       5       4

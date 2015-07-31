@@ -24,7 +24,7 @@ License along with orbkit.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
 lgpl_short = '''This is orbkit.
-Copyright (C) 2014 Gunter Hermann, Vincent Pohl, and Axel Schild. 
+Copyright (C) 2015 Gunter Hermann, Vincent Pohl, and Axel Schild. 
 This program comes with ABSOLUTELY NO WARRANTY. 
 This is free software, and you are welcome to redistribute it 
 under certain conditions. Type '-l' for details.
@@ -44,14 +44,15 @@ available = ['filename','itype','outputname','otype',
              'quiet','no_log','no_output','no_slice','random_grid',
              'interactive']
 
-#__all__ = ['get_options','check_options','reset_grid',].extend(available)
-
-itypes = ['molden', 
+itypes = ['molden',
+          'aomix',
           'gamess', 
           'gaussian.log', 
           'gaussian.fchk']                        #: Specifies possible input types.
-otypes = ['h5', 'cb', 'am', 'hx', 'vmd','mayavi']       #: Specifies possible output types.
-drv_options = ['x','y','z']             #: Specifies possible derivative variables.
+otypes = ['h5', 'cb', 'am', 'hx', 'vmd','mayavi'] #: Specifies possible output types.
+drv_options = ['x','y','z',
+               'xx','yy','zz','x2','y2','z2',
+               'xy','yx','xz','zx','yz','zy']     #: Specifies possible derivative variables.
 
 def get_options():
   '''Returns all possible options and their value.'''
@@ -88,9 +89,7 @@ def init_parser():
   parser.add_option("--no_log",dest="no_log",
                       default=False,action="store_true", 
                       help="suppress output of a INPUT.oklog logfile")
-  group = optparse.OptionGroup(parser, "Input/Output Options", 
-        '''Comment: So far, orbkit can only handle Cartesian Gaussian basis
-        functions. See the manual for details.''')
+  group = optparse.OptionGroup(parser, "Input/Output Options")
   group.add_option("-i", "--input", dest="filename",metavar="INPUT",
                       default='', type="string",nargs=1,
                       help="input file")
@@ -142,19 +141,25 @@ def init_parser():
   group.add_option("-d", "--drv",dest="drv",choices=drv_options,
                       type="choice",action="append",
                       help=('''compute the analytical derivative of the requested
-                      quantities with respect to DRV, i.e., 'x', 'y', and/or 'z' 
-                      (multiple calls possible)'''
+                      quantities with respect to DRV, i.e., 'x', 'y', and/or 'z'. 
+                      For 2nd derivatives, specify the respective combinations
+                      , e.g., 'xx' or 'yz'. (multiple calls possible)'''
                       ).replace('  ','').replace('\n',''))
+  group.add_option("--laplacian",dest="laplacian",
+                      default=False, action="store_true",
+                      help='''compute the analytical laplacian of the density
+                      or the specified mo_set, respectively.
+                      ''')
   parser.add_option_group(group)
   
   group = optparse.OptionGroup(parser, "Grid-Related Options")      
   group.add_option("-v", "--vector",dest="vector",
                       action="callback",callback=default_if_called,
                       callback_kwargs={'default': dvec},
-                      help=('''perform the computations for a vectorized grid, 
+                      help=('''perform the computations for a vector grid, 
                       i.e., with x, y, and z as vectors. Compute successively 
                       VECTOR points at once per subprocess
-                      [default: --vector=%0.0e]''' % dvec
+                      [default: -v %0.0e]''' % dvec
                       ).replace('  ','').replace('\n',''))   
   group.add_option("--grid", dest="grid_file",
                       type="string",
@@ -202,7 +207,6 @@ def init_parser():
   parser.add_option_group(group)
 
   (kwargs, args) = parser.parse_args()
-  
   # Print the licence, if requested
   if kwargs.show_lgpl:
     print(lgpl.replace('\nThis file is part of orbkit.\n',''))
@@ -212,6 +216,8 @@ def init_parser():
   if kwargs.filename == '':
     parser.print_help()
     sys.exit(1)
+  if kwargs.otype is None:
+    kwargs.otype = ['h5']
   for i,j in vars(kwargs).iteritems():
     setattr(thismodule,i,j)
   
@@ -223,10 +229,14 @@ def init_parser():
   return
   # init_parser 
 
+def raise_error(string,error=IOError):
+  raise IOError(string)
 
-def check_options(error=sys.stdout.write,display=sys.stdout.write,
-            interactive=False,
-            info=True):
+def print_message(string):
+  print string
+
+def check_options(error=raise_error,display=print_message,
+                  interactive=False,info=True,check_io=True):
   '''Checks options for errors.
   
   **Parameters:**
@@ -247,27 +257,31 @@ def check_options(error=sys.stdout.write,display=sys.stdout.write,
   '''
   
   #--- Input/Output Options ---#
-  
-  # Look for the input file
-  setattr(thismodule,'filename',check_if_exists(filename, 
-                        what='filename for the input file', 
-                        interactive=interactive,
-                        error=error))
-  
-  # Check the input type for correctness
-  if itype not in itypes:
-    error('Invalid input file format (choose from "%s")\n' % 
-        '", "'.join(itypes))
-  
-  
-  fid_base = os.path.splitext(filename)[0]
+  if check_io:
+    # Look for the input file
+    setattr(thismodule,'filename',check_if_exists(filename, 
+                          what='filename for the input file', 
+                          interactive=interactive,
+                          error=error))
     
-  if outputname is None:
-    setattr(thismodule,'outputname',fid_base)
+    # Check the input type for correctness
+    if itype not in itypes:
+      error('Invalid input file format (choose from "%s")\n' % 
+          '", "'.join(itypes))
+    
+    
+    fid_base = os.path.splitext(filename)[0]
+    
+    if outputname is None:
+      setattr(thismodule,'outputname',fid_base)
+    elif not (os.path.dirname(outputname) == '' or 
+              os.path.exists(os.path.dirname(outputname))):
+      error('Output path %s does not exist!' % os.path.dirname(outputname))
+      
   
   # Check the output types for correctness
   if otype is None:
-    setattr(thismodule,'otype',['h5'])
+    setattr(thismodule,'otype',[])
   elif not isinstance(otype,list):
     setattr(thismodule,'otype',[otype])
   if not all(i in otypes for i in otype):
@@ -284,12 +298,13 @@ def check_options(error=sys.stdout.write,display=sys.stdout.write,
   #--- Grid-Related Options ---#  
   
   # Check for the compability of the vector option and the output formats
-  if vector is not None and ('cb' in otype or 'vmd' in otype or 
-                             'am' in otype or 'hx' in otype):
-    error('For a vectorized grid, only HDF5 \n' +
-    'is available as output format. Type: --otype=h5\n')
+  if vector is not None and ('cb' in otype or 'vmd' in otype or
+                             'am' in otype or 'hx' in otype or 
+                             'mayavi' in otype):
+    error('For a vector grid, only HDF5 ' +
+    'is available as output format. Choose: --otype=h5\n')
     #'The Gaussian cube file output format does not allow\n\t'+
-    #'a vectorized grid, i.e., "-v" and "-t cb" are mutually exclusive.\n')
+    #'a vector grid, i.e., "-v" and "-t cb" are mutually exclusive.\n')
   
   # Look for the grid input file
   if grid_file is not None: 
@@ -306,12 +321,16 @@ def check_options(error=sys.stdout.write,display=sys.stdout.write,
   # Check the files specified by --calc_mo or --mo_set for existance
   def check_mo(attr):
     data = getattr(thismodule,attr)
-    checklen = len(data) == 1
-    if data == []:
+    if not data:
       setattr(thismodule,attr,False)
-      return False    
+      return False
+    if isinstance(data,int):
+      data = str(data)
+    if isinstance(data,str):
+      data = [data]
     try:
-      for d in data:      
+      for d in data:
+        d = str(d)
         if not (',' in d.lower() or ':' in  d.lower()):        
           i = deepcopy(d)
           if i != 'homo' and i != 'lumo':
@@ -321,7 +340,7 @@ def check_options(error=sys.stdout.write,display=sys.stdout.write,
     except ValueError: 
       if len(data) == 1:
         data = data[0]
-        if data.lower() != 'all_mo':        
+        if data.lower() != 'all_mo':   
           setattr(thismodule,attr,
                   check_if_exists(data,
                   what='filename for the MO list',
@@ -348,6 +367,13 @@ def check_options(error=sys.stdout.write,display=sys.stdout.write,
   if (drv is not None) and not all(i in drv_options for i in drv):
     error('Invalid derivative option (choose from "%s")\n' % 
         '", "'.join(drv_options))
+  
+  if laplacian:
+    if not (drv is None or drv == ['xx','yy','zz'] or drv == ['x2','y2','z2']):
+      display('Note: You have set the option --laplacian and specified values\n' +
+              'for --drv. Both options are not compatible.\n\n' +
+              'The options have been changed to -dxx -dyy -dzz.\n')
+    setattr(thismodule,'drv', ['xx','yy','zz'])
   
   #--- Additional Options ---#
   if atom_projected_density is not None and drv is not None:
@@ -427,6 +453,7 @@ calc_ao         = False         #: If True, all atomic orbitals will be computed
 calc_mo         = False         #: Specifies which molecular orbitals will be calculated. (filename)
 all_mo          = False         #: If True, all molecular orbitals will be computed. (bool)
 drv             = None          #: Specifies derivative variables. (list of str)
+laplacian       = False         #: If True, computes the laplacian of the density or of the mo_set. (bool)
 #--- Grid-Related Options ---
 vector          = None          #: If not None, vector grid is used. Specifies number of points per subprocess. (int)
 dvec            = 1e4           #(No Option) Specifies the standard value for the points per subprocess. (int)

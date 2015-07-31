@@ -42,7 +42,8 @@ def calc_mo(qc, fid_mo_list, drv=None, vector=None, otype=None, ofid=None):
     qc.geo_spec, qc.geo_info, qc.ao_spec, qc.mo_spec :
       See :ref:`Central Variables` for details.
     fid_mo_list : str
-      Specifies the filename of the molecular orbitals list. 
+      Specifies the filename of the molecular orbitals list or list of molecular
+      orbital labels (cf. :mod:`orbkit.read.mo_select` for details). 
       If fid_mo_list is 'all_mo', creates a list containing all molecular orbitals.
     otype : str or list of str, optional
       Specifies output file type. See :data:`otypes` for details.
@@ -53,7 +54,7 @@ def calc_mo(qc, fid_mo_list, drv=None, vector=None, otype=None, ofid=None):
       If not None, a derivative calculation of the atomic orbitals 
       is requested.
     vector : None or int, optional
-      If not None, performs the computations on a vectorized grid, i.e., 
+      If not None, performs the computations on a vector grid, i.e., 
       with x, y, and z as vectors.
     
   **Returns:**
@@ -131,8 +132,8 @@ def calc_mo(qc, fid_mo_list, drv=None, vector=None, otype=None, ofid=None):
   
   return mo_list, mo_info
   
-def mo_set(qc, fid_mo_list, 
-            drv=None, vector=None, otype=None, ofid=None, return_all=True):
+def mo_set(qc, fid_mo_list, drv=None, laplacian=False, vector=None, 
+           otype=None, ofid=None, return_all=True):
   '''Calculates and saves the density or the derivative thereof 
   using selected molecular orbitals.
   
@@ -141,8 +142,8 @@ def mo_set(qc, fid_mo_list,
     qc.geo_spec, qc.geo_info, qc.ao_spec, qc.mo_spec :
       See :ref:`Central Variables` for details.
     fid_mo_list : str
-      Specifies the filename of the molecular orbitals list. 
-      If fid_mo_list is 'all_mo', creates a list containing all molecular orbitals.
+      Specifies the filename of the molecular orbitals list or list of molecular
+      orbital labels (cf. :mod:`orbkit.read.mo_select` for details). 
     otype : str or list of str, optional
       Specifies output file type. See :data:`otypes` for details.
     ofid : str, optional
@@ -152,7 +153,7 @@ def mo_set(qc, fid_mo_list,
       If not None, a derivative calculation of the atomic orbitals 
       is requested.
     vector : None or int, optional
-      If not None, performs the computations on a vectorized grid, i.e., 
+      If not None, performs the computations on a vector grid, i.e., 
       with x, y, and z as vectors.
     return_all : bool
       If False, no data will be returned.
@@ -201,18 +202,24 @@ def mo_set(qc, fid_mo_list,
         qc_select['mo_spec'].append(mo_info['mo_spec'][int(ii_mo)])
     
     data = core.rho_compute(qc_select,
-                            drv=drv,vector=vector,
+                            drv=drv,
+                            laplacian=laplacian,
+                            vector=vector,
                             numproc=options.numproc)
     datasets.append(data)
     if drv is None:
       rho = data
+    elif options.laplacian:
+      rho, delta_rho, laplacian_rho = data 
+      delta_datasets.extend(delta_rho)
+      delta_datasets.append(laplacian_rho)
     else:
       rho, delta_rho = data
       delta_datasets.append(delta_rho)
     
     if options.z_reduced_density:
       if vector is not None:
-        display('\nSo far, reducing the density is not supported for vectorized grids.\n')
+        display('\nSo far, reducing the density is not supported for vector grids.\n')
       elif drv is not None:
         display('\nSo far, reducing the density is not supported for the derivative of the density.\n')
       else:
@@ -229,10 +236,15 @@ def mo_set(qc, fid_mo_list,
         if options.drv is not None:
           for i,j in enumerate(options.drv):
             data_id = 'rho_d%s' % j
-            output.HDF5_creator(delta_rho[i],fid,qc.geo_info,qc.geo_spec,
+            output.HDF5_creator(delta_rho[i],ofid,qc.geo_info,qc.geo_spec,
                                 data_id=data_id,data_only=True,
                                 append=group,mo_spec=qc_select['mo_spec'])
-      
+          if options.laplacian:
+            data_id = 'rho_laplacian' 
+            output.HDF5_creator(laplacian_rho,ofid,qc.geo_info,qc.geo_spec,
+                                data_id=data_id,data_only=True,
+                                append=group,mo_spec=qc_select['mo_spec'])
+            
       fid = '%s_%03d' % (ofid, i_file+1) 
       cube_files.append('%s.cb' % fid)
       comments = ('mo_set:'+','.join(j_file))
@@ -246,8 +258,15 @@ def mo_set(qc, fid_mo_list,
           comments = ('d%s_of_mo_set:' % j + ','.join(j_file))
           output.main_output(delta_rho[i],qc.geo_info,qc.geo_spec,outputname=fid,
                              otype=otype,omit=['h5','vmd','mayavi'],
-                             comments=comments,is_vector=(vector is not None))
-  
+                             comments=comments,is_vector=(vector is not None))  
+        if options.laplacian:
+          fid = '%s_%03d_laplacian' % (ofid, i_file+1) 
+          cube_files.append('%s.cb' % fid)
+          comments = ('laplacian_of_mo_set:' + ','.join(j_file))
+          output.main_output(delta_rho[i],qc.geo_info,qc.geo_spec,outputname=fid,
+                             otype=otype,omit=['h5','vmd','mayavi'],
+                             comments=comments,is_vector=(vector is not None))  
+          
   if 'vmd' in otype and options.vector is None:
       display('\nCreating VMD network file...' +
                       '\n\t%(o)s.vmd' % {'o': ofid})
@@ -265,6 +284,8 @@ def mo_set(qc, fid_mo_list,
       datalabels = []
       for i in mo_info['mo_in_file']:
         datalabels.extend(['d/d%s of %s' % (j,i) for j in drv])
+        if options.laplacian:
+          datalabels.append('laplacian of %s' % i)
       output.view_with_mayavi(grid.x,grid.y,grid.z,
                                delta_datasets.reshape((-1,) + tuple(grid.N_)),
                                geo_spec=qc.geo_spec,
@@ -288,7 +309,7 @@ def calc_ao(qc, drv=None, is_vector=False, otype=None, ofid=None):
       If not None, a derivative calculation of the atomic orbitals 
       is requested.
     is_vector : bool, optional
-      If True, performs the computations on a vectorized grid, i.e., 
+      If True, performs the computations on a vector grid, i.e., 
       with x, y, and z as vectors.
     
   **Returns:**    
@@ -306,6 +327,7 @@ def calc_ao(qc, drv=None, is_vector=False, otype=None, ofid=None):
   
   ao_spec = []
   lxlylz = []
+  datalabels = []
   for sel_ao in range(len(qc.ao_spec)):
     if 'exp_list' in qc.ao_spec[sel_ao].keys():
       l = qc.ao_spec[sel_ao]['exp_list']
@@ -315,33 +337,42 @@ def calc_ao(qc, drv=None, is_vector=False, otype=None, ofid=None):
     for i in l:
       ao_spec.append(qc.ao_spec[sel_ao].copy())
       ao_spec[-1]['exp_list'] = [i]
+      datalabels.append('lxlylz=%s,atom=%d' %(i,ao_spec[-1]['atom']))
 
   global_val = {'qc':qc,'drv':drv,'is_vector':is_vector,'otype':otype,
-                'ao_spec':ao_spec}
+                'ofid':ofid,'ao_spec':ao_spec}
   
   ao = run(get_ao,x=numpy.arange(len(ao_spec)).reshape((-1,1)),numproc=options.numproc,display=display)
   
   del global_val
   
-  if otype is None or 'h5' in otype:   
+  if otype is None or 'h5' in otype or 'mayavi' in otype:   
     ao_list = []
     for i in ao:
-      ao_list.extend(i)
+      ao_list.extend(i)      
     ao_list = numpy.array(ao_list)
     if otype is None:
       return ao_list
     
-    import h5py
-    fid = '%s_AO%s.h5' % (ofid,dstr)
-    output.hdf5_write(fid,mode='w',gname='general_info',
-                      x=grid.x,y=grid.y,z=grid.z,N=grid.N_,
-                      geo_info=qc.geo_info,geo_spec=qc.geo_spec,
-                      lxlylz=numpy.array(lxlylz,dtype=numpy.int64),
-                      grid_info=numpy.array(is_vector,dtype=int))
-    f = h5py.File(fid, 'a')
-    output.hdf5_append(ao_spec,f,name='ao_spec')
-    output.hdf5_append(ao_list,f,name='ao_list')
-    f.close()
+    if 'h5' in otype:
+      import h5py
+      fid = '%s_AO%s.h5' % (ofid,dstr)
+      display('Saving to Hierarchical Data Format file (HDF5)...\n\t%s' % fid)
+      output.hdf5_write(fid,mode='w',gname='general_info',
+                        x=grid.x,y=grid.y,z=grid.z,N=grid.N_,
+                        geo_info=qc.geo_info,geo_spec=qc.geo_spec,
+                        lxlylz=numpy.array(lxlylz,dtype=numpy.int64),
+                        aolabels=numpy.array(datalabels),
+                        grid_info=numpy.array(is_vector,dtype=int))      
+      for f in output.hdf5_open(fid,mode='a'):
+        output.hdf5_append(ao_spec,f,name='ao_spec')
+        output.hdf5_append(ao_list,f,name='ao_list')
+      
+    if 'mayavi' in otype and options.vector is None:
+      output.view_with_mayavi(grid.x,grid.y,grid.z,
+                               ao_list,
+                               geo_spec=qc.geo_spec,
+                               datalabels=datalabels)
   
   if 'vmd' in otype and options.vector is None:
     fid = '%s_AO%s' % (ofid,dstr)
@@ -422,9 +453,7 @@ def get_ao(x):
                            is_vector=global_val['is_vector'],
                            drv=global_val['drv'])
   
-  if global_val['otype'] is None or 'h5' in global_val['otype']:
-    return ao_list
-  else:
+  if global_val['otype'] is not None:
     drv = global_val['drv']
     comments = '%03d.lxlylz=%s,at=%d' %(x,
                                          global_val['ao_spec'][x]['exp_list'][0],
@@ -433,12 +462,12 @@ def get_ao(x):
                        global_val['qc'].geo_info,
                        global_val['qc'].geo_spec,
                        comments=comments,
-                       outputname='%s_AO_%03d' % (ofid,x),
+                       outputname='%s_AO_%03d' % (global_val['ofid'],x),
                        otype=global_val['otype'],
                        omit=['h5','vmd','mayavi'],
                        drv = None if drv is None else [drv],
                        is_vector=global_val['is_vector'])
-    return None
+  return ao_list
 
 def atom2index(atom,geo_info=None):
   '''Converts a list of atom numbers to indices of :data:`geo_info`.'''
@@ -603,7 +632,7 @@ def numerical_mulliken_charges(atom,qc,
   
   display('\nNumerical Mulliken Charges:')
   if is_vector:
-    display('Warning: You have applied a vectorized grid.\n' + 
+    display('Warning: You have applied a vector grid.\n' + 
     'The integration is not implemented for such a grid!\n' +
     'You will get wrong Mulliken Charges...')
   mulliken_charge = []  

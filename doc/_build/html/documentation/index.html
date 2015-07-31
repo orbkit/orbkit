@@ -74,14 +74,16 @@
 <li class="toctree-l2"><a class="reference internal" href="terminal.html">Usage via the Terminal</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ok_main.html">orbkit&#8217;s High-Level Interface</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ok_modules.html">orbkit&#8217;s Low-Level Interface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ok_analytical.html">Analytical Integrals with orbkit</a></li>
 <li class="toctree-l2"><a class="reference internal" href="cvars.html">Central Variables</a></li>
 <li class="toctree-l2"><a class="reference internal" href="options.html">Options</a></li>
 <li class="toctree-l2"><a class="reference internal" href="funcref.html">Function Reference</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../examples/vis.html">Tutorial for the Visualization</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../examples/vis.html#within-the-terminal">Within the Terminal</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../examples/vis.html#within-a-python-shell">Within a Python Shell</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/index.html">Tutorials</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/vis.html">Tutorial for the Visualization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/cubature.html">Tutorial for the Integration with Cubature</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/multiple_files.html">Tutorial for Processing Multiple Input Files</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../licence.html">Licence Note</a></li>
@@ -126,8 +128,23 @@
             
   <div class="section" id="documentation">
 <h1>Documentation<a class="headerlink" href="#documentation" title="Permalink to this headline">¶</a></h1>
-<p>orbkit can be easily operated via the terminal or within your own Python programs.
-For advanced users, the latter type of usage is recommended.</p>
+<p>This documentation should serve as an overview of how to operate orbkit.</p>
+<p>First, we describe how to prepare inputs from several quantum chemistry programs
+(<a class="reference internal" href="requirements.html"><em>Requirements for the Input Files</em></a>). Then, we show how to use orbkit as standalone program in
+the Terminal (<a class="reference internal" href="terminal.html"><em>Usage via the Terminal</em></a>).</p>
+<p>Subsequently, we show how to use those functionalities in your Python programs
+with orbkit&#8217;s <a class="reference internal" href="ok_main.html"><em>orbkit&#8217;s High-Level Interface</em></a>. You can also use orbkit&#8217;s functions directly
+in your Python programs. This is shown in <a class="reference internal" href="ok_modules.html"><em>orbkit&#8217;s Low-Level Interface</em></a>.</p>
+<p>Besides computing quantities using arbitrary grids, orbkit is also able to
+compute analytical integrals between atomic and molecular orbitals. Thus,
+you can use orbkit to compute expectation values analytically. The basics are
+described in <a class="reference internal" href="ok_analytical.html"><em>Analytical Integrals with orbkit</em></a>.</p>
+<p>Finally, we provide some chapters on orbkit&#8217;s <a class="reference internal" href="cvars.html"><em>Central Variables</em></a>  and <a class="reference internal" href="options.html"><em>Options</em></a>.
+The chapter <a class="reference internal" href="funcref.html"><em>Function Reference</em></a> contains the docstrings of all functions in orbkit.</p>
+<div class="admonition hint">
+<p class="first admonition-title">Hint</p>
+<p class="last">Please refer to <a class="reference internal" href="../tutorials/index.html"><em>Tutorials</em></a> for practical applications.</p>
+</div>
 <p><strong>Contents:</strong></p>
 <blockquote>
 <div><div class="toctree-wrapper compound">
@@ -157,11 +174,15 @@ For advanced users, the latter type of usage is recommended.</p>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="ok_modules.html">orbkit&#8217;s Low-Level Interface</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="ok_modules.html#reading-qc-input">Reading QC Input</a></li>
-<li class="toctree-l2"><a class="reference internal" href="ok_modules.html#input-output-modules">Input/Output Modules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="ok_modules.html#grid-related-modules">Grid Related Modules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="ok_modules.html#computational-modules">Computational Modules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="ok_modules.html#modules-for-analytical-integrals">Modules for Analytical Integrals</a></li>
-<li class="toctree-l2"><a class="reference internal" href="ok_modules.html#additional-options">Additional Options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ok_modules.html#initializing-the-grid">Initializing the Grid</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ok_modules.html#operations-on-the-grid">Operations on the Grid</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ok_modules.html#computational-functions">Computational Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ok_modules.html#output-functions">Output Functions</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="ok_analytical.html">Analytical Integrals with orbkit</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="ok_analytical.html#computational-functions">Computational Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ok_analytical.html#computing-the-dipole-moment-analytically">Computing the Dipole Moment Analytically</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="cvars.html">Central Variables</a></li>
@@ -194,6 +215,11 @@ For advanced users, the latter type of usage is recommended.</p>
 </ul>
 </div>
 </div></blockquote>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The documentation is under construction. If you have any questions,
+do not hesitate to contact us.</p>
+</div>
 </div>
 
 

@@ -3,14 +3,14 @@ Overview
 
 orbkit is a parallel Python program package for post-processing 
 wavefunction data extracted from output files of MOLPRO_ (Molden File Format), 
-TURBOMOLE_ (Molden file format), GAMESS-US_, and Gaussian_ (.log File and Formatted Checkpoint File). 
+TURBOMOLE_ (AOMix file format), GAMESS-US_, and Gaussian_ (.log File and Formatted Checkpoint File). 
 
 Computational capabilities:
 
 - Atomic orbitals, molecular orbitals, electron density, and the spatial derivatives of these quantities
 - Reduced electron density
 - Electron density for selected molecular orbitals
-- Mulliken and Lowdin population analysis
+- Mulliken and Löwdin population analysis
 - Analytical overlap integrals between atomic and molecular orbitals
 - Atom-projected electron density
 - Molecular orbital transition electronic flux density
