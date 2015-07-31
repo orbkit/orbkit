@@ -49,7 +49,7 @@ For a proper execution of orbkit, the following Python modules are required:
 3) Weave (scipy.weave) for parallel computing (orbkit will not work without this)
 4) NumPy Library of high-level mathematical functions (http://www.numpy.org/)
 5) h5py Interface to the HDF5 binary data format (http://www.h5py.org/)
-6) mayavi_ Tool for 3D scientific data visualization (optional)
+6) Mayavi Tool for 3D scientific data visualization (optional)
 
 The package h5py is not mandatory but strongly recommended.
 
@@ -77,9 +77,9 @@ version can additionally be cloned from http://sourceforge.net/p/orbkit/code.
 
         $ git clone http://git.code.sf.net/p/orbkit/code orbkit
 
-  * Using a **tarball**:
+  * Using a tarball:
 
-    Download the latest orbkit release and extract the file (``v0.2.0`` has to be 
+    Download the latest orbkit release and extract the file ("0.2.0" has to be 
     replaced by your version number):
 
         $ wget http://sourceforge.net/projects/orbkit/files/latest/download 
