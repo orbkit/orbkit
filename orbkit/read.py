@@ -1370,7 +1370,7 @@ def read_aomix(filename, all_mo=False, i_md=-1, interactive=True):
     for jj in s[1:]:
       try:
         c = int(jj)
-        exp[c_last] += 1
+        exp[c_last] += (c-1)
       except ValueError:
         for kk,ll in enumerate('xyz'):
           if jj == ll:
