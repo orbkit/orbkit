@@ -1,15 +1,16 @@
 # -*- coding: iso-8859-1 -*-
 '''Imports all important orbkit modules'''
-__all__ = ['grid','options','QCinfo','display','run_orbkit','init',
+__all__ = ['grid','options','main','QCinfo','display','run_orbkit','init',
            'main_read','main_output','rho_compute','rho_compute_no_slice'
            'calc_ao','calc_mo','mo_set','atom_projected_density',
            'mo_transition_flux_density','get_dipole_moment',
+           'atomic_populations'
            ]
 
-__version__ = '0.2.2'
+__version__ = '0.3.0'
 
 # Import high-level orbkit modules
-from orbkit import grid,options,display,main
+from orbkit import grid,options,display,main,atomic_populations
 
 from orbkit.qcinfo import QCinfo
 from orbkit.grid import grid_init,get_grid,set_grid

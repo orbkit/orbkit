@@ -1,3 +1,5 @@
+'''Module for atomic population analysis.
+'''
 import itertools
 import numpy
 from orbkit.analytical_integrals import get_atom2mo,get_lc,create_mo_coeff
