@@ -812,51 +812,103 @@ def view_with_mayavi(x,y,z,data,geo_spec=None,datalabels=None):
   my_model = MyModel()
   my_model.configure_traits()
 
-def pdb_creator(filename,qc,c_type='Lowdin'):
-  '''Creates a PDB structure file.
-  '''
-  aa_to_au = 1/0.52917720859
-  fid = open(filename,'w')
-  fid.write('HEADER    %s\n' % filename)
-  fid.write('AUTHOR    orbkit\n') 
-  string = ''
-  for il in range(len(qc.geo_spec)):
-    content = {'num': '%d'.rjust(6) % qc.geo_info[il][1],
-               'type': qc.geo_info[il][0].rjust(3),
-               'id': '1'.rjust(12)
-              }
-    string += 'ATOM  %(num)s%(type)s%(id)s    ' % content
-    for i in reversed(range(3)):
-      string += '%+.3f'.rjust(7)[:7] % (qc.geo_spec[il][i])/aa_to_au
-    
-    charge = 0 #if qc.pop_ana[c_type][il] == None else qc.pop_ana[c_type][il]
-    string += '  1.00  %+.6f\n' % charge
+def pdb_creator(geo_info,geo_spec,filename='new',charges=None,comments='',
+    angstrom=True):
+  '''Creates a plain text file with information concerning the molecular 
+  structure in Protein Data Bank (PDB) format. 
   
-  string += ('MASTER        0    0    0    0    0    0    0    0 ' + 
-            '%s    0    0    0\nEND' % ('%s'.rjust(4) % len(qc.geo_spec)))
-  fid.write(string)
+  **Parameters:**
+  
+  geo_info, geo_spec : 
+    See :ref:`Central Variables` for details.
+  filename : str
+    Contains the base name of the output file.
+  charges : numpy.ndarray, shape=(Natoms,), optional
+    Contains a partial charge for each atom.
+  comments : str, optional
+    Specifies the second (comment) line of the pdb file.
+  angstrom : bool, optional
+    If True, conversion of molecular coordinates from Bohr radii to Angstrom.
+  '''
+  
+  # Conversion factor form Angstrom in Bohr radii
+  aa_to_au = 1/0.52917720859
+  if angstrom:
+    geo_spec /= aa_to_au
+    
+  # Check for charges
+  if charges == None:
+    charges = numpy.zeros(len(geo_spec))
+    
+  # Open an empty file 
+  fid = open('%(f)s.pdb' % {'f': filename},'w')
+  
+  # Write HEADER, TITLE and AUTHOR
+  fid.write('HEADER\n')
+  fid.write('TITLE    %s\n' % comments)
+  fid.write('AUTHOR    orbkit\n') 
+  
+  # Write ATOM records
+  string = ''
+  for il in range(len(geo_spec)):
+    string = 'ATOM    %s' % (il+1)
+    while len(string) < 13:
+      string += ' '
+    string += '%s' % (geo_info[il][0])
+    while len(string) < 17:
+      string += ' '
+    string += '             %s %s %s        ' % (('%.9f' % geo_spec[il][0])[:7],
+                                                  ('%.9f' % geo_spec[il][1])[:7],
+                                                  ('%.9f' % geo_spec[il][2])[:7])
+    string += '%s        ' % (('%.9f' % charges[il])[:6])
+    fid.write(str(string) + '\n')
+      
+  # Write MASTER and END line
+  fid.write('MASTER        0    0    0    0    0    0    0    0 ' + 
+            '%s    0    0    0\nEND' % ('%s'.rjust(4) % len(geo_spec)))
+  
+  # Close the file 
   fid.close()
 
-def xyz_creator(filename,qc,c_type='Lowdin'):
-  '''Creates a XYZ structure file.
-  '''
-  aa_to_au = 1/0.52917720859
-  fid = open(filename,'w')  
-  if qc.etot == 0.:
-    fid.write('%d\n\n' % len(qc.geo_spec))
-  else:    
-    fid.write('%d\n Energy = %22.15f E_h\n' % (len(qc.geo_spec),qc.etot))
+def xyz_creator(geo_info,geo_spec,filename='new',charges=None,comments='',
+    angstrom=True):
+  '''Creates a xyz file containing the molecular coordinates. 
   
+  **Parameters:**
+  
+  geo_info, geo_spec : 
+    See :ref:`Central Variables` for details.
+  filename : str
+    Contains the base name of the output file.
+  charges : numpy.ndarray, shape=(Natoms,), optional
+    Contains a partial charge for each atom.
+  comments : str, optional
+    Specifies the second (comment) line of the xyz file.
+  angstrom : bool, optional
+    If True, conversion of molecular coordinates from Bohr radii to Angstrom.
+  '''
+  
+  # Conversion factor form Angstrom in Bohr radii
+  aa_to_au = 1/0.52917720859
+  if angstrom:
+    geo_spec /= aa_to_au
+  
+  # Open an empty file 
+  fid = open('%(f)s.xyz' % {'f': filename},'w')
+  
+  # Write number of atoms and a comment line
+  fid.write('%d\n%s\n' % (len(geo_spec),comments))
+  
+  # Write Cartesian coordinates of molecular structure
   string = ''
-  for il in range(len(qc.geo_spec)):
-    string += '%-2s' % qc.geo_info[il][0]
+  for il in range(len(geo_spec)):
+    string += '%-2s' % geo_info[il][0]
     for i in range(3):
-      string += ' %22.15f'  % (qc.geo_spec[il][i]/aa_to_au)
-    
-    if qc.pop_ana[c_type][il] is not None:
-      string += ' %22.15f'  % qc.pop_ana[c_type][il]
-    
+      string += ' %22.15f'  % (geo_spec[il][i])
+    if charges is not None:
+      string += ' %22.15f'  % charges[il]
     string += '\n'
-    
   fid.write(string)
+  
+  # Close the file
   fid.close()
