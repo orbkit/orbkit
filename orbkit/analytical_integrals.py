@@ -36,7 +36,7 @@ except:
     import weave
 
 from orbkit import cSupportCode
-from orbkit.core import exp,lquant,slicer,get_lxlylz,get_cart2sph
+from orbkit.core import exp,lquant,slicer,get_lxlylz,get_cart2sph,l_deg
 
 def get_ao_overlap(coord_a,coord_b,ao_spec,lxlylz_b=None,contraction=True,
                    drv=None,ao_spherical=None):
@@ -450,13 +450,13 @@ def get_ao_dipole_matrix(qc,component='x'):
   i = 0
   for sel_ao in range(len(qc.ao_spec)):
     if 'exp_list' in qc.ao_spec[sel_ao].keys():
-      l = qc.ao_spec[sel_ao]['exp_list']
+      l = len(qc.ao_spec[sel_ao]['exp_list'])
     else:
-      l = exp[lquant[qc.ao_spec[sel_ao]['type']]]
-    for ll in l:
-      for j in qc.ao_spec[sel_ao]['coeffs']:
-        ao_part_2[:,i] *= qc.geo_spec[qc.ao_spec[sel_ao]['atom'],component]
-        i += 1
+      l = l_deg(l=qc.ao_spec[sel_ao]['type'].lower(),
+              cartesian_basis=(qc.ao_spherical is None))
+    for ll in range(l):
+      ao_part_2[:,i] *= qc.geo_spec[qc.ao_spec[sel_ao]['atom'],component]
+      i += 1
   
   # the atomic orbital overlap matrix  
   return (ao_part_1+ao_part_2) 

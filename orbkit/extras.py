@@ -497,7 +497,7 @@ def atom2index(atom,geo_info=None):
 
 def atom_projected_density(atom,qc,
                     bReturnmo=False,ao_list=None,mo_list=None,
-                    x=None,y=None,z=None,N=None,is_vector=False):
+                    x=None,y=None,z=None,is_vector=False):
   r'''Computes the projected electron density with respect to the selected atoms.
   
   .. math::
@@ -551,10 +551,10 @@ def atom_projected_density(atom,qc,
   
   display('\tCalculating ao_list & mo_list')
   if ao_list is None:
-    ao_list = core.ao_creator(qc.geo_spec,qc.ao_spec,x=x,y=y,z=z,N=N,
+    ao_list = core.ao_creator(qc.geo_spec,qc.ao_spec,x=x,y=y,z=z,
                     is_vector=is_vector)
   if mo_list is None:
-    mo_list = core.mo_creator(ao_list,qc.mo_spec,x=x,y=y,z=z,N=N,
+    mo_list = core.mo_creator(ao_list,qc.mo_spec,x=x,y=y,z=z,
                               is_vector=is_vector)
     
   display('\tCalculating the atom-projected density')
@@ -628,7 +628,7 @@ def numerical_mulliken_charges(atom,qc,
   
   rho_atom = atom_projected_density(atom,qc,
                     ao_list=ao_list,mo_list=mo_list,
-                    x=x,y=y,z=z,N=N,is_vector=is_vector)
+                    x=x,y=y,z=z,is_vector=is_vector)
   
   display('\nNumerical Mulliken Charges:')
   if is_vector:
@@ -649,7 +649,7 @@ def numerical_mulliken_charges(atom,qc,
 def mo_transition_flux_density(i,j,qc,drv='x',
                     ao_list=None,mo_list=None,
                     delta_ao_list=None,delta_mo_list=None,
-                    x=None,y=None,z=None,N=None,is_vector=False):
+                    x=None,y=None,z=None,is_vector=False):
   '''Calculate one component (e.g. drv='x') of the 
   transition electoronic flux density between the 
   molecular orbitals i and j.
@@ -690,11 +690,11 @@ def mo_transition_flux_density(i,j,qc,drv='x',
     if ao_list is None:
       display('\tComputing ao_list and ' +
                     'mo #%d, since it is not given.' % i)
-      ao_list = core.ao_creator(qc.geo_spec,qc.ao_spec,x=x,y=y,z=z,N=N,
+      ao_list = core.ao_creator(qc.geo_spec,qc.ao_spec,x=x,y=y,z=z,
                     is_vector=is_vector)  
     else:
       display('\tComputing mo #%d, since it is not given.' % i)
-    mo = core.mo_creator(ao_list,[qc.mo_spec[i]],x=x,y=y,z=z,N=N,
+    mo = core.mo_creator(ao_list,[qc.mo_spec[i]],x=x,y=y,z=z,
                     is_vector=is_vector)[0]
   else:
     mo = mo_list[i]
@@ -703,10 +703,10 @@ def mo_transition_flux_density(i,j,qc,drv='x',
       display('\tComputing delta_ao_list and the derivative of ' +
                     'mo #%d, since it is not given.' % j)
       delta_ao_list = core.ao_creator(qc.geo_spec,qc.ao_spec,drv=drv,
-                        x=x,y=y,z=z,N=N,is_vector=is_vector)
+                        x=x,y=y,z=z,is_vector=is_vector)
     else:
       display('\tComputing mo #%d, since it is not given.' % j)
-    delta_mo = core.mo_creator(delta_ao_list,[qc.mo_spec[j]],x=x,y=y,z=z,N=N,
+    delta_mo = core.mo_creator(delta_ao_list,[qc.mo_spec[j]],x=x,y=y,z=z,
                     is_vector=is_vector)[0]
   else:
     delta_mo = delta_mo_list[i]
