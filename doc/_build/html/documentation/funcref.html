@@ -83,6 +83,7 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../tutorials/index.html">Tutorials</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../tutorials/vis.html">Tutorial for the Visualization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/atomic_populations.html">Tutorial for Atomic Population and Charge Analysis</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../tutorials/cubature.html">Tutorial for the Integration with Cubature</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../tutorials/multiple_files.html">Tutorial for Processing Multiple Input Files</a></li>
 </ul>
@@ -230,7 +231,7 @@ see <a class="reference external" href="http://physics.nist.gov">http://physics.
 
 <dl class="function">
 <dt id="orbkit.options.check_options">
-<tt class="descclassname">orbkit.options.</tt><tt class="descname">check_options</tt><big>(</big><em>error=&lt;function raise_error at 0x282eaa0&gt;</em>, <em>display=&lt;function print_message at 0x282eb18&gt;</em>, <em>interactive=False</em>, <em>info=True</em>, <em>check_io=True</em><big>)</big><a class="headerlink" href="#orbkit.options.check_options" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">orbkit.options.</tt><tt class="descname">check_options</tt><big>(</big><em>error=&lt;function raise_error at 0x3f49b18&gt;</em>, <em>display=&lt;function print_message at 0x3f49b90&gt;</em>, <em>interactive=False</em>, <em>info=True</em>, <em>check_io=True</em><big>)</big><a class="headerlink" href="#orbkit.options.check_options" title="Permalink to this definition">¶</a></dt>
 <dd><p>Checks options for errors.</p>
 <p><strong>Parameters:</strong></p>
 <blockquote>
@@ -259,7 +260,7 @@ existing file.</dd>
 
 <dl class="function">
 <dt id="orbkit.options.check_if_exists">
-<tt class="descclassname">orbkit.options.</tt><tt class="descname">check_if_exists</tt><big>(</big><em>fid</em>, <em>what=''</em>, <em>error=&lt;type 'exceptions.IOError'&gt;</em>, <em>display=&lt;built-in method write of file object at 0x2ac07050b1e0&gt;</em>, <em>interactive=False</em><big>)</big><a class="headerlink" href="#orbkit.options.check_if_exists" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">orbkit.options.</tt><tt class="descname">check_if_exists</tt><big>(</big><em>fid</em>, <em>what=''</em>, <em>error=&lt;type 'exceptions.IOError'&gt;</em>, <em>display=&lt;built-in method write of file object at 0x2ae4096831e0&gt;</em>, <em>interactive=False</em><big>)</big><a class="headerlink" href="#orbkit.options.check_if_exists" title="Permalink to this definition">¶</a></dt>
 <dd><p>Checks the existence of a file.</p>
 <p><strong>Parameters:</strong></p>
 <blockquote>
@@ -642,7 +643,7 @@ direction.</dd>
 
 <dl class="function">
 <dt id="orbkit.grid.center_grid">
-<tt class="descclassname">orbkit.grid.</tt><tt class="descname">center_grid</tt><big>(</big><em>ac</em>, <em>display=&lt;built-in method write of file object at 0x2ac07050b1e0&gt;</em><big>)</big><a class="headerlink" href="#orbkit.grid.center_grid" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">orbkit.grid.</tt><tt class="descname">center_grid</tt><big>(</big><em>ac</em>, <em>display=&lt;built-in method write of file object at 0x2ae4096831e0&gt;</em><big>)</big><a class="headerlink" href="#orbkit.grid.center_grid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Centers the grid to the point ac and to the origin (0,0,0).</p>
 </dd></dl>
 
@@ -2199,7 +2200,7 @@ adjusted to the density for the easy depiction of the density.</p>
 
 <dl class="function">
 <dt id="orbkit.extras.atom_projected_density">
-<tt class="descclassname">orbkit.extras.</tt><tt class="descname">atom_projected_density</tt><big>(</big><em>atom</em>, <em>qc</em>, <em>bReturnmo=False</em>, <em>ao_list=None</em>, <em>mo_list=None</em>, <em>x=None</em>, <em>y=None</em>, <em>z=None</em>, <em>N=None</em>, <em>is_vector=False</em><big>)</big><a class="headerlink" href="#orbkit.extras.atom_projected_density" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">orbkit.extras.</tt><tt class="descname">atom_projected_density</tt><big>(</big><em>atom</em>, <em>qc</em>, <em>bReturnmo=False</em>, <em>ao_list=None</em>, <em>mo_list=None</em>, <em>x=None</em>, <em>y=None</em>, <em>z=None</em>, <em>is_vector=False</em><big>)</big><a class="headerlink" href="#orbkit.extras.atom_projected_density" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes the projected electron density with respect to the selected atoms.</p>
 <div class="math">
 <p><img src="../_images/math/7824363b68ea238416de7eda1618ec7c197aca38.png" alt="\rho^a = \sum_i^{N_{\rm MO}} {\rm occ}_i \cdot \varphi_i^a \cdot \varphi_i"/></p>
@@ -2410,7 +2411,7 @@ present if derivatives are requested.</dd>
 
 <dl class="function">
 <dt id="orbkit.extras.mo_transition_flux_density">
-<tt class="descclassname">orbkit.extras.</tt><tt class="descname">mo_transition_flux_density</tt><big>(</big><em>i</em>, <em>j</em>, <em>qc</em>, <em>drv='x'</em>, <em>ao_list=None</em>, <em>mo_list=None</em>, <em>delta_ao_list=None</em>, <em>delta_mo_list=None</em>, <em>x=None</em>, <em>y=None</em>, <em>z=None</em>, <em>N=None</em>, <em>is_vector=False</em><big>)</big><a class="headerlink" href="#orbkit.extras.mo_transition_flux_density" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">orbkit.extras.</tt><tt class="descname">mo_transition_flux_density</tt><big>(</big><em>i</em>, <em>j</em>, <em>qc</em>, <em>drv='x'</em>, <em>ao_list=None</em>, <em>mo_list=None</em>, <em>delta_ao_list=None</em>, <em>delta_mo_list=None</em>, <em>x=None</em>, <em>y=None</em>, <em>z=None</em>, <em>is_vector=False</em><big>)</big><a class="headerlink" href="#orbkit.extras.mo_transition_flux_density" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate one component (e.g. drv=&#8217;x&#8217;) of the 
 transition electoronic flux density between the 
 molecular orbitals i and j.</p>

@@ -10,6 +10,7 @@ applications of orbkit.
     :maxdepth: 4
 
     vis
+    atomic_populations
     cubature
     multiple_files
 

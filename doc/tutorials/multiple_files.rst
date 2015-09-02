@@ -17,7 +17,7 @@ decompressed before performing this tutorial.
   This tutorial explains parts of the example file 
   ``$ORBKITPATH/examples/use_for_ordering.py``. 
 
-how to read a list of files
+How to Read a List of Files
 ---------------------------
 
 As a starting point, you have to import the orbkit module for processing 
@@ -72,7 +72,7 @@ These variables are named according to their analogue in the ``QCinfo`` class
 |                 | molecular orbitals. If index < 0, the molecular orbital changes its **sign**. ``shape=(Nfiles,NMO)``.|
 +-----------------+------------------------------------------------------------------------------------------------------+
 
-how to order the molecular orbital coefficients
+How to Order the Molecular Orbital Coefficients
 -----------------------------------------------
 
 orbkit provides different schemes to order molecular orbitals, of which the
@@ -99,7 +99,7 @@ geometries, i.e., ``mo_overlap[i,j,k]`` corresponds to overlap between the
 :math:`j` th molecular orbital at geometry :math:`i` to the :math:`k` th molecular orbital at 
 geometry :math:`(i+1)`. 
 
-how to save and read the information obtained to and from an HDF5-file
+How to Save and Read the Information Obtained to and from an HDF5-File
 ----------------------------------------------------------------------
 
 All global variables of the module ``multiple_files`` can be stored to an 
@@ -111,7 +111,7 @@ To read this file and recover the global variables, simply call::
 
   multiple_files.read_hdf5('nacl.h5')
 
-how to depict several molecular orbitals
+How to Depict Several Molecular Orbitals
 ----------------------------------------
 
 You can use this module to depict snapshots of selected molecular orbitals 
@@ -127,7 +127,7 @@ with simple contour plots::
   multiple_files.show_selected_mos(selected_mos,r0=r0,steps=steps,
 				   select_slice=select_slice,where=where)
 
-how to perform a standard orbkit computation for one molecular structures
+How to Perform a Standard orbkit Computation for One Molecular Structures
 -------------------------------------------------------------------------
 
 You can cast the global variables of ``multiple_files`` automatically to a list 

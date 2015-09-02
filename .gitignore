@@ -20,6 +20,8 @@
 *.tga
 *.vmd
 *.kate-swp
+*.xyz
+*.pdb
 
 !orbkit*.hx
 !h2o.md

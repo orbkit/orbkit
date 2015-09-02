@@ -1,0 +1,275 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Tutorial for Atomic Population and Charge Analysis &mdash; orbkit 0.2.2 documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../_static/orbkit.ico"/>
+  
+
+  
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+    <link rel="top" title="orbkit 0.2.2 documentation" href="../index.html"/>
+        <link rel="up" title="Tutorials" href="index.html"/>
+        <link rel="next" title="Tutorial for the Integration with Cubature" href="cubature.html"/>
+        <link rel="prev" title="Tutorial for the Visualization" href="vis.html"/> 
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        <a href="../toctree.html" class="fa fa-home"> orbkit</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+        
+            <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Overview</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#citation">Citation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installation Instructions for orbkit</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../install.html#installation">Installation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../documentation/index.html">Documentation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../documentation/requirements.html">Requirements for the Input Files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../documentation/terminal.html">Usage via the Terminal</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../documentation/ok_main.html">orbkit&#8217;s High-Level Interface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../documentation/ok_modules.html">orbkit&#8217;s Low-Level Interface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../documentation/ok_analytical.html">Analytical Integrals with orbkit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../documentation/cvars.html">Central Variables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../documentation/options.html">Options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../documentation/funcref.html">Function Reference</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Tutorials</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="vis.html">Tutorial for the Visualization</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="">Tutorial for Atomic Population and Charge Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cubature.html">Tutorial for the Integration with Cubature</a></li>
+<li class="toctree-l2"><a class="reference internal" href="multiple_files.html">Tutorial for Processing Multiple Input Files</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../licence.html">Licence Note</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../impressum.html">Impressum - Legal Notice</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../impressum.html#impressum">Impressum</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../impressum.html#haftungsausschluss-disclaimer">Haftungsausschluss - Disclaimer</a></li>
+</ul>
+</li>
+</ul>
+
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../toctree.html">orbkit</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../toctree.html">Docs</a> &raquo;</li>
+      
+          <li><a href="index.html">Tutorials</a> &raquo;</li>
+      
+    <li>Tutorial for Atomic Population and Charge Analysis</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          <a href="../_sources/tutorials/atomic_populations.txt" rel="nofollow"> View page source</a>
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            
+  <div class="section" id="tutorial-for-atomic-population-and-charge-analysis">
+<h1>Tutorial for Atomic Population and Charge Analysis<a class="headerlink" href="#tutorial-for-atomic-population-and-charge-analysis" title="Permalink to this headline">¶</a></h1>
+<p>This short tutorial shows, how to perform a Mulliken and Löwdin population
+analysis with orbkit analytically, and how to write the output to an <tt class="docutils literal"><span class="pre">xyz</span></tt> or
+a <tt class="docutils literal"><span class="pre">PDB</span></tt> file.</p>
+<div class="section" id="computation-of-the-atomic-populations-and-charges">
+<h2>Computation of the Atomic Populations and Charges<a class="headerlink" href="#computation-of-the-atomic-populations-and-charges" title="Permalink to this headline">¶</a></h2>
+<p>First, we have to import some modules and set some of orbkits options:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">orbkit</span> <span class="kn">import</span> <span class="n">read</span><span class="p">,</span> <span class="n">atomic_populations</span>
+</pre></div>
+</div>
+<p>Then, we have to read the input file:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># Open molden file and read parameters</span>
+<span class="n">qc</span> <span class="o">=</span> <span class="n">read</span><span class="o">.</span><span class="n">main_read</span><span class="p">(</span><span class="s">&#39;h2o.md&#39;</span><span class="p">,</span><span class="n">itype</span><span class="o">=</span><span class="s">&#39;molden&#39;</span><span class="p">,</span><span class="n">all_mo</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Now, we have to call the respective functions:</p>
+<p>For a <strong>Mulliken Population Analysis</strong>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">pop</span> <span class="o">=</span> <span class="n">atomic_populations</span><span class="o">.</span><span class="n">mulliken</span><span class="p">(</span><span class="n">qc</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>and for a <strong>Löwdin Population Analysis</strong>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">pop</span> <span class="o">=</span> <span class="n">atomic_populations</span><span class="o">.</span><span class="n">lowdin</span><span class="p">(</span><span class="n">qc</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The return value <tt class="docutils literal"><span class="pre">pop</span></tt> is a dictionary, which contains information of
+population analysis and has following members:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="30%" />
+<col width="70%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>Variable</td>
+<td>Contents</td>
+</tr>
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">population</span></tt></td>
+<td>Contains the population for each atom.</td>
+</tr>
+<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">charge</span></tt></td>
+<td>Contains the charges for each atom.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="creation-of-an-output-file">
+<h2>Creation of an Output File<a class="headerlink" href="#creation-of-an-output-file" title="Permalink to this headline">¶</a></h2>
+<p>orbkit provides two possible output file formats for the population analysis:
+the <tt class="docutils literal"><span class="pre">PDB</span></tt> and the <tt class="docutils literal"><span class="pre">xyz</span></tt> file format:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">orbkit.output</span> <span class="kn">import</span> <span class="n">pdb_creator</span><span class="p">,</span><span class="n">xyz_creator</span>
+<span class="c"># Write a PDB file</span>
+<span class="n">pdb_creator</span><span class="p">(</span><span class="n">qc</span><span class="o">.</span><span class="n">geo_info</span><span class="p">,</span><span class="n">qc</span><span class="o">.</span><span class="n">geo_spec</span><span class="p">,</span><span class="n">filename</span><span class="o">=</span><span class="s">&#39;charges&#39;</span><span class="p">,</span><span class="n">charges</span><span class="o">=</span><span class="n">pop</span><span class="p">[</span><span class="s">&#39;charge&#39;</span><span class="p">],</span><span class="n">comments</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">)</span>
+<span class="c"># Write an xyz file</span>
+<span class="n">xyz_creator</span><span class="p">(</span><span class="n">qc</span><span class="o">.</span><span class="n">geo_info</span><span class="p">,</span><span class="n">qc</span><span class="o">.</span><span class="n">geo_spec</span><span class="p">,</span><span class="n">filename</span><span class="o">=</span><span class="s">&#39;charges&#39;</span><span class="p">,</span><span class="n">charges</span><span class="o">=</span><span class="n">pop</span><span class="p">[</span><span class="s">&#39;charge&#39;</span><span class="p">],</span><span class="n">comments</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This will write two files: <tt class="docutils literal"><span class="pre">charges.pdb</span></tt> and <tt class="docutils literal"><span class="pre">charges.xyz</span></tt>, which can be
+processed for visualization by several programs.</p>
+<p>For instance, you can depict the PDB file containing the partial charges in VMD:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>Load the file:</li>
+</ol>
+<blockquote>
+<div><div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>vmd -m charges.pbd
+</pre></div>
+</div>
+</div></blockquote>
+<ol class="arabic simple" start="2">
+<li>Go to <strong>Graphics-&gt;Representations</strong></li>
+<li>Select <tt class="docutils literal"><span class="pre">CPK</span></tt> as <strong>Drawing Method</strong></li>
+<li>Select <tt class="docutils literal"><span class="pre">Beta</span></tt> as <strong>Coloring Method</strong></li>
+</ol>
+</div></blockquote>
+</div>
+</div>
+
+
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="cubature.html" class="btn btn-neutral float-right" title="Tutorial for the Integration with Cubature"/>Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="vis.html" class="btn btn-neutral" title="Tutorial for the Visualization"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015, Gunter Hermann, Vincent Pohl, and Axel Schild.
+    </p>
+  </div>
+
+  <a href="https://github.com/snide/sphinx_rtd_theme">Sphinx theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'0.2.2',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

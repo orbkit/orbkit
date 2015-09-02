@@ -798,7 +798,8 @@ def view_with_mayavi(x,y,z,data,geo_spec=None,datalabels=None):
       items = (Item('scene', editor=SceneEditor(scene_class=MayaviScene),
                       height=250, width=300, show_label=False),                  
                   Group(
-                          '_', 'select',Item('label',style='readonly', show_label=False), 'iso_value', 'opacity','show_atoms'
+                          '_', 'select',Item('label',style='readonly', show_label=False), 
+                          'iso_value', 'opacity','show_atoms'
                       ),
               )
       if datalabels is not None:        
@@ -832,12 +833,10 @@ def pdb_creator(geo_info,geo_spec,filename='new',charges=None,comments='',
   '''
   
   # Conversion factor form Angstrom in Bohr radii
-  aa_to_au = 1/0.52917720859
-  if angstrom:
-    geo_spec /= aa_to_au
-    
+  aa_to_au = 1/0.52917720859 if angstrom else 1.
+  
   # Check for charges
-  if charges == None:
+  if charges is None:
     charges = numpy.zeros(len(geo_spec))
     
   # Open an empty file 
@@ -857,9 +856,10 @@ def pdb_creator(geo_info,geo_spec,filename='new',charges=None,comments='',
     string += '%s' % (geo_info[il][0])
     while len(string) < 17:
       string += ' '
-    string += '             %s %s %s        ' % (('%.9f' % geo_spec[il][0])[:7],
-                                                  ('%.9f' % geo_spec[il][1])[:7],
-                                                  ('%.9f' % geo_spec[il][2])[:7])
+    xyz = geo_spec[il]/aa_to_au
+    string += '             %s %s %s        ' % (('%.9f' % xyz[0])[:7],
+                                                 ('%.9f' % xyz[1])[:7],
+                                                 ('%.9f' % xyz[2])[:7])
     string += '%s        ' % (('%.9f' % charges[il])[:6])
     fid.write(str(string) + '\n')
       
@@ -889,9 +889,7 @@ def xyz_creator(geo_info,geo_spec,filename='new',charges=None,comments='',
   '''
   
   # Conversion factor form Angstrom in Bohr radii
-  aa_to_au = 1/0.52917720859
-  if angstrom:
-    geo_spec /= aa_to_au
+  aa_to_au = 1/0.52917720859 if angstrom else 1.
   
   # Open an empty file 
   fid = open('%(f)s.xyz' % {'f': filename},'w')
@@ -904,7 +902,7 @@ def xyz_creator(geo_info,geo_spec,filename='new',charges=None,comments='',
   for il in range(len(geo_spec)):
     string += '%-2s' % geo_info[il][0]
     for i in range(3):
-      string += ' %22.15f'  % (geo_spec[il][i])
+      string += ' %22.15f'  % (geo_spec[il][i]/aa_to_au)
     if charges is not None:
       string += ' %22.15f'  % charges[il]
     string += '\n'
