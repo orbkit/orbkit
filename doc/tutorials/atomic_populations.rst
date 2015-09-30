@@ -15,7 +15,7 @@ First, we have to import some modules and set some of orbkits options::
 Then, we have to read the input file::
 
   # Open molden file and read parameters
-  qc = read.main_read('h2o.md',itype='molden',all_mo=True)
+  qc = read.main_read('h2o.md',itype='molden')
 
 Now, we have to call the respective functions:
   

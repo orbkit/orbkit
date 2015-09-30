@@ -76,11 +76,11 @@ def grid_init(is_vector=False, force=False):
   z = grid[2]
   d3r = numpy.product(delta_)
   
-  if is_vector:
-    grid2vector()
-  
   is_initialized = True
   
+  if is_vector:
+    grid2vector()
+    
   return 0
   # grid_init 
 
@@ -172,6 +172,10 @@ def grid2vector():
   # All grid related variables should be globals 
   global x, y, z, is_vector
   
+  if not is_initialized:
+    raise ValueError('You have to initialize a grid before calling '+
+                 ' `grid.grid2vector`, i.e., `grid.is_initialized=True`.')
+  
   # Initialize a list for the grid 
   grid = numpy.zeros((3,len(x)*len(y)*len(z)))
   
@@ -203,13 +207,17 @@ def grid2vector():
   return 0
   # grid2vector 
   
-def vector2grid(Nx=None,Ny=None,Nz=None):
+def vector2grid(Nx,Ny,Nz):
   '''Converts the (3, (Nx*Ny*Nz)) grid matrix (vector grid) back to the regular grid 
   characterized by the x-, y-, z-vectors.
   Reverse operation: :mod:`orbkit.grid.grid2vector`
   '''
   # All grid related variables should be globals 
   global x, y, z, is_vector
+  
+  if not is_initialized:
+    raise ValueError('You have to initialize a grid before calling '+
+                 ' `grid.vector2grid`, i.e., `grid.is_initialized=True`.')
   
   # Initialize a list for the grid
   grid = [[],[],[]]
@@ -323,11 +331,25 @@ def mv2g(**kwargs):
   
   return return_val 
 
-def grid_sym_op(grid=None,symop=None,is_vector=None):
+def grid_sym_op(symop=None):
   '''Executes given symmetry operation on vector grid 
   '''
+  # All grid related variables should be globals 
+  global x, y, z, is_vector
   
-  sym_op_code = """
+  if not is_initialized:
+    raise ValueError('You have to initialize a grid before executing a '+
+                 ' symmetry operation on it, i.e., `grid.is_initialized=True`.')
+  
+  if not is_vector:
+    grid2vector()
+  
+  # Initialize matrix (Nx*Ny*Nz)
+  symgrid = numpy.zeros((3,len(x)))
+  grid = numpy.array([x,y,z],dtype=float)
+  
+  # Symmetry operation
+  weave.inline("""
   int count=0; 
   for (int i=0; i<Ngrid[1]; i++)
   {
@@ -339,34 +361,23 @@ def grid_sym_op(grid=None,symop=None,is_vector=None):
       }
     }
   }
-  """
+  """, 
+  ['grid','symop','symgrid'], verbose = 1, support_code = cSupportCode.math)
   
-  # Initialize matrix (Nx*Ny*Nz)
-  symgrid = numpy.zeros((3,len(grid[0])))
-  grid = numpy.array(grid)
-  
-  if is_vector == True:
-    
-    # Symmetry operation
-    weave.inline(sym_op_code, ['grid','symop','symgrid'], verbose = 1, support_code = cSupportCode.math)
-  
-  elif is_vector == None:
-    N_ = numpy.array([len(grid[0]),len(grid[0]),len(grid[1]),len(grid[2])])
-    
-    # Conversion from regular grid to vector grid
-    global x,y,z
-    x = grid[0] 
-    y = grid[1]
-    z = grid[2]
-    grid2vector()
-    grid = numpy.array([x,y,z],dtype=float)
-    
-    # Symmetry operation
-    weave.inline(sym_op_code, ['grid','symop','symgrid'], verbose = 1, support_code = cSupportCode.math)
-  
-  return symgrid
+  # Write grid 
+  x = grid[0,:]  
+  y = grid[1,:]  
+  z = grid[2,:]
   # grid_sym_op
-  
+
+def grid_translate(dx,dy,dz):
+  '''Translates the grid by (dx,dy,dz).
+  '''
+  global x,y,z
+  x += dx
+  y += dy
+  z += dz
+
 def rot(ang,axis):
  '''Creates matrix representation for arbitrary rotations
  Angle has to be defined in radians, e.g., numpy.pi/2.0
@@ -459,9 +470,52 @@ def sph2cart_vector(r,theta,phi):
   
   is_initialized = True
   is_vector = True
-  
-  return 0
   # sph2cart_vector 
+
+def cyl2cart_vector(r,phi,zed):
+  '''Converts a cylindrical regular grid matrix (r, phi, zed)
+  to a Cartesian grid matrix (vector grid) with the shape (3, (Nr*Nphi*Nzed)).
+
+  **Parameters:**
+  
+    r : numpy.ndarray, shape=(Nr,)
+      Specifies radial distance.
+    phi : numpy.ndarray, shape=(Nphi,)
+      Specifies azimuth angle. 
+    zed : numpy.ndarray, shape=(Nz,)
+      Specifies z distance.
+  '''
+  # All grid related variables should be globals 
+  global x, y, z, is_initialized, is_vector
+  
+  grid = numpy.zeros((3,numpy.product([len(r),len(phi),len(zed)])))
+  grid_code = """
+  int count=0;
+
+  for (int i=0; i<Nr[0]; i++)
+  {
+    for (int j=0; j<Nphi[0]; j++)
+    {
+      for (int k=0; k<Nzed[0]; k++)
+      {
+        GRID2(0,count) = r[i] * cos(phi[j]);
+        GRID2(1,count) = r[i] * sin(phi[j]);
+        GRID2(2,count) = zed[k];
+        count += 1;
+      }
+    }
+  }
+  """
+  weave.inline(grid_code, ['r','phi','zed','grid'], verbose = 1, support_code = cSupportCode.math)
+
+  # Write grid 
+  x = grid[0,:]  
+  y = grid[1,:]  
+  z = grid[2,:]
+  
+  is_initialized = True
+  is_vector = True
+  # cyl2cart_vector 
 
 def random_grid(geo_spec,N=1e6,scale=0.5):
   '''Creates a normally distributed grid around the atom postions (geo_spec).

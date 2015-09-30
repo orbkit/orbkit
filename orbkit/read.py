@@ -28,19 +28,24 @@ import numpy
 
 from orbkit.core import l_deg, lquant, orbit, exp
 from orbkit.display import display
-from orbkit.qcinfo import QCinfo
+from orbkit.qcinfo import QCinfo, get_atom_symbol
 
-def main_read(filename,itype='molden',all_mo=False,**kwargs):
+def main_read(filename,itype='molden',all_mo=False,spin=None,cclib_parser=None,
+              **kwargs):
   '''Calls the requested read function.
   
   **Parameters:**
   
     filename : str
       Specifies the filename for the input file.
-    itype : str, choices={'molden', 'gamess', 'gaussian.log', 'gaussian.fchk', 'aomix'}
+    itype : str, choices={'molden', 'gamess', 'gaussian.log', 'gaussian.fchk', 'aomix', 'cclib'}
       Specifies the type of the input file.
     all_mo : bool, optional
       If True, all molecular orbitals are returned.
+    spin : {None, 'alpha', or 'beta'}, optional
+      If not None, returns exclusively 'alpha' or 'beta' molecular orbitals.
+    cclib_parser : str
+      If itype is 'cclib', specifies the cclib.parser.
   
   **Returns:**
   
@@ -59,14 +64,17 @@ def main_read(filename,itype='molden',all_mo=False,**kwargs):
             'gaussian.log': read_gaussian_log, 
             'gaussian.fchk': read_gaussian_fchk,
             'aomix' : read_aomix,
+            'cclib' : read_with_cclib,
             'wfn': read_wfn}
   display('Loading %s file...' % itype)
   
   # Return required data
-  return reader[itype](filename, all_mo=all_mo,**kwargs)
+  return reader[itype](filename, all_mo=all_mo, spin=spin, 
+                       cclib_parser=cclib_parser,**kwargs)
   # main_read 
 
-def read_molden(filename, all_mo=False, i_md=-1, interactive=True):
+def read_molden(filename, all_mo=False, spin=None, i_md=-1, interactive=True,
+                **kwargs):
   '''Reads all information desired from a molden file.
   
   **Parameters:**
@@ -75,6 +83,8 @@ def read_molden(filename, all_mo=False, i_md=-1, interactive=True):
       Specifies the filename for the input file.
     all_mo : bool, optional
       If True, all molecular orbitals are returned.
+    spin : {None, 'alpha', or 'beta'}, optional
+      If not None, returns exclusively 'alpha' or 'beta' molecular orbitals.
     i_md : int, default=-1
       Selects the `[Molden Format]` section of the output file.
     interactive : bool
@@ -92,8 +102,8 @@ def read_molden(filename, all_mo=False, i_md=-1, interactive=True):
   
   # Is this really a molden file? 
   if not '[Molden Format]\n' in flines:
-    display('The input file %s is no valid molden file!\nIt does' +
-          ' not contain the keyword: [Molden Format]\nEXIT\n' % filename)
+    display('The input file %s is no valid molden file!\n\nIt does'  % filename+
+          ' not contain the keyword: [Molden Format]\n')
     raise IOError('Not a valid input file')
   
   def check_sel(count,i,interactive=False):
@@ -114,6 +124,9 @@ def read_molden(filename, all_mo=False, i_md=-1, interactive=True):
               ('last element.' if (i == count-1) else 'element %d.' % i))
     return i
   
+  has_alpha = []
+  has_beta = []
+  restricted = []
   count = 0
   # Go through the file line by line 
   for il in range(len(flines)):
@@ -122,10 +135,19 @@ def read_molden(filename, all_mo=False, i_md=-1, interactive=True):
     # Check the file for keywords 
     if '[Molden Format]' in line:
       count += 1
+      has_alpha.append(False)
+      has_beta.append(False)
+      restricted.append(False)
+    if 'Spin' in line and 'alpha' in line.lower():
+      has_alpha[-1] = True
+    if 'Spin' in line and 'beta' in line.lower():
+      has_beta[-1] = True
+    if 'Occup' in line:
+      restricted[-1] = restricted[-1] or (float(line.split('=')[1]) > 1.+1e-4)
   
   if count == 0:
-    display('The input file %s is no valid molden file!\nIt does' % filename +
-          ' not contain the keyword: [Molden Format]\nEXIT\n' )
+    display('The input file %s is no valid molden file!\n\nIt does' % filename +
+          ' not contain the keyword: [Molden Format]\n')
     raise IOError('Not a valid input file')
   else:
     if count > 1:
@@ -134,6 +156,22 @@ def read_molden(filename, all_mo=False, i_md=-1, interactive=True):
               'this file contains %d molden files.' % count)
     i_md = check_sel(count,i_md,interactive=interactive)
   
+  if spin is not None:
+    if restricted[i_md]:
+      raise IOError('The keyword `spin` is only supported for unrestricted calculations.')    
+    if spin != 'alpha' and spin != 'beta':
+      raise IOError('`spin=%s` is not a valid option' % spin)
+    elif spin == 'alpha' and has_alpha[i_md]:
+      display('Reading only molecular orbitals of spin alpha.')
+    elif spin == 'beta' and has_beta[i_md]:
+      display('Reading only molecular orbitals of spin alpha.')
+    elif (not has_alpha[i_md]) and (not has_beta[i_md]):
+      raise IOError(
+           'Molecular orbitals in `molden` file do not contain `Spin=` keyword')
+    elif ((spin == 'alpha' and not has_alpha[i_md]) or 
+          (spin == 'beta' and not has_beta[i_md])):
+      raise IOError('You requested `%s` orbitals, but None of them are present.'
+                    % spin)
   
   # Set a counter for the AOs 
   basis_count = 0
@@ -142,6 +180,7 @@ def read_molden(filename, all_mo=False, i_md=-1, interactive=True):
   synonyms = {'Sym': 'sym',
               'Ene': 'energy',
               'Occup': 'occ_num',
+              'Spin': 'spin'
              }
   MO_keys = synonyms.keys()
   
@@ -254,7 +293,9 @@ def read_molden(filename, all_mo=False, i_md=-1, interactive=True):
             info = line.replace('\n','').replace(' ','')
             info = info.split('=')
             if info[0] in MO_keys: 
-              if info[0] != 'Sym':
+              if info[0] == 'Spin':
+                info[1] = info[1].lower()
+              elif info[0] != 'Sym':
                 info[1] = float(info[1])
               elif not '.' in info[1]:
                 from re import search
@@ -282,20 +323,33 @@ def read_molden(filename, all_mo=False, i_md=-1, interactive=True):
   
   # Are all MOs requested for the calculation? 
   if not all_mo:
-    mo_range   = copy.deepcopy(qc.mo_spec)
-    qc.mo_spec = []
-    for ii_mo in mo_range:
-      if ii_mo['occ_num'] > 0.0000001:
-        qc.mo_spec.append(ii_mo)
+    for i in range(len(qc.mo_spec))[::-1]:
+      if qc.mo_spec[i]['occ_num'] < 0.0000001:
+        del qc.mo_spec[i]
+  
+  # Only molecular orbitals of one spin requested?
+  if spin is not None:
+    for i in range(len(qc.mo_spec))[::-1]:
+      if qc.mo_spec[i]['spin'] != spin:
+        del qc.mo_spec[i]
+
+  if restricted[i_md]:
+    # Closed shell calculation
+    for mo in qc.mo_spec:
+      del mo['spin']
+  else:
+    # Rename MOs according to spin
+    for mo in qc.mo_spec:
+      mo['sym'] += '_%s' % mo['spin'][0]
     
   # Convert geo_info and geo_spec to numpy.ndarrays
-  qc.geo_info = numpy.array(qc.geo_info)
-  qc.geo_spec = numpy.array(qc.geo_spec)
+  qc.format_geo()
   
   return qc
   # read_molden 
 
-def read_gamess(filename, all_mo=False,read_properties=False):
+def read_gamess(filename, all_mo=False, spin=None, read_properties=False,
+                **kwargs):
   '''Reads all information desired from a Gamess-US output file.
   
   **Parameters:**
@@ -310,6 +364,8 @@ def read_gamess(filename, all_mo=False,read_properties=False):
     qc (class QCinfo) with attributes geo_spec, geo_info, ao_spec, mo_spec, etot :
         See :ref:`Central Variables` for details.
   '''
+  if spin is not None:
+    raise IOError('The option `spin` is not supported for the gamess reader.')
   # Initialize the variables 
   qc = QCinfo()
   sec_flag = None                 # A Flag specifying the current section
@@ -352,7 +408,7 @@ def read_gamess(filename, all_mo=False,read_properties=False):
         exp_list = []
       elif ' NUMBER OF OCCUPIED ORBITALS (ALPHA)          =' in line:
         occ = []                        # occupation number of molecular orbitals
-	occ.append(int(thisline[-1]))
+        occ.append(int(thisline[-1]))
       elif ' NUMBER OF OCCUPIED ORBITALS (BETA )          =' in line:
         occ.append(int(thisline[-1]))
 #      elif 'ECP POTENTIALS' in line:
@@ -567,7 +623,7 @@ def read_gamess(filename, all_mo=False,read_properties=False):
                             exp_list[count].lower().count('y'),
                             exp_list[count].lower().count('z')))
       count += 1
-
+    j['exp_list'] = numpy.array(j['exp_list'],dtype=numpy.int64)
   for ii in range(len(qc.mo_spec)):
     if occ[0] and occ[1]:
       qc.mo_spec[ii]['occ_num'] += 2.0
@@ -580,14 +636,15 @@ def read_gamess(filename, all_mo=False,read_properties=False):
       qc.mo_spec[ii]['occ_num'] += 1.0
       occ[0] -= 1
   
+  #FIXME: Do you delete the unoccupied orbitals in case of all_mo=False?
+    
   # Convert geo_info and geo_spec to numpy.ndarrays
-  qc.geo_info = numpy.array(qc.geo_info)
-  qc.geo_spec = numpy.array(qc.geo_spec)
+  qc.format_geo()
 
   return qc
   # read_gamess 
 
-def read_gaussian_fchk(filename, all_mo=False):
+def read_gaussian_fchk(filename, all_mo=False, spin=None, **kwargs):
   '''Reads all information desired from a Gaussian FChk file. 
 
   **Parameters:**
@@ -602,20 +659,51 @@ def read_gaussian_fchk(filename, all_mo=False):
     qc (class QCinfo) with attributes geo_spec, geo_info, ao_spec, mo_spec, etot :
         See :ref:`Central Variables` for details.
   '''
-
+  
   fid    = open(filename,'r')   # Open the file
   flines = fid.readlines()      # Read the WHOLE file into RAM
   fid.close()                   # Close the file
   
+  # Is this an unrestricted calculation?
+  has_beta = False
+  is_6D = False
+  is_10F = False
+  for line in flines:
+    if 'beta mo coefficients' in line.lower():
+      has_beta = True
+    if 'Pure/Cartesian d shells' in line:
+      is_6D = int(line.split()[-1]) == 1
+    if 'Pure/Cartesian f shells' in line:
+      is_10F = int(line.split()[-1]) == 1
+  
+  cartesian_basis = (is_6D and is_10F)
+  if ((not is_6D) and is_10F) or (is_6D and (not is_10F)):
+    raise IOError('Please apply a Spherical Harmonics (5D, 7F) or '+
+                          'a Cartesian Gaussian Basis Set (6D, 10F)!')
+  
+  if spin is not None:
+    if spin != 'alpha' and spin != 'beta':
+      raise IOError('`spin=%s` is not a valid option' % spin)
+    elif has_beta:
+      display('Reading only molecular orbitals of spin %s.' % spin)
+    else:
+      raise IOError('The keyword `spin` is only supported for unrestricted calculations.')
+  restricted = (not has_beta)
+  
   sec_flag = None
   
   el_num = [0,0]
+  mo_i0 = {'alpha': 0, 'beta': 0}
+  what = 'alpha'
   index = 0
   at_num = 0
+  
   ao_num = 0 
   switch = 0
   qc = QCinfo()
-  
+  qc.geo_info = [[],[],[]]
+  if not cartesian_basis:
+    qc.ao_spherical = []
   # Set a counter for the AOs 
   basis_count = 0
   
@@ -629,24 +717,19 @@ def read_gaussian_fchk(filename, all_mo=False):
       el_num[0] = int(thisline[5]) 
     elif 'Number of beta electrons' in line:
       el_num[1] = int(thisline[5])
-    #elif 'Number of basis functions' in line:
-      #basis_count = int(thisline[5])
+    elif 'Number of basis functions' in line:
+      basis_number = int(thisline[5])
     elif 'Atomic numbers'  in line:
       sec_flag = 'geo_info'
       index = 0
       at_num = int(thisline[-1])
       count = 0
-      if qc.geo_info == []:
-        for ii in range(at_num):
-          qc.geo_info.append(['',ii,''])
-    elif 'Integer atomic weights' in line:
+      qc.geo_info[1] = list(range(1,at_num+1))
+    elif 'Nuclear charges' in line:
       sec_flag = 'geo_info'
       index = 2
       at_num = int(thisline[-1])
       count = 0
-      if qc.geo_info == []:
-        for ii in range(at_num):
-          qc.geo_info.append(['',ii,''])
     elif 'Total Energy' in line:
       qc.etot = float(thisline[3])
     elif 'Current cartesian coordinates' in line:
@@ -705,30 +788,36 @@ def read_gaussian_fchk(filename, all_mo=False):
           qc.ao_spec[ii]['coeffs'] = numpy.zeros((pnum, 2))
     elif 'Orbital Energies' in line:
       sec_flag = 'mo_eorb'
-      mo_num = int(thisline[-1])
-      index = 0
-      count = len(qc.mo_spec)
-      if el_num[0] == el_num[1]:
-        i = el_num[0]
-        occ = 2
+      mo_num = int(thisline[-1])      
+      mo_i0[thisline[0].lower()] = len(qc.mo_spec)#index
+      if restricted:
+        if el_num[0] == el_num[1]:
+          i = el_num[0]
+          occ = 2
+        else:
+          i = el_num[0 if 'Alpha' in line else 1]
+          occ = 1
       else:
         i = el_num[0 if 'Alpha' in line else 1]
-        occ = 1
+        occ = 1      
       for ii in range(mo_num):
         qc.mo_spec.append({'coeffs': numpy.zeros(basis_count),
                         'energy': 0.0,
-                        'occ_num': float(occ if ii < i else 0)
+                        'occ_num': float(occ if ii < i else 0),
+                        'sym': '%i.1' % (ii+1),
+                        'spin':thisline[0].lower()
                         })
-        qc.mo_spec[-1]['sym'] = '%i.1' % len(qc.mo_spec)
     elif 'MO coefficients' in line:
       sec_flag = 'mo_coeffs'
       count = 0
+      index = 0
       mo_num = int(thisline[-1])
+      what = thisline[0].lower()
     else:
       # Check if we are in a specific section 
       if sec_flag == 'geo_info':
         for ii in thisline:
-          qc.geo_info[count][index] = ii
+          qc.geo_info[index].append(ii)
           count += 1
           if count == at_num:
             sec_flag = None
@@ -746,7 +835,13 @@ def read_gaussian_fchk(filename, all_mo=False):
           ii = int(ii)
           if index is 'type':
             ii = orbit[abs(ii)]
-            basis_count += l_deg(lquant[ii])
+            l = lquant[ii]
+            basis_count += l_deg(l,cartesian_basis=cartesian_basis)
+            if not cartesian_basis:
+              for m in (range(0,l+1) if l != 1 else [1,0]):
+                qc.ao_spherical.append([count,(l,m)])
+                if m != 0:
+                  qc.ao_spherical.append([count,(l,-m)])
           elif index is 'atom':
             ii -= 1
           qc.ao_spec[count][index] = ii
@@ -770,8 +865,8 @@ def read_gaussian_fchk(filename, all_mo=False):
           if index != 0 and not count % basis_count:
             sec_flag = None
       elif sec_flag == 'mo_coeffs':
-        for ii in thisline:
-          qc.mo_spec[index]['coeffs'][count] = float(ii)
+        for ii in thisline:    
+          qc.mo_spec[mo_i0[what]+index]['coeffs'][count] = float(ii)
           count += 1
           if count == basis_count:
             count = 0
@@ -781,21 +876,43 @@ def read_gaussian_fchk(filename, all_mo=False):
   
   # Are all MOs requested for the calculation? 
   if not all_mo:
-    mo_range = copy.deepcopy(qc.mo_spec)
-    qc.mo_spec = []
-    for ii_mo in mo_range:
-      if ii_mo['occ_num'] > 0.0000001:
-        qc.mo_spec.append(ii_mo)
+    for i in range(len(qc.mo_spec))[::-1]:
+      if qc.mo_spec[i]['occ_num'] < 0.0000001:
+        del qc.mo_spec[i]
   
+  # Only molecular orbitals of one spin requested?
+  if spin is not None:
+    for i in range(len(qc.mo_spec))[::-1]:
+      if qc.mo_spec[i]['spin'] != spin:
+        del qc.mo_spec[i]
+  
+  if restricted:
+    # Closed shell calculation
+    for mo in qc.mo_spec:
+      del mo['spin']
+  else:
+    # Rename MOs according to spin
+    for mo in qc.mo_spec:
+      mo['sym'] += '_%s' % mo['spin'][0]
+  
+  # Check for natural orbital occupations
+  energy_sum = sum([abs(i['energy']) for i in qc.mo_spec])
+  if energy_sum < 0.0000001:
+    display('Attention!\n\tThis FChk file contains natural orbitals. '+
+            '(There are no energy eigenvalues.)\n\t' + 
+            'In this case, Gaussian does not print the respective natural' +
+            'occupation numbers!' )
+  
+  qc.geo_info = numpy.array(qc.geo_info).T
   # Convert geo_info and geo_spec to numpy.ndarrays
-  qc.geo_info = numpy.array(qc.geo_info)
-  qc.geo_spec = numpy.array(qc.geo_spec)
+  qc.format_geo()
   
   return qc
   # read_gaussian_fchk 
 
-def read_gaussian_log(filename,all_mo=False,orientation='standard',
-                      i_link=-1,i_geo=-1,i_ao=-1,i_mo=-1,interactive=True):
+def read_gaussian_log(filename,all_mo=False,spin=None,orientation='standard',
+                      i_link=-1,i_geo=-1,i_ao=-1,i_mo=-1,interactive=True,
+                      **kwargs):
   '''Reads all information desired from a Gaussian .log file.
 
   **Parameters:**
@@ -804,6 +921,8 @@ def read_gaussian_log(filename,all_mo=False,orientation='standard',
       Specifies the filename for the input file.
     all_mo :  bool, optional
       If True, all molecular orbitals are returned.
+    spin : {None, 'alpha', or 'beta'}, optional
+      If not None, returns exclusively 'alpha' or 'beta' molecular orbitals.
     orientation : string, choices={'input', 'standard'}, optional
       Specifies orientation of the molecule in Gaussian nomenclature. [#first]_ 
     i_link : int, default=-1
@@ -943,6 +1062,12 @@ def read_gaussian_log(filename,all_mo=False,orientation='standard',
     display(string)
   i_mo = check_sel(len(count['molecular orbitals']),i_mo,interactive=interactive)
   
+  if spin is not None:
+    if spin != 'alpha' and spin != 'beta':
+      raise IOError('`spin=%s` is not a valid option' % spin)
+    else:
+      display('Reading only molecular orbitals of spin %s.' % spin)
+  
   aa_to_au = 1/0.52917720859  # conversion factor for Angstroem to bohr radii
 
   # Set a counter for the AOs 
@@ -1010,12 +1135,15 @@ def read_gaussian_log(filename,all_mo=False,orientation='standard',
           qc.mo_spec = []
           offset = 0
           add = ''
+          orb_spin = []
           if orb_sym == []:
             if 'Alpha' in mo_type:
-              add = '(a)'
+              add = '_a'
+              orb_spin = ['alpha'] * basis_count
             orb_sym = ['A1'+add] * basis_count
             if 'Beta' in mo_type:
-              add = '(b)'
+              add = '_b'
+              orb_spin += ['beta'] * basis_count
               orb_sym += ['A1'+add] * basis_count
           for i in range(len(orb_sym)):
             # for numpy version < 1.6 
@@ -1025,6 +1153,8 @@ def read_gaussian_log(filename,all_mo=False,orientation='standard',
             qc.mo_spec.append({'coeffs': numpy.zeros(basis_count),
                             'energy': 0.,
                             'sym': '%d.%s' % (c,orb_sym[i])})
+            if orb_spin != []:
+              qc.mo_spec[-1]['spin'] = orb_spin[i]
         if mo_type != 'Beta':
           c_mo += 1
         bNew = True                  # Indication for start of new MO section
@@ -1080,16 +1210,16 @@ def read_gaussian_log(filename,all_mo=False,orientation='standard',
           else:
             info = line[18:].replace('(','').replace(')','').split()
             if 'Alpha' in line:
-              add = '(a)'
+              add = '_a'
             elif 'Beta' in line:
-              add = '(b)'
+              add = '_b'
             for i in info:
               orb_sym.append(i + add)   
         if sec_flag == 'mo_info':
           # Molecular orbital section 
-          info = line[:21].split()
-          coeffs = line[21:].replace('-',' -').split()
+          info = line[:21].split()          
           if info == []:
+            coeffs = line[21:].split()
             if bNew:
               index = [offset+i for i in range(len(coeffs))]
               bNew = False
@@ -1099,6 +1229,7 @@ def read_gaussian_log(filename,all_mo=False,orientation='standard',
                 if mo_type not in 'Alpha&Beta':
                   qc.mo_spec[j]['occ_num'] *= 2
           elif 'Eigenvalues' in info:
+            coeffs = line[21:].replace('-',' -').split()
             if mo_type == 'Natural':
               key = 'occ_num'
             else:
@@ -1106,6 +1237,7 @@ def read_gaussian_log(filename,all_mo=False,orientation='standard',
             for i,j in enumerate(index):
               qc.mo_spec[j][key] = float(coeffs[i])
           else:
+            coeffs = line[21:].replace('-',' -').split()
             if not cartesian_basis and offset == 0:
               if old_ao != line[:13].split()[-1]:
                 old_ao = line[:13].split()[-1]
@@ -1132,20 +1264,26 @@ def read_gaussian_log(filename,all_mo=False,orientation='standard',
   
   # Are all MOs requested for the calculation? 
   if not all_mo:
-    mo_range = copy.deepcopy(qc.mo_spec)
-    qc.mo_spec = []
-    for ii_mo in mo_range:
-      if ii_mo['occ_num'] > 0.0000001:
-        qc.mo_spec.append(ii_mo)
+    for i in range(len(qc.mo_spec))[::-1]:
+      if qc.mo_spec[i]['occ_num'] < 0.0000001:
+        del qc.mo_spec[i]
+    
+  if spin is not None:
+    if orb_spin == []:
+      raise IOError('You requested `%s` orbitals, but None of them are present.'
+                    % spin)
+    else:
+      for i in range(len(qc.mo_spec))[::-1]:
+        if qc.mo_spec[i]['spin'] != spin:
+          del qc.mo_spec[i]
   
   # Convert geo_info and geo_spec to numpy.ndarrays
-  qc.geo_info = numpy.array(qc.geo_info)
-  qc.geo_spec = numpy.array(qc.geo_spec)
-  
+  qc.format_geo()
   return qc
   # read_gaussian_log 
   
-def read_aomix(filename, all_mo=False, i_md=-1, interactive=True):
+def read_aomix(filename, all_mo=False, spin=None, i_md=-1, interactive=True,
+               created_by_tmol=True, **kwargs):
   '''Reads all information desired from a aomix file.
   
   **Parameters:**
@@ -1158,21 +1296,24 @@ def read_aomix(filename, all_mo=False, i_md=-1, interactive=True):
       Selects the `[AOMix Format]` section of the output file.
     interactive : bool
       If True, the user is asked to select the different sets.
+    created_by_tmol : bool
+      If True and if Cartesian basis set is found, the molecular orbital 
+      coefficients will be converted.
   
   **Returns:**
   
     qc (class QCinfo) with attributes geo_spec, geo_info, ao_spec, mo_spec, etot :
         See :ref:`Central Variables` for details.
   '''
-
+  
   fid    = open(filename,'r')      # Open the file
   flines = fid.readlines()         # Read the WHOLE file into RAM
   fid.close()                      # Close the file
   
   # Is this really a molden file? 
   if not '[AOMix Format]\n' in flines:
-    display('The input file %s is no valid aomix file!\nIt does' +
-          ' not contain the keyword: [AOMix Format]\nEXIT\n' % filename)
+    display('The input file %s is no valid aomix file!\n\nIt does'  % filename+
+          ' not contain the keyword: [AOMix Format]\n')
     raise IOError('Not a valid input file')
   
   def check_sel(count,i,interactive=False):
@@ -1193,6 +1334,9 @@ def read_aomix(filename, all_mo=False, i_md=-1, interactive=True):
               ('last element.' if (i == count-1) else 'element %d.' % i))
     return i
   
+  has_alpha = []
+  has_beta = []
+  restricted = []
   count = 0
   # Go through the file line by line 
   for il in range(len(flines)):
@@ -1201,10 +1345,19 @@ def read_aomix(filename, all_mo=False, i_md=-1, interactive=True):
     # Check the file for keywords 
     if '[AOMix Format]' in line:
       count += 1
+      has_alpha.append(False)
+      has_beta.append(False)
+      restricted.append(False)
+    if 'Spin' in line and 'alpha' in line.lower():
+      has_alpha[-1] = True
+    if 'Spin' in line and 'beta' in line.lower():
+      has_beta[-1] = True
+    if 'Occup' in line:
+      restricted[-1] = restricted[-1] or (float(line.split('=')[1]) > 1.+1e-4)
   
   if count == 0:
-    display('The input file %s is no valid aomix file!\nIt does' % filename +
-          ' not contain the keyword: [AOMix Format]\nEXIT\n' )
+    display('The input file %s is no valid aomix file!\n\nIt does' % filename +
+          ' not contain the keyword: [AOMix Format]\n')
     raise IOError('Not a valid input file')
   else:
     if count > 1:
@@ -1213,6 +1366,22 @@ def read_aomix(filename, all_mo=False, i_md=-1, interactive=True):
               'this file contains %d aomix files.' % count)
     i_md = check_sel(count,i_md,interactive=interactive)
   
+  if spin is not None:
+    if restricted[i_md]:
+      raise IOError('The keyword `spin` is only supported for unrestricted calculations.')    
+    if spin != 'alpha' and spin != 'beta':
+      raise IOError('`spin=%s` is not a valid option' % spin)
+    elif spin == 'alpha' and has_alpha[i_md]:
+      display('Reading only molecular orbitals of spin alpha.')
+    elif spin == 'beta' and has_beta[i_md]:
+      display('Reading only molecular orbitals of spin alpha.')
+    elif (not has_alpha[i_md]) and (not has_beta[i_md]):
+      raise IOError(
+           'Molecular orbitals in `molden` file do not contain `Spin=` keyword')
+    elif ((spin == 'alpha' and not has_alpha[i_md]) or 
+          (spin == 'beta' and not has_beta[i_md])):
+      raise IOError('You requested `%s` orbitals, but None of them are present.'
+                    % spin)
   
   # Set a counter for the AOs 
   basis_count = 0
@@ -1221,6 +1390,7 @@ def read_aomix(filename, all_mo=False, i_md=-1, interactive=True):
   synonyms = {'Sym': 'sym',
               'Ene': 'energy',
               'Occup': 'occ_num',
+              'Spin': 'spin'
              }
   MO_keys = synonyms.keys()
   
@@ -1333,8 +1503,10 @@ def read_aomix(filename, all_mo=False, i_md=-1, interactive=True):
             # Append information to dict of this MO 
             info = line.replace('\n','').replace(' ','')
             info = info.split('=')
-            if info[0] in MO_keys: 
-              if info[0] != 'Sym':
+            if info[0] in MO_keys:               
+              if info[0] == 'Spin':
+                info[1] = info[1].lower()
+              elif info[0] != 'Sym':
                 info[1] = float(info[1])
               elif not '.' in info[1]:
                 from re import search
@@ -1387,42 +1559,65 @@ def read_aomix(filename, all_mo=False, i_md=-1, interactive=True):
                       exp_list[count][1],
                       exp_list[count][2]))
       count += 1
-
+    j['exp_list'] = numpy.array(j['exp_list'],dtype=numpy.int64)
+  
+  # For Cartesian basis sets in Turbomole, the molecular orbital coefficients 
+  # have to be converted.
+  is_tmol_cart = not (len(qc.mo_spec) % len(qc.mo_spec[0]['coeffs'])) 
+  
   # Are all MOs requested for the calculation? 
   if not all_mo:
-    mo_range   = copy.deepcopy(qc.mo_spec)
-    qc.mo_spec = []
-    for ii_mo in mo_range:
-      if ii_mo['occ_num'] > 0.0000001:
-        qc.mo_spec.append(ii_mo)
-    
-  # Convert geo_info and geo_spec to numpy.ndarrays
-  qc.geo_info = numpy.array(qc.geo_info)
-  qc.geo_spec = numpy.array(qc.geo_spec)
+    for i in range(len(qc.mo_spec))[::-1]:
+      if qc.mo_spec[i]['occ_num'] < 0.0000001:
+        del qc.mo_spec[i]
   
-  # Convert MO coefficients
-  from orbkit import cSupportCode
-  from orbkit.analytical_integrals import create_mo_coeff, get_lxlylz
-  def dfact(n):
-    if n <= 0:
-      return 1;
-    else:
-      return n * dfact(n-2)
+  # Only molecular orbitals of one spin requested?
+  if spin is not None:
+    for i in range(len(qc.mo_spec))[::-1]:
+      if qc.mo_spec[i]['spin'] != spin:
+        del qc.mo_spec[i]
+  
+  if restricted[i_md]:
+    # Closed shell calculation
+    for mo in qc.mo_spec:
+      del mo['spin']
+  else:
+    # Rename MOs according to spin
+    for mo in qc.mo_spec:      
+      mo['sym'] += '_%s' % mo['spin'][0]
+  
+  # Convert geo_info and geo_spec to numpy.ndarrays
+  qc.format_geo()
+  
+  if is_tmol_cart and created_by_tmol:
+    display('\nFound a Cartesian basis set in the AOMix file.')
+    display('We assume that this file has been created by Turbomole.')
+    display('Applying a conversion to the molecular orbital coefficients, ')
+    display('in order to get normalized orbitals.')
+    
+    # Convert MO coefficients
+    from orbkit import cSupportCode
+    from orbkit.analytical_integrals import create_mo_coeff, get_lxlylz
+    def dfact(n):
+      if n <= 0:
+        return 1;
+      else:
+        return n * dfact(n-2)
 
-  mo = create_mo_coeff(qc.mo_spec)
-  for i,j in enumerate(get_lxlylz(qc.ao_spec)):
-    norm = (dfact(2*j[0] - 1) * dfact(2*j[1] - 1) * dfact(2*j[2] - 1))
-    j = sum(j)
-    if j >1: 
-      mo[:,i] *= numpy.sqrt(norm)   
-  for ii in range(len(qc.mo_spec)):
-    qc.mo_spec[ii]['coeffs'] = mo[ii]
+    mo = create_mo_coeff(qc.mo_spec)
+    for i,j in enumerate(get_lxlylz(qc.ao_spec)):
+      norm = (dfact(2*j[0] - 1) * dfact(2*j[1] - 1) * dfact(2*j[2] - 1))
+      j = sum(j)
+      if j >1: 
+        mo[:,i] *= numpy.sqrt(norm)   
+    for ii in range(len(qc.mo_spec)):
+      qc.mo_spec[ii]['coeffs'] = mo[ii]
   
   return qc
   # read_aomix
   
 
-def read_wfn(filename, all_mo=False):
+def read_wfn(filename, all_mo=False, spin=None, **kwargs):
   '''Reads all information desired from a wfn file.
   
   **Parameters:**
@@ -1437,6 +1632,11 @@ def read_wfn(filename, all_mo=False):
     qc (class QCinfo) with attributes geo_spec, geo_info, ao_spec, mo_spec, etot :
         See :ref:`Central Variables` for details.
   '''
+  if spin is not None:
+    raise IOError('The option `spin` is not supported for the wfn reader.')
+  
+  display('The wfn reader does not work together with orbkit!')
+  
   aa_to_au = 1/0.52917720859
   # Initialize the variables 
   qc = QCinfo()
@@ -1450,7 +1650,8 @@ def read_wfn(filename, all_mo=False):
   exp_list = []
   for j in exp:         
     exp_list.extend(j)
-
+  exp_list = numpy.array(exp_list,dtype=numpy.int64)
+  
   with open(filename) as fileobject:
     for line in fileobject:
       thisline = line.split()      # The current line split into segments
@@ -1509,6 +1710,191 @@ def read_wfn(filename, all_mo=False):
   
   return qc
 
+def read_with_cclib(filename, cclib_parser=None, all_mo=False, spin=None, 
+                    **kwargs):
+  '''Reads all information desired using cclib.
+  
+  **Parameters:**
+  
+    filename : str
+      Specifies the filename for the input file.
+    cclib_parser : str
+      If itype is 'cclib', specifies the cclib.parser.
+    all_mo : bool, optional
+      If True, all molecular orbitals are returned.
+    spin : {None, 'alpha', or 'beta'}, optional
+      If not None, returns exclusively 'alpha' or 'beta' molecular orbitals.
+  
+  **Returns:**
+  
+    qc (class QCinfo) with attributes geo_spec, geo_info, ao_spec, mo_spec, etot :
+        See :ref:`Central Variables` for details.
+  '''
+  
+  if not isinstance(cclib_parser,str):
+    raise IOError('cclib requires the specification of parser, e.g., ' + 
+                  'cclib_parser="Gaussian".')
+  
+  if cclib_parser == 'Molpro':
+    display('\nThe Molpro basis set is not properly read by the cclib parser.')
+    display('Please create a molden file with Molpro, i.e., ' + 
+            '\n\tput,molden,output.molden,NEW;\n')
+  
+  exec('from cclib.parser import %s as parser' % cclib_parser)
+  ccData = parser(filename).parse()
+  return convert_cclib(ccData, all_mo=all_mo, spin=spin)
+
+def convert_cclib(ccData, all_mo=False, spin=None):
+  '''Converts a ccData class created by cclib to an instance of
+  orbkit's QCinfo class.
+
+  **Parameters:**
+  
+    ccData : class
+      Contains the input data created by cclib.
+    all_mo : bool, optional
+      If True, all molecular orbitals are returned.
+    spin : {None, 'alpha', or 'beta'}, optional
+      If not None, returns exclusively 'alpha' or 'beta' molecular orbitals.
+
+
+  **Returns:**
+
+    qc (class QCinfo) with attributes geo_spec, geo_info, ao_spec, mo_spec, etot :
+          See :ref:`Central Variables` for details.
+  '''
+  aa_to_au = 1/0.52917720859
+  # Initialize the variables 
+  qc = QCinfo()
+  
+  # Converting all information concerning atoms and geometry
+  qc.geo_spec = ccData.atomcoords[0] * aa_to_au
+  for ii in range(ccData.natom):
+    symbol = get_atom_symbol(atom=ccData.atomnos[ii])
+    qc.geo_info.append([symbol,str(ii+1),str(ccData.atomnos[ii])])
+  
+  # Convert geo_info and geo_spec to numpy.ndarrays
+  qc.format_geo()
+  
+  # Converting all information about atomic basis set
+
+  for ii in range(ccData.natom):
+    for jj in range(len(ccData.gbasis[ii])):
+      pnum = len(ccData.gbasis[ii][jj][1])
+      qc.ao_spec.append({'atom': ii,
+                  'type': str(ccData.gbasis[ii][jj][0]).lower(),
+                  'pnum':  pnum,
+                  'coeffs': numpy.zeros((pnum, 2))
+                  })
+      for kk in range(pnum):
+        qc.ao_spec[-1]['coeffs'][kk][0] = ccData.gbasis[ii][jj][1][kk][0]
+        qc.ao_spec[-1]['coeffs'][kk][1] = ccData.gbasis[ii][jj][1][kk][1]
+        
+  # Reconstruct exponents list for ao_spec
+  cartesian_basis = True
+  for i in ccData.aonames:
+    if '+' in i or '-' in i:
+      cartesian_basis = False
+
+  if not cartesian_basis:
+      qc.ao_spherical = []
+  
+  count = 0
+  for i,j in enumerate(qc.ao_spec):
+    l = l_deg(lquant[j['type']],cartesian_basis=cartesian_basis)
+    if cartesian_basis:
+      j['exp_list'] = []
+      
+    for ll in range(l):
+      if cartesian_basis:
+        j['exp_list'].append((ccData.aonames[count].lower().count('x'),
+                              ccData.aonames[count].lower().count('y'),
+                              ccData.aonames[count].lower().count('z')))
+      else:
+        m = ccData.aonames[count].lower().split('_')[-1]
+        m = m.replace('+',' +').replace('-',' -').replace('s','s 0').split(' ') 
+        p = 'yzx'.find(m[0][-1])
+        if p != -1:
+          m = p - 1
+        else:
+          m = int(m[-1])
+        qc.ao_spherical.append([i,(lquant[j['type']],m)])
+      count += 1
+  
+  # Converting all information about molecular orbitals
+  ele_num = numpy.sum(ccData.atomnos) - numpy.sum(ccData.coreelectrons) - ccData.charge
+  ue = (ccData.mult-1)
+  
+  # Check for natural orbitals and occupation numbers
+  is_natorb = False
+  if hasattr(ccData,'nocoeffs'):
+    if not hasattr(ccData,'nooccnos'):
+      raise IOError('There are natural orbital coefficients (`nocoeffs`) in the cclib' + 
+                    ' ccData, but no natural occupation numbers (`nooccnos`)!')
+    is_natorb = True 
+  
+  restricted = (len(ccData.mosyms) == 1)
+  if spin is not None:
+    if spin != 'alpha' and spin != 'beta':
+      raise IOError('`spin=%s` is not a valid option' % spin)
+    elif restricted:
+      raise IOError('The keyword `spin` is only supported for unrestricted calculations.')
+    else:
+      display('Converting only molecular orbitals of spin %s.' % spin)
+  
+  sym = {}
+  if len(ccData.mosyms) == 1:
+    add = ['']
+    orb_sym = [None]
+  else:
+    add = ['_a','_b']      
+    orb_sym = ['alpha','beta']
+  
+  for ii in range(ccData.nmo):    
+    for i,j in enumerate(add):
+      a = '%s%s' % (ccData.mosyms[i][ii],j)
+      if a not in sym.keys(): sym[a] = 1
+      else: sym[a] += 1
+      if is_natorb:
+        occ_num = ccData.nooccnos[ii]
+      elif not restricted:
+        occ_num = 1.0 if ii <= ccData.homos[i] else 0.0
+      elif ele_num > ue:
+        occ_num = 2.0
+        ele_num -= 2.0
+      elif ele_num > 0.0 and ele_num <= ue: 
+        occ_num = 1.0
+        ele_num -= 1.0
+        ue -= 1.0
+      else:
+        occ_num = 0.0
+      qc.mo_spec.append({'coeffs': (ccData.nocoeffs if is_natorb else ccData.mocoeffs[i])[ii],
+              'energy': 0.0 if is_natorb else ccData.moenergies[i][ii],
+              'occ_num': occ_num,
+              'sym': '%d.%s' %(sym[a],a)
+              })
+      if orb_sym[i] is not None:
+        qc.mo_spec[-1]['spin'] = orb_sym[i]
+        if spin is not None and spin != orb_sym[i]:
+          del qc.mo_spec[-1]
+    
+    #if restricted and not is_natorb:
+      #if ele_num > ue:
+        #qc.mo_spec[-1]['occ_num'] = 2.0
+        #ele_num -= 2.0
+      #elif ele_num > 0.0 and ele_num <= ue: 
+        #qc.mo_spec[-1]['occ_num'] = 1.0
+        #ele_num -= 1.0
+        #ue -= 1.0
+    
+  # Are all MOs requested for the calculation? 
+  if not all_mo:
+    for i in range(len(qc.mo_spec))[::-1]:
+      if qc.mo_spec[i]['occ_num'] < 0.0000001:
+        del qc.mo_spec[i]
+
+  return qc
+
 
 def mo_select(mo_spec, fid_mo_list, strict=False):
   '''Selects molecular orbitals from an external file or a list of molecular 
@@ -1550,7 +1936,14 @@ def mo_select(mo_spec, fid_mo_list, strict=False):
       :mo_spec: - Selected elements of mo_spec. See :ref:`Central Variables` for details.
       :mo_in_file: - List of molecular orbital labels within the fid_mo_list file.
       :sym_select: - If True, symmetry labels have been used. 
-      
+  
+  ..attention:
+    
+    For **unrestricted** calculations, orbkit adds `_a` (alpha) or `_b` (beta) to
+    the symmetry labels, e.g., `1.1_a`. 
+    If you have specified the option `spin=alpha` or `spin=beta`, only the 
+    alpha or the beta orbitals are taken into account for the counting 
+    within the Integer List.
   '''
   display('\nProcessing molecular orbital list...')
   

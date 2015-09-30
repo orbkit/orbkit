@@ -174,7 +174,8 @@ def get_extrapolation(r1,r2,mo_coeff,deg=1,grid1d=None):
         epol[i,j] = numpy.poly1d(z)(grid1d[r2])
   return epol
 
-def order_using_analytical_overlap(fid_list,itype='molden',deg=0,**kwargs):
+def order_using_analytical_overlap(fid_list,itype='molden',deg=0,numproc=1,
+                                   **kwargs):
   '''Performs an ordering routine using analytical overlap integrals between 
   molecular orbitals. Set fid_list to None to omit the reading of input files.
   
@@ -228,7 +229,7 @@ def order_using_analytical_overlap(fid_list,itype='molden',deg=0,**kwargs):
     shape = numpy.shape(mo_coeff_all[s])
     index_list[s] = numpy.ones((shape[0],shape[1]),dtype=int)
     index_list[s] *= numpy.arange(shape[1],dtype=int)
-   
+  
   c = 0
   for rr in iterate:
     r1 = rr-1
@@ -249,8 +250,8 @@ def order_using_analytical_overlap(fid_list,itype='molden',deg=0,**kwargs):
         mo_r1 = get_extrapolation(r1,r2,mo_coeff,grid1d=std,deg=deg)
       else:
         mo_r1 = mo_coeff[r1]
-      overlap = get_mo_overlap_matrix(mo_r1,mo_coeff[r2],ao_overlap)
-      
+      overlap = get_mo_overlap_matrix(mo_r1,mo_coeff[r2],ao_overlap,
+                                      numproc=numproc)
       for i in range(shape[1]):
         # Iterate the rows of the overlap matrix
         line_max = None # variable for maximum value in the current row

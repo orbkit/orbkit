@@ -705,8 +705,12 @@ def view_with_mayavi(x,y,z,data,geo_spec=None,datalabels=None):
   datalabels : None or list of str
     Contains information about the plotted data with len(datalabels) == len(data).
   '''
-  from traits.api import HasTraits, Range, Instance, on_trait_change, Bool, Str,List
-  from traitsui.api import View, Item, Group, ListStrEditor
+  try:
+    from enthought.traits.api import HasTraits, Range, Instance, on_trait_change, Bool, Str,List
+    from enthought.traitsui.api import View, Item, Group, ListStrEditor
+  except ImportError:
+    from traits.api import HasTraits, Range, Instance, on_trait_change, Bool, Str,List
+    from traitsui.api import View, Item, Group, ListStrEditor
   
   try:
     from enthought.mayavi import mlab

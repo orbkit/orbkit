@@ -148,13 +148,13 @@ def get_ao_overlap(coord_a,coord_b,ao_spec,lxlylz_b=None,contraction=True,
                support_code = support_code,
                headers=["<vector>"],verbose = 1)
   
-  if ao_spherical is not None:
+  if not (ao_spherical is None or ao_spherical == []):
     if not contraction:
       raise IOError('No contraction is currently not supported for a '+ 
-                    'spherical harmonics. Please apply `cartesian2spherical()`'+
+                    'spherical harmonics. Please apply `cartesian2spherical_aoom()`'+
                     ' manually after the contraction.')
     # Convert the overlap matrix to the real-valued spherical harmonic basis.
-    ao_overlap_matrix = cartesian2spherical(ao_overlap_matrix,ao_spec,ao_spherical)
+    ao_overlap_matrix = cartesian2spherical_aoom(ao_overlap_matrix,ao_spec,ao_spherical)
   
   return ao_overlap_matrix
 
@@ -453,7 +453,7 @@ def get_ao_dipole_matrix(qc,component='x'):
       l = len(qc.ao_spec[sel_ao]['exp_list'])
     else:
       l = l_deg(l=qc.ao_spec[sel_ao]['type'].lower(),
-              cartesian_basis=(qc.ao_spherical is None))
+              cartesian_basis=(qc.ao_spherical is None or qc.ao_spherical == []))
     for ll in range(l):
       ao_part_2[:,i] *= qc.geo_spec[qc.ao_spec[sel_ao]['atom'],component]
       i += 1

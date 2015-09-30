@@ -48,7 +48,8 @@ itypes = ['molden',
           'aomix',
           'gamess', 
           'gaussian.log', 
-          'gaussian.fchk']                        #: Specifies possible input types.
+          'gaussian.fchk',
+          'cclib']                        #: Specifies possible input types.
 otypes = ['h5', 'cb', 'am', 'hx', 'vmd','mayavi'] #: Specifies possible output types.
 drv_options = ['x','y','z',
                'xx','yy','zz','x2','y2','z2',
@@ -93,10 +94,14 @@ def init_parser():
   group.add_option("-i", "--input", dest="filename",metavar="INPUT",
                       default='', type="string",nargs=1,
                       help="input file")
-  group.add_option("--itype", dest="itype",
+  group.add_option("-e", "--itype", dest="itype",
                       default='molden', type="choice",choices=itypes,
                       help="input type: '" + "', '".join(itypes) + 
                       "' [default: '%default']")
+  group.add_option("--cclib_parser",dest="cclib_parser",
+                      type="string",
+                      help='''If '--itype=cclib', this argument determines what
+                      cclib.parser will be used, e.g., 'Gaussian' or 'GAMESS'.''')
   group.add_option("-o", "--output",dest="outputname",
                       type="string",
                       help='''name of the output file 
@@ -138,6 +143,11 @@ def init_parser():
                       default=False, action="store_true", 
                       help='''take into account all (occupied and virtual) MOs 
                       for all computations''')
+  group.add_option("--spin",dest="spin",
+                      default=None, type=spin, choices=['alpha','beta'],
+                      help='''Consider only `alpha` or `beta` molecular orbitals
+                      for the computations. Only available for unrestricted
+                      calculations.'''.replace('  ','').replace('\n',''))
   group.add_option("-d", "--drv",dest="drv",choices=drv_options,
                       type="choice",action="append",
                       help=('''compute the analytical derivative of the requested
@@ -268,7 +278,9 @@ def check_options(error=raise_error,display=print_message,
     if itype not in itypes:
       error('Invalid input file format (choose from "%s")\n' % 
           '", "'.join(itypes))
-    
+    if itype == 'cclib' and cclib_parser is None:
+      error('The input type cclib requires the specification of parser, ' + 
+            'e.g., --cclib_parser=Gaussian')
     
     fid_base = os.path.splitext(filename)[0]
     
@@ -364,6 +376,9 @@ def check_options(error=raise_error,display=print_message,
   if not isinstance(all_mo,bool):
     error('The option --all_mo has to be a boolean.\n')
   
+  if spin is not None and not (spin == 'alpha' or spin == 'beta'):
+    error('The option --spin has to be `alpha` or `beta`.\n')
+  
   if (drv is not None) and not all(i in drv_options for i in drv):
     error('Invalid derivative option (choose from "%s")\n' % 
         '", "'.join(drv_options))
@@ -444,14 +459,16 @@ def check_if_exists(fid, what='',error=IOError,display=sys.stdout.write,
 #--- Input/Output Options ---
 filename        = ''            #: Specifies input file name. (str)
 itype           = 'molden'      #: Specifies input file type. See :data:`itypes` for details. (str) 
+cclib_parser    = None          #: If itype is 'cclib', specifies the cclib.parser. (str)
 outputname      = None          #: Specifies output file (base) name. (str)
 otype           = 'h5'          #: Specifies output file type. See :data:`otypes` for details. (str or list of str or None)
 #--- Computational Options ---
 numproc         = 1             #: Specifies number of subprocesses for multiprocessing. (int)
-mo_set          = False         #: Specifies molecular orbitals used for density calculation. (filename)
+mo_set          = False         #: Specifies molecular orbitals used for density calculation. (filename or list of indices)
 calc_ao         = False         #: If True, all atomic orbitals will be computed and saved.
-calc_mo         = False         #: Specifies which molecular orbitals will be calculated. (filename)
+calc_mo         = False         #: Specifies which molecular orbitals will be calculated. (filename or list of indices)
 all_mo          = False         #: If True, all molecular orbitals will be computed. (bool)
+spin            = None          #: If not None, exclusively 'alpha' or 'beta' molecular orbitals are taken into account. (None,'alpha', or 'beta')
 drv             = None          #: Specifies derivative variables. (list of str)
 laplacian       = False         #: If True, computes the laplacian of the density or of the mo_set. (bool)
 #--- Grid-Related Options ---

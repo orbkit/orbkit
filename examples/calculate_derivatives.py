@@ -28,7 +28,6 @@ ok.init()
 
 # Setting up a spherical grid -> also sets option for vector grid
 ok.grid.sph2cart_vector(r,theta,phi)
-ok.grid.is_initialized = True
 
 # orbkit options
 ok.options.filename   = 'h2o.md'       # input file name

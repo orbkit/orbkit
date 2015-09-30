@@ -81,7 +81,9 @@ def run_orbkit(use_qc=None,check_options=True):
     # Read the input file
     qc = read.main_read(options.filename,
                         itype=options.itype,
-                        all_mo=options.all_mo)
+                        all_mo=options.all_mo,
+                        spin=options.spin,
+                        cclib_parser=options.cclib_parser)
   else:
     # Use a user defined QCinfo class.
     qc = use_qc

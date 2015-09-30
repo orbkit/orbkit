@@ -359,7 +359,7 @@ def calc_ao(qc, drv=None, is_vector=False, otype=None, ofid=None):
       fid = '%s_AO%s.h5' % (ofid,dstr)
       display('Saving to Hierarchical Data Format file (HDF5)...\n\t%s' % fid)
       output.hdf5_write(fid,mode='w',gname='general_info',
-                        x=grid.x,y=grid.y,z=grid.z,N=grid.N_,
+                        x=grid.x,y=grid.y,z=grid.z,
                         geo_info=qc.geo_info,geo_spec=qc.geo_spec,
                         lxlylz=numpy.array(lxlylz,dtype=numpy.int64),
                         aolabels=numpy.array(datalabels),
@@ -384,16 +384,22 @@ def calc_ao(qc, drv=None, is_vector=False, otype=None, ofid=None):
   return None
   # calc_ao
 
-def save_mo_hdf5(filename,geo_info,geo_spec,ao_spec,mo_spec,
-                 x=None,y=None,z=None,N=None):
+def save_mo_hdf5(filename,geo_info,geo_spec,ao_spec,mo_spec,is_vector=False,
+                 x=None,y=None,z=None):
   '''Calculate and save selected MOs to an HDF5 File requiering only a
   small amount of the RAM.
   '''
   import h5py
   if x is None: x = grid.x
   if y is None: y = grid.y
-  if z is None: z = grid.z
-  if N is None: N = grid.N_
+  if z is None: z = grid.z  
+  if not is_vector:
+    N = (len(x), len(y), len(z))
+  else:
+    if len(x) != len(y) or len(x) != len(z):
+      raise ValueError("Dimensions of x-, y-, and z- coordinate differ!")      
+    else:
+      N = (len(x),)
   
   # Initialize HDF5_File 
   fid = filename if filename.endswith('.h5') else '%s.h5' % filename
@@ -440,8 +446,8 @@ def save_mo_hdf5(filename,geo_info,geo_spec,ao_spec,mo_spec,
   for ii_z in range(len(xyz[sDim])):
     zz[sDim][:] = xyz[sDim][ii_z]
     
-    ao_list = core.ao_creator(geo_spec,ao_spec,x=zz[0],y=zz[1],z=zz[2],N=N)
-    core.mo_creator(ao_list,mo_spec,x=zz[0],y=zz[1],z=zz[2],N=N,
+    ao_list = core.ao_creator(geo_spec,ao_spec,x=zz[0],y=zz[1],z=zz[2])
+    core.mo_creator(ao_list,mo_spec,x=zz[0],y=zz[1],z=zz[2],
                     vector=False,HDF5_save=fid,h5py=h5py,s=ii_z,
                     numproc=options.numproc)
   
@@ -476,7 +482,7 @@ def atom2index(atom,geo_info=None):
     
   index = []
   
-  if geo_info != None:
+  if geo_info is not None:
     geo_info = numpy.array(geo_info)[:,1]
     for a in atom:
       i = numpy.argwhere(geo_info.astype(int) == a)
@@ -527,11 +533,10 @@ def atom_projected_density(atom,qc,
   if z is None: z = grid.z
   
   if not is_vector:
-    if N is None: N = tuple(grid.N_)
+    N = (len(x), len(y), len(z))
   else:
     if len(x) != len(y) or len(x) != len(z):
-      display("Dimensions of x-, y-, and z- coordinate differ!")
-      return 0
+      raise ValueError("Dimensions of x-, y-, and z- coordinate differ!")      
     else:
       N = (len(x),)
   
@@ -591,7 +596,7 @@ def atom_projected_density(atom,qc,
 
 def numerical_mulliken_charges(atom,qc,
             ao_list=None,mo_list=None,rho_atom=None,
-            x=None,y=None,z=None,N=None,is_vector=False):
+            x=None,y=None,z=None,is_vector=False):
   r'''Compute the Mulliken charges of the selected atoms *numerically* using
   the respective projected electron densities.
   
@@ -614,16 +619,7 @@ def numerical_mulliken_charges(atom,qc,
   if x is None: x = grid.x
   if y is None: y = grid.y
   if z is None: z = grid.z
-  
-  if not is_vector:
-    if N is None: N = tuple(grid.N_)
-  else:
-    if len(x) != len(y) or len(x) != len(z):
-      display("Dimensions of x-, y-, and z- coordinate differ!")
-      return 0
-    else:
-      N = (len(x),)
-  
+    
   atom, index = atom2index(atom,geo_info=qc.geo_info)
   
   rho_atom = atom_projected_density(atom,qc,

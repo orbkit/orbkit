@@ -22,7 +22,9 @@
 *.kate-swp
 *.xyz
 *.pdb
+*.txt
 
+!grid*.txt
 !orbkit*.hx
 !h2o.md
 !MO_List.tab

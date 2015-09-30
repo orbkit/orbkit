@@ -71,7 +71,7 @@ def standard_mass(atom):
     
   **Parameters:**
   
-  qc : int or str
+  atom : int or str
     Contains the name or atomic number of the atom.
   
   **Returns:**
@@ -97,12 +97,16 @@ def get_atom_symbol(atom):
   
   **Returns:**
   
-  symbol : float
+  symbol : str
     Contains the atomic symbol.
   '''
   if nist_mass is None:
     read_nist()  
-  return nist_mass[int(atom)-1][0]  
+  try:
+    atom = int(atom) - 1
+    return nist_mass[atom][0]
+  except ValueError:    
+    return atom.upper()
 
 class CIinfo:
   '''Class managing all information from the from the output 
@@ -203,6 +207,13 @@ class QCinfo:
       total_charge += nuc_charge
     self.coc = self.coc/total_charge
     return self.coc
+  
+  def format_geo(self):
+    for i in self.geo_info:
+      i[0] = get_atom_symbol(i[0])
+      i[2] = float(i[-1])
+    self.geo_info = numpy.array(self.geo_info)
+    self.geo_spec = numpy.array(self.geo_spec)
   
   def todict(self):
     '''Converts all essential variables into a dictionary.
