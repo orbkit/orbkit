@@ -160,7 +160,7 @@ def cube_creator(rho,filename,geo_info,geo_spec,comments='',**kwargs):
   
   for ii in range(len(geo_info)):
     string += '\n'
-    string += ('%(N)s' % {'N': geo_info[ii][2]}).rjust(5)
+    string += ('%(N)d' % {'N': round(float(geo_info[ii][2]))}).rjust(5)
     string += ('%(ch)0.6f' % {'ch': float(geo_info[ii][1])}).rjust(12)
     for jj in range(3):
       string += ('%(r)0.6f' % {'r': geo_spec[ii][jj]}).rjust(12)

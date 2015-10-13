@@ -209,6 +209,8 @@ class QCinfo:
     return self.coc
   
   def format_geo(self):
+    '''Converts geo_info and geo_spec to a universal format.
+    '''
     for i in self.geo_info:
       i[0] = get_atom_symbol(i[0])
       i[2] = float(i[-1])

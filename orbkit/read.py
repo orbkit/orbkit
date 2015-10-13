@@ -1887,15 +1887,6 @@ def convert_cclib(ccData, all_mo=False, spin=None):
         if spin is not None and spin != orb_sym[i]:
           del qc.mo_spec[-1]
     
-    #if restricted and not is_natorb:
-      #if ele_num > ue:
-        #qc.mo_spec[-1]['occ_num'] = 2.0
-        #ele_num -= 2.0
-      #elif ele_num > 0.0 and ele_num <= ue: 
-        #qc.mo_spec[-1]['occ_num'] = 1.0
-        #ele_num -= 1.0
-        #ue -= 1.0
-    
   # Are all MOs requested for the calculation? 
   if not all_mo:
     for i in range(len(qc.mo_spec))[::-1]:
