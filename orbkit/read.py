@@ -164,7 +164,7 @@ def read_molden(filename, all_mo=False, spin=None, i_md=-1, interactive=True,
     elif spin == 'alpha' and has_alpha[i_md]:
       display('Reading only molecular orbitals of spin alpha.')
     elif spin == 'beta' and has_beta[i_md]:
-      display('Reading only molecular orbitals of spin alpha.')
+      display('Reading only molecular orbitals of spin beta.')
     elif (not has_alpha[i_md]) and (not has_beta[i_md]):
       raise IOError(
            'Molecular orbitals in `molden` file do not contain `Spin=` keyword')
@@ -364,8 +364,6 @@ def read_gamess(filename, all_mo=False, spin=None, read_properties=False,
     qc (class QCinfo) with attributes geo_spec, geo_info, ao_spec, mo_spec, etot :
         See :ref:`Central Variables` for details.
   '''
-  if spin is not None:
-    raise IOError('The option `spin` is not supported for the gamess reader.')
   
   fid    = open(filename,'r')      # Open the file
   flines = fid.readlines()         # Read the WHOLE file into RAM
@@ -373,43 +371,87 @@ def read_gamess(filename, all_mo=False, spin=None, read_properties=False,
   
   # Initialize the variables 
   qc = QCinfo()
-  sec_flag = None                 # A Flag specifying the current section
-  is_pop_ana = True               # Flag for population analysis for ground state
-  len_mo = 0                      # Number of MOs 
-  sym={}                      # Symmetry of MOs
+  has_alpha = False                  # Flag for alpha electron set
+  has_beta = False                   # Flag for beta electron set
+  restricted = True                  # Flag for restricted calculation
+  sec_flag = None                    # A Flag specifying the current section
+  is_pop_ana = True                  # Flag for population analysis for ground state
+  keyword = [' ATOM      ATOMIC                      COORDINATES','\n'] 
+                                     # Keywords for single point calculation and 
+                                     # geometry optimization
+  mokey = 'EIGENVECTORS'             # Keyword for MOs
+  unrestopt = False                  # Flag for unrestricted optimization
+  bopt = False                       # Flag for geometry optimization
+  sym={}                             # Symmetry of MOs
+  geo_skip = 1                       # Number of lines to skip in geometry section
 
   for il in range(len(flines)):
-    line = flines[il]              # The current line as string
-    thisline = line.split()        # The current line split into segments
-    # Check the file for keywords 
-    if ' ATOM      ATOMIC                      COORDINATES' in line:
+    line = flines[il]               # The current line as string
+    thisline = line.split()         # The current line split into segments
+    # Check the file for keywords
+    if 'RUNTYP=OPTIMIZE' in line:
+      keyword = [' COORDINATES OF ALL ATOMS ARE',
+                 '***** EQUILIBRIUM GEOMETRY LOCATED *****']
+      geo_skip = 2
+      bopt = True
+      if 'SCFTYP=UHF' in line:
+        mokey = ' SET ****'
+        restricted = False
+      else:
+        mokey = 'MOLECULAR ORBITALS'
+      
+    elif keyword[0] in line and keyword[1] in flines[il-1]:
       # The section containing information about 
       # the molecular geometry begins 
       sec_flag = 'geo_info'
-      geo_skip = 1     # Number of lines to skip
       atom_count = 0  # Counter for Atoms
       if '(BOHR)' in line:
-        # The length are given in Angstroem 
-        # and have to be converted to Bohr radii 
+        # The length are given in Bohr radii
         aa_to_au = 1.0
       else:
-        # The length are given in Bohr radii 
+        # The length are given in Angstroem 
+        # and have to be converted to Bohr radii
         aa_to_au = 1/0.52917720859
-    
+        
     elif 'ATOMIC BASIS SET' in line:
       # The section containing information about 
       # the atomic orbitals begins 
       sec_flag = 'ao_info'
       ao_skip = 6                     # Number of lines to skip
       AO = []                         # Atomic orbitals
-    elif '          EIGENVECTORS' in line:
+
+    elif '----- ALPHA SET ' in line:
+      # The section for alpha electrons
+      has_alpha = True
+      has_beta = False
+      restricted = False
+        
+    elif '----- BETA SET ' in line:
+      # The section for alpha electrons
+      restricted = False
+      has_alpha = False
+      has_beta = True
+      
+    elif mokey in line:
       # The section containing information about 
       # the molecular orbitals begins 
       sec_flag = 'mo_info'
       mo_skip = 1
-      init_mo = False             # Initialize new MO section
-      info_key = None             # A Flag specifying the energy and symmetry section
+      len_mo = 0                      # Number of MOs 
+      init_mo = False                 # Initialize new MO section
+      info_key = None                 # A Flag specifying the energy and symmetry section
       exp_list = []
+      if 'ALPHA' in line:
+        has_alpha = True
+        mo_skip = 0
+      elif 'BETA' in line:
+        has_beta = True
+        has_alpha = False
+        mo_skip = 0
+    
+    elif 'NATURAL ORBITALS' in line:
+      display('The natural orbitals are not extracted.')
+      
     elif ' NUMBER OF OCCUPIED ORBITALS (ALPHA)          =' in line:
       occ = []                        # occupation number of molecular orbitals
       occ.append(int(thisline[-1]))
@@ -500,6 +542,8 @@ def read_gamess(filename, all_mo=False, spin=None, read_properties=False,
         if not mo_skip:
           if 'END OF' in line and 'CALCULATION' in line or '-----------' in line:
             sec_flag = None
+            has_alpha = False
+            has_beta = False
           else:
             if thisline == []:
               info_key = None
@@ -513,11 +557,19 @@ def read_gamess(filename, all_mo=False, spin=None, read_properties=False,
               init_len = len(thisline)
               exp_list = []
               for ii in range(len(thisline)):
-                qc.mo_spec.append({'coeffs': [],
-                                'energy': 0.0,
-                                'occ_num': 0.0,
-                                'sym': ''
-                                })
+                if has_alpha == True or has_beta == True:
+                  qc.mo_spec.append({'coeffs': [],
+                                  'energy': 0.0,
+                                  'occ_num': 0.0,
+                                  'sym': '',
+                                  'spin': ''
+                                  })
+                else:
+                  qc.mo_spec.append({'coeffs': [],
+                  'energy': 0.0,
+                  'occ_num': 0.0,
+                  'sym': ''
+                  })
               init_mo = False
               info_key = 'energy'
             elif len(thisline) == init_len and info_key == 'energy':
@@ -530,7 +582,14 @@ def read_gamess(filename, all_mo=False, spin=None, read_properties=False,
                 a = thisline[init_len-ii]
                 if a not in sym.keys(): sym[a] = 1
                 else: sym[a] = len_mo
-                qc.mo_spec[-ii]['sym'] = '%d.%s' % (sym[a], thisline[init_len-ii])
+                if has_alpha:
+                  qc.mo_spec[-ii]['sym'] = '%d.%s_a' % (sym[a], thisline[init_len-ii])
+                  qc.mo_spec[-ii]['spin'] = 'alpha'
+                elif has_beta:
+                  qc.mo_spec[-ii]['sym'] = '%d.%s_b' % (sym[a], thisline[init_len-ii])
+                  qc.mo_spec[-ii]['spin'] = 'beta'
+                else:
+                  qc.mo_spec[-ii]['sym'] = '%d.%s' % (sym[a], thisline[init_len-ii])
               info_key = 'coeffs'
             elif thisline != [] and info_key == 'coeffs':
               exp_list.append((line[11:17]))
@@ -633,19 +692,59 @@ def read_gamess(filename, all_mo=False, spin=None, read_properties=False,
                             exp_list[count].lower().count('z')))
       count += 1
     j['exp_list'] = numpy.array(j['exp_list'],dtype=numpy.int64)
-  for ii in range(len(qc.mo_spec)):
-    if occ[0] and occ[1]:
-      qc.mo_spec[ii]['occ_num'] += 2.0
-      occ[0] -= 1
-      occ[1] -= 1
-    if not occ[0] and occ[1]:
-      qc.mo_spec[ii]['occ_num'] += 1.0
-      occ[1] -= 1
-    if not occ[1] and occ[0]:
-      qc.mo_spec[ii]['occ_num'] += 1.0
-      occ[0] -= 1
   
-  #FIXME: Do you delete the unoccupied orbitals in case of all_mo=False?
+  if restricted:
+    for ii in range(len(qc.mo_spec)):
+      if occ[0] and occ[1]:
+        qc.mo_spec[ii]['occ_num'] += 2.0
+        occ[0] -= 1
+        occ[1] -= 1
+      if not occ[0] and occ[1]:
+        qc.mo_spec[ii]['occ_num'] += 1.0
+        occ[1] -= 1
+      if not occ[1] and occ[0]:
+        qc.mo_spec[ii]['occ_num'] += 1.0
+        occ[0] -= 1
+  
+  if restricted == False:
+    for ii in range(len(qc.mo_spec)):
+      if qc.mo_spec[ii]['spin'] == 'alpha' and occ[0] > 0:
+        qc.mo_spec[ii]['occ_num'] += 1.0
+        occ[0] -= 1
+        has_alpha = True
+      elif qc.mo_spec[ii]['spin'] == 'beta' and occ[1] > 0:
+        qc.mo_spec[ii]['occ_num'] += 1.0
+        occ[1] -= 1
+        has_beta = True
+  
+  if spin is not None:
+    if restricted:
+      raise IOError('The keyword `spin` is only supported for unrestricted calculations.')    
+    if spin != 'alpha' and spin != 'beta':
+      raise IOError('`spin=%s` is not a valid option' % spin)
+    elif spin == 'alpha' and has_alpha == True:
+      display('Reading only molecular orbitals of spin alpha.')
+    elif spin == 'beta' and has_beta == True:
+      display('Reading only molecular orbitals of spin beta.')
+    elif (not has_alpha) and (not has_beta):
+      raise IOError(
+            'No spin molecular orbitals available')
+    elif ((spin == 'alpha' and not has_alpha) or 
+          (spin == 'beta' and not has_beta)):
+      raise IOError('You requested `%s` orbitals, but None of them are present.'
+                    % spin)
+                    
+  # Are all MOs requested for the calculation? 
+  if not all_mo:
+    for i in range(len(qc.mo_spec))[::-1]:
+      if qc.mo_spec[i]['occ_num'] < 0.0000001:
+        del qc.mo_spec[i]
+  
+  # Only molecular orbitals of one spin requested?
+  if spin is not None:
+    for i in range(len(qc.mo_spec))[::-1]:
+      if qc.mo_spec[i]['spin'] != spin:
+        del qc.mo_spec[i]
     
   # Convert geo_info and geo_spec to numpy.ndarrays
   qc.format_geo()
