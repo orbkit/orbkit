@@ -5,6 +5,10 @@ This short tutorial shows, how to perform a Mulliken and Löwdin population
 analysis with orbkit analytically, and how to write the output to an ``xyz`` or
 a ``PDB`` file.
 
+.. contents:: Table of Contents:
+  :local:
+  :depth: 1
+
 Computation of the Atomic Populations and Charges
 -------------------------------------------------
 
@@ -15,7 +19,7 @@ First, we have to import some modules and set some of orbkits options::
 Then, we have to read the input file::
 
   # Open molden file and read parameters
-  qc = read.main_read('h2o.md',itype='molden',all_mo=True)
+  qc = read.main_read('h2o.md',itype='molden')
 
 Now, we have to call the respective functions:
   

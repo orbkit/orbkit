@@ -33,8 +33,8 @@
   
     <link rel="top" title="orbkit 0.2.2 documentation" href="../index.html"/>
         <link rel="up" title="Tutorials" href="index.html"/>
-        <link rel="next" title="Tutorial for the Integration with Cubature" href="cubature.html"/>
-        <link rel="prev" title="Tutorial for the Visualization" href="vis.html"/> 
+        <link rel="next" title="Tutorial for Input Processing with cclib" href="cclib.html"/>
+        <link rel="prev" title="Tutorial for Visualization" href="vis.html"/> 
 
   
   <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
@@ -82,9 +82,10 @@
 </ul>
 </li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Tutorials</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="vis.html">Tutorial for the Visualization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="vis.html">Tutorial for Visualization</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="">Tutorial for Atomic Population and Charge Analysis</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cubature.html">Tutorial for the Integration with Cubature</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cclib.html">Tutorial for Input Processing with cclib</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cubature.html">Tutorial for Numerical Integration with Cubature</a></li>
 <li class="toctree-l2"><a class="reference internal" href="multiple_files.html">Tutorial for Processing Multiple Input Files</a></li>
 </ul>
 </li>
@@ -135,15 +136,22 @@
 <p>This short tutorial shows, how to perform a Mulliken and Löwdin population
 analysis with orbkit analytically, and how to write the output to an <tt class="docutils literal"><span class="pre">xyz</span></tt> or
 a <tt class="docutils literal"><span class="pre">PDB</span></tt> file.</p>
+<div class="contents local topic" id="table-of-contents">
+<p class="topic-title first">Table of Contents:</p>
+<ul class="simple">
+<li><a class="reference internal" href="#computation-of-the-atomic-populations-and-charges" id="id1">Computation of the Atomic Populations and Charges</a></li>
+<li><a class="reference internal" href="#creation-of-an-output-file" id="id2">Creation of an Output File</a></li>
+</ul>
+</div>
 <div class="section" id="computation-of-the-atomic-populations-and-charges">
-<h2>Computation of the Atomic Populations and Charges<a class="headerlink" href="#computation-of-the-atomic-populations-and-charges" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id1">Computation of the Atomic Populations and Charges</a><a class="headerlink" href="#computation-of-the-atomic-populations-and-charges" title="Permalink to this headline">¶</a></h2>
 <p>First, we have to import some modules and set some of orbkits options:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">orbkit</span> <span class="kn">import</span> <span class="n">read</span><span class="p">,</span> <span class="n">atomic_populations</span>
 </pre></div>
 </div>
 <p>Then, we have to read the input file:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="c"># Open molden file and read parameters</span>
-<span class="n">qc</span> <span class="o">=</span> <span class="n">read</span><span class="o">.</span><span class="n">main_read</span><span class="p">(</span><span class="s">&#39;h2o.md&#39;</span><span class="p">,</span><span class="n">itype</span><span class="o">=</span><span class="s">&#39;molden&#39;</span><span class="p">,</span><span class="n">all_mo</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">qc</span> <span class="o">=</span> <span class="n">read</span><span class="o">.</span><span class="n">main_read</span><span class="p">(</span><span class="s">&#39;h2o.md&#39;</span><span class="p">,</span><span class="n">itype</span><span class="o">=</span><span class="s">&#39;molden&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Now, we have to call the respective functions:</p>
@@ -176,7 +184,7 @@ population analysis and has following members:</p>
 </table>
 </div>
 <div class="section" id="creation-of-an-output-file">
-<h2>Creation of an Output File<a class="headerlink" href="#creation-of-an-output-file" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id2">Creation of an Output File</a><a class="headerlink" href="#creation-of-an-output-file" title="Permalink to this headline">¶</a></h2>
 <p>orbkit provides two possible output file formats for the population analysis:
 the <tt class="docutils literal"><span class="pre">PDB</span></tt> and the <tt class="docutils literal"><span class="pre">xyz</span></tt> file format:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">orbkit.output</span> <span class="kn">import</span> <span class="n">pdb_creator</span><span class="p">,</span><span class="n">xyz_creator</span>
@@ -213,10 +221,10 @@ processed for visualization by several programs.</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="cubature.html" class="btn btn-neutral float-right" title="Tutorial for the Integration with Cubature"/>Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="cclib.html" class="btn btn-neutral float-right" title="Tutorial for Input Processing with cclib"/>Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="vis.html" class="btn btn-neutral" title="Tutorial for the Visualization"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="vis.html" class="btn btn-neutral" title="Tutorial for Visualization"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

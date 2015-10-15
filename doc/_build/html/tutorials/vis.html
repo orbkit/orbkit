@@ -8,7 +8,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Tutorial for the Visualization &mdash; orbkit 0.2.2 documentation</title>
+  <title>Tutorial for Visualization &mdash; orbkit 0.2.2 documentation</title>
   
 
   
@@ -82,9 +82,10 @@
 </ul>
 </li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Tutorials</a><ul class="current">
-<li class="toctree-l2 current"><a class="current reference internal" href="">Tutorial for the Visualization</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="">Tutorial for Visualization</a></li>
 <li class="toctree-l2"><a class="reference internal" href="atomic_populations.html">Tutorial for Atomic Population and Charge Analysis</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cubature.html">Tutorial for the Integration with Cubature</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cclib.html">Tutorial for Input Processing with cclib</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cubature.html">Tutorial for Numerical Integration with Cubature</a></li>
 <li class="toctree-l2"><a class="reference internal" href="multiple_files.html">Tutorial for Processing Multiple Input Files</a></li>
 </ul>
 </li>
@@ -119,7 +120,7 @@
       
           <li><a href="index.html">Tutorials</a> &raquo;</li>
       
-    <li>Tutorial for the Visualization</li>
+    <li>Tutorial for Visualization</li>
       <li class="wy-breadcrumbs-aside">
         
           <a href="../_sources/tutorials/vis.txt" rel="nofollow"> View page source</a>
@@ -130,16 +131,31 @@
 </div>
           <div role="main">
             
-  <div class="section" id="tutorial-for-the-visualization">
-<span id="id1"></span><h1>Tutorial for the Visualization<a class="headerlink" href="#tutorial-for-the-visualization" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="tutorial-for-visualization">
+<span id="id1"></span><h1>Tutorial for Visualization<a class="headerlink" href="#tutorial-for-visualization" title="Permalink to this headline">¶</a></h1>
 <p>This chapter shows examples of how to depict data obtained from orbkit.</p>
 <p>For simplicity, we use the molden file <tt class="docutils literal"><span class="pre">h2o.md</span></tt> as an example.
 This file can be found in <tt class="docutils literal"><span class="pre">$ORBKITPATH/examples</span></tt>. Moreover, we assume that
 you have followed the <a class="reference internal" href="../install.html#installation-instructions"><em>Installation Instructions for orbkit</em></a>.</p>
+<div class="contents local topic" id="table-of-contents">
+<p class="topic-title first">Table of Contents:</p>
+<ul class="simple">
+<li><a class="reference internal" href="#within-the-terminal" id="id2">Within the Terminal</a><ul>
+<li><a class="reference internal" href="#using-vmd" id="id3">Using VMD</a></li>
+<li><a class="reference internal" href="#using-mayavi" id="id4">Using Mayavi</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#within-a-python-shell" id="id5">Within a Python Shell</a><ul>
+<li><a class="reference internal" href="#method-one" id="id6">Method One</a></li>
+<li><a class="reference internal" href="#method-two" id="id7">Method Two</a></li>
+</ul>
+</li>
+</ul>
+</div>
 <div class="section" id="within-the-terminal">
-<h2>Within the Terminal<a class="headerlink" href="#within-the-terminal" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id2">Within the Terminal</a><a class="headerlink" href="#within-the-terminal" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="using-vmd">
-<h3>Using VMD<a class="headerlink" href="#using-vmd" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id3">Using VMD</a><a class="headerlink" href="#using-vmd" title="Permalink to this headline">¶</a></h3>
 <p>The fastest and easiest way of depicting molecular orbitals or the electron
 density is by creating cube files and a <a class="reference external" href="http://www.ks.uiuc.edu/Research/vmd/">VMD</a> script. For non-commercial use,
 VMD is a free program.</p>
@@ -163,7 +179,7 @@ This can be displayed using VMD by calling</p>
 <p>Hint: By default, orbkit uses absolute paths within the VMD script file.</p>
 </div>
 <div class="section" id="using-mayavi">
-<h3>Using Mayavi<a class="headerlink" href="#using-mayavi" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id4">Using Mayavi</a><a class="headerlink" href="#using-mayavi" title="Permalink to this headline">¶</a></h3>
 <p>To get a rough overview over the shape of the quantities computed, you can use a
 simple interface to <a class="reference external" href="http://docs.enthought.com/mayavi/mayavi/auto/examples.html">Mayavi</a>. Although, no output file is created with that option,
 you can combine it with other output options, e.g., <tt class="docutils literal"><span class="pre">--otype=vmd</span></tt>.</p>
@@ -175,13 +191,13 @@ you can combine it with other output options, e.g., <tt class="docutils literal"
 </div>
 </div>
 <div class="section" id="within-a-python-shell">
-<h2>Within a Python Shell<a class="headerlink" href="#within-a-python-shell" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id5">Within a Python Shell</a><a class="headerlink" href="#within-a-python-shell" title="Permalink to this headline">¶</a></h2>
 <p>All tasks mentioned above can be directly performed within a Python shell.
 This will be shown in the following, i.e., we will compute a set of molecular orbitals
 on a grid adjusted to the molecular geometry, and for the depiction, we will create a
 <a class="reference external" href="http://www.ks.uiuc.edu/Research/vmd/">VMD</a> script and a <a class="reference external" href="http://docs.enthought.com/mayavi/mayavi/auto/examples.html">Mayavi</a> scene.</p>
 <div class="section" id="method-one">
-<h3>Method One<a class="headerlink" href="#method-one" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id6">Method One</a><a class="headerlink" href="#method-one" title="Permalink to this headline">¶</a></h3>
 <p>First, import the required python modules:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="o">&gt;&gt;</span> <span class="kn">from</span> <span class="nn">orbkit</span> <span class="kn">import</span> <span class="n">options</span><span class="p">,</span> <span class="n">main</span>
 </pre></div>
@@ -200,7 +216,7 @@ on a grid adjusted to the molecular geometry, and for the depiction, we will cre
 </div>
 </div>
 <div class="section" id="method-two">
-<h3>Method Two<a class="headerlink" href="#method-two" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id7">Method Two</a><a class="headerlink" href="#method-two" title="Permalink to this headline">¶</a></h3>
 <p>This task can also be accomplish by using the respective functions directly.
 First, import the required python modules:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="o">&gt;&gt;</span> <span class="kn">from</span> <span class="nn">orbkit</span> <span class="kn">import</span> <span class="n">read</span><span class="p">,</span> <span class="n">grid</span><span class="p">,</span> <span class="n">extras</span><span class="p">,</span> <span class="n">output</span><span class="p">,</span> <span class="n">display</span>

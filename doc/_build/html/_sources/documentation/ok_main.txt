@@ -70,6 +70,8 @@ The file type has to be specified via::
 The available file types are **'molden'** (default),**aomix** (AOMix file),
 **'gamess'** (GAMESS-US output file), **'gaussian.log'** (GAUSSIAN output file), 
 **'gaussian.fchk'** (GAUSSIAN formatted checkpoint file). 
+Besides, orbkit can use cclib to parse output files. 
+(see :ref:`Tutorial for Input Processing with cclib`)
 
 Concerning orbkit's output, you can choose between several following options:
 

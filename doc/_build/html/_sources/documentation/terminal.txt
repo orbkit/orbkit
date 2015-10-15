@@ -44,6 +44,8 @@ within one run, multiple calls of the option :literal:`--otype=OTYPE` are possib
 The available input file types (``--itype=ITYPE``) are **molden** (default), 
 **aomix** (AOMix file), **gamess** (GAMESS-US output file), **gaussian.log** 
 (GAUSSIAN output file) and **gaussian.fchk** (GAUSSIAN formatted checkpoint file). 
+Besides, orbkit can use cclib to parse output files. 
+(see :ref:`Tutorial for Input Processing with cclib`)
 
 You can choose between standard Gaussian_ cube files (:literal:`--otype=cb`), 
 HDF5_ files (:literal:`--otype=h5`), or ZIBAmira_ Mesh files (:literal:`--otype=am`).
@@ -81,7 +83,7 @@ saved to disc, if no other output type is specified.
 .. hint::
 
   If you want to use orbkit for visualization, you may want to read the 
-  :ref:`Tutorial for the Visualization`.
+  :ref:`Tutorial for Visualization`.
 
 .. _grid:
 
@@ -197,7 +199,13 @@ set of molecular orbitals.
 The selection of molecular orbitals can be accomplished in the same manner as
 described above for ``--calc_mo``. Although for ``--mo_set``, each line in the 
 external file or each call of ``--mo_set`` corresponds to one density calculation.
-    
+
+Unrestricted Calculations
+-------------------------
+
+For unrestricted calculations, orbkit provides the possibility to compute 
+spin densities. Here, only 
+
 Derivative Calculation
 ----------------------
 

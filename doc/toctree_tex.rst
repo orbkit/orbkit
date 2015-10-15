@@ -16,6 +16,7 @@
    documentation/ok_analytical
    documentation/cvars
    documentation/options
+   tutorials/index
    licence
    impressum
 

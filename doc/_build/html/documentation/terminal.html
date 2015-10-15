@@ -82,9 +82,10 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../tutorials/index.html">Tutorials</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../tutorials/vis.html">Tutorial for the Visualization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/vis.html">Tutorial for Visualization</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../tutorials/atomic_populations.html">Tutorial for Atomic Population and Charge Analysis</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../tutorials/cubature.html">Tutorial for the Integration with Cubature</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/cclib.html">Tutorial for Input Processing with cclib</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/cubature.html">Tutorial for Numerical Integration with Cubature</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../tutorials/multiple_files.html">Tutorial for Processing Multiple Input Files</a></li>
 </ul>
 </li>
@@ -148,8 +149,9 @@ during the calculation.</p>
 <li><a class="reference internal" href="#input-output" id="id1">Input/Output</a></li>
 <li><a class="reference internal" href="#grid-related-options" id="id2">Grid Related Options</a></li>
 <li><a class="reference internal" href="#molecular-orbital-selection" id="id3">Molecular Orbital Selection</a></li>
-<li><a class="reference internal" href="#derivative-calculation" id="id4">Derivative Calculation</a></li>
-<li><a class="reference internal" href="#additional-options" id="id5">Additional Options</a></li>
+<li><a class="reference internal" href="#unrestricted-calculations" id="id4">Unrestricted Calculations</a></li>
+<li><a class="reference internal" href="#derivative-calculation" id="id5">Derivative Calculation</a></li>
+<li><a class="reference internal" href="#additional-options" id="id6">Additional Options</a></li>
 </ul>
 </div>
 <div class="section" id="input-output">
@@ -169,7 +171,9 @@ automatically added by the program. In order to produce different output types
 within one run, multiple calls of the option <tt class="docutils literal"><span class="pre">--otype=OTYPE</span></tt> are possible.</p>
 <p>The available input file types (<tt class="docutils literal"><span class="pre">--itype=ITYPE</span></tt>) are <strong>molden</strong> (default),
 <strong>aomix</strong> (AOMix file), <strong>gamess</strong> (GAMESS-US output file), <strong>gaussian.log</strong>
-(GAUSSIAN output file) and <strong>gaussian.fchk</strong> (GAUSSIAN formatted checkpoint file).</p>
+(GAUSSIAN output file) and <strong>gaussian.fchk</strong> (GAUSSIAN formatted checkpoint file).
+Besides, orbkit can use cclib to parse output files.
+(see <a class="reference internal" href="../tutorials/cclib.html#tutorial-for-input-processing-with-cclib"><em>Tutorial for Input Processing with cclib</em></a>)</p>
 <p>You can choose between standard <a class="reference external" href="http://www.gaussian.com/">Gaussian</a> cube files (<tt class="docutils literal"><span class="pre">--otype=cb</span></tt>),
 <a class="reference external" href="http://www.hdfgroup.org/HDF5/">HDF5</a> files (<tt class="docutils literal"><span class="pre">--otype=h5</span></tt>), or <a class="reference external" href="http://amira.zib.de/">ZIBAmira</a> Mesh files (<tt class="docutils literal"><span class="pre">--otype=am</span></tt>).
 Additionally, orbkit can directly create ready to use <a class="reference external" href="http://www.ks.uiuc.edu/Research/vmd/">VMD</a> scripts
@@ -200,7 +204,7 @@ saved to disc, if no other output type is specified.</p>
 <div class="admonition hint">
 <p class="first admonition-title">Hint</p>
 <p class="last">If you want to use orbkit for visualization, you may want to read the
-<a class="reference internal" href="../tutorials/vis.html#tutorial-for-the-visualization"><em>Tutorial for the Visualization</em></a>.</p>
+<a class="reference internal" href="../tutorials/vis.html#tutorial-for-visualization"><em>Tutorial for Visualization</em></a>.</p>
 </div>
 </div>
 <div class="section" id="grid-related-options">
@@ -354,8 +358,13 @@ set of molecular orbitals.</p>
 described above for <tt class="docutils literal"><span class="pre">--calc_mo</span></tt>. Although for <tt class="docutils literal"><span class="pre">--mo_set</span></tt>, each line in the
 external file or each call of <tt class="docutils literal"><span class="pre">--mo_set</span></tt> corresponds to one density calculation.</p>
 </div>
+<div class="section" id="unrestricted-calculations">
+<h2><a class="toc-backref" href="#id4">Unrestricted Calculations</a><a class="headerlink" href="#unrestricted-calculations" title="Permalink to this headline">¶</a></h2>
+<p>For unrestricted calculations, orbkit provides the possibility to compute
+spin densities. Here, only</p>
+</div>
 <div class="section" id="derivative-calculation">
-<h2><a class="toc-backref" href="#id4">Derivative Calculation</a><a class="headerlink" href="#derivative-calculation" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id5">Derivative Calculation</a><a class="headerlink" href="#derivative-calculation" title="Permalink to this headline">¶</a></h2>
 <p>orbkit can compute analytical spatial derivatives up to second order
 with respect to <img class="math" src="../_images/math/26eeb5258ca5099acf8fe96b2a1049c48c89a5e6.png" alt="x"/>, <img class="math" src="../_images/math/092e364e1d9d19ad5fffb0b46ef4cc7f2da02c1c.png" alt="y"/>, or <img class="math" src="../_images/math/b13f21416d84e13708696f34dea81026cda583c9.png" alt="z"/> for the atomic and
 molecular orbitals, as well as for the electron density.
@@ -375,7 +384,7 @@ can be invoked by</p>
 </div>
 </div>
 <div class="section" id="additional-options">
-<h2><a class="toc-backref" href="#id5">Additional Options</a><a class="headerlink" href="#additional-options" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id6">Additional Options</a><a class="headerlink" href="#additional-options" title="Permalink to this headline">¶</a></h2>
 <p>In the following, two additional features are highlighted.
 On the one hand, the atom-projected electron density can be computed by</p>
 <div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>orbkit -i INPUT --atom_projected_density<span class="o">=</span>INDEX

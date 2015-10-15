@@ -1,13 +1,17 @@
-.. _`Tutorial for the Visualization`:
+.. _`Tutorial for Visualization`:
 
-Tutorial for the Visualization
-==============================
+Tutorial for Visualization
+==========================
 
 This chapter shows examples of how to depict data obtained from orbkit. 
 
 For simplicity, we use the molden file ``h2o.md`` as an example.
 This file can be found in ``$ORBKITPATH/examples``. Moreover, we assume that
 you have followed the :ref:`installation-instructions`. 
+
+.. contents:: Table of Contents:
+  :local:
+  :depth: 2
 
 Within the Terminal
 -------------------

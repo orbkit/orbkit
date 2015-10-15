@@ -153,8 +153,8 @@ e.g.::
   # Run orbkit with one instance of qc as input
   ok.run_orbkit(QC[10])
 
-How to Process Data of Two or More dimensions 
----------------------------------------------
+How to Process Data of Two and More Dimensions 
+----------------------------------------------
 
 Since the ordering routine is only suitable for one dimensional data, the input
 data has to be rearranged if you want to treat problems of higher dimensionality.
@@ -163,7 +163,7 @@ We suggest two different approaches, which may be applied to an arbitrary number
 of dimensions:
 
 .. image:: sketch_ordering.png
-   :scale: 50 %
+   :scale: 100 %
    :alt: Sketch of ordering in two dimensions
    :align: center
 

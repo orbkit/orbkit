@@ -11,6 +11,7 @@ applications of orbkit.
 
     vis
     atomic_populations
+    cclib
     cubature
     multiple_files
 

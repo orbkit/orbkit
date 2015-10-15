@@ -72,6 +72,12 @@ and some advices for the input file preparation.
 
     .. * TURBOMOLE: tm2molden
 
+.. attention::
+  
+  Molden files create using TURBOMOLE's ``tm2molden`` program are **not** 
+  correctly orthonormalized! Please use AOMix files instead which can be created
+  with ``t2aomix``.
+
 **AOMix File Format:**
 
   * Contains Cartesian Harmonics by default
