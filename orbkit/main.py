@@ -176,25 +176,26 @@ def run_orbkit(use_qc=None,check_options=True):
     return data
 
 
-  if options.atom_projected_density is not None:
-    atom = options.atom_projected_density
-    rho_atom, mulliken_charge = extras.compute_mulliken_charges(atom, qc,
+  if options.gross_atomic_density is not None:
+    atom = options.gross_atomic_density
+    rho_atom = extras.numerical_mulliken_charges(atom, qc,
                                          is_vector=(options.vector is not None))
     
+    if (options.vector is None):
+      mulliken_num = rho_atom[1]
+      rho_atom = rho_atom[0]      
+    
     if not options.no_output:
-      from numpy import array
       fid = '%s.h5' % options.outputname
       display('\nSaving to Hierarchical Data Format file (HDF5)...' +
                 '\n\t%(o)s' % {'o': fid})
-      HDF5_File = output.hdf5_open(fid,mode='w')
-      data = {'geo_info': array(qc.geo_info), 
-              'geo_spec': array(qc.geo_spec),
-              'atom_projected_density': rho_atom, 
-              'atom': array(atom),
-              'mulliken_charge': mulliken_charge,  
-              'x': grid.x, 'y': grid.y, 'z': grid.z}
-      output.hdf5_append(data,HDF5_File,name='')
-      HDF5_File.close()
+      output.hdf5_write(fid,mode='w',gname='',atom=core.numpy.array(atom),
+                        geo_info=qc.geo_info,geo_spec=qc.geo_spec,
+                        gross_atomic_density=rho_atom,
+                        x=grid.x, y=grid.y, z=grid.z)
+      if (options.vector is None):
+        output.hdf5_write(fid,mode='a',gname='/numerical_mulliken_population_analysis',
+                          **mulliken_num)
     
     t.append(time.time())
     good_bye_message(t)

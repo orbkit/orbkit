@@ -476,7 +476,25 @@ def get_ao(x):
   return ao_list
 
 def atom2index(atom,geo_info=None):
-  '''Converts a list of atom numbers to indices of :data:`geo_info`.'''
+  '''Converts a list of atom numbers to indices of :data:`geo_info`.
+  
+  **Parameters:**
+  
+    atom : int or list of int
+      Specifies the indices of the atoms (counting from one).  
+    geo_info : optional
+      See :ref:`Central Variables` for details.
+  
+  **Returns:**
+  
+    atom : list of int
+      Contains the indices of the atoms (counting from one). 
+    index : numpy.ndarray, dtype=int
+      Contains the indices of the atoms as occuring in qc.geo_info 
+      (counting from zero). 
+    
+  '''
+   
   if not (isinstance(atom,list) or isinstance(atom,numpy.ndarray)):
     atom = [atom]
     
@@ -501,10 +519,10 @@ def atom2index(atom,geo_info=None):
   
   return atom, index
 
-def atom_projected_density(atom,qc,
+def gross_atomic_density(atom,qc,
                     bReturnmo=False,ao_list=None,mo_list=None,
                     x=None,y=None,z=None,is_vector=False):
-  r'''Computes the projected electron density with respect to the selected atoms.
+  r'''Computes the gross atomic density with respect to the selected atoms.
   
   .. math::
   
@@ -514,23 +532,29 @@ def atom_projected_density(atom,qc,
   **Parameters:**
   
     atom : 'all' or int or list of int
-      Specifies the atoms to which the projected electron density will be computed.  
-    geo_spec, geo_info, ao_spec, mo_spec :
+      Specifies the atoms (counting from one) for which the gross atomic density
+      will be computed.  
+      If (atom == 'all') or (atom == -1), computes the gross atomic density  
+      for all atoms.
+    qc.geo_spec, qc.geo_info, qc.ao_spec, qc.mo_spec :
       See :ref:`Central Variables` for details.
     bReturnmo : bool, optional
-      If True, the atom projected molecular orbitals are additionally returned.
+      If True, the gross atomic molecular orbitals are additionally returned.
 
   **Returns:**
   
     rho_atom : list of numpy.ndarrays, shape=(len(atoms,) + N)
-      Contains the atom projected electron density on a grid.
+      Contains the atom gross atomic density on a grid.
     mo_atom : list of numpy.ndarrays, shape=(len(atoms,NMO) + N)
-      Contains the NMO=len(mo_spec) atom projected molecular orbitals on a grid. 
+      Contains the NMO=len(mo_spec) gross atomic molecular orbitals on a grid. 
   '''  
   
   if x is None: x = grid.x
   if y is None: y = grid.y
   if z is None: z = grid.z
+  
+  if (atom == 'all' or atom == -1):
+    atom = range(1, len(qc.geo_info) + 1)  
   
   if not is_vector:
     N = (len(x), len(y), len(z))
@@ -539,13 +563,10 @@ def atom_projected_density(atom,qc,
       raise ValueError("Dimensions of x-, y-, and z- coordinate differ!")      
     else:
       N = (len(x),)
-  
-  if atom == 'all':
-    atom = range(1,len(qc.geo_info)+1)  
-  
+    
   atom, index = atom2index(atom,geo_info=qc.geo_info)
   
-  display('Computing the atom-projected density with respect to '+ 
+  display('Computing the gross atomic density with respect to '+ 
           'the atom(s) (internal numbering)')
   outp = '\t['
   for i,a in enumerate(atom):
@@ -562,7 +583,7 @@ def atom_projected_density(atom,qc,
     mo_list = core.mo_creator(ao_list,qc.mo_spec,x=x,y=y,z=z,
                               is_vector=is_vector)
     
-  display('\tCalculating the atom-projected density')
+  display('\tCalculating the gross atomic density')
   
   if bReturnmo: mo_atom = [[] for a in index]
   rho_atom = [numpy.zeros(N) for a in index]
@@ -585,20 +606,20 @@ def atom_projected_density(atom,qc,
       rho_atom[i] += spec['occ_num'] * mo_list[ii_mo] * mo_info
       if bReturnmo: mo_atom[i].append(mo_info)
   
+  string = 'Returning the gross atomic density'
   if bReturnmo:
-    display('Returning the atom-projected density and' +
-    '\n\tthe atom-projected molecular orbitals')
+    display(string + ' and\n\tthe gross atomic molecular orbitals')
     return rho_atom, mo_atom
   else:
-    display('Returning the atom-projected density')
+    display(string)
     return rho_atom
-  # atom_projected_density 
+  # gross_atomic_density 
 
 def numerical_mulliken_charges(atom,qc,
             ao_list=None,mo_list=None,rho_atom=None,
             x=None,y=None,z=None,is_vector=False):
-  r'''Compute the Mulliken charges of the selected atoms *numerically* using
-  the respective projected electron densities.
+  r'''Compute the Mulliken charges and gross atomic populations of the selected 
+  atoms *numerically* using the respective gross atomic densities.
   
   .. math::
   
@@ -606,40 +627,52 @@ def numerical_mulliken_charges(atom,qc,
   
   **Parameters:**
   
-    atom : int or list of int
-      Compute the numerical Mulliken charges of which atom.
+    atom : 'all' or int or list of int
+      Specifies the atom (numbering starting from one) to which the numerical 
+      Mulliken charges and gross populations will be computed. 
+      If (atom == 'all') or (atom == -1), computes the charges and populations 
+      for all atoms.
   
   **Returns:**
   
-    geo_spec, geo_info, ao_spec, mo_spec :
-      See the :ref:`Central Variables` in the manual for details.
-        
+    rho_atom : list of numpy.ndarrays, shape=(len(atoms,) + N)
+      Contains the atom gross atomic density on a grid.
+    mulliken_num : dict, (present if not is_vector)
+      Contains information of Mulliken charge analysis and has following members:
+        :population: - Mulliken population for each atom.
+        :charges: - Mulliken charges for each atom.
   '''
   
   if x is None: x = grid.x
   if y is None: y = grid.y
   if z is None: z = grid.z
-    
+  
+  if (atom == 'all' or atom == -1 or atom == [-1]):
+    atom = range(1, len(qc.geo_info) + 1) 
+  
   atom, index = atom2index(atom,geo_info=qc.geo_info)
   
-  rho_atom = atom_projected_density(atom,qc,
+  rho_atom = gross_atomic_density(atom,qc,
                     ao_list=ao_list,mo_list=mo_list,
                     x=x,y=y,z=z,is_vector=is_vector)
   
-  display('\nNumerical Mulliken Charges:')
   if is_vector:
     display('Warning: You have applied a vector grid.\n' + 
     'The integration is not implemented for such a grid!\n' +
-    'You will get wrong Mulliken Charges...')
-  mulliken_charge = []  
-  for i,a in enumerate(index):
-    mulliken_charge.append(core.integration(rho_atom[i]))
-    # Print the Mulliken Charges 
-    a = int(a)
-    display('\tAtom %s (%s):\t%+0.4f' % 
-            (qc.geo_info[a][1],qc.geo_info[a][0],mulliken_charge[-1]))
+    '\nReturning only the gross atomic densities...')
+    return rho_atom
   
-  return rho_atom, numpy.array(mulliken_charge)
+  GP_A = numpy.array([core.integration(i) for i in rho_atom])
+  mulliken_num = {'population': GP_A,
+                  'charge': numpy.array(qc.geo_info[:,2],dtype=float)-GP_A}  
+  
+  display('\nNumerical Mulliken Charges Q and Gross Atomic Populations GP:')
+  for i,a in enumerate(index):
+    a = int(a)
+    display('\tAtom %s (%s):\tQ = %+0.4f ( GP = %0.4f )' % 
+            (qc.geo_info[a][1],qc.geo_info[a][0],
+            mulliken_num['charge'][i],mulliken_num['population'][i]))     
+  return rho_atom, mulliken_num
 
 
 def mo_transition_flux_density(i,j,qc,drv='x',
