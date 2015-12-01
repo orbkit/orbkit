@@ -236,7 +236,7 @@ def read_molden(filename, all_mo=False, spin=None, i_md=-1, interactive=True,
         raise IOError('Not a valid input file')
       else:
         # Check if we are in a specific section 
-        if sec_flag == 'geo_info':
+        if sec_flag == 'geo_info' and thisline != []:
           # Geometry section 
           qc.geo_info.append(thisline[0:3])
           qc.geo_spec.append([float(ii)*aa_to_au for ii in thisline[3:]])
@@ -1418,7 +1418,7 @@ def read_aomix(filename, all_mo=False, spin=None, i_md=-1, interactive=True,
   flines = fid.readlines()         # Read the WHOLE file into RAM
   fid.close()                      # Close the file
   
-  # Is this really a molden file? 
+  # Is this really a aomix file? 
   if not '[AOMix Format]\n' in flines:
     display('The input file %s is no valid aomix file!\n\nIt does'  % filename+
           ' not contain the keyword: [AOMix Format]\n')
