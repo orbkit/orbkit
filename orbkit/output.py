@@ -684,6 +684,29 @@ def colormap_creator_peaks(filename,peaks,peak_width=0.02,peak_minus=None,
   
   # Close the file
   fid.close()
+def meshgrid2(*arrs):
+  '''adapted from:
+  http://stackoverflow.com/a/1830192
+  '''
+  arrs = tuple(reversed(arrs)) 
+  lens = map(len, arrs)
+  dim = len(arrs)
+  
+  sz = 1
+  for s in lens:
+      sz*=s
+  
+  ans = []    
+  for i, arr in enumerate(arrs):
+    slc = [1]*dim
+    slc[i] = lens[i]
+    arr2 = numpy.asarray(arr).reshape(slc)
+    for j, sz in enumerate(lens):
+      if j!=i:
+        arr2 = arr2.repeat(sz, axis=j) 
+    ans.append(arr2)
+  
+  return tuple(ans[::-1])
 
 def view_with_mayavi(x,y,z,data,geo_spec=None,datalabels=None):
   ''' Creates an interactive mayavi dialog showing isosurface plots of the input
@@ -733,26 +756,6 @@ def view_with_mayavi(x,y,z,data,geo_spec=None,datalabels=None):
                      'length as `data`.')
   if datalabels is not None:
     datalabels = ['%03d: %s' % (i,j) for i,j in enumerate(datalabels)]
-  def meshgrid2(*arrs):
-    arrs = tuple(reversed(arrs)) 
-    lens = map(len, arrs)
-    dim = len(arrs)
-    
-    sz = 1
-    for s in lens:
-        sz*=s
-    
-    ans = []    
-    for i, arr in enumerate(arrs):
-      slc = [1]*dim
-      slc[i] = lens[i]
-      arr2 = numpy.asarray(arr).reshape(slc)
-      for j, sz in enumerate(lens):
-        if j!=i:
-          arr2 = arr2.repeat(sz, axis=j) 
-      ans.append(arr2)
-    
-    return tuple(ans[::-1])
   
   Z,Y,X = meshgrid2(z,y,x)
   

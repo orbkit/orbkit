@@ -67,7 +67,7 @@ The file type has to be specified via::
 
   ok.options.itype = 'molden'
 
-The available file types are **'molden'** (default), **'aomix'** (AOMix file),
+The available file types are **'molden'** (default),**aomix** (AOMix file),
 **'gamess'** (GAMESS-US output file), **'gaussian.log'** (GAUSSIAN output file), 
 **'gaussian.fchk'** (GAUSSIAN formatted checkpoint file). 
 Besides, orbkit can use cclib to parse output files. 
@@ -92,7 +92,7 @@ orbkit assumes the input file, if not otherwise stated, e.g.::
   ok.options.outputname = 'h2o' # output file (base) name
 
 For more information on the different output types, refer to 
-:ref:`io` (:doc:`./terminal`).
+:ref:`io` (Usage via the Terminal).
 
 .. hint::
 
@@ -107,7 +107,7 @@ Grid Related Options
 
 By default orbkit carries out all computations on a regular grid, i.e., 
 :math:`N_{\sf data points} = N_{\sf x} \times N_{\sf y} \times N_{\sf z}`.
-In order to invoke the application of a vector grid, i.e.,
+In order invoke the application of a vector grid, i.e.,
 :math:`N_{\sf data points} = N_{\sf x} = N_{\sf y} = N_{\sf z}`,
 the following option, containing the number of points per subprocess,
 has to be set::
@@ -130,7 +130,7 @@ of the molecule plus 5 a\ :sub:`0` in each direction.
 This file can have two possible formats. It can be represented either by the boundary
 conditions of an equidistant rectangular grid (**regular grid**) or by a list of 
 grid points (**vector grid**). For more information, refer to
-:ref:`grid` (:doc:`./terminal`).
+:ref:`grid` (Usage via the Terminal).
 
 **Specifying the boundary conditions manually**::
 
@@ -147,7 +147,7 @@ grid points (**vector grid**). For more information, refer to
   # We have already initialized a grid for orbkit:
   ok.grid.is_initialized = True
 
-Here, x, y and z have to be one-dimensional ``numpy.array`` of type ``float``
+where x, y and z have to be one-dimensional ``numpy.array`` of type ``float``
 (``numpy.float64``). 
 
 .. attention::

@@ -40,7 +40,7 @@ from orbkit import grid
 available = ['filename','itype','outputname','otype',
              'vector','grid_file','center_grid',
              'numproc','mo_set','all_mo','drv',
-             'z_reduced_density','atom_projected_density','mo_tefd',
+             'z_reduced_density','gross_atomic_density','mo_tefd',
              'quiet','no_log','no_output','no_slice','random_grid',
              'interactive']
 
@@ -192,7 +192,7 @@ def init_parser():
   group.add_option("--z_reduced_density",dest="z_reduced_density",
                       default=False, action="store_true", 
                       help="reduce the density with respect to the z-axis")
-  group.add_option("--atom_projected_density",dest="atom_projected_density",
+  group.add_option("--gross_atomic_density",dest="gross_atomic_density",
                       metavar="INDEX",action="append",type="int",
                       help='''compute the atom-projected electron density with
                       respect to atom INDEX (multiple calls possible)''')
@@ -391,8 +391,8 @@ def check_options(error=raise_error,display=print_message,
     setattr(thismodule,'drv', ['xx','yy','zz'])
   
   #--- Additional Options ---#
-  if atom_projected_density is not None and drv is not None:
-    error('The derivative of the atom_projected density is not implemented.\n')
+  if gross_atomic_density is not None and drv is not None:
+    error('The derivative of the gross atomic density is not implemented.\n')
     
   if mo_tefd is not None:
     setattr(thismodule,'all_mo',True)  
@@ -410,8 +410,8 @@ def check_options(error=raise_error,display=print_message,
     if z_reduced_density:
       display(string % ('--z_reduced_density',
                         'creating\nthe grid'))
-    if atom_projected_density is not None:
-      display(string % ('--atom_projected_density',
+    if gross_atomic_density is not None:
+      display(string % ('--gross_atomic_density',
                         'reading\nthe input file'))
     if mo_tefd is not None:
       display(string % ('--mo_tefd',
@@ -480,7 +480,7 @@ center_grid     = None          #: If not None, grid is centered to specified at
 random_grid     = False         #: If True, creates random grid around atom positions. (bool)
 #--- Additional Options ---
 z_reduced_density = False       #: If True, reduces the density with respect to the z-axis. (bool)
-atom_projected_density = None   #: Computes the atom-projected electron density with respect to specified atom. (int or list of int)
+gross_atomic_density = None   #: Computes the gross atomic electron density with respect to specified atom. (int or list of int)
 mo_tefd         = None          #: Computes the molecular orbital transition electronic flux density between the orbitals I and J specify the requested component with :data:`orbkit.options.drv`. (list of [I, J])
 #--- Options for Advanced Users ---
 quiet           = False         #: If True, omits terminal output. (bool)

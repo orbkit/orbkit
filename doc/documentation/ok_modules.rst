@@ -15,8 +15,8 @@ all modules and functions available.
   :literal:`orbkit/examples`, e.g., 
   :file:`use_as_module.py` and :file:`calculate_derivatives.py`)
     
-  The tutorials :doc:`../adtutorials/cubature` and 
-  :doc:`../adtutorials/multiple_files` show further practical applications.
+  The tutorials :doc:`../tutorials/cubature` and 
+  :doc:`../tutorials/multiple_files` show further practical applications.
 
 .. contents:: Table of Contents:
   :local:
@@ -75,11 +75,11 @@ To invoke the creation of a **vector** grid, i.e.,
 :math:`N_{\sf data points} = N_{\sf x} = N_{\sf y} = N_{\sf z}` 
 (see :ref:`grid` (Usage via the Terminal)), the variable ``is_vector`` has to 
 set to ``True``. If you want to change the grid, e.g., for a subsequent 
-calculation, you have either to set::
+calculation, you have to either set::
 
   grid.is_initialized=False
 
-or to call::
+or call::
 
   grid.grid_init(force=True)
 
@@ -89,8 +89,8 @@ or to call::
     
     print(grid.get_grid())
 
-Another way to automatically set the grid parameters according to 
-the molecular geometry is calling::
+Another way to automatically setting the grid parameters according to 
+the molecular geometry is by calling::
   
   grid.adjust_to_geo(qc,extend=5.0,step=0.1)
 
@@ -110,7 +110,7 @@ manually::
   grid.is_initialized = True
 
 
-Here, x, y and z have to be one-dimensional ``numpy.array`` of type ``float``
+where x, y and z have to be one-dimensional ``numpy.array`` of type ``float``
 (``numpy.float64``). 
 
 .. attention::
@@ -120,8 +120,8 @@ Here, x, y and z have to be one-dimensional ``numpy.array`` of type ``float``
 
 .. hint::
   
-  For your convenience, you may also set the variable ``grid.is_vector = True``,
-  if you have initialized a **vector grid** manually. You can use this 
+  For your convenience, if you have initialized a **vector grid** manually, you 
+  may also set the variable ``grid.is_vector = True``. You can use this 
   standard variable as input parameter in other orbkit functions.
 
 Operations on the Grid

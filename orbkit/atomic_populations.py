@@ -6,8 +6,8 @@ from orbkit.analytical_integrals import get_atom2mo,get_lc,create_mo_coeff
 from orbkit.analytical_integrals import get_ao_overlap
 
 def mulliken(qc):
-  '''Calculates the Mulliken populations and charges for each atom
-      in the system.
+  '''Calculates the Mulliken populations (gross atomic populations) and Mulliken
+  charges for each atom in the system.
 
   **Parameters:**
    
@@ -51,7 +51,7 @@ def mulliken(qc):
 
   # Save Mulliken population and charges to dictionary
   mulliken_pop = {'population': GP_A,
-            'charge': numpy.array(qc.geo_info[:,2],dtype=float)-GP_A}
+                  'charge': numpy.array(qc.geo_info[:,2],dtype=float)-GP_A}
       
   return mulliken_pop
 
