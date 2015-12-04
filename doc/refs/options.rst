@@ -59,7 +59,7 @@ Additional Options
 ..................
 
 .. autodata:: orbkit.options.z_reduced_density
-.. autodata:: orbkit.options.atom_projected_density
+.. autodata:: orbkit.options.gross_atomic_density
 .. autodata:: orbkit.options.mo_tefd
 
 Options for Advanced Users

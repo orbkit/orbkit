@@ -1,5 +1,5 @@
-Tutorial for Numerical Integration with Cubature
-================================================
+Tutorial for the Integration with Cubature
+==========================================
 
 This is an advanced tutorial which shows how to use orbkit together with the 
 Python interface to Cubature to determine the norm of the occupied 
@@ -21,10 +21,6 @@ installed the Python interface to cubature_.
   
   This tutorial explains a part of the example file 
   ``$ORBKITPATH/examples/interface_to_cubature.py``.
-
-.. contents:: Table of Contents:
-  :local:
-  :depth: 1
 
 Initialization of the Program
 -----------------------------

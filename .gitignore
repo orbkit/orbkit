@@ -33,6 +33,7 @@
 
 # Under developement
 orbkit/development
+doc/_*
 examples/Plots
 examples/NaCl_molden_files
 

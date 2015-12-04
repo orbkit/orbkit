@@ -41,8 +41,6 @@ Moreover, ``read.main_read`` forwards all additional keyword arguments (``**kwar
 to the specific reading function, e.g., you can disable the interactive mode 
 in ``read.read_molden``.
 
-The available input types are managed in the preceding chapters.
-
 .. hint::
 
   The main computational functions are not restricted to the ``QCinfo`` class.
@@ -239,5 +237,3 @@ are managed by::
 
   output.main_output(data,geo_info,geo_spec,outputname='new',otype='h5',
 		     drv=None,omit=[],is_vector=False,**kwargs)
-
-The available output types are managed in the preceding chapters.
