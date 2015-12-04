@@ -162,6 +162,7 @@ class QCinfo:
     self.etot     = 0.
     self.com      = 'Center of mass can be calculated with self.get_com().'
     self.coc      = 'Center of charge can be calculated with self.get_coc().'
+    self.bc      =  'Barycenter of scalar field can be calculated with self.get_bc().'
     self.pop_ana  = {}
     # transition dipole information
     self.states         = {'multiplicity' : None,
@@ -207,6 +208,23 @@ class QCinfo:
       total_charge += nuc_charge
     self.coc = self.coc/total_charge
     return self.coc
+    
+  def get_bc(self,matrix=None,is_vector=False):
+    '''Calculates Barycenter for scalar field
+    '''  
+    # Initialize variable
+    self.bc = numpy.zeros(3)
+    # Calculation of barycenter
+    from orbkit import grid
+    if not is_vector:
+      grid.grid2vector()
+    xyz = grid.tolist()
+    for i in range(3):
+      self.bc[i] = (matrix.reshape((-1,))*xyz[i]).sum()
+    self.bc /= matrix.sum()
+    if not is_vector:
+      grid.vector2grid(*grid.N_)
+    return self.bc
   
   def format_geo(self):
     '''Converts geo_info and geo_spec to a universal format.

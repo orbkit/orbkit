@@ -1,0 +1,440 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>orbkit’s Low-Level Interface &mdash; orbkit 0.2.2 documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../_static/orbkit.ico"/>
+  
+
+  
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+    <link rel="top" title="orbkit 0.2.2 documentation" href="../index.html"/>
+        <link rel="up" title="Grid-Based Calculation" href="index.html"/>
+        <link rel="next" title="Non Grid-Based Calculation" href="../nongridbased/index.html"/>
+        <link rel="prev" title="orbkit’s High-Level Interface" href="highlevel.html"/> 
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        <a href="../index.html" class="fa fa-home"> orbkit</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+        
+            <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../install.html#prerequisites">Prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../install.html#instructions">Instructions</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../general.html">General Aspects</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../general.html#requirements-for-the-input-files">Requirements for the Input Files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../general.html#capabilities">Capabilities</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../quick.html">Quick Start Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../quick.html#within-the-terminal">Within the Terminal</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../quick.html#within-a-python-shell">Within a Python Shell</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Grid-Based Calculation</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="terminal.html">Usage via the Terminal</a></li>
+<li class="toctree-l2"><a class="reference internal" href="highlevel.html">orbkit&#8217;s High-Level Interface</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="">orbkit&#8217;s Low-Level Interface</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../nongridbased/index.html">Non Grid-Based Calculation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../nongridbased/analytical.html">Analytical Integrals with orbkit</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../adtutorials/index.html">Advanced Tutorials</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../adtutorials/atomic_populations.html">Tutorial for Atomic Population and Charge Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../adtutorials/cubature.html">Tutorial for the Integration with Cubature</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../adtutorials/multiple_files.html">Tutorial for Processing Multiple Input Files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../adtutorials/cclib.html">Tutorial for Input Processing with cclib</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../refs/index.html">Orbkit References</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../refs/options.html">Options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../refs/cvars.html">Central Variables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../refs/funcref.html">Function Reference</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../licence.html">Licence Note</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../impressum.html">Impressum - Legal Notice</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../impressum.html#impressum">Impressum</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../impressum.html#haftungsausschluss-disclaimer">Haftungsausschluss - Disclaimer</a></li>
+</ul>
+</li>
+</ul>
+
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../index.html">orbkit</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="index.html">Grid-Based Calculation</a> &raquo;</li>
+      
+    <li>orbkit&#8217;s Low-Level Interface</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          <a href="../_sources/gridbased/lowlevel.txt" rel="nofollow"> View page source</a>
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            
+  <div class="section" id="orbkit-s-low-level-interface">
+<span id="low-level-interface"></span><h1>orbkit&#8217;s Low-Level Interface<a class="headerlink" href="#orbkit-s-low-level-interface" title="Permalink to this headline">¶</a></h1>
+<p>This section is addressed to more advanced users, who want to use the
+modules of orbkit in their own programs.</p>
+<p>Please refer to the <a class="reference internal" href="../refs/funcref.html#function-reference"><em>Function Reference</em></a> to get information about
+all modules and functions available.</p>
+<div class="admonition hint">
+<p class="first admonition-title">Hint</p>
+<p>Complete examples of using orbkit&#8217;s modules can be found in
+<tt class="docutils literal"><span class="pre">orbkit/examples</span></tt>, e.g.,
+<tt class="file docutils literal"><span class="pre">use_as_module.py</span></tt> and <tt class="file docutils literal"><span class="pre">calculate_derivatives.py</span></tt>)</p>
+<p class="last">The tutorials <a class="reference internal" href="../adtutorials/cubature.html"><em>Tutorial for the Integration with Cubature</em></a> and
+<a class="reference internal" href="../adtutorials/multiple_files.html"><em>Tutorial for Processing Multiple Input Files</em></a> show further practical applications.</p>
+</div>
+<div class="contents local topic" id="table-of-contents">
+<p class="topic-title first">Table of Contents:</p>
+<ul class="simple">
+<li><a class="reference internal" href="#reading-qc-input" id="id1">Reading QC Input</a></li>
+<li><a class="reference internal" href="#initializing-the-grid" id="id2">Initializing the Grid</a></li>
+<li><a class="reference internal" href="#operations-on-the-grid" id="id3">Operations on the Grid</a></li>
+<li><a class="reference internal" href="#computational-functions" id="id4">Computational Functions</a></li>
+<li><a class="reference internal" href="#output-functions" id="id5">Output Functions</a></li>
+</ul>
+</div>
+<div class="section" id="reading-qc-input">
+<h2><a class="toc-backref" href="#id1">Reading QC Input</a><a class="headerlink" href="#reading-qc-input" title="Permalink to this headline">¶</a></h2>
+<p>All reading processes are handled by the module <tt class="docutils literal"><span class="pre">orbkit.read</span></tt>, i.e.:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">orbkit</span> <span class="kn">import</span> <span class="n">read</span>
+</pre></div>
+</div>
+<p>Here, you have one function for each quantum chemistry input type converting
+the input to the <tt class="docutils literal"><span class="pre">QCinfo</span></tt> class (cf. <a class="reference internal" href="../refs/cvars.html#central-variables"><em>Central Variables</em></a>). These
+functions are managed by:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">qc</span> <span class="o">=</span> <span class="n">read</span><span class="o">.</span><span class="n">main_read</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span><span class="n">itype</span><span class="o">=</span><span class="s">&#39;molden&#39;</span><span class="p">,</span><span class="n">all_mo</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Besides choosing the filename and the input type, you can specify, if the function
+should read the occupied <em>and</em> the virtual molecular orbitals (<tt class="docutils literal"><span class="pre">all_mo</span></tt>).
+Moreover, <tt class="docutils literal"><span class="pre">read.main_read</span></tt> forwards all additional keyword arguments (<tt class="docutils literal"><span class="pre">**kwargs</span></tt>)
+to the specific reading function, e.g., you can disable the interactive mode
+in <tt class="docutils literal"><span class="pre">read.read_molden</span></tt>.</p>
+<div class="admonition hint">
+<p class="first admonition-title">Hint</p>
+<p>The main computational functions are not restricted to the <tt class="docutils literal"><span class="pre">QCinfo</span></tt> class.
+They also accept dictionaries having the same members.</p>
+<p>You can convert the <tt class="docutils literal"><span class="pre">QCinfo</span></tt> class to a dictionaries containing <em>only</em>
+the essential members by:</p>
+<div class="last highlight-python"><div class="highlight"><pre><span class="n">qc_dict</span> <span class="o">=</span> <span class="n">qc</span><span class="o">.</span><span class="n">todict</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="initializing-the-grid">
+<h2><a class="toc-backref" href="#id2">Initializing the Grid</a><a class="headerlink" href="#initializing-the-grid" title="Permalink to this headline">¶</a></h2>
+<p>The <tt class="docutils literal"><span class="pre">orbkit.grid</span></tt> module organizes all grid related features of orbkit,
+of which some will be discussed in this section.</p>
+<p>If you want to initialize a standard regular (vector) grid you have to
+set the grid parameters which are global values within this module:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">orbkit</span> <span class="kn">import</span> <span class="n">grid</span>
+<span class="n">grid</span><span class="o">.</span><span class="n">min_</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mf">8.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">8.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">8.0</span><span class="p">]</span>   <span class="c">#: Specifies minimum grid values (regular grid).</span>
+<span class="n">grid</span><span class="o">.</span><span class="n">max_</span> <span class="o">=</span> <span class="p">[</span> <span class="mf">8.0</span><span class="p">,</span>  <span class="mf">8.0</span><span class="p">,</span>  <span class="mf">8.0</span><span class="p">]</span>   <span class="c">#: Specifies maximum grid values (regular grid).</span>
+<span class="n">grid</span><span class="o">.</span><span class="n">N_</span>   <span class="o">=</span> <span class="p">[</span> <span class="mi">101</span><span class="p">,</span>  <span class="mi">101</span><span class="p">,</span>  <span class="mi">101</span><span class="p">]</span>   <span class="c">#: Specifies the number of grid points (regular grid).</span>
+</pre></div>
+</div>
+<p>Now, you can initialize the grid:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">grid</span><span class="o">.</span><span class="n">grid_init</span><span class="p">(</span><span class="n">is_vector</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>To invoke the creation of a <strong>vector</strong> grid, i.e.,
+<img class="math" src="../_images/math/f62a0edf5c4ae4918c2be2717f785d99c3bb82f9.png" alt="N_{\sf data points} = N_{\sf x} = N_{\sf y} = N_{\sf z}"/>
+(see <a class="reference internal" href="terminal.html#grid"><em>Grid Related Options</em></a> (Usage via the Terminal)), the variable <tt class="docutils literal"><span class="pre">is_vector</span></tt> has to
+set to <tt class="docutils literal"><span class="pre">True</span></tt>. If you want to change the grid, e.g., for a subsequent
+calculation, you have either to set:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">grid</span><span class="o">.</span><span class="n">is_initialized</span><span class="o">=</span><span class="bp">False</span>
+</pre></div>
+</div>
+<p>or to call:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">grid</span><span class="o">.</span><span class="n">grid_init</span><span class="p">(</span><span class="n">force</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition hint">
+<p class="first admonition-title">Hint</p>
+<p>The current grid parameters can be displayed with:</p>
+<div class="last highlight-python"><div class="highlight"><pre><span class="k">print</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">get_grid</span><span class="p">())</span>
+</pre></div>
+</div>
+</div>
+<p>Another way to automatically set the grid parameters according to
+the molecular geometry is calling:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">grid</span><span class="o">.</span><span class="n">adjust_to_geo</span><span class="p">(</span><span class="n">qc</span><span class="p">,</span><span class="n">extend</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span><span class="n">step</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Here, orbkit creates grid parameters (<tt class="docutils literal"><span class="pre">grid.min_</span></tt>, <tt class="docutils literal"><span class="pre">grid.max_</span></tt>, <tt class="docutils literal"><span class="pre">grid.N_</span></tt>)
+with a grid spacing of 0.1 a<sub>0</sub> and the size of the molecule plus
+5 a<sub>0</sub> in each direction. After calling this function you have to
+initialize the grid using <tt class="docutils literal"><span class="pre">grid.grid_init()</span></tt>.</p>
+<p>The last way to initialize a grid is by setting the <em>x</em>, <em>y</em>, <em>z</em> coordinates
+manually:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">numpy</span>
+<span class="n">grid</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">10</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">201</span><span class="p">)</span>
+<span class="n">grid</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">],</span><span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+<span class="n">grid</span><span class="o">.</span><span class="n">z</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span><span class="mf">1.1</span><span class="p">])</span>
+<span class="c"># We have already initialized a grid for orbkit:</span>
+<span class="n">grid</span><span class="o">.</span><span class="n">is_initialized</span> <span class="o">=</span> <span class="bp">True</span>
+</pre></div>
+</div>
+<p>Here, x, y and z have to be one-dimensional <tt class="docutils literal"><span class="pre">numpy.array</span></tt> of type <tt class="docutils literal"><span class="pre">float</span></tt>
+(<tt class="docutils literal"><span class="pre">numpy.float64</span></tt>).</p>
+<div class="admonition attention">
+<p class="first admonition-title">Attention</p>
+<p class="last">The last line is <strong>mandatory</strong>, i.e., we have to tell orbkit, that there is no
+need to initialize the grid.</p>
+</div>
+<div class="admonition hint">
+<p class="first admonition-title">Hint</p>
+<p class="last">For your convenience, you may also set the variable <tt class="docutils literal"><span class="pre">grid.is_vector</span> <span class="pre">=</span> <span class="pre">True</span></tt>,
+if you have initialized a <strong>vector grid</strong> manually. You can use this
+standard variable as input parameter in other orbkit functions.</p>
+</div>
+</div>
+<div class="section" id="operations-on-the-grid">
+<h2><a class="toc-backref" href="#id3">Operations on the Grid</a><a class="headerlink" href="#operations-on-the-grid" title="Permalink to this headline">¶</a></h2>
+<p>The module <tt class="docutils literal"><span class="pre">orbkit.grid</span></tt> has some more features. For instance, starting
+from a <strong>regular grid</strong>, you can always convert between <strong>regular</strong> and a <strong>vector
+grid</strong>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">orbkit</span> <span class="kn">import</span> <span class="n">grid</span>
+<span class="c"># Initialize the grid</span>
+<span class="n">grid</span><span class="o">.</span><span class="n">grid_init</span><span class="p">(</span><span class="n">is_vector</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+<span class="c"># Convert the grid to a vector grid</span>
+<span class="n">grid</span><span class="o">.</span><span class="n">grid2vector</span><span class="p">()</span>
+<span class="k">print</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">get_grid</span><span class="p">())</span>        <span class="c"># Display the new grid parameters</span>
+
+<span class="c"># Convert it back to a regular grid</span>
+<span class="n">grid</span><span class="o">.</span><span class="n">vector2grid</span><span class="p">(</span><span class="o">*</span><span class="n">grid</span><span class="o">.</span><span class="n">N_</span><span class="p">)</span>
+<span class="c"># Display the new grid parameters</span>
+<span class="k">print</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">get_grid</span><span class="p">())</span>        <span class="c"># Display the new grid parameters</span>
+</pre></div>
+</div>
+<p>The same can be done for matrices of the specific shapes, e.g.:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">numpy</span>
+<span class="kn">from</span> <span class="nn">orbkit</span> <span class="kn">import</span> <span class="n">grid</span>
+
+<span class="c"># Initialize a vector grid</span>
+<span class="n">grid</span><span class="o">.</span><span class="n">grid_init</span><span class="p">(</span><span class="n">is_vector</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+<span class="c"># Create an array of the same shape, i.e., Nx=Ny=Nz=shape(matrix)</span>
+<span class="n">matrix</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">x</span><span class="p">))</span>
+<span class="n">Nx</span><span class="p">,</span> <span class="n">Ny</span><span class="p">,</span> <span class="n">Nz</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">N_</span>
+<span class="n">matrix</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">matrix_vector2grid</span><span class="p">(</span><span class="n">matrix</span><span class="o">=</span><span class="n">matrix</span><span class="p">,</span><span class="n">Nx</span><span class="o">=</span><span class="n">Nx</span><span class="p">,</span><span class="n">Ny</span><span class="o">=</span><span class="n">Ny</span><span class="p">,</span><span class="n">Nz</span><span class="o">=</span><span class="n">Nz</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="computational-functions">
+<h2><a class="toc-backref" href="#id4">Computational Functions</a><a class="headerlink" href="#computational-functions" title="Permalink to this headline">¶</a></h2>
+<p>All major computational processes are carried out by the module
+<tt class="docutils literal"><span class="pre">orbkit.core</span></tt>. The function <tt class="docutils literal"><span class="pre">rho_compute</span></tt> manages the computational tasks,
+slices the grid, and distributes the slices to the subprocesses:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">orbkit</span> <span class="kn">import</span> <span class="n">core</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">core</span><span class="o">.</span><span class="n">rho_compute</span><span class="p">(</span><span class="n">qc</span><span class="p">,</span><span class="n">calc_mo</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span><span class="n">vector</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">drv</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">numproc</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>If you set <tt class="docutils literal"><span class="pre">calc_mo=True</span></tt>, all molecular orbitals will be computed and
+returned. If you want to use a <strong>vector grid</strong>, the variable vector has to
+be set to an integer value specifying the number of grid points per subprocess.</p>
+<p>Derivatives can be computed by changing the variable <tt class="docutils literal"><span class="pre">drv</span></tt>, e.g.,
+<tt class="docutils literal"><span class="pre">drv=['x','zz','xy']</span></tt> will invoke the computation of the first derivative
+with respect to <img class="math" src="../_images/math/26eeb5258ca5099acf8fe96b2a1049c48c89a5e6.png" alt="x"/>, the second derivative with respect to <img class="math" src="../_images/math/b13f21416d84e13708696f34dea81026cda583c9.png" alt="z"/>, and the mixed
+derivative <img class="math" src="../_images/math/3f79c3676b62fb47243e0d357c87115b6f3395e4.png" alt="xy"/>.</p>
+<p>If the number of processes (<tt class="docutils literal"><span class="pre">numproc</span></tt>) is smaller or equal one, no subprocesses will be
+started, i.e., orbkit uses only a single CPU. If you even want to omit the
+slicing of the grid, you can use:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">data</span> <span class="o">=</span> <span class="n">core</span><span class="o">.</span><span class="n">rho_compute_no_slice</span><span class="p">(</span><span class="n">qc</span><span class="p">,</span><span class="n">calc_mo</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span><span class="n">is_vector</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span><span class="n">drv</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                                 <span class="n">return_components</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span><span class="n">x</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">y</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">z</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Here, you can even return the atomic orbitals (and/or their derivatives) as well
+with <tt class="docutils literal"><span class="pre">return_components</span></tt>.
+Furthermore, you can specify the grid (<tt class="docutils literal"><span class="pre">x</span></tt>, <tt class="docutils literal"><span class="pre">y</span></tt>, <tt class="docutils literal"><span class="pre">z</span></tt>, and <tt class="docutils literal"><span class="pre">is_vector</span></tt>)
+without using the <tt class="docutils literal"><span class="pre">orbkit.grid</span></tt> module.</p>
+<p>If you do not want to use those functions, you can go further to the
+function computing the atomic orbitals and the function combining these orbitals
+to molecular orbitals:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">ao_list</span> <span class="o">=</span> <span class="n">core</span><span class="o">.</span><span class="n">ao_creator</span><span class="p">(</span><span class="n">geo_spec</span><span class="p">,</span><span class="n">ao_spec</span><span class="p">,</span><span class="n">ao_spherical</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                          <span class="n">is_vector</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span><span class="n">drv</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                          <span class="n">x</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">y</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">z</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+<span class="n">mo_list</span> <span class="o">=</span> <span class="n">core</span><span class="o">.</span><span class="n">mo_creator</span><span class="p">(</span><span class="n">ao_list</span><span class="p">,</span><span class="n">mo_spec</span><span class="p">,</span><span class="n">mo_coeff</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                          <span class="n">is_vector</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span><span class="n">x</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">y</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">z</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Those functions use the only specific members of the <tt class="docutils literal"><span class="pre">QCinfo</span></tt> class.
+Again, you can specify the grid (<tt class="docutils literal"><span class="pre">x</span></tt>, <tt class="docutils literal"><span class="pre">y</span></tt>, <tt class="docutils literal"><span class="pre">z</span></tt>, and <tt class="docutils literal"><span class="pre">is_vector</span></tt>)
+without using the <tt class="docutils literal"><span class="pre">orbkit.grid</span></tt> module.</p>
+<p>The function <tt class="docutils literal"><span class="pre">ao_creator</span></tt> computes the contracted atomic orbitals, with
+the function:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">ao</span> <span class="o">=</span> <span class="n">core</span><span class="o">.</span><span class="n">l_creator</span><span class="p">(</span><span class="n">geo_spec</span><span class="p">,</span><span class="n">ao_spec</span><span class="p">,</span><span class="n">sel_ao</span><span class="p">,</span><span class="n">exp_list</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">coeff_list</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                    <span class="n">at_pos</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">is_vector</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span><span class="n">drv</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                    <span class="n">x</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">y</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">z</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>It can be stressed that you can set all members of <tt class="docutils literal"><span class="pre">QCinfo</span></tt> manually. So in
+principle, you can set <tt class="docutils literal"><span class="pre">geo_spec=None</span></tt> and <tt class="docutils literal"><span class="pre">ao_spec=None</span></tt>.</p>
+<p>The functionalities <tt class="docutils literal"><span class="pre">calc_mo</span></tt> and <tt class="docutils literal"><span class="pre">mo_set</span></tt>, i.e., the computation of
+selected molecular orbitals and the calculation of the density with a
+selected set of molecular orbitals, are handled by two functions of the module
+<tt class="docutils literal"><span class="pre">orbkit.extras</span></tt>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">mo_list</span><span class="p">,</span> <span class="n">mo_info</span> <span class="o">=</span> <span class="n">extras</span><span class="o">.</span><span class="n">calc_mo</span><span class="p">(</span><span class="n">qc</span><span class="p">,</span> <span class="n">fid_mo_list</span><span class="p">,</span> <span class="n">drv</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">vector</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                                  <span class="n">otype</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">ofid</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>and:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">data</span> <span class="o">=</span> <span class="n">extras</span><span class="o">.</span><span class="n">mo_set</span><span class="p">(</span><span class="n">qc</span><span class="p">,</span> <span class="n">fid_mo_list</span><span class="p">,</span> <span class="n">drv</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">laplacian</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">vector</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                     <span class="n">otype</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">ofid</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">return_all</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>where <tt class="docutils literal"><span class="pre">fid_mo_list</span></tt> is a list molecular orbital labels,
+cf. <a class="reference internal" href="highlevel.html#mo-high-level"><em>Molecular Orbital Selection</em></a> (High-Level Interface).</p>
+</div>
+<div class="section" id="output-functions">
+<h2><a class="toc-backref" href="#id5">Output Functions</a><a class="headerlink" href="#output-functions" title="Permalink to this headline">¶</a></h2>
+<p>The output functionalities of orbkit are handled by the module <tt class="docutils literal"><span class="pre">orbkit.output</span></tt>.</p>
+<p>In this module, there are functions for every output type. These functions
+are managed by:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">output</span><span class="o">.</span><span class="n">main_output</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">geo_info</span><span class="p">,</span><span class="n">geo_spec</span><span class="p">,</span><span class="n">outputname</span><span class="o">=</span><span class="s">&#39;new&#39;</span><span class="p">,</span><span class="n">otype</span><span class="o">=</span><span class="s">&#39;h5&#39;</span><span class="p">,</span>
+                   <span class="n">drv</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">omit</span><span class="o">=</span><span class="p">[],</span><span class="n">is_vector</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../nongridbased/index.html" class="btn btn-neutral float-right" title="Non Grid-Based Calculation"/>Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="highlevel.html" class="btn btn-neutral" title="orbkit’s High-Level Interface"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015, Gunter Hermann, Vincent Pohl, and Axel Schild.
+    </p>
+  </div>
+
+  <a href="https://github.com/snide/sphinx_rtd_theme">Sphinx theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'0.2.2',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

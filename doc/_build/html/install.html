@@ -8,7 +8,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Installation Instructions for orbkit &mdash; orbkit 0.2.2 documentation</title>
+  <title>Installation &mdash; orbkit 0.2.2 documentation</title>
   
 
   
@@ -32,8 +32,8 @@
 
   
     <link rel="top" title="orbkit 0.2.2 documentation" href="index.html"/>
-        <link rel="next" title="Documentation" href="documentation/index.html"/>
-        <link rel="prev" title="Overview" href="index.html"/> 
+        <link rel="next" title="General Aspects" href="general.html"/>
+        <link rel="prev" title="orbkit" href="index.html"/> 
 
   
   <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
@@ -47,7 +47,7 @@
     
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-nav-search">
-        <a href="toctree.html" class="fa fa-home"> orbkit</a>
+        <a href="index.html" class="fa fa-home"> orbkit</a>
         <div role="search">
   <form id ="rtd-search-form" class="wy-form" action="search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
@@ -61,30 +61,42 @@
         
         
             <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="index.html">Overview</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="index.html#citation">Citation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#prerequisites">Prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#instructions">Instructions</a></li>
 </ul>
 </li>
-<li class="toctree-l1 current"><a class="current reference internal" href="">Installation Instructions for orbkit</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="general.html">General Aspects</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="general.html#requirements-for-the-input-files">Requirements for the Input Files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="general.html#capabilities">Capabilities</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="documentation/index.html">Documentation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="documentation/requirements.html">Requirements for the Input Files</a></li>
-<li class="toctree-l2"><a class="reference internal" href="documentation/terminal.html">Usage via the Terminal</a></li>
-<li class="toctree-l2"><a class="reference internal" href="documentation/ok_main.html">orbkit&#8217;s High-Level Interface</a></li>
-<li class="toctree-l2"><a class="reference internal" href="documentation/ok_modules.html">orbkit&#8217;s Low-Level Interface</a></li>
-<li class="toctree-l2"><a class="reference internal" href="documentation/ok_analytical.html">Analytical Integrals with orbkit</a></li>
-<li class="toctree-l2"><a class="reference internal" href="documentation/cvars.html">Central Variables</a></li>
-<li class="toctree-l2"><a class="reference internal" href="documentation/options.html">Options</a></li>
-<li class="toctree-l2"><a class="reference internal" href="documentation/funcref.html">Function Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quick.html">Quick Start Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="quick.html#within-the-terminal">Within the Terminal</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quick.html#within-a-python-shell">Within a Python Shell</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="tutorials/index.html">Tutorials</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="tutorials/vis.html">Tutorial for the Visualization</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorials/atomic_populations.html">Tutorial for Atomic Population and Charge Analysis</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorials/cubature.html">Tutorial for the Integration with Cubature</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorials/multiple_files.html">Tutorial for Processing Multiple Input Files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gridbased/index.html">Grid-Based Calculation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="gridbased/terminal.html">Usage via the Terminal</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gridbased/highlevel.html">orbkit&#8217;s High-Level Interface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gridbased/lowlevel.html">orbkit&#8217;s Low-Level Interface</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="nongridbased/index.html">Non Grid-Based Calculation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="nongridbased/analytical.html">Analytical Integrals with orbkit</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="adtutorials/index.html">Advanced Tutorials</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="adtutorials/atomic_populations.html">Tutorial for Atomic Population and Charge Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="adtutorials/cubature.html">Tutorial for the Integration with Cubature</a></li>
+<li class="toctree-l2"><a class="reference internal" href="adtutorials/multiple_files.html">Tutorial for Processing Multiple Input Files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="adtutorials/cclib.html">Tutorial for Input Processing with cclib</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="refs/index.html">Orbkit References</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="refs/options.html">Options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="refs/cvars.html">Central Variables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="refs/funcref.html">Function Reference</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="licence.html">Licence Note</a></li>
@@ -105,7 +117,7 @@
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
         <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="toctree.html">orbkit</a>
+        <a href="index.html">orbkit</a>
       </nav>
 
 
@@ -114,9 +126,9 @@
         <div class="rst-content">
           <div role="navigation" aria-label="breadcrumbs navigation">
   <ul class="wy-breadcrumbs">
-    <li><a href="toctree.html">Docs</a> &raquo;</li>
+    <li><a href="index.html">Docs</a> &raquo;</li>
       
-    <li>Installation Instructions for orbkit</li>
+    <li>Installation</li>
       <li class="wy-breadcrumbs-aside">
         
           <a href="_sources/install.txt" rel="nofollow"> View page source</a>
@@ -127,8 +139,19 @@
 </div>
           <div role="main">
             
-  <div class="section" id="installation-instructions-for-orbkit">
-<span id="installation-instructions"></span><h1>Installation Instructions for orbkit<a class="headerlink" href="#installation-instructions-for-orbkit" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="installation">
+<span id="installation-instructions"></span><h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
+<p>In this section, we present the manual installation of orbkit on a Unix-like
+system.</p>
+<div class="contents local topic" id="table-of-contents">
+<p class="topic-title first">Table of Contents:</p>
+<ul class="simple">
+<li><a class="reference internal" href="#prerequisites" id="id1">Prerequisites</a></li>
+<li><a class="reference internal" href="#instructions" id="id2">Instructions</a></li>
+</ul>
+</div>
+<div class="section" id="prerequisites">
+<h2><a class="toc-backref" href="#id1">Prerequisites</a><a class="headerlink" href="#prerequisites" title="Permalink to this headline">¶</a></h2>
 <p>For a proper execution of orbkit, the following Python modules are
 required:</p>
 <ol class="arabic simple">
@@ -139,13 +162,14 @@ required:</p>
 <li><a class="reference external" href="http://docs.enthought.com/mayavi/mayavi/index.html">mayavi</a> Tool for 3D scientific data visualization (optional)</li>
 </ol>
 <p>The package h5py is not mandatory but strongly recommended.</p>
-<div class="section" id="installation">
-<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
-<p>orbkit has to be manually installed. This is a simple procedure and can
-be carried out in Linux using <tt class="docutils literal"><span class="pre">bash</span></tt> as follows:</p>
+</div>
+<div class="section" id="instructions">
+<h2><a class="toc-backref" href="#id2">Instructions</a><a class="headerlink" href="#instructions" title="Permalink to this headline">¶</a></h2>
+<p>The manual installation of orbkit is a simple procedure and can
+be carried out using <tt class="docutils literal"><span class="pre">bash</span></tt> as follows:</p>
 <p>Choose the directory, where you want to install orbkit. Open a terminal window,
-e.g. <tt class="docutils literal"><span class="pre">gnome-terminal</span></tt>, and navigate to this directory. In this example we
-will use the home directory. If you use a different directory simply replace
+e.g. <tt class="docutils literal"><span class="pre">gnome-terminal</span></tt>, and navigate to this directory. In this example, we
+will use the home directory. If you want to use a different directory simply replace
 <tt class="docutils literal"><span class="pre">$HOME</span></tt> by your preferred folder throughout the whole section.</p>
 <blockquote>
 <div><div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span><span class="nb">cd</span> <span class="nv">$HOME</span>
@@ -167,10 +191,10 @@ version can additionally be cloned from <a class="reference external" href="http
 </ul>
 <ul id="tarball">
 <li><p class="first">Using a <strong>tarball</strong>:</p>
-<p>Download the latest orbkit release and extract the file (<tt class="docutils literal"><span class="pre">v0.2.0</span></tt> has to be
+<p>Download the latest orbkit release and extract the file (<tt class="docutils literal"><span class="pre">v0.3.0</span></tt> has to be
 replaced by your version number):</p>
 <div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>wget http://sourceforge.net/projects/orbkit/files/latest/download
-<span class="nv">$ </span>tar xzvf orbkit.v0.2.0.tar.gz
+<span class="nv">$ </span>tar xzvf orbkit.v0.3.0.tar.gz
 </pre></div>
 </div>
 </li>
@@ -189,6 +213,7 @@ environment variable either temporarily by typing</p>
 <span class="nv">$ </span><span class="nb">export </span><span class="nv">PATH</span><span class="o">=</span><span class="nv">$PATH</span>:<span class="nv">$ORBKITPATH</span>/tools
 </pre></div>
 </div>
+<p>orbkit has been properly tested on Linux, but should also work on other systems.</p>
 </div>
 </div>
 
@@ -198,10 +223,10 @@ environment variable either temporarily by typing</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="documentation/index.html" class="btn btn-neutral float-right" title="Documentation"/>Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="general.html" class="btn btn-neutral float-right" title="General Aspects"/>Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="index.html" class="btn btn-neutral" title="Overview"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="index.html" class="btn btn-neutral" title="orbkit"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

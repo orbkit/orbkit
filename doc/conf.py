@@ -34,7 +34,7 @@ source_suffix = '.rst'
 source_encoding = 'iso-8859-1'
 
 # The master toctree document.
-master_doc = 'toctree'
+master_doc = 'index'
 
 # General information about the project.
 project = u'orbkit'
@@ -186,7 +186,7 @@ htmlhelp_basename = 'orbkitdoc'
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('toctree_tex', 'orbkit.tex', u'orbkit Documentation',
+  ('toctree', 'orbkit.tex', u'orbkit Documentation',
    u'Gunter Hermann, Vincent Pohl, and Axel Schild', 'manual'),
 ]
 

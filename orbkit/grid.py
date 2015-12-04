@@ -103,6 +103,11 @@ def get_grid(start='\t'):
   return display
   # get_grid 
 
+def tolist():
+  '''Returns a list containing the current x-, y-, z-grid.
+  '''
+  return [x, y, z]
+  
 def todict():
   '''Returns a dictionary containing the current x-, y-, z-grid.
   '''

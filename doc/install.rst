@@ -1,7 +1,17 @@
 .. _installation-instructions:
 
-Installation Instructions for orbkit
-====================================
+Installation
+============
+
+In this section, we present the manual installation of orbkit on a Unix-like
+system.
+
+.. contents:: Table of Contents:
+  :local:
+  :depth: 2
+
+Prerequisites
+-------------
 
 For a proper execution of orbkit, the following Python modules are
 required:
@@ -20,15 +30,15 @@ The package h5py is not mandatory but strongly recommended.
 .. _h5py: http://www.h5py.org/
 .. _mayavi: http://docs.enthought.com/mayavi/mayavi/index.html
 
-Installation
+Instructions
 ------------
 
-orbkit has to be manually installed. This is a simple procedure and can 
-be carried out in Linux using ``bash`` as follows:
+The manual installation of orbkit is a simple procedure and can 
+be carried out using ``bash`` as follows:
 
 Choose the directory, where you want to install orbkit. Open a terminal window, 
-e.g. ``gnome-terminal``, and navigate to this directory. In this example we 
-will use the home directory. If you use a different directory simply replace 
+e.g. ``gnome-terminal``, and navigate to this directory. In this example, we 
+will use the home directory. If you want to use a different directory simply replace 
 ``$HOME`` by your preferred folder throughout the whole section.
 
     .. code-block:: bash
@@ -54,13 +64,13 @@ version can additionally be cloned from http://sourceforge.net/p/orbkit/code.
 
   * Using a **tarball**:
 
-    Download the latest orbkit release and extract the file (``v0.2.0`` has to be 
+    Download the latest orbkit release and extract the file (``v0.3.0`` has to be 
     replaced by your version number):
 
     .. code-block:: bash
 
         $ wget http://sourceforge.net/projects/orbkit/files/latest/download 
-        $ tar xzvf orbkit.v0.2.0.tar.gz
+        $ tar xzvf orbkit.v0.3.0.tar.gz
 
 In order to use orbkit, you have to add the orbkit directory to your ``PYTHONPATH``
 environment variable either temporarily by typing
@@ -79,3 +89,5 @@ To use orbkit as a standalone program, you have to modify your
 
     $ export ORBKITPATH=$HOME/orbkit
     $ export PATH=$PATH:$ORBKITPATH/tools
+
+orbkit has been properly tested on Linux, but should also work on other systems.
