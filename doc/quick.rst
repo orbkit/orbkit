@@ -47,11 +47,20 @@ Now, let us run orbkit for a grid adapted to the molecular geometry
 orbkit creates four cube files and a VMD script file ``vis/h2o_MO.vmd``.
 This can be displayed using VMD by calling
 
+
 .. code-block:: bash
 
     $ vmd -e vis/h2o_MO.vmd
 
-Hint: By default, orbkit uses absolute paths within the VMD script file.
+.. hint::
+   
+   The orbital numbering corresponds to the indices within the input file (counting from **one**!).
+   When you select a range of orbitals using a colon ":", please note that we are using the syntax of the Python range function,
+   i.e., ``--calc_mo=START:STOP[:STEP]``, where ``STOP`` is **not** an element of the list. 
+
+.. note::
+
+   By default, orbkit uses absolute paths within the VMD script file.
 
 Using Mayavi
 ............

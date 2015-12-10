@@ -324,7 +324,18 @@ def check_options(error=raise_error,display=print_message,
                         what='filename for the grid input file', 
                         interactive=interactive,
                         error=error))
-
+  
+  if adjust_grid is not None:
+    if (not isinstance(adjust_grid,(list,tuple)) or 
+       (len(adjust_grid) != 2) or 
+       (not isinstance(adjust_grid[0],(int,float))) or 
+       (not isinstance(adjust_grid[1],(int,float)))
+       ):
+      error('The grid parameter (--adjust_grid), has to be a list containing '
+            'containing two floats.\n')
+    elif adjust_grid[1] == 0:
+      error('The grid spacing (second value in --adjust_grid) cannot be zero.\n')
+  
   #--- Computational Options ---#
   
   if not isinstance(numproc,int):

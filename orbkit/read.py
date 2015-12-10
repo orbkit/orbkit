@@ -2123,9 +2123,8 @@ def mo_select(mo_spec, fid_mo_list, strict=False):
       for i in selected_mo:
         if isinstance(i,int):
           continue
-        if i == 'homo' or i == 'lumo':
-          i += '+0'
-	for r in ['homo','lumo','-','+',':']:
+        i = i.replace('homo','1').replace('lumo','2')
+	for r in ['-','+',':']:
           i = i.replace(r,'')
         int(i)
     except ValueError:
