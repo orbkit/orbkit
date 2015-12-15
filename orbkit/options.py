@@ -240,7 +240,9 @@ def init_parser():
   # init_parser 
 
 def raise_error(string,error=IOError):
-  raise IOError(string)
+  if parser in globals():
+    error = parser.error
+  raise error(string)
 
 def print_message(string):
   print string
@@ -308,15 +310,6 @@ def check_options(error=raise_error,display=print_message,
       error('ImportError: The module h5py is not installed!\n')  
 
   #--- Grid-Related Options ---#  
-  
-  # Check for the compability of the vector option and the output formats
-  if vector is not None and ('cb' in otype or 'vmd' in otype or
-                             'am' in otype or 'hx' in otype or 
-                             'mayavi' in otype):
-    error('For a vector grid, only HDF5 ' +
-    'is available as output format. Choose: --otype=h5\n')
-    #'The Gaussian cube file output format does not allow\n\t'+
-    #'a vector grid, i.e., "-v" and "-t cb" are mutually exclusive.\n')
   
   # Look for the grid input file
   if grid_file is not None: 
@@ -418,16 +411,12 @@ def check_options(error=raise_error,display=print_message,
     string = 'The option %s--center cannot be checked before %s...\n'
     if center_grid is not None:
       display(string % ('--center','reading\nthe input file'))
-    if z_reduced_density:
-      display(string % ('--z_reduced_density',
-                        'creating\nthe grid'))
     if gross_atomic_density is not None:
       display(string % ('--gross_atomic_density',
                         'reading\nthe input file'))
     if mo_tefd is not None:
       display(string % ('--mo_tefd',
-                        'reading\nthe input file'))
-  
+                        'reading\nthe input file'))  
   return True
 
 def check_if_exists(fid, what='',error=IOError,display=sys.stdout.write,
@@ -463,6 +452,15 @@ def check_if_exists(fid, what='',error=IOError,display=sys.stdout.write,
       error('Insert a correct %s!\n' % what)
       break 
   return fid
+
+def check_grid_output_compatibilty(error=raise_error): 
+  if (grid.is_vector and not grid.is_regular) and ('cb'     in otype or 
+                                                   'vmd'    in otype or
+                                                   'am'     in otype or 
+                                                   'hx'     in otype or 
+                                                   'mayavi' in otype):
+    error('For a non-regular vector grid, only HDF5 ' +
+    'is available as output format. Choose: --otype=h5\n')
 
 # initiating the parser variables
 # the names are chosen according to core.init_parser()

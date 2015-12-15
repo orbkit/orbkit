@@ -39,7 +39,7 @@ from orbkit import options
 import orbkit.display as display_module
 from orbkit.display import display,good_bye_message
 
-def run_orbkit(use_qc=None,check_options=True):
+def run_orbkit(use_qc=None,check_options=True,standalone=False):
   '''Controls the execution of all computational tasks.
   
   **Parameters:**
@@ -125,7 +125,10 @@ def run_orbkit(use_qc=None,check_options=True):
 
     # Center the grid to a specific atom and (0,0,0) if requested
     grid.center_grid(qc.geo_spec[atom-1],display=display)
-
+  
+  if check_options or standalone:
+    options.check_grid_output_compatibilty()
+  
   display('The computations will be carried out applying a ' +
           '%s grid.' % ('regular' if options.vector is None else 'vector'))
   
@@ -288,8 +291,7 @@ def run_orbkit(use_qc=None,check_options=True):
                        otype=options.otype,
                        data_id='rho',
                        omit=['vmd','mayavi'],
-                       mo_spec=qc.mo_spec,
-                       is_vector=(options.vector is not None))
+                       mo_spec=qc.mo_spec)
     if options.drv is not None:
       output_written.extend(output.main_output(delta_rho,qc.geo_info,qc.geo_spec,
                          outputname=options.outputname,
@@ -297,16 +299,14 @@ def run_orbkit(use_qc=None,check_options=True):
                          data_id='delta_rho',
                          omit=['vmd','mayavi'],
                          mo_spec=qc.mo_spec,
-                         drv=options.drv,
-                         is_vector=(options.vector is not None)))
+                         drv=options.drv))
     if options.laplacian:
       output_written.extend(output.main_output(laplacian_rho,qc.geo_info,qc.geo_spec,
                          outputname=options.outputname + '_laplacian',
                          otype=options.otype,
                          data_id='laplacian_rho',
                          omit=['vmd','mayavi'],
-                         mo_spec=qc.mo_spec,
-                         is_vector=(options.vector is not None)))
+                         mo_spec=qc.mo_spec))
     if 'vmd' in options.otype:
       # Create VMD network 
       display('\nCreating VMD network file...' +
@@ -321,7 +321,7 @@ def run_orbkit(use_qc=None,check_options=True):
   
   good_bye_message(t)
   
-  if 'mayavi' in options.otype and options.vector is None:
+  if 'mayavi' in options.otype:
     plt_data = [rho]
     datalabels = ['rho']
     if options.drv is not None:
@@ -330,8 +330,9 @@ def run_orbkit(use_qc=None,check_options=True):
     if options.laplacian:
       plt_data.append(laplacian_rho)
       datalabels.append('laplacian of rho')
-    output.view_with_mayavi(grid.x,grid.y,grid.z,plt_data,geo_spec=qc.geo_spec,
-                            datalabels=datalabels)
+    output.main_output(plt_data,qc.geo_info,qc.geo_spec,
+                       otype='mayavi',
+                       datalabels=datalabels)
   
   # Return the computed data, i.e., rho for standard, and (rho,delta_rho)  
   # for derivative calculations. For laplacian (rho,delta_rho,laplacian_rho) 
@@ -356,4 +357,4 @@ def run_standalone():
   options.init_parser()
   
   # Call the main loop
-  run_orbkit(check_options=False)
+  run_orbkit(check_options=False,standalone=True)

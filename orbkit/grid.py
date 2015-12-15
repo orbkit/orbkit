@@ -50,7 +50,7 @@ def grid_init(is_vector=False, force=False):
   '''
   
   # All grid related variables should be globals 
-  global x, y, z, d3r, min_, max_, N_, delta_, grid, is_initialized
+  global x, y, z, d3r, min_, max_, N_, delta_, grid, is_initialized, is_regular
   
   if is_initialized and not force:
     return 0
@@ -77,11 +77,11 @@ def grid_init(is_vector=False, force=False):
   d3r = numpy.product(delta_)
   
   is_initialized = True
+  is_regular = True
   
   if is_vector:
     grid2vector()
-    
-  return 0
+  
   # grid_init 
 
 def get_grid(start='\t'):
@@ -113,10 +113,18 @@ def todict():
   '''
   return {'x': x, 'y': y, 'z': z}
 
+def get_shape():
+ '''Returns the shape of the grid.
+ '''
+ if not is_initialized:
+   raise ValueError('`grid.get_shape` requires the grid to be initialized.')
+ 
+ return (len(x),) if is_vector else tuple(N_)
+
 def set_grid(grid):
   '''Sets the x-, y-, z-grid.
   '''
-  global x, y, z
+  global x, y, z, is_initialized
   coord = ['x', 'y', 'z']
   delta_ = numpy.zeros((3,1)) #: Contains the grid spacing.
   
@@ -175,7 +183,7 @@ def grid2vector():
   Reverse operation: :mod:`orbkit.grid.vector2grid` 
   '''
   # All grid related variables should be globals 
-  global x, y, z, is_vector
+  global x, y, z, is_vector, is_regular
   
   if not is_initialized:
     raise ValueError('You have to initialize a grid before calling '+
@@ -209,7 +217,8 @@ def grid2vector():
   z = grid[2,:]
   
   is_vector = True
-  return 0
+  is_regular = True
+  return 
   # grid2vector 
   
 def vector2grid(Nx,Ny,Nz):
@@ -222,7 +231,16 @@ def vector2grid(Nx,Ny,Nz):
   
   if not is_initialized:
     raise ValueError('You have to initialize a grid before calling '+
-                 ' `grid.vector2grid`, i.e., `grid.is_initialized=True`.')
+                     ' `grid.vector2grid`. '+
+                     '(`grid.is_initialized == True`)')
+  if not is_regular:
+    raise ValueError('The grid has to regular. '+
+                     '(`grid.is_regular == True`)')
+  if not (len(x) == len(y) == len(z)):
+    raise ValueError('Not a valid vector grid, i.e., dimensions of '+
+                     'x-, y-, and z- coordinate differ.') 
+  if (Nx*Ny*Nz) != len(x):
+    raise ValueError('It has to hold that `len(x) = (N_x * N_y * N_z)`')
   
   # Initialize a list for the grid
   grid = [[],[],[]]
@@ -255,13 +273,17 @@ def vector2grid(Nx,Ny,Nz):
   
   is_vector = False
   
-  return 0
+  return 
   # vector2grid 
   
-def matrix_grid2vector(matrix=None): 
+def matrix_grid2vector(matrix): 
   '''Converts the (Nx,Ny,Nz) data matrix back to the regular grid (Nx,Nz,Ny)
   '''
+  matrix = numpy.asarray(matrix,dtype=float)
   
+  if matrix.ndim != 3:
+    raise ValueError('`matrix` has to be 3d matrix.')
+    
   # Initialize matrix (Nx*Ny*Nz)
   vecmatrix = numpy.zeros((numpy.shape(matrix)[0]*numpy.shape(matrix)[1]*numpy.shape(matrix)[2]))
   
@@ -284,12 +306,16 @@ def matrix_grid2vector(matrix=None):
   return vecmatrix
   # matrix_grid2vector
 
-def matrix_vector2grid(matrix=None,Nx=None,Ny=None,Nz=None): 
+def matrix_vector2grid(matrix,Nx=None,Ny=None,Nz=None): 
   '''Converts the (Nx*Ny*Nz) data matrix back to the (Nx,Nz,Ny)
   '''
   
-  if Nx*Ny*Nz != len(matrix):
-    raise TypeError('Check Nx, Ny, and Nz!')
+  matrix = numpy.asarray(matrix,dtype=float)
+  
+  if matrix.ndim != 1 or (Nx*Ny*Nz) != len(matrix):
+    raise ValueError('`matrix` has to be one dimensional with the length '+
+                     '`len(matrix) = N_x * N_y * N_z`.'+
+                     'For Nd matrices use the function `grid.mv2g`.')
     
   # Initialize matrix (Nx,Ny,Nz)
   regmatrix = numpy.zeros((Nx,Ny,Nz))
@@ -314,9 +340,10 @@ def matrix_vector2grid(matrix=None,Nx=None,Ny=None,Nz=None):
   # matrix_vector2grid
 
 def mv2g(**kwargs):
-  '''Converts all `numpy.ndarrays` from passed to the keyword arguments 
+  '''Converts all `numpy.ndarrays` given as the keyword arguments 
   (`**kwargs`) from a vector grid of `shape=(..., Nx*Ny*Nz, ...,)` to a regular 
-  grid of `shape=(..., Nx, Ny, Nz, ...,)` and returns it as a dictionary.
+  grid of `shape=(..., Nx, Ny, Nz, ...,)`, and, if more than one `**kwargs` is 
+  given, returns it as a dictionary.
   
   Hint: The global values for the grid dimensionality, i.e., :mod:`grid.N_`,
   are used for reshaping.
@@ -324,6 +351,7 @@ def mv2g(**kwargs):
   import itertools
   return_val = {}
   for i,j in kwargs.iteritems():
+    j = numpy.asarray(j,dtype=float)
     shape = numpy.shape(j)
     where = numpy.argwhere(shape==numpy.product(N_))
     return_val[i] = numpy.zeros(shape[:where]+tuple(N_)+shape[where+1:])
@@ -331,20 +359,20 @@ def mv2g(**kwargs):
       obj = [slice(k,k+1) for k in key]
       for r in range(3):
         obj.insert(where,slice(None,None))
-      return_val[i][obj] = matrix_vector2grid(matrix=j[obj[:where]+obj[where+2:]].reshape((-1,)), 
+      return_val[i][obj] = matrix_vector2grid(j[obj[:where]+obj[where+2:]].reshape((-1,)), 
                                           **dict(zip(['Nx','Ny','Nz'],N_)))
   
-  return return_val 
+  return return_val.values()[0] if len(return_val.values()) == 1 else return_val
 
 def grid_sym_op(symop=None):
   '''Executes given symmetry operation on vector grid 
   '''
   # All grid related variables should be globals 
-  global x, y, z, is_vector
+  global x, y, z, is_vector, is_regular
   
   if not is_initialized:
     raise ValueError('You have to initialize a grid before executing a '+
-                 ' symmetry operation on it, i.e., `grid.is_initialized=True`.')
+                 ' symmetry operation on it. (`grid.is_initialized == True`)')
   
   if not is_vector:
     grid2vector()
@@ -373,6 +401,9 @@ def grid_sym_op(symop=None):
   x = grid[0,:]  
   y = grid[1,:]  
   z = grid[2,:]
+  
+  # The grid is not regular anymore.
+  is_regular = False
   # grid_sym_op
 
 def grid_translate(dx,dy,dz):
@@ -446,7 +477,7 @@ def sph2cart_vector(r,theta,phi):
       Specifies azimuth angle. 
   '''
   # All grid related variables should be globals 
-  global x, y, z, is_initialized, is_vector
+  global x, y, z, is_initialized, is_vector, is_regular
   
   grid = numpy.zeros((3,numpy.product([len(r),len(theta),len(phi)])))
   grid_code = """
@@ -475,6 +506,7 @@ def sph2cart_vector(r,theta,phi):
   
   is_initialized = True
   is_vector = True
+  is_regular = False
   # sph2cart_vector 
 
 def cyl2cart_vector(r,phi,zed):
@@ -491,7 +523,7 @@ def cyl2cart_vector(r,phi,zed):
       Specifies z distance.
   '''
   # All grid related variables should be globals 
-  global x, y, z, is_initialized, is_vector
+  global x, y, z, is_initialized, is_vector, is_regular
   
   grid = numpy.zeros((3,numpy.product([len(r),len(phi),len(zed)])))
   grid_code = """
@@ -520,6 +552,7 @@ def cyl2cart_vector(r,phi,zed):
   
   is_initialized = True
   is_vector = True
+  is_regular = False
   # cyl2cart_vector 
 
 def random_grid(geo_spec,N=1e6,scale=0.5):
@@ -535,7 +568,7 @@ def random_grid(geo_spec,N=1e6,scale=0.5):
         Width of normal distribution
   '''
   # All grid related variables should be globals 
-  global x, y, z, is_initialized, is_vector
+  global x, y, z, is_initialized, is_vector, is_regular
   geo_spec = numpy.array(geo_spec)
   at_num = len(geo_spec)
   # Initialize a list for the grid 
@@ -555,8 +588,7 @@ def random_grid(geo_spec,N=1e6,scale=0.5):
   
   is_initialized = True
   is_vector = True
-  
-  return 0
+  is_regular = False  
   # random_grid 
 
 def read(filename, comment='#'):
@@ -601,7 +633,7 @@ def read(filename, comment='#'):
   **Hint:** If a line starts with '#', it will be skipped. Please, do not use '#' at the end of a line!
   '''
   # All grid related variables should be globals 
-  global x, y, z, min_, max_, N_, is_initialized
+  global x, y, z, min_, max_, N_, is_initialized, is_regular, is_vector
   
   def check(i, is_vector):
     if (len(i) == 3) and (is_vector is None or is_vector == True):
@@ -640,6 +672,7 @@ def read(filename, comment='#'):
     y = grid[1,:]
     z = grid[2,:]
     is_initialized = True # The grid will be seen as initialized
+    is_regular = False # The grid is assumed to be non-regular
   else:
     min_ = grid[:,0]
     max_ = grid[:,1]
@@ -710,14 +743,14 @@ def center_grid(ac,display=sys.stdout.write):
     if len(numpy.nonzero(0. == numpy.round(grid[ii]*10000))[0])!= 0: 
       display('Warning!\n\tAt least one grid point is equal to zero.\n')
   
-  return 0
   # center_grid 
 
 def reset_grid():
   '''Resets the grid parameters.'''
-  global is_initialized, min_, max_, N_
+  global is_initialized, is_vector, is_regular, min_, max_, N_
   is_initialized = False
-  is_vector = False  
+  is_vector = False
+  is_regular = False
   min_ = [-8.0, -8.0, -8.0]
   max_ = [ 8.0,  8.0,  8.0]
   N_   = [ 101,  101,  101]
@@ -736,3 +769,4 @@ delta_ = numpy.zeros((3,1)) #: Contains the grid spacing.
 
 is_initialized = False      #: If True, the grid is assumed to be initialized.
 is_vector = False           #: If True, the grid is assumed to be vector grid.
+is_regular = False          #:If True, the grid is assumed to be regular, i.e., a conversion of a vector grid to a regular grid is possible, if ``N_`` is set.

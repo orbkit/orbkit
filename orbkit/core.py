@@ -878,15 +878,6 @@ def rho_compute_no_slice(qc,calc_mo=False,is_vector=False,drv=None,
   ao_spherical = qc['ao_spherical']
   mo_spec = qc['mo_spec']
     
-  if not is_vector:
-    N = (len(x),len(y),len(z))
-  else:
-    if len(x) != len(y) or len(x) != len(z):
-      display("Dimensions of x-, y-, and z- coordinate differ!")
-      return 0
-    else:
-      N = (len(x),)
-    
   if laplacian:
     if not (drv is None or drv == ['xx','yy','zz'] or drv == ['x2','y2','z2']):
       display('Note: You have set the option `laplacian` and specified values\n' +

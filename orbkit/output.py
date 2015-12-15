@@ -32,7 +32,7 @@ from orbkit import grid, options
 from orbkit.display import display
 
 def main_output(data,geo_info,geo_spec,outputname='new',otype='h5',
-                drv=None,omit=[],is_vector=False,**kwargs):
+                drv=None,omit=[],**kwargs):
   '''Creates the requested output.
   
   **Parameters:**
@@ -52,9 +52,6 @@ def main_output(data,geo_info,geo_spec,outputname='new',otype='h5',
     with NDRV = len(drv).
   omit : list of str, optional
     If not empty, the input file types specified here are omitted.
-  is_vector : bool
-    If True, assumes a vector grid for the output data. 
-    Note: A vector grid is only available for HDF5 files.
   
   **Note:**
   
@@ -62,12 +59,29 @@ def main_output(data,geo_info,geo_spec,outputname='new',otype='h5',
   '''
   print_waring = False
   output_written = []
+  if isinstance(otype,str):
+    otype = [otype]
+  
+  if 'vmd' in otype and not 'cb' in otype:
+    otype.append('cb')
+  
+  otype = [i for i in otype if i not in omit]
+  
   if otype is None or otype == []:
-    return output_written
-  if 'mayavi' in otype and 'mayavi' not in omit:
-    print is_vector
-    if is_vector: print_waring = True
-    else: view_with_mayavi(grid.x,grid.y,grid.z,data,geo_spec=geo_spec)
+    return output_written 
+  
+  # Convert the data to a regular grid, if possible
+  output_not_possible = (grid.is_vector and not grid.is_regular)
+  is_regular_vector = (grid.is_vector and grid.is_regular)
+  if is_regular_vector:  
+    display('\nConverting the regular 1d vector grid to a 3d regular grid.')
+    grid.vector2grid(*grid.N_)
+    data = grid.mv2g(data=data)
+  
+  if 'mayavi' in otype:
+    if output_not_possible: print_waring = True
+    else: view_with_mayavi(grid.x,grid.y,grid.z,data,geo_spec=geo_spec,**kwargs)
+  
   if drv is not None:
     fid = '%(f)s_d%(d)s'
     it = enumerate(drv)
@@ -80,35 +94,35 @@ def main_output(data,geo_info,geo_spec,outputname='new',otype='h5',
   for i,j in it:
     f['d'] = j
     d = data[i]
-    if 'h5' in otype and 'h5' not in omit:
+    if 'h5' in otype:
       display('\nSaving to Hierarchical Data Format file (HDF5)...' +
               '\n\t%(o)s.h5' % {'o': fid % f})
       HDF5_creator(d,(fid % f),geo_info,geo_spec,**kwargs)
       output_written.append('%s.h5' % (fid % f))
     if 'am' in otype or 'hx' in otype and not print_waring:
-      if is_vector: print_waring = True
+      if output_not_possible: print_waring = True
       else: 
         display('\nSaving to ZIBAmiraMesh file...' +
                      '\n\t%(o)s.am' % {'o': fid % f})
         amira_creator(d,(fid % f))
         output_written.append('%s.am' % (fid % f))
     if 'hx' in otype and not print_waring:
-      if is_vector: print_waring = True
+      if output_not_possible: print_waring = True
       else: 
         # Create Amira network incl. Alphamap
         display('\nCreating ZIBAmira network file...')
         hx_network_creator(data,(fid % f))
         output_written.append('%s.hx' % (fid % f))
     if 'cb' in otype or 'vmd' in otype and not print_waring:
-      if is_vector: print_waring = True
+      if output_not_possible: print_waring = True
       else: 
         display('\nSaving to .cb file...' +
                       '\n\t%(o)s.cb' % {'o': fid % f})
         cube_creator(d,(fid % f),geo_info,geo_spec,**kwargs)
         output_written.append('%s.cb' % (fid % f))
        #else: output_creator(d,(fid % f),geo_info,geo_spec)  # Axel's cube files
-    if 'vmd' in otype and 'vmd' not in omit and not print_waring:
-      if is_vector: print_waring = True
+    if 'vmd' in otype and not print_waring:
+      if output_not_possible: print_waring = True
       else: 
         # Create VMD network 
         display('\nCreating VMD network file...' +
@@ -117,8 +131,13 @@ def main_output(data,geo_info,geo_spec,outputname='new',otype='h5',
         output_written.append('%s.vmd' % (fid % f))
       
   if print_waring:
-    display('For a vector grid only HDF5 is available as output format...')
+    display('For a non-regular vector grid (`if grid.is_vector and not grid.is_regular`)')
+    display('only HDF5 is available as output format...')
     display('Skipping all other formats...')
+  
+  if is_regular_vector:
+    # Convert the data back to a regular vector grid
+    grid.grid2vector()
   
   return output_written
 
@@ -350,7 +369,7 @@ def hdf5_write(fid,mode='w',gname='',**kwargs):
       for i,j in kwargs.iteritems(): 
         f.create_dataset(i,numpy.shape(j),data=j)
 
-def HDF5_creator(data,filename,geo_info,geo_spec,data_id='rho',append=None,
+def HDF5_creator(data,filename,geo_info,geo_spec,mode='w',data_id='rho',group=None,
             data_only=False,ao_spec=None,mo_spec=None,is_mo_output=False,
             x=None,y=None,z=None,**kwargs):
   '''Creates an HDF5 file (Hierarchical Data Format) output.
@@ -365,7 +384,7 @@ def HDF5_creator(data,filename,geo_info,geo_spec,data_id='rho',append=None,
     See :ref:`Central Variables` for details.
   data_id : str, optional
     Specifies name of the dataset in the HDF5 file.
-  append : None of str
+  group : None of str
     If not None, output data will be stored in this group.
   data_only : bool
     Specifies if only the dataset `data` should be saved.
@@ -381,16 +400,13 @@ def HDF5_creator(data,filename,geo_info,geo_spec,data_id='rho',append=None,
     respectively.
   '''
   import h5py
-  
-  if append is None:
-    HDF5_file = h5py.File('%s.h5' % filename, 'w')
+  HDF5_file = h5py.File('%s.h5' % filename, mode)
+  if group is None:
     f = HDF5_file
   else:
-    HDF5_file = h5py.File('%s.h5' % filename, 'a')
-    HDF5_file.require_group(append)
-    f = HDF5_file[append]
-  
-  
+    HDF5_file.require_group(group)
+    f = HDF5_file[group]
+    
   if is_mo_output:    
     mo_name = []
     for i,j in enumerate(data):
@@ -442,7 +458,7 @@ def HDF5_creator(data,filename,geo_info,geo_spec,data_id='rho',append=None,
   dset = f.create_dataset('geo_spec',(numpy.shape(geo_spec)),data=geo_spec)
   
   HDF5_file.close()
-  
+
 def hx_network_creator(rho,filename):
   '''Creates a ZIBAmira hx-network file including a colormap file (.cmap)
   adjusted to the density for the easy depiction of the density.
@@ -749,8 +765,12 @@ def view_with_mayavi(x,y,z,data,geo_spec=None,datalabels=None):
   
   if data.ndim == 3:
     data = data[numpy.newaxis]
-  elif data.ndim != 4:
-    raise ValueError('`data` has to be a ``numpy.array`` with four dimensions')
+  #else:
+    #try:
+      #data = data.reshape((-1,) + tuple(grid.N_))
+    #except ValueError:
+  #if data.ndim != 4:
+    #raise ValueError('`data` has to be a ``numpy.array`` with four dimensions')
   if datalabels is not None and len(datalabels) != len(data):
     raise ValueError('`datalabels` has to be a list of strings with the same' +
                      'length as `data`.')
