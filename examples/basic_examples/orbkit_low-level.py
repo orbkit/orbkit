@@ -20,7 +20,7 @@ mayavi_yes = False
 import orbkit as ok
 
 # name and type of input file
-fid_in  = 'h2o.md'
+fid_in  = 'h2o.molden'
 itype   = 'molden'
 
 # number of subprocesses

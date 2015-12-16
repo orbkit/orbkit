@@ -28,7 +28,7 @@ from orbkit.read import main_read
 from orbkit.core import get_lxlylz,l_deg
 from orbkit.analytical_integrals import get_ao_overlap,get_mo_overlap,print2D
 
-in_fid = 'h2o.md'
+in_fid = 'h2o.molden'
 # Read the input file
 qc = main_read(in_fid,itype='molden',all_mo=False)
 

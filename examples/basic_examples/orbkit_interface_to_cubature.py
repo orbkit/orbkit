@@ -20,7 +20,7 @@ if create_plot and not save_data_values:
 numproc = 4             #: Specifies number of subprocesses.
 vector = 1e4            #: Specifies number of points per subprocess.
 
-in_fid  = 'h2o.md'      #: Specifies input file name.
+in_fid  = 'h2o.molden'      #: Specifies input file name.
 
 # Open molden file and read parameters
 qc = read.main_read(in_fid,itype='molden',all_mo=False)
