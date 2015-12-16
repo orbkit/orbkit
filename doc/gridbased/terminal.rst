@@ -110,12 +110,12 @@ conditions of an equidistant rectangular grid (**regular grid**) or by a list of
 data points (**vector grid**):
 
 
-  +-------------------------------------------------+-------------------------------------------------+
-  | **regular grid**                                | **vector grid**                                 |
-  +-------------------------------------------------+-------------------------------------------------+
-  | .. literalinclude:: ../../examples/grid_reg.txt | .. literalinclude:: ../../examples/grid_vec.txt |
-  |    :language: bash                              |    :language: bash                              |
-  +-------------------------------------------------+-------------------------------------------------+
+  +----------------------------------------------------------------+----------------------------------------------------------------+
+  | **regular grid**                                               | **vector grid**                                                |
+  +----------------------------------------------------------------+----------------------------------------------------------------+
+  | .. literalinclude:: ../../examples/basic_examples/grid_reg.txt | .. literalinclude:: ../../examples/basic_examples/grid_vec.txt |
+  |    :language: bash                                             |    :language: bash                                             |
+  +----------------------------------------------------------------+----------------------------------------------------------------+
 
 .. note:: A :literal:`#` at the beginning of a line implicates a comment line.
 
@@ -161,25 +161,25 @@ molecular orbital) and ``lumo`` (lowest unoccupied molecular orbital), and
 you can select a range of orbitals, e.g., ``--calc_mo=1:homo-1``, which evokes the 
 computation of the molecular orbitals 1, 2, 3, ..., and homo-2.
 
-+-------------------+-----------------------------------------------+---------------------------------------------------+
-|                   |  **MOLPRO-like Nomenclature**                 | **Index within the Input File**                   |
-+-------------------+-----------------------------------------------+---------------------------------------------------+
-| **Inline**        |.. code-block:: bash                           |.. code-block:: bash                               |
-|                   |                                               |                                                   |
-|                   |    $ orbkit -i INP --calc_mo=1.1,1.3          |    $ orbkit -i INP --calc_mo=3:lumo+3,1           |
-|                   |                                               |                                                   |
-|                   |Hint: Multiple calls are possible.             |Hint: Multiple calls are possible.                 |
-+-------------------+-----------------------------------------------+---------------------------------------------------+
-| **Ext. File**     |.. code-block:: bash                           |.. code-block:: bash                               |
-|                   |                                               |                                                   |
-|                   |    $ orbkit -i INP --calc_mo=MO_LIST          |    $ orbkit -i INP --calc_mo=MO_LIST              |
-|                   |                                               |                                                   |
-|                   |``MO_LIST``:                                   |``MO_LIST``:                                       |
-|                   |                                               |                                                   |
-|                   |.. literalinclude:: ../../examples/MO_List.tab |.. literalinclude:: ../../examples/MO_List_int.tab |
-|                   |    :language: bash                            |    :language: bash                                |
-|                   |                                               |                                                   |
-+-------------------+-----------------------------------------------+---------------------------------------------------+
++-------------------+--------------------------------------------------------------+------------------------------------------------------------------+
+|                   |  **MOLPRO-like Nomenclature**                                | **Index within the Input File**                                  |
++-------------------+--------------------------------------------------------------+------------------------------------------------------------------+
+| **Inline**        |.. code-block:: bash                                          |.. code-block:: bash                                              |
+|                   |                                                              |                                                                  |
+|                   |    $ orbkit -i INP --calc_mo=1.1,1.3                         |    $ orbkit -i INP --calc_mo=3:lumo+3,1                          |
+|                   |                                                              |                                                                  |
+|                   |Hint: Multiple calls are possible.                            |Hint: Multiple calls are possible.                                |
++-------------------+--------------------------------------------------------------+------------------------------------------------------------------+
+| **Ext. File**     |.. code-block:: bash                                          |.. code-block:: bash                                              |
+|                   |                                                              |                                                                  |
+|                   |    $ orbkit -i INP --calc_mo=MO_LIST                         |    $ orbkit -i INP --calc_mo=MO_LIST                             |
+|                   |                                                              |                                                                  |
+|                   |``MO_LIST``:                                                  |``MO_LIST``:                                                      |
+|                   |                                                              |                                                                  |
+|                   |.. literalinclude:: ../../examples/basic_examples/MO_List.tab |.. literalinclude:: ../../examples/basic_examples/MO_List_int.tab |
+|                   |    :language: bash                                           |    :language: bash                                               |
+|                   |                                                              |                                                                  |
++-------------------+--------------------------------------------------------------+------------------------------------------------------------------+
 
 The computation and storage of all molecular orbitals can be called by 
 
