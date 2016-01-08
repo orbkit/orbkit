@@ -210,6 +210,11 @@ def vmd_network_creator(filename,cube_files=None,render=False,iso=(-0.01,0.01),
         cube_files.append(fid)
     if cube_files == []:
       raise IOError('Could not find valid cube files in %s' % path.dirname(filename))
+  elif isinstance(cube_files,str):
+    cube_files = [cube_files]
+  elif not isinstance(cube_files,list):
+    raise IOError('`cube_files` has to be a list of strings.')
+  
   
   title = []
   mo = ''
