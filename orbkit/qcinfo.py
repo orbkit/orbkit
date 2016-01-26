@@ -233,7 +233,36 @@ class QCinfo:
       i[0] = get_atom_symbol(i[0])
       i[2] = float(i[-1])
     self.geo_info = numpy.array(self.geo_info)
-    self.geo_spec = numpy.array(self.geo_spec)
+    self.geo_spec = numpy.array(self.geo_spec,dtype=float)
+  
+  def select_spin(self,restricted,spin=None):
+    '''For an unrestricted calculation, the name of the MO
+    ('sym' keyword in ``qc.mo_spec``) is modified, e.g., 3.1_b for MO 3.1 with
+    beta spin and 3.1_a for MO 3.1 with alpha spin.
+    For restricted calculation, the 'spin' keyword from ``qc.mo_spec`` is 
+    removed.
+    
+    **Parameters:**
+    
+    restricted : bool
+      If True, removes the 'spin' keyword from ``qc.mo_spec``.
+    spin : {None, 'alpha', or 'beta'}, optional
+      If not None, returns exclusively 'alpha' or 'beta' molecular orbitals.
+    '''
+    # Only molecular orbitals of one spin requested?
+    if spin is not None:
+      for i in range(len(self.mo_spec))[::-1]:
+        if self.mo_spec[i]['spin'] != spin:
+          del self.mo_spec[i]
+    
+    if restricted:
+      # Closed shell calculation
+      for mo in self.mo_spec:
+        del mo['spin']
+    else:
+      # Rename MOs according to spin
+      for mo in self.mo_spec:      
+        mo['sym'] += '_%s' % mo['spin'][0]
   
   def todict(self):
     '''Converts all essential variables into a dictionary.

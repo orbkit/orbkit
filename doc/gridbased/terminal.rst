@@ -43,7 +43,8 @@ within one run, multiple calls of the option :literal:`--otype=OTYPE` are possib
 
 The available input file types (``--itype=ITYPE``) are **molden** (default), 
 **aomix** (AOMix file), **gamess** (GAMESS-US output file), **gaussian.log** 
-(GAUSSIAN output file) and **gaussian.fchk** (GAUSSIAN formatted checkpoint file). 
+(GAUSSIAN output file), **gaussian.fchk** (GAUSSIAN formatted checkpoint file),
+**wfn** and **wfx** files. 
 
 You can choose between standard Gaussian_ cube files (:literal:`--otype=cb`), 
 HDF5_ files (:literal:`--otype=h5`), or ZIBAmira_ Mesh files (:literal:`--otype=am`).
@@ -156,6 +157,11 @@ in symmetry one, or you choose it by the
   For Gaussian_ and Gamess-US_, the symmetry labels are used, 
   e.g., ``3.A1`` for the third orbital in symmetry A1.
 
+.. note:: 
+  
+  For unrestricted calculations, the symmetry labels are extended by ``_a`` 
+  for alpha and by ``_b`` for beta molecular orbitals, e.g., ``3.A1_b``.
+
 In the latter case, you can additionally use the keywords ``homo`` (highest occupied 
 molecular orbital) and ``lumo`` (lowest unoccupied molecular orbital), and
 you can select a range of orbitals, e.g., ``--calc_mo=1:homo-1``, which evokes the 
@@ -223,6 +229,28 @@ can be invoked by
 .. code-block:: bash
 
     $ orbkit -i INPUT --laplacian
+
+Spin-Density
+------------
+
+For unrestricted calculations, the spin density and related quantities 
+(e.g. derivatives) may be calculated by 
+
+.. code-block:: bash
+
+    $ orbkit -i INPUT --spin=alpha
+
+for alpha spin density and by
+
+.. code-block:: bash
+
+    $ orbkit -i INPUT --spin=beta
+
+for beta spin density. 
+
+.. note ::
+  The usage of the ``--spin=`` keyword omits the reading
+  of the molecular orbitals of the other spin.
 
 Additional Options
 ------------------

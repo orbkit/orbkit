@@ -49,6 +49,8 @@ itypes = ['molden',
           'gamess', 
           'gaussian.log', 
           'gaussian.fchk',
+          'wfn',
+          'wfx',
           'cclib']                        #: Specifies possible input types.
 otypes = ['h5', 'cb', 'am', 'hx', 'vmd','mayavi'] #: Specifies possible output types.
 drv_options = ['x','y','z',

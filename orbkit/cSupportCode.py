@@ -9,13 +9,16 @@ norm = '''
   #include <math.h>
   #define _USE_MATH_DEFINES
   
-  double ao_norm(int l,int m,int n,double *alpha);
+  double ao_norm(int l,int m,int n,double *alpha, int is_normalized);
   int doublefactorial(int n);
   
-  double ao_norm(int l,int m,int n,double *alpha)
+  double ao_norm(int l,int m,int n,double *alpha, int is_normalized)
   {
     //  FUNCTION ao_norm  calculate normalization of uncontracted AOs --
     double norm;
+    
+    if (is_normalized > 0) return 1.0;
+    
     norm = pow((2./M_PI),(3./4.)) * (pow(2.,(l+m+n)) * 
         pow(*alpha,((2.*l+2.*m+2.*n+3.)/4.))) / (pow((doublefactorial(2.*l-1.)*
         doublefactorial(2.*m-1.) * doublefactorial(2.*n-1.)),0.5));

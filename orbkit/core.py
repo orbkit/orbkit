@@ -42,7 +42,7 @@ except:
     import weave
 
 def l_creator(geo_spec,ao_spec,sel_ao,exp_list=None,coeff_list=None,
-              at_pos=None,is_vector=False,drv=None,
+              at_pos=None,is_vector=False,drv=None,is_normalized=None,
               x=None,y=None,z=None):
   '''Calculates the contracted atomic orbitals of quantum number l or its
   derivative with respect to a specific variable (e.g. drv = 'x')
@@ -66,6 +66,9 @@ def l_creator(geo_spec,ao_spec,sel_ao,exp_list=None,coeff_list=None,
   at_pos : numpy.ndarray, shape=(3,), optional
     If not None, xyz-coordinates where the atomic orbital is centered,
     else the position geo_spec[ao_spec[sel_ao]['atom']] will be used.
+  is_normalized : None or bool, optional 
+    If True or (None and ao_spec[sel_ao]['pnum'] < 0), assumes the AO to be normalized.
+    If False or (None and ao_spec[sel_ao]['pnum'] >= 0), normalizes the AO.
   is_vector : bool, optional
     If True, a vector grid will be applied.
   drv : None or string, {None, 'x', 'y', 'z', 'xx', 'yy', 'zz', 'xy', 'xz', 'yz'}, optional
@@ -101,6 +104,9 @@ def l_creator(geo_spec,ao_spec,sel_ao,exp_list=None,coeff_list=None,
     else:
       N = (len(x),)
   
+  if not isinstance(sel_ao,int):
+    raise ValueError("`sel_ao` has to be an integer!")
+  
   # Build up the numpy arrays for the AO compuation
   if exp_list is None:
     exp_list = exp[lquant[ao_spec[sel_ao]['type']]]  
@@ -111,6 +117,10 @@ def l_creator(geo_spec,ao_spec,sel_ao,exp_list=None,coeff_list=None,
   
   if at_pos is None:
     at_pos = numpy.array(geo_spec[ao_spec[sel_ao]['atom']])
+  
+  if is_normalized is None:
+    is_normalized = ao_spec[sel_ao]['pnum'] < 0
+  is_normalized = int(is_normalized)
   
   ao_list = numpy.zeros(((len(exp_list),) + tuple(N)))
   
@@ -136,7 +146,8 @@ def l_creator(geo_spec,ao_spec,sel_ao,exp_list=None,coeff_list=None,
   # A list of Python variable names that should be transferred from
   # Python into the C/C++ code. 
   arg_names = ['x','y','z','ao_num','exp_list',
-               'coeff_list','at_pos','ao_list','drv']
+               'coeff_list','at_pos','ao_list',
+               'drv','is_normalized']
   # A string of valid C++ code declaring extra code
   support_code = cSupportCode.norm + cSupportCode.xyz + cSupportCode.ao_xyz
   
@@ -1025,9 +1036,18 @@ exp.append([(4,0,0), (0,4,0), (0,0,4),
             (2,2,0), (2,0,2), (0,2,2),
             (2,1,1), (1,2,1), (1,1,2)]) # g orbitals
 
+# wfn order of exponents 
+exp_wfn = exp[:3]                           # s,p,d orbitals 
 
-'''
-Transformation Between Cartesian and (Real) Pure Spherical Harmonic Gaussians
+exp_wfn.append([(3,0,0), (0,3,0), (0,0,3),                   
+                (2,1,0), (2,0,1),(0,2,1),                    
+                (1,2,0), (1,0,2), (0,1,2),                   
+                (1,1,1)])                   # f orbitals     
+
+exp_wfn.append(exp[4]) # g orbitals     
+
+'''                                                                             
+Transformation Between Cartesian and (Real) Pure Spherical Harmonic Gaussians   
 
 adapted from H.B. Schlegel and M.J. Frisch 
 International Journal of Quantum Chemistry, Vol. 54, 83-87 (1995).
@@ -1190,7 +1210,7 @@ def ao_code(is_vector=False,is_drv=False):
         
         for (int ii=0; ii<ao_num; ii++)
         {
-          Norm[ii][il] = ao_norm(lx[il],ly[il],lz[il],&COEFF_LIST2(ii,0));
+          Norm[ii][il] = ao_norm(lx[il],ly[il],lz[il],&COEFF_LIST2(ii,0),is_normalized);
         }
       }
       
@@ -1235,7 +1255,7 @@ def ao_code(is_vector=False,is_drv=False):
         
         for (int ii=0; ii<ao_num; ii++)
         {
-          Norm[ii][il] = ao_norm(lx[il],ly[il],lz[il],&COEFF_LIST2(ii,0));
+          Norm[ii][il] = ao_norm(lx[il],ly[il],lz[il],&COEFF_LIST2(ii,0),is_normalized);
         }
       }
       
@@ -1287,7 +1307,7 @@ def ao_code(is_vector=False,is_drv=False):
         
         for (int ii=0; ii<ao_num; ii++)
         {
-          Norm[ii][il] = ao_norm(lx[il],ly[il],lz[il],&COEFF_LIST2(ii,0));
+          Norm[ii][il] = ao_norm(lx[il],ly[il],lz[il],&COEFF_LIST2(ii,0),is_normalized);
         }
       }
       
@@ -1326,7 +1346,7 @@ def ao_code(is_vector=False,is_drv=False):
         lz[il] = EXP_LIST2(il,2);      
         for (int ii=0; ii<ao_num; ii++)
         {
-          Norm[ii][il] = ao_norm(lx[il],ly[il],lz[il],&COEFF_LIST2(ii,0));
+          Norm[ii][il] = ao_norm(lx[il],ly[il],lz[il],&COEFF_LIST2(ii,0),is_normalized);
         }
       }
       for (int i=0; i<Nx[0]; i++)
