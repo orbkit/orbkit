@@ -234,7 +234,6 @@ def vmd_network_creator(filename,cube_files=None,render=False,iso=(-0.01,0.01),
   elif not isinstance(cube_files,list):
     raise IOError('`cube_files` has to be a list of strings.')
   
-  print iso,cube_files
   title = []
   mo = ''
   for i,f in enumerate(cube_files):
