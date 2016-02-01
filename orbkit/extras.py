@@ -449,7 +449,7 @@ def save_mo_hdf5(filename,geo_info,geo_spec,ao_spec,mo_spec,is_vector=False,
 
 def get_ao(x):
   ao_list = core.l_creator(global_val['qc'].geo_spec,global_val['ao_spec'],
-                           x,exp_list=global_val['ao_spec'][x]['exp_list'],
+                           int(x),exp_list=global_val['ao_spec'][x]['exp_list'],
                            is_vector=global_val['is_vector'],
                            drv=global_val['drv'])
   

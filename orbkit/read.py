@@ -1299,7 +1299,7 @@ def read_gaussian_log(filename,all_mo=False,spin=None,orientation='standard',
             # AO information section 
             # Initialize a new dict for this AO 
             ao_num = 0               # Initialize number of atomic orbiatls 
-            ao_type = thisline[0].lower()   # Type of atomic orbital
+            ao_type = thisline[0].lower()   # Type of atomic orbital            
             pnum = int(thisline[1])  # Number of primatives
             for i_ao in ao_type:
               # Calculate the degeneracy of this AO and increase basis_count 
@@ -1351,8 +1351,8 @@ def read_gaussian_log(filename,all_mo=False,spin=None,orientation='standard',
           else:
             coeffs = line[21:].replace('-',' -').split()
             if not cartesian_basis and offset == 0:
-              if old_ao != line[:13].split()[-1]:
-                old_ao = line[:13].split()[-1]
+              if old_ao != line[:14].split()[-1]:
+                old_ao = line[:14].split()[-1]
                 c_sao += 1
               i = c_sao-1
               l = lquant[line[13].lower()] 
