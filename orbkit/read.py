@@ -26,7 +26,7 @@ import os
 import copy
 import numpy
 
-from orbkit.core import l_deg, lquant, orbit, exp
+from orbkit.core import l_deg, lquant, orbit, exp, exp_wfn
 from orbkit.display import display
 from orbkit.qcinfo import QCinfo, get_atom_symbol
 
@@ -65,14 +65,16 @@ def main_read(filename,itype='molden',all_mo=False,spin=None,cclib_parser=None,
             'gaussian.fchk': read_gaussian_fchk,
             'aomix' : read_aomix,
             'cclib' : read_with_cclib,
-            'wfn': read_wfn}
+            'wfn': read_wfn,
+            'wfx': read_wfx}
+  
   display('Loading %s file...' % itype)
   
   # Return required data
   return reader[itype](filename, all_mo=all_mo, spin=spin, 
                        cclib_parser=cclib_parser,**kwargs)
   # main_read 
-
+  
 def read_molden(filename, all_mo=False, spin=None, i_md=-1, interactive=True,
                 **kwargs):
   '''Reads all information desired from a molden file.
@@ -234,6 +236,8 @@ def read_molden(filename, all_mo=False, spin=None, i_md=-1, interactive=True,
         # The orbkit does not support Slater type orbitals 
         display('orbkit does not work for STOs!\nEXIT\n');
         raise IOError('Not a valid input file')
+      elif '[' in line:
+        sec_flag = None
       else:
         # Check if we are in a specific section 
         if sec_flag == 'geo_info' and thisline != []:
@@ -344,7 +348,7 @@ def read_molden(filename, all_mo=False, spin=None, i_md=-1, interactive=True,
     
   # Convert geo_info and geo_spec to numpy.ndarrays
   qc.format_geo()
-  
+    
   return qc
   # read_molden 
 
@@ -1389,7 +1393,28 @@ def read_gaussian_log(filename,all_mo=False,spin=None,orientation='standard',
   qc.format_geo()
   return qc
   # read_gaussian_log 
-  
+
+
+def spin_check(spin,restricted,has_alpha,has_beta):
+  '''Check if `spin` keyword is valid.
+  '''
+  if spin is not None:
+    if restricted:
+      raise IOError('The keyword `spin` is only supported for unrestricted calculations.')    
+    if spin != 'alpha' and spin != 'beta':
+      raise IOError('`spin=%s` is not a valid option' % spin)
+    elif spin == 'alpha' and has_alpha:
+      display('Reading only molecular orbitals of spin alpha.')
+    elif spin == 'beta' and has_beta:
+      display('Reading only molecular orbitals of spin beta.')
+    elif (not has_alpha) and (not has_beta):
+      raise IOError(
+          'Molecular orbitals in the input file do not contain `Spin=` keyword')
+    elif ((spin == 'alpha' and not has_alpha) or 
+          (spin == 'beta' and not has_beta)):
+      raise IOError('You requested `%s` orbitals, but None of them are present.'
+                    % spin)
+
 def read_aomix(filename, all_mo=False, spin=None, i_md=-1, interactive=True,
                created_by_tmol=True, **kwargs):
   '''Reads all information desired from a aomix file.
@@ -1400,6 +1425,8 @@ def read_aomix(filename, all_mo=False, spin=None, i_md=-1, interactive=True,
       Specifies the filename for the input file.
     all_mo : bool, optional
       If True, all molecular orbitals are returned.
+    spin : {None, 'alpha', or 'beta'}, optional
+      If not None, returns exclusively 'alpha' or 'beta' molecular orbitals.
     i_md : int, default=-1
       Selects the `[AOMix Format]` section of the output file.
     interactive : bool
@@ -1473,23 +1500,8 @@ def read_aomix(filename, all_mo=False, spin=None, i_md=-1, interactive=True,
       display('\tFound %d [AOMix Format] keywords, i.e., ' % count + 
               'this file contains %d aomix files.' % count)
     i_md = check_sel(count,i_md,interactive=interactive)
-  
-  if spin is not None:
-    if restricted[i_md]:
-      raise IOError('The keyword `spin` is only supported for unrestricted calculations.')    
-    if spin != 'alpha' and spin != 'beta':
-      raise IOError('`spin=%s` is not a valid option' % spin)
-    elif spin == 'alpha' and has_alpha[i_md]:
-      display('Reading only molecular orbitals of spin alpha.')
-    elif spin == 'beta' and has_beta[i_md]:
-      display('Reading only molecular orbitals of spin alpha.')
-    elif (not has_alpha[i_md]) and (not has_beta[i_md]):
-      raise IOError(
-           'Molecular orbitals in `molden` file do not contain `Spin=` keyword')
-    elif ((spin == 'alpha' and not has_alpha[i_md]) or 
-          (spin == 'beta' and not has_beta[i_md])):
-      raise IOError('You requested `%s` orbitals, but None of them are present.'
-                    % spin)
+    
+  spin_check(spin,restricted[i_md],has_alpha[i_md],has_beta[i_md])
   
   # Set a counter for the AOs 
   basis_count = 0
@@ -1677,22 +1689,10 @@ def read_aomix(filename, all_mo=False, spin=None, i_md=-1, interactive=True,
   if not all_mo:
     for i in range(len(qc.mo_spec))[::-1]:
       if qc.mo_spec[i]['occ_num'] < 0.0000001:
-        del qc.mo_spec[i]
+        del qc.mo_spec[i] 
   
-  # Only molecular orbitals of one spin requested?
-  if spin is not None:
-    for i in range(len(qc.mo_spec))[::-1]:
-      if qc.mo_spec[i]['spin'] != spin:
-        del qc.mo_spec[i]
-  
-  if restricted[i_md]:
-    # Closed shell calculation
-    for mo in qc.mo_spec:
-      del mo['spin']
-  else:
-    # Rename MOs according to spin
-    for mo in qc.mo_spec:      
-      mo['sym'] += '_%s' % mo['spin'][0]
+  # Modify qc.mo_spec to support spin
+  qc.select_spin(restricted[i_md],spin=spin)
   
   # Convert geo_info and geo_spec to numpy.ndarrays
   qc.format_geo()
@@ -1725,6 +1725,143 @@ def read_aomix(filename, all_mo=False, spin=None, i_md=-1, interactive=True,
   # read_aomix
   
 
+def read_wfx(filename, all_mo=False, spin=None, **kwargs):
+  '''Reads all information desired from a wfn file.
+  
+  **Parameters:**
+  
+    filename : str
+      Specifies the filename for the input file.
+    all_mo : bool, optional
+      If True, all molecular orbitals are returned.
+    spin : {None, 'alpha', or 'beta'}, optional
+      If not None, returns exclusively 'alpha' or 'beta' molecular orbitals.
+  
+  **Returns:**
+  
+    qc (class QCinfo) with attributes geo_spec, geo_info, ao_spec, mo_spec, etot :
+        See :ref:`Central Variables` for details.
+  '''
+
+  # Initialize the variables 
+  qc = QCinfo()
+  exp_list = []
+  for j in exp_wfn:         
+    exp_list.extend(j)
+  exp_list = numpy.array(exp_list,dtype=numpy.int64)
+  
+  fid    = open(filename,'r')      # Open the file
+  flines = fid.readlines()         # Read the WHOLE file into RAM
+  fid.close()                      # Close the file
+  
+  is_valid = False
+  for il in range(len(flines)):
+    if '<Keywords>' in flines[il] and 'GTO' in flines[il+1]:
+      is_valid = True
+  
+  if not is_valid: raise IOError('No valid .wfx file!\nMissing:\n' + 
+                                 '<Keywords>\n  GTO\n</Keywords>')
+  
+  sec_flag = None                 # A Flag specifying the current section
+  at_num = None
+  mo_num = None
+  ao_num = None
+  restricted = True
+  count = 0
+  
+  # Go through the file line by line 
+  for il in range(len(flines)):
+    line = flines[il]             # The current line as string
+    
+    if '<Number of Nuclei>' in line:
+      at_num = int(flines[il+1])
+      qc.geo_info = [[None, i+1, None] for i in range(at_num)]
+      qc.geo_spec = []
+    elif '<Nuclear Names>' in line:
+      if not at_num: raise IOError('`<Number of Nuclei>` has to be found ' +
+                                   'before `<Nuclear Names>`.')
+      for i in range(at_num):
+        qc.geo_info[i][0] = flines[il+i+1].replace(' ','').replace('\n','')
+    elif '<Atomic Numbers>' in line:
+      if not at_num: raise IOError('`<Number of Nuclei>` has to be found ' +
+                                   'before `<Atomic Numbers>`.')
+      for i in range(at_num):
+        qc.geo_info[i][2] = flines[il+i+1].replace(' ','').replace('\n','')
+    elif '<Nuclear Cartesian Coordinates>' in line:
+      if not at_num: raise IOError('`<Number of Nuclei>` has to be found ' +
+                                   'before `<Nuclear Cartesian Coordinates>`.')
+      for i in range(at_num):
+        qc.geo_spec.append(flines[il+i+1].split())
+    elif '<Number of Primitives>' in line:
+      ao_num = int(flines[il+1])
+      qc.ao_spec = [{'atom': None,
+                    'pnum': -1,
+                    'coeffs': None,
+                    'exp_list': None,
+                    } for i in range(ao_num)]
+    elif '<Primitive Centers>' in line:
+      sec_flag = 'ao_center'
+      count = 0
+    elif '<Primitive Types>' in line:
+      sec_flag = 'ao_type'
+      count = 0
+    elif '<Primitive Exponents>' in line:
+      sec_flag = 'ao_exp'
+      count = 0
+    elif '<Number of Occupied Molecular Orbitals>' in line:    
+      mo_num = int(flines[il+1])
+      qc.mo_spec = [{'coeffs': numpy.zeros(ao_num),
+                     'energy': None,
+                     'occ_num': None,
+                     'spin': None,
+                     'sym': '%s.1' % (i+1)
+                    } for i in range(mo_num)]
+    elif '<Molecular Orbital Occupation Numbers>' in line:
+      for i in range(mo_num):
+        qc.mo_spec[i]['occ_num'] = float(flines[il+1+i])
+    elif '<Molecular Orbital Energies>' in line:
+      for i in range(mo_num):
+        qc.mo_spec[i]['energy'] = float(flines[il+1+i])
+    elif '<Molecular Orbital Spin Types>' in line:
+      for i in range(mo_num):
+        qc.mo_spec[i]['spin'] = (flines[il+1+i].replace(' ','').replace('\n','')
+                                 ).replace('and','_').lower()
+        restricted = restricted and ('_' in qc.mo_spec[i]['spin'])
+    elif '<MO Number>' in line:
+      index = int(flines[il+1])-1
+      for i in range(ao_num):
+        qc.mo_spec[index]['coeffs'][i] = float(flines[il+3+i])
+    elif '</' in line:
+      sec_flag = None
+    elif sec_flag is not None:
+      if sec_flag == 'ao_center':
+        for i in line.split():
+          qc.ao_spec[count]['atom'] = int(i)-1
+          count += 1
+      if sec_flag == 'ao_type':
+        for i in line.split():
+          qc.ao_spec[count]['exp_list'] = exp_list[int(i)-1][numpy.newaxis]
+          count += 1
+      if sec_flag == 'ao_exp':
+        for i in line.split():
+          qc.ao_spec[count]['coeffs'] = numpy.array([[float(i),1.0]])
+          count += 1
+      
+  
+  has_alpha = any([i['spin'] == 'alpha' for i in qc.mo_spec])
+  has_beta  = any([i['spin'] == 'beta'  for i in qc.mo_spec])
+  
+  spin_check(spin,restricted,has_alpha,has_beta)
+  qc.select_spin(restricted,spin=spin)
+  
+  # Remove numbers from atom names
+  for i in qc.geo_info:
+    i[0] = ''.join([k for k in i[0] if not k.isdigit()])
+  # Convert geo_info and geo_spec to numpy.ndarrays
+  qc.format_geo()
+  return qc
+      
+  
 def read_wfn(filename, all_mo=False, spin=None, **kwargs):
   '''Reads all information desired from a wfn file.
   
@@ -1741,11 +1878,8 @@ def read_wfn(filename, all_mo=False, spin=None, **kwargs):
         See :ref:`Central Variables` for details.
   '''
   if spin is not None:
-    raise IOError('The option `spin` is not supported for the wfn reader.')
+    raise IOError('The option `spin` is not supported for the `.wfn` reader.')
   
-  display('The wfn reader does not work together with orbkit!')
-  
-  aa_to_au = 1/0.52917720859
   # Initialize the variables 
   qc = QCinfo()
   sec_flag = None                 # A Flag specifying the current section
@@ -1756,7 +1890,7 @@ def read_wfn(filename, all_mo=False, spin=None, **kwargs):
   c_type = 0                      # Counting variable for AO type
   c_exp = 0                       # Counting variable for AO exponents
   exp_list = []
-  for j in exp:         
+  for j in exp_wfn:         
     exp_list.extend(j)
   exp_list = numpy.array(exp_list,dtype=numpy.int64)
   
@@ -1774,23 +1908,23 @@ def read_wfn(filename, all_mo=False, spin=None, **kwargs):
         thisline = line[20:].split()
         for i in range(len(thisline)):
           qc.ao_spec.append({'atom': int(thisline[i])-1,
-                'pnum': 1,
-                'coeffs': [],
-                'exp_list': [] 
+                'pnum': -1,
+                'coeffs': None,
+                'exp_list': None,
                 })
       elif 'TYPE ASSIGNMENTS' in line:
         thisline = line[18:].split()
         for i in range(len(thisline)):
-          qc.ao_spec[c_type]['exp_list'] = exp_list[int(thisline[i])-1]
+          qc.ao_spec[c_type]['exp_list'] = exp_list[int(thisline[i])-1][numpy.newaxis]
           c_type += 1
       elif 'EXPONENTS' in line:
-        thisline = line[11:].split()
-        for i in range(len(thisline)):
-          qc.ao_spec[c_exp]['coeffs'] = numpy.array([[float(thisline[i]),1.0]])
+        thisline = line.replace('EXPONENTS','').replace('D','E').split()
+        for i in thisline:
+          qc.ao_spec[c_exp]['coeffs'] = numpy.array([[float(i),1.0]])
           c_exp += 1
       elif 'MO' in line and 'OCC NO =' in line and 'ORB. ENERGY =' in line:
         qc.mo_spec.append({'coeffs': numpy.zeros(ao_num),
-                'energy': line[25:].split()[7],
+                'energy': float(line[25:].split()[7]),
                 'occ_num': float(line[25:].split()[3]),
                 'sym': '%s.1' % thisline[1]
                 })
@@ -1801,20 +1935,23 @@ def read_wfn(filename, all_mo=False, spin=None, **kwargs):
           if not at_num:
             sec_flag = None
           elif at_num:
-            qc.geo_info.append([thisline[0],thisline[1],thisline[9]])   ###FIXME Bohr or Angstroem
-            qc.geo_spec.append([float(ii) for ii in thisline[4:7]])
+            qc.geo_info.append([thisline[0],thisline[-7][:-1],thisline[-1]]) 
+            qc.geo_spec.append([float(ii) for ii in thisline[-6:-3]])
             at_num -= 1
         elif sec_flag == 'mo_info':
           for i in thisline:
             if (c_mo) < ao_num:
-              qc.mo_spec[-1]['coeffs'][c_mo] = numpy.array(float(i))
+              qc.mo_spec[-1]['coeffs'][c_mo] = numpy.array(
+                                                      float(i.replace('D','E')))
               c_mo += 1
             if (c_mo) == ao_num:
               sec_flag = None
   
+  # Remove numbers from atom names
+  for i in qc.geo_info:
+    i[0] = ''.join([k for k in i[0] if not k.isdigit()])
   # Convert geo_info and geo_spec to numpy.ndarrays
-  qc.geo_info = numpy.array(qc.geo_info)
-  qc.geo_spec = numpy.array(qc.geo_spec)
+  qc.format_geo()
   
   return qc
 

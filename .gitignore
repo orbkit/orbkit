@@ -12,7 +12,6 @@
 *.cube
 *.hx
 *.md
-*.molden
 *.am
 *.cmap
 *.log
@@ -30,13 +29,15 @@
 !MO_List.tab
 !MO_List_int.tab
 !Tab.csv
+!*.molden
 
 # Under developement
 orbkit/development
 doc/_*
-examples/Plots
-examples/NaCl_molden_files
 
+# Decompressed example files
+pec_co2
+NaCl_molden_files
 
 # IDE files to ignore (Netbeans, Eclipse)
 nbproject/private/

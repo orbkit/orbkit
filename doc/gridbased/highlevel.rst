@@ -69,7 +69,8 @@ The file type has to be specified via::
 
 The available file types are **'molden'** (default), **'aomix'** (AOMix file),
 **'gamess'** (GAMESS-US output file), **'gaussian.log'** (GAUSSIAN output file), 
-**'gaussian.fchk'** (GAUSSIAN formatted checkpoint file). 
+**'gaussian.fchk'** (GAUSSIAN formatted checkpoint file),
+**'wfn'** and **'wfx'** files. 
 
 Concerning orbkit's output, you can choose between several following options:
 
@@ -183,7 +184,10 @@ and of calculating the density with a selected set of molecular orbitals::
   While the first example uses the **MOLPRO-like nomenclature**, e.g., ``3.1`` for 
   the third orbital in symmetry one, the second example uses the 
   **index within the input file** (counting from one). 
-  
+
+  For unrestricted calculations, the symmetry labels are extended by ``_a`` 
+  for alpha and by ``_b`` for beta molecular orbitals, e.g., ``3.A1_b``.  
+
   For more information, refer to :ref:`mo` (Usage via the Terminal).
 
 Derivative Calculation
@@ -198,6 +202,21 @@ as for the electron density::
 This invokes the computation of the derivatives with respect to :math:`x`
 and the computation of the derivatives with respect to :math:`z`. 
 For second derivatives, specify the respective combinations,e.g., 'xx' or 'yz'.
+
+Spin-Density
+------------
+
+For unrestricted calculations, the spin density and related quantities 
+(e.g. derivatives) may be calculated by::
+
+  ok.options.spin = 'alpha'
+
+or::
+
+  ok.options.spin = 'beta'
+
+The usage of this keyword omits the reading of the molecular orbitals of the other 
+spin.
 
 Return Values
 -------------

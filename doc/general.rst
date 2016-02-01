@@ -128,6 +128,17 @@ and some advices for the input file preparation.
 
           $ formchk chkpt-file formatted-file
 
+**wfn/wfx Files:**
+
+  * Contains Cartesian Harmonics by default
+  * How to create wfn/wfx files:
+
+    * For ORCA: 
+
+      .. code-block:: bash
+
+          $ orca_2aim gbw-basename
+
 Interface to cclib Library
 ..........................
 

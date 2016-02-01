@@ -30,7 +30,7 @@ ok.init()
 ok.grid.sph2cart_vector(r,theta,phi)
 
 # orbkit options
-ok.options.filename   = 'h2o.md'       # input file name
+ok.options.filename   = 'h2o.molden'       # input file name
 ok.options.itype      = 'molden'       # input file type
 ok.options.outputname = 'h2o_MO'       # output file (base) name
 ok.options.otype      = 'h5'           # output file type

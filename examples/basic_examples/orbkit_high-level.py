@@ -20,7 +20,7 @@ number of electrons
 '''
 print('\n \n First scenario: calculate electron density. \n \n')
 
-in_fid  = 'h2o.md'
+in_fid  = 'h2o.molden'
 out_fid = 'h2o_r1'
 
 # initialize orbkit with default parameters and options
@@ -56,7 +56,7 @@ Ommit the creation of the *.oklog file
 '''
 print('\n \n Second scenario: calculate derivatives of electron density. \n \n')
 
-in_fid  = 'h2o.md'
+in_fid  = 'h2o.molden'
 out_fid = 'h2o_r2'
 
 # initialize orbkit with default parameters and options
@@ -83,7 +83,7 @@ selected by their number in the molden file
 '''
 print('\n \n Third scenario: calculate electron density for Amira and VMD. \n \n')
 
-in_fid  = 'h2o.md'
+in_fid  = 'h2o.molden'
 out_fid = 'h2o_r3'
 
 # initialize orbkit with default parameters and options

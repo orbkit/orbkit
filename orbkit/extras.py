@@ -515,7 +515,7 @@ def atom2index(atom,geo_info=None):
 
 def gross_atomic_density(atom,qc,
                     bReturnmo=False,ao_list=None,mo_list=None,
-                    x=None,y=None,z=None,is_vector=False):
+                    x=None,y=None,z=None,drv=None,is_vector=False):
   r'''Computes the gross atomic density with respect to the selected atoms.
   
   .. math::
@@ -571,7 +571,7 @@ def gross_atomic_density(atom,qc,
   
   display('\tCalculating ao_list & mo_list')
   if ao_list is None:
-    ao_list = core.ao_creator(qc.geo_spec,qc.ao_spec,x=x,y=y,z=z,
+    ao_list = core.ao_creator(qc.geo_spec,qc.ao_spec,x=x,y=y,z=z,drv=drv,
                     is_vector=is_vector)
   if mo_list is None:
     mo_list = core.mo_creator(ao_list,qc.mo_spec,x=x,y=y,z=z,

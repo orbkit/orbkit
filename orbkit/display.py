@@ -2,7 +2,11 @@
 '''Module for writing the .oklog files and printing the terminal output.'''
 from orbkit import options
 from os import remove,path
-import resource
+import platform
+
+is_linux = (platform.system() == 'Linux')
+if is_linux:
+  import resource
 
 is_initiated = False #: If True, logfile is initialized.
 log_fid = None #: Specifies the filename of the oklog file
@@ -57,8 +61,11 @@ def tForm(string,T,extra=''):
   # tForm 
 
 def good_bye_message(t):
-  ram_requirement = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
-  ram_req = '\nand required %.2f MB of RAM' % (ram_requirement/1000.)
+  if is_linux:
+    ram_requirement = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+    ram_req = '\nand required %.2f MB of RAM' % (ram_requirement/1000.)
+  else:
+    ram_req = ''
   msg = tForm('The calculation',t[-1]-t[0],extra=ram_req)
   msg += '\nThank you. Good bye.'
   display(msg)

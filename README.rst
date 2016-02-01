@@ -1,6 +1,5 @@
 orbkit
 ======
-Copyright (C) 2015, Gunter Hermann, Vincent Pohl, and Axel Schild.
 
 orbkit is a parallel Python program package for post-processing wavefunction 
 data extracted from output files of MOLPRO (Molden File Format), TURBOMOLE 
@@ -11,7 +10,7 @@ Computational capabilities:
 - Atomic orbitals, molecular orbitals, electron density, and the spatial derivatives of these quantities
 - Reduced electron density
 - Electron density for selected molecular orbitals
-- Mulliken and Löwdin population analysis
+- Mulliken and LÃ¶wdin population analysis
 - Analytical overlap integrals between atomic and molecular orbitals
 - Atom-projected electron density
 - Molecular orbital transition electronic flux density
@@ -20,9 +19,11 @@ If you use orbkit in your work, please cite it as follows:
 
 Gunter Hermann, Vincent Pohl, Axel Schild: orbkit: A Toolbox for Post-Processing
 Quantum Chemical Wavefunction Data, available via 
-http://sourceforge.net/p/orbkit (2015).
+http://sourceforge.net/p/orbkit (2016).
 
-Website: http://sourceforge.net/p/orbkit
+Website: http://orbkit.github.io
+
+Copyright (C) 2016, Gunter Hermann, Vincent Pohl, and Axel Schild.
 
 Licence Note
 ============
@@ -69,21 +70,21 @@ $HOME by your preferred folder throughout the whole section.
 Get a copy of orbkit, either with git or using a tarball. It is strongly
 recommended to use git, since this version always contains the newest 
 bug fixes and features. If git is not available on your system, the newest 
-version can additionally be cloned from http://sourceforge.net/p/orbkit/code.
+version can additionally be cloned from https://github.com/orbkit/orbkit.
 
   * Using git:
 
     Clone the repository:
 
-        $ git clone http://git.code.sf.net/p/orbkit/code orbkit
+        $ git clone https://github.com/orbkit/orbkit.git
 
   * Using a tarball:
 
-    Download the latest orbkit release and extract the file ("0.2.0" has to be 
+    Download the latest orbkit release and extract the file ("0.4.0" has to be 
     replaced by your version number):
 
         $ wget http://sourceforge.net/projects/orbkit/files/latest/download 
-        $ tar xzvf orbkit.v0.2.0.tar.gz
+        $ tar xzvf orbkit.v0.4.0.tar.gz
 
 In order to use orbkit, you have to add the orbkit directory to your $PYTHONPATH
 environment variable either temporarily by typing
@@ -102,12 +103,10 @@ $PATH variable in the same way:
 Documentation
 =============
 
-orbkit's documentation may be found as a website in 
-
-    $ORBKITPATH/doc/_build/html/index.html
+orbkit's documentation may be found at http://orbkit.github.io
 
 Support
 =======
 
 If you need help for the usage of orbkit, contact the orbkit support team via 
-http://sourceforge.net/projects/orbkit/support
+https://github.com/orbkit/orbkit/issues
