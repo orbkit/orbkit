@@ -113,7 +113,7 @@ def main_output(data,geo_info,geo_spec,outputname='new',otype='h5',
         # Create VMD network 
         display('\nCreating VMD network file...' +
                       '\n\t%(o)s.vmd' % {'o': fid % f})        
-        vmd_network_creator((fid % f),cube_files=['%s.cb' % (fid % f)])
+        vmd_network_creator((fid % f),cube_files=['%s.cb' % (fid % f)],**kwargs)
         output_written.append('%s.vmd' % (fid % f))
       
   if print_waring:
@@ -215,7 +215,7 @@ def vmd_network_creator(filename,cube_files=None,render=False,iso=(-0.01,0.01),
   elif not isinstance(cube_files,list):
     raise IOError('`cube_files` has to be a list of strings.')
   
-  
+  print iso,cube_files
   title = []
   mo = ''
   for i,f in enumerate(cube_files):
@@ -713,7 +713,8 @@ def meshgrid2(*arrs):
   
   return tuple(ans[::-1])
 
-def view_with_mayavi(x,y,z,data,geo_spec=None,datalabels=None):
+def view_with_mayavi(x,y,z,data,geo_spec=None,datalabels=None,
+                     iso_min=1e-8,iso_val=0.01,iso_max=1.0):
   ''' Creates an interactive mayavi dialog showing isosurface plots of the input
   data. 
   
@@ -767,7 +768,7 @@ def view_with_mayavi(x,y,z,data,geo_spec=None,datalabels=None):
   class MyModel(HasTraits):  
       select  = Range(0, len(data)-1, 0, mode='spinner')
       last_select = deepcopy(select)
-      iso_value  = Range(1e-8, 1.0, 0.01)
+      iso_value  = Range(iso_min, iso_max, iso_val)
       opacity    = Range(0, 1.0, 0.6)
       show_atoms = Bool(True)
       label = Str()
