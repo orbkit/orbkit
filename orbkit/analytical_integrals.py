@@ -114,12 +114,13 @@ def get_ao_overlap(coord_a,coord_b,ao_spec,lxlylz_b=None,contraction=True,
 
   index = []
   b = 0
+  is_normalized = []
   for sel_ao in range(len(ao_spec)):
     if 'exp_list' in ao_spec[sel_ao].keys():
       l = ao_spec[sel_ao]['exp_list']
     else:
       l = exp[lquant[ao_spec[sel_ao]['type']]]
-    
+    is_normalized.append((ao_spec[sel_ao]['pnum'] < 0))
     ra = numpy.append(ra,coord_a[ao_spec[sel_ao]['atom']][numpy.newaxis,:],axis=0)
     rb = numpy.append(rb,coord_b[ao_spec[sel_ao]['atom']][numpy.newaxis,:],axis=0)
     
@@ -128,8 +129,11 @@ def get_ao_overlap(coord_a,coord_b,ao_spec,lxlylz_b=None,contraction=True,
       for j in ao_spec[sel_ao]['coeffs']:
         index.append([sel_ao,b])
       b += 1
-
-    
+  
+  if all(is_normalized) != any(is_normalized):
+    raise ValueError('Either all or none of the atomic orbitals have to be normalized!')
+  is_normalized = all(is_normalized)
+  
   index = numpy.array(index,dtype=numpy.int64)
   if contraction:
     ao_overlap_matrix = numpy.zeros((len(lxlylz_a),len(lxlylz_b)))
@@ -141,7 +145,7 @@ def get_ao_overlap(coord_a,coord_b,ao_spec,lxlylz_b=None,contraction=True,
   # A list of Python variable names that should be transferred from
   # Python into the C/C++ code. 
   arg_names = ['ra', 'rb', 'coeff', 'index', 
-               'lxlylz_a', 'lxlylz_b', 'ao_overlap_matrix','drv']
+               'lxlylz_a', 'lxlylz_b', 'ao_overlap_matrix','drv','is_normalized']
   support_code = cSupportCode.overlap + cSupportCode.norm
   
   weave.inline(code, arg_names = arg_names, 
@@ -578,7 +582,7 @@ def ao_overlap_code(is_drv=False):
     for (int i=0; i<Nindex[0]; i++)
     {
       i_l = INDEX2(i,1);
-      norm.at(i) = ao_norm(LXLYLZ_A2(i_l,0), LXLYLZ_A2(i_l,1), LXLYLZ_A2(i_l,2),&COEFF2(i,0));
+      norm.at(i) = ao_norm(LXLYLZ_A2(i_l,0), LXLYLZ_A2(i_l,1), LXLYLZ_A2(i_l,2),&COEFF2(i,0),is_normalized);
     }
     
     
@@ -632,7 +636,7 @@ def ao_overlap_code(is_drv=False):
     for (int i=0; i<Nindex[0]; i++)
     {
       i_l = INDEX2(i,1);
-      norm.at(i) = ao_norm(LXLYLZ_A2(i_l,0), LXLYLZ_A2(i_l,1), LXLYLZ_A2(i_l,2),&COEFF2(i,0));
+      norm.at(i) = ao_norm(LXLYLZ_A2(i_l,0), LXLYLZ_A2(i_l,1), LXLYLZ_A2(i_l,2),&COEFF2(i,0),is_normalized);
     }
     
     
