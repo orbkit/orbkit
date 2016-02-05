@@ -34,118 +34,6 @@ nist_file = path.join(path.dirname(path.realpath(__file__)),
                       'supporting_data/Atomic_Weights_NIST.html')
 # see http://physics.nist.gov/cgi-bin/Compositions/stand_alone.pl?ele=&all=all&ascii=ascii2&isotype=some
 
-def read_nist():
-  '''Reads and converts the atomic masses from the "Linearized ASCII Output", 
-  see http://physics.nist.gov.
-  '''
-  global nist_mass
-  
-  f = open(nist_file,'r')
-  flines = f.readlines()
-  f.close()
-  
-  nist_mass = []
-  index = None
-  new = True
-  
-  def rm_brackets(text,rm=['(',')','[',']']):
-    for i in rm:
-      text = text.replace(i,'')
-    return text
-  
-  for line in flines:
-    thisline = line.split()
-    if 'Atomic Number =' in line:
-      i = int(thisline[-1]) - 1
-      new = (i != index)
-      if new:
-        nist_mass.append(['',0])
-      index = i
-    elif 'Atomic Symbol =' in line and new:
-      nist_mass[index][0] = thisline[-1]
-    elif 'Standard Atomic Weight =' in line and new:
-      nist_mass[index][1] = float(rm_brackets(thisline[-1]))
-
-def standard_mass(atom):
-  '''Returns the standard atomic mass of a given atom.
-    
-  **Parameters:**
-  
-  atom : int or str
-    Contains the name or atomic number of the atom.
-  
-  **Returns:**
-  
-  mass : float
-    Contains the atomic mass in atomic units.
-  '''
-  if nist_mass is None:
-    read_nist()  
-  try:
-    atom = int(atom) - 1
-    return nist_mass[atom][1] * u_to_me
-  except ValueError:
-    return dict(nist_mass)[atom.title()] * u_to_me
-    
-def get_atom_symbol(atom):
-  '''Returns the atomic symbol of a given atom.
-    
-  **Parameters:**
-  
-  atom : int or str
-    Contains the atomic number of the atom.
-  
-  **Returns:**
-  
-  symbol : str
-    Contains the atomic symbol.
-  '''
-  if nist_mass is None:
-    read_nist()  
-  try:
-    atom = int(atom) - 1
-    return nist_mass[atom][0]
-  except ValueError:    
-    return atom.upper()
-
-class CIinfo:
-  '''Class managing all information from the from the output 
-  files of quantum chemical software for CI calculations.
-  
-  The CI related features are in ongoing development.
-  '''
-  def __init__(self,method='ci'):
-    self.coeffs = []
-    self.occ    = []
-    self.info   = None
-    self.method = method
-  def copy(self):
-    ciinfo = self.__class__(method=self.method)
-    if self.coeffs != []:
-      ciinfo.coeffs = numpy.copy(self.coeffs)
-    if self.occ != []:
-      ciinfo.occ = numpy.copy(self.occ)
-    if self.info is not None:
-      ciinfo.info = self.info.copy()    
-    return ciinfo
-  def todict(self):
-    return self.__dict__
-  def hdf5_save(self,fid='out.h5',group='/ci:0',mode='w'):
-    from orbkit.output import hdf5_open,hdf5_append
-    from copy import copy
-    for hdf5_file in hdf5_open(fid,mode=mode):
-      dct = copy(self.todict())
-      dct['info'] = numpy.array(dct['info'].items(),dtype=str)
-      hdf5_append(dct,hdf5_file,name=group)
-  def hdf5_read(self,fid='out.h5',group='/ci:0'):
-    from orbkit.output import hdf5_open,hdf52dict
-    for hdf5_file in hdf5_open(fid,mode='r'):
-      for key in self.__dict__.keys():
-        try:
-          self.__dict__[key] = hdf52dict('%s/%s' % (group,key),hdf5_file)
-        except KeyError:
-          self.__dict__[key] = hdf5_file['%s' % group].attrs[key]
-      self.__dict__['info'] = dict(self.__dict__['info'])
 
 class QCinfo:
   '''Class managing all information from the from the output 
@@ -168,12 +56,7 @@ class QCinfo:
     self.states         = {'multiplicity' : None,
                            'energy'       : None}
     self.dipole_moments = None
-    
-#    self.mo_coeff = None
-#    self.mo_occup = None
-#    self.mo_energ = None
-#    self.mo_sym   = None
-
+  
   def sort_mo_sym(self):
     '''Sorts mo_spec by symmetry.
     '''
@@ -276,3 +159,118 @@ class QCinfo:
     for key in keys:
       dct[key] = getattr(self,key)
     return dct
+
+class CIinfo:
+  '''Class managing all information from the from the output 
+  files of quantum chemical software for CI calculations.
+  
+  The CI related features are in ongoing development.
+  '''
+  def __init__(self,method='ci'):
+    self.coeffs = []
+    self.occ    = []
+    self.info   = None
+    self.method = method
+  def copy(self):
+    ciinfo = self.__class__(method=self.method)
+    if self.coeffs != []:
+      ciinfo.coeffs = numpy.copy(self.coeffs)
+    if self.occ != []:
+      ciinfo.occ = numpy.copy(self.occ)
+    if self.info is not None:
+      ciinfo.info = self.info.copy()    
+    return ciinfo
+  def todict(self):
+    return self.__dict__
+  def hdf5_save(self,fid='out.h5',group='/ci:0',mode='w'):
+    from orbkit.output import hdf5_open,hdf5_append
+    from copy import copy
+    for hdf5_file in hdf5_open(fid,mode=mode):
+      dct = copy(self.todict())
+      dct['info'] = numpy.array(dct['info'].items(),dtype=str)
+      hdf5_append(dct,hdf5_file,name=group)
+  def hdf5_read(self,fid='out.h5',group='/ci:0'):
+    from orbkit.output import hdf5_open,hdf52dict
+    for hdf5_file in hdf5_open(fid,mode='r'):
+      for key in self.__dict__.keys():
+        try:
+          self.__dict__[key] = hdf52dict('%s/%s' % (group,key),hdf5_file)
+        except KeyError:
+          self.__dict__[key] = hdf5_file['%s' % group].attrs[key]
+      self.__dict__['info'] = dict(self.__dict__['info'])
+
+def read_nist():
+  '''Reads and converts the atomic masses from the "Linearized ASCII Output", 
+  see http://physics.nist.gov.
+  '''
+  global nist_mass
+  
+  f = open(nist_file,'r')
+  flines = f.readlines()
+  f.close()
+  
+  nist_mass = []
+  index = None
+  new = True
+  
+  def rm_brackets(text,rm=['(',')','[',']']):
+    for i in rm:
+      text = text.replace(i,'')
+    return text
+  
+  for line in flines:
+    thisline = line.split()
+    if 'Atomic Number =' in line:
+      i = int(thisline[-1]) - 1
+      new = (i != index)
+      if new:
+        nist_mass.append(['',0])
+      index = i
+    elif 'Atomic Symbol =' in line and new:
+      nist_mass[index][0] = thisline[-1]
+    elif 'Standard Atomic Weight =' in line and new:
+      nist_mass[index][1] = float(rm_brackets(thisline[-1]))
+
+def standard_mass(atom):
+  '''Returns the standard atomic mass of a given atom.
+    
+  **Parameters:**
+  
+  atom : int or str
+    Contains the name or atomic number of the atom.
+  
+  **Returns:**
+  
+  mass : float
+    Contains the atomic mass in atomic units.
+  '''
+  if nist_mass is None:
+    read_nist()  
+  try:
+    atom = int(atom) - 1
+    return nist_mass[atom][1] * u_to_me
+  except ValueError:
+    return dict(nist_mass)[atom.title()] * u_to_me
+    
+def get_atom_symbol(atom):
+  '''Returns the atomic symbol of a given atom.
+    
+  **Parameters:**
+  
+  atom : int or str
+    Contains the atomic number of the atom.
+  
+  **Returns:**
+  
+  symbol : str
+    Contains the atomic symbol.
+  '''
+  if nist_mass is None:
+    read_nist()  
+  try:
+    atom = int(atom) - 1
+    return nist_mass[atom][0]
+  except ValueError:    
+    return atom.upper()
+
+

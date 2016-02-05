@@ -5,6 +5,9 @@
 *.DS_Store
 .*.swp
 
+*/.*
+*.so
+*cy_*.c
 *.pyc
 *.h5
 *.h5am
@@ -22,6 +25,7 @@
 *.xyz
 *.pdb
 *.txt
+*.html
 
 !grid*.txt
 !orbkit*.hx

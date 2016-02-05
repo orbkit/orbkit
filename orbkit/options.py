@@ -165,7 +165,7 @@ def init_parser():
   parser.add_option_group(group)
   
   group = optparse.OptionGroup(parser, "Grid-Related Options")      
-  group.add_option("-v", "--vector",dest="vector",
+  group.add_option("-v", "--vector",dest="vector",default=dvec,
                       action="callback",callback=default_if_called,
                       callback_kwargs={'default': dvec},
                       help=('''perform the computations for a vector grid, 

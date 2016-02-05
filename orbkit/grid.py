@@ -25,14 +25,9 @@ License along with orbkit.  If not, see <http://www.gnu.org/licenses/>.
 import sys
 import numpy
 
-# test how to import weave
-try:
-    from scipy import weave
-except:    
-    import weave
-
 # Import orbkit modules
 from orbkit import cSupportCode
+from orbkit import cy_grid
 
 def grid_init(is_vector=False, force=False):
   '''Sets up the regular x-, y-, z-grid 
@@ -57,8 +52,7 @@ def grid_init(is_vector=False, force=False):
   
   # Initialize a list for the grid 
   grid = [[],[],[]]
-  delta_ = numpy.zeros((3,1))
-  
+    
   # Loop over the three dimensions 
   for ii in range(3):
     if max_[ii] == min_[ii]:
@@ -67,8 +61,15 @@ def grid_init(is_vector=False, force=False):
       delta_[ii] = 1
     else:
       # Calculate the grid using the input parameters 
-      delta_[ii] = (max_[ii]-min_[ii]) / float(N_[ii] - 1)
-      grid[ii] = min_[ii] + numpy.arange(N_[ii]) * delta_[ii]
+      if delta_[ii]:
+        grid[ii] = numpy.arange(min_[ii],max_[ii]+delta_[ii],delta_[ii])
+        N_[ii] = len(grid[ii])
+      else:
+        grid[ii] = numpy.linspace(min_[ii],max_[ii],N_[ii])
+        delta_[ii] = grid[ii][1]-grid[ii][0]
+      ## Calculate the grid using the input parameters 
+      #delta_[ii] = (max_[ii]-min_[ii]) / float(N_[ii] - 1)
+      #grid[ii] = min_[ii] + numpy.arange(N_[ii]) * delta_[ii]
   
   # Write grid 
   x = grid[0]  
@@ -92,7 +93,7 @@ def get_grid(start='\t'):
   display = ''
   for ii in range(3):
     display += ('%(s)s%(c)smin = %(min).2f %(c)smax = %(max).2f N%(c)s = %(N)d ' % 
-      {'s': start, 'c': coord[ii], 'min': min(grid[ii]), 'max': max(grid[ii]), 
+      {'s': start, 'c': coord[ii], 'min': grid[ii][0], 'max': grid[ii][-1], 
        'N': len(grid[ii])})
       #{'s': start, 'c': coord[ii], 'min': min_[ii], 'max': max_[ii], 'N': N_[ii]})
     if max_[ii] != min_[ii] and delta_[ii] != 0.:
@@ -189,37 +190,9 @@ def grid2vector():
     raise ValueError('You have to initialize a grid before calling '+
                  ' `grid.grid2vector`, i.e., `grid.is_initialized=True`.')
   
-  # Initialize a list for the grid 
-  grid = numpy.zeros((3,len(x)*len(y)*len(z)))
-  
-  grid_code = """
-  int count=0;
-  
-  for (int i=0; i<Nx[0]; i++)
-  {
-    for (int j=0; j<Ny[0]; j++)
-    {
-      for (int k=0; k<Nz[0]; k++)
-      {
-        GRID2(0,count) = x[i];
-        GRID2(1,count) = y[j];
-        GRID2(2,count) = z[k];
-        count += 1;
-      }
-    }
-  }
-  """
-  weave.inline(grid_code, ['x','y','z','grid'], verbose = 1, support_code = cSupportCode.math)
-  
-  # Write grid 
-  x = grid[0,:]  
-  y = grid[1,:]  
-  z = grid[2,:]
-  
+  x,y,z = cy_grid.cy_grid2vector(x,y,z)    
   is_vector = True
   is_regular = True
-  return 
-  # grid2vector 
   
 def vector2grid(Nx,Ny,Nz):
   '''Converts the (3, (Nx*Ny*Nz)) grid matrix (vector grid) back to the regular grid 
@@ -242,39 +215,8 @@ def vector2grid(Nx,Ny,Nz):
   if (Nx*Ny*Nz) != len(x):
     raise ValueError('It has to hold that `len(x) = (N_x * N_y * N_z)`')
   
-  # Initialize a list for the grid
-  grid = [[],[],[]]
-  grid[0] = x
-  grid[1] = y
-  grid[2] = z
-  grid = numpy.array(grid,dtype=float)
-  
-  # Initialize x, y, and z for C++-code
-  x = numpy.zeros(Nx)
-  y = numpy.zeros(Ny)
-  z = numpy.zeros(Nz)
-  
-  grid_code = """
-  int count=0;
-  for (int i=0; i<Nz[0]; i++)
-  {
-    Z1(i) = GRID2(2,i);
-    for (int j=0; j<Ny[0]; j++)
-    {
-      Y1(j) = GRID2(1,j*Nz[0]);
-      for (int k=0; k<Nx[0]; k++)
-      {
-        X1(k) = GRID2(0,(k*Nz[0]*Ny[0]));
-      }  
-    }
-  }
-  """
-  weave.inline(grid_code, ['x','y','z','grid'], verbose = 1, support_code = cSupportCode.math)
-  
+  x,y,z = cy_grid.cy_vector2grid(x,y,z,Nx,Ny,Nz)  
   is_vector = False
-  
-  return 
-  # vector2grid 
   
 def matrix_grid2vector(matrix): 
   '''Converts the (Nx,Ny,Nz) data matrix back to the regular grid (Nx,Nz,Ny)
@@ -283,29 +225,9 @@ def matrix_grid2vector(matrix):
   
   if matrix.ndim != 3:
     raise ValueError('`matrix` has to be 3d matrix.')
-    
-  # Initialize matrix (Nx*Ny*Nz)
-  vecmatrix = numpy.zeros((numpy.shape(matrix)[0]*numpy.shape(matrix)[1]*numpy.shape(matrix)[2]))
   
-  matrix_code = """
-  int count=0;
-  for (int i=0; i<Nmatrix[0]; i++)
-  {
-    for (int j=0; j<Nmatrix[1]; j++)
-    {
-      for (int k=0; k<Nmatrix[2]; k++)
-      {
-        VECMATRIX1(count) = MATRIX3(i,j,k);
-        count += 1;
-      }  
-    }
-  }
-  """
-  weave.inline(matrix_code, ['vecmatrix','matrix'], verbose = 1, support_code = cSupportCode.math)
-
-  return vecmatrix
-  # matrix_grid2vector
-
+  return numpy.reshape(matrix,(-1,))
+  
 def matrix_vector2grid(matrix,Nx=None,Ny=None,Nz=None): 
   '''Converts the (Nx*Ny*Nz) data matrix back to the (Nx,Nz,Ny)
   '''
@@ -316,28 +238,8 @@ def matrix_vector2grid(matrix,Nx=None,Ny=None,Nz=None):
     raise ValueError('`matrix` has to be one dimensional with the length '+
                      '`len(matrix) = N_x * N_y * N_z`.'+
                      'For Nd matrices use the function `grid.mv2g`.')
-    
-  # Initialize matrix (Nx,Ny,Nz)
-  regmatrix = numpy.zeros((Nx,Ny,Nz))
   
-  matrix_code = """
-  int count=0;
-  for (int i=0; i<Nregmatrix[0]; i++)
-  {
-    for (int j=0; j<Nregmatrix[1]; j++)
-    {
-      for (int k=0; k<Nregmatrix[2]; k++)
-      {
-        REGMATRIX3(i,j,k) = MATRIX1(count);
-        count += 1;
-      }  
-    }
-  }
-  """
-  weave.inline(matrix_code, ['regmatrix','matrix'], verbose = 1, support_code = cSupportCode.math)
-
-  return regmatrix
-  # matrix_vector2grid
+  return numpy.reshape(matrix,(Nx,Ny,Nz))
 
 def mv2g(**kwargs):
   '''Converts all `numpy.ndarrays` given as the keyword arguments 
@@ -364,11 +266,15 @@ def mv2g(**kwargs):
   
   return return_val.values()[0] if len(return_val.values()) == 1 else return_val
 
-def grid_sym_op(symop=None):
+def grid_sym_op(symop):
   '''Executes given symmetry operation on vector grid 
   '''
   # All grid related variables should be globals 
   global x, y, z, is_vector, is_regular
+  
+  symop = numpy.asarray(symop,dtype=numpy.float64)  
+  if symop.shape != (3,3):
+    raise ValueError('`symop` needs to be a numpy array with shape=(3,3)')
   
   if not is_initialized:
     raise ValueError('You have to initialize a grid before executing a '+
@@ -377,34 +283,11 @@ def grid_sym_op(symop=None):
   if not is_vector:
     grid2vector()
   
-  # Initialize matrix (Nx*Ny*Nz)
-  symgrid = numpy.zeros((3,len(x)))
-  grid = numpy.array([x,y,z],dtype=float)
-  
-  # Symmetry operation
-  weave.inline("""
-  int count=0; 
-  for (int i=0; i<Ngrid[1]; i++)
-  {
-    for (int j=0; j<Ngrid[0]; j++)
-    {
-      for (int k=0; k<Nsymop[1]; k++)
-      {
-        SYMGRID2(j,i) += SYMOP2(j,k)*GRID2(j,i);
-      }
-    }
-  }
-  """, 
-  ['grid','symop','symgrid'], verbose = 1, support_code = cSupportCode.math)
-  
-  # Write grid 
-  x = grid[0,:]  
-  y = grid[1,:]  
-  z = grid[2,:]
+  x, y, z = numpy.dot(symop,numpy.array(x,y,z))
   
   # The grid is not regular anymore.
   is_regular = False
-  # grid_sym_op
+  
 
 def grid_translate(dx,dy,dz):
   '''Translates the grid by (dx,dy,dz).
@@ -478,31 +361,9 @@ def sph2cart_vector(r,theta,phi):
   '''
   # All grid related variables should be globals 
   global x, y, z, is_initialized, is_vector, is_regular
-  
-  grid = numpy.zeros((3,numpy.product([len(r),len(theta),len(phi)])))
-  grid_code = """
-  int count=0;
-
-  for (int i=0; i<Nr[0]; i++)
-  {
-    for (int j=0; j<Ntheta[0]; j++)
-    {
-      for (int k=0; k<Nphi[0]; k++)
-      {
-        GRID2(0,count) = r[i] * sin(theta[j]) * cos(phi[k]);
-        GRID2(1,count) = r[i] * sin(theta[j]) * sin(phi[k]);
-        GRID2(2,count) = r[i] * cos(theta[j]);
-        count += 1;
-      }
-    }
-  }
-  """
-  weave.inline(grid_code, ['r','theta','phi','grid'], verbose = 1, support_code = cSupportCode.math)
-
-  # Write grid 
-  x = grid[0,:]  
-  y = grid[1,:]  
-  z = grid[2,:]
+  x,y,z = cy_sph2cart(numpy.asarray(r,dtype=numpy.float64),
+                      numpy.asarray(theta,dtype=numpy.float64),
+                      numpy.asarray(phi,dtype=numpy.float64))
   
   is_initialized = True
   is_vector = True
@@ -525,30 +386,9 @@ def cyl2cart_vector(r,phi,zed):
   # All grid related variables should be globals 
   global x, y, z, is_initialized, is_vector, is_regular
   
-  grid = numpy.zeros((3,numpy.product([len(r),len(phi),len(zed)])))
-  grid_code = """
-  int count=0;
-
-  for (int i=0; i<Nr[0]; i++)
-  {
-    for (int j=0; j<Nphi[0]; j++)
-    {
-      for (int k=0; k<Nzed[0]; k++)
-      {
-        GRID2(0,count) = r[i] * cos(phi[j]);
-        GRID2(1,count) = r[i] * sin(phi[j]);
-        GRID2(2,count) = zed[k];
-        count += 1;
-      }
-    }
-  }
-  """
-  weave.inline(grid_code, ['r','phi','zed','grid'], verbose = 1, support_code = cSupportCode.math)
-
-  # Write grid 
-  x = grid[0,:]  
-  y = grid[1,:]  
-  z = grid[2,:]
+  x,y,z = cy_sph2cart(numpy.asarray(r,dtype=numpy.float64),
+                      numpy.asarray(phi,dtype=numpy.float64),
+                      numpy.asarray(zed,dtype=numpy.float64))
   
   is_initialized = True
   is_vector = True
@@ -754,6 +594,7 @@ def reset_grid():
   min_ = [-8.0, -8.0, -8.0]
   max_ = [ 8.0,  8.0,  8.0]
   N_   = [ 101,  101,  101]
+  delta_ = numpy.zeros((3,1))
   # reset_grid 
 
 # Default values for the grid parameters 

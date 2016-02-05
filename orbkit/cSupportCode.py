@@ -3,6 +3,7 @@
 
 math = '''
   #include <math.h>
+  #include <stdio.h>
   #define _USE_MATH_DEFINES
   '''
 norm = '''

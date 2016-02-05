@@ -36,7 +36,7 @@ except:
     import weave
 
 from orbkit import cSupportCode
-from orbkit.core import exp,lquant,slicer,get_lxlylz,get_cart2sph,l_deg
+from orbkit.core import exp,lquant,slicer,get_lxlylz,get_cart2sph,l_deg,create_mo_coeff
 
 def get_ao_overlap(coord_a,coord_b,ao_spec,lxlylz_b=None,contraction=True,
                    drv=None,ao_spherical=None):
@@ -486,48 +486,6 @@ def get_nuclear_dipole_moment(qc,component='x'):
   for i_nuc in range(len(qc.geo_spec)):
     nuclear_dipole_moment += float(qc.geo_info[i_nuc,2])*qc.geo_spec[i_nuc,component]
   return nuclear_dipole_moment
-
-def is_mo_spec(mo):
-  '''Checks if :literal:`mo` is of :literal:`mo_spec` type. 
-  (See :ref:`Central Variables` for details.)'''
-  if not isinstance(mo,list):
-    return False
-  return_val = True
-  for i in mo:
-    try:
-      return_val = return_val and 'coeffs' in i.keys()
-    except:
-      return_val = False
-  
-  return return_val
-
-def create_mo_coeff(mo,name='mo'):
-  '''Converts the input variable to an :literal:`mo_coeff` numpy.ndarray.
-  
-  **Parameters:**
-  
-  mo : list, numpy.ndarray, or mo_spec (cf. :ref:`Central Variables`)
-    Contains the molecular orbital coefficients of all orbitals.
-  name : string, optional
-    Contains a string describing the input variable. 
-  
-  **Returns:**
-  
-  mo : numpy.ndarray, shape = (NMO,NAO)
-    Contains the molecular orbital coefficients of all orbitals.
-  '''
-  if (not is_mo_spec(mo)):
-    if (not isinstance(mo,(list,numpy.ndarray))):
-      raise ValueError('%s has to be mo_spec or an numpy coefficient array.'%s)
-  else:
-    tmp = []
-    for i in mo:
-      tmp.append(i['coeffs'])
-    mo = tmp
-  mo = numpy.array(mo, dtype=numpy.float64)  
-  if mo.ndim != 2:
-    raise ValueError('%s has to be 2-dimensional.'%s)  
-  return mo
   
 def get_atom2mo(qc):
   '''Assigns atoms to molecular orbital coefficients.
