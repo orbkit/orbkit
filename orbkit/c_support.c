@@ -1,6 +1,8 @@
 #include <stdio.h>
-#include <math.h>
 #define _USE_MATH_DEFINES
+#include <math.h>
+
+#include <stdlib.h>
 
 double xyz(double x,double y,double z,int lx,int ly,int lz);
 double get_ao_xyz(double X, double Y, double Z, int lx, int ly, int lz, 
@@ -8,31 +10,36 @@ double get_ao_xyz(double X, double Y, double Z, int lx, int ly, int lz,
 double ao_norm(int l,int m,int n,double alpha, int is_normalized);
 int doublefactorial(int n);
 
-void c_lcreator(double* ao_list, long* exp_list, double* coeff_list,
+void c_lcreator(double* ao_list, int* exp_list, double* coeff_list,
                 double* at_pos, double* x, double* y, double* z, 
                 int npts, int ao_num, int pnum, int drv, int is_normalized);
 
-void c_lcreator(double* ao_list, long* exp_list, double* coeff_list, 
+void c_lcreator(double* ao_list, int* exp_list, double* coeff_list, 
                 double* at_pos, double* x, double* y, double* z, 
                 int npts, int ao_num , int pnum, int drv, int is_normalized)
 {
   // vector grid without derivative
-  double Norm[ao_num][pnum];
+  double *Norm;
   double X, Y, Z;
-  long lx[ao_num],ly[ao_num],lz[ao_num];
-  double rr, ao_l0[pnum];
+  int *lx,*ly,*lz;
+  double rr, *ao_l0;
   double sum;
   int i,il,ii;
+
+  Norm = (double*) malloc(ao_num * pnum * sizeof(double));
+  lx = (int*) malloc(ao_num * sizeof(int));
+  ly = (int*) malloc(ao_num * sizeof(int));
+  lz = (int*) malloc(ao_num * sizeof(int));
+  ao_l0 = (double*) malloc(pnum * sizeof(double));
 
   for (il=0; il<ao_num; il++)
   {
     lx[il] = exp_list[3*il];
     ly[il] = exp_list[3*il+1];
     lz[il] = exp_list[3*il+2];
-    for (ii=0; ii<pnum; ii++)
+    for (ii=0; ii<pnum; ii++) 
     {
-      Norm[il][ii] = ao_norm(lx[il],ly[il],lz[il],coeff_list[2*ii],is_normalized);
-      
+      Norm[il*pnum+ii] = ao_norm(lx[il],ly[il],lz[il],coeff_list[2*ii],is_normalized);
     }
   }
   
@@ -55,7 +62,7 @@ void c_lcreator(double* ao_list, long* exp_list, double* coeff_list,
       {
         for (ii=0; ii<pnum; ii++)
         {
-          sum += Norm[il][ii] * ao_l0[ii];
+          sum += Norm[il*pnum + ii] * ao_l0[ii];
         }
         sum *= xyz(X, Y, Z, lx[il], ly[il], lz[il]);
       }
@@ -63,13 +70,20 @@ void c_lcreator(double* ao_list, long* exp_list, double* coeff_list,
       {
         for (ii=0; ii<pnum; ii++)
         {
-          sum += Norm[il][ii] * ao_l0[ii] * 
+          sum += Norm[il*pnum + ii] * ao_l0[ii] *
              get_ao_xyz(X, Y, Z, lx[il], ly[il], lz[il], coeff_list[2*ii], drv);
         }        
       }
       ao_list[il*npts+i] = sum;
     }
   }
+
+  
+  free(Norm);
+  free(lx);
+  free(ly);
+  free(lz);
+  free(ao_l0);
 }
   
 double xyz(double x,double y,double z,int lx,int ly,int lz)
@@ -264,8 +278,8 @@ double ao_norm(int l,int m,int n,double alpha, int is_normalized)
   if (is_normalized > 0) return 1.0;
   
   norm = pow((2./M_PI),(3./4.)) * (pow(2.,(l+m+n)) * 
-      pow(alpha,((2.*l+2.*m+2.*n+3.)/4.))) / (pow((doublefactorial(2.*l-1.)*
-      doublefactorial(2.*m-1.) * doublefactorial(2.*n-1.)),0.5));
+      pow(alpha,((2.*l+2.*m+2.*n+3.)/4.))) / (pow((doublefactorial(2*l-1)*
+      doublefactorial(2*m-1) * doublefactorial(2*n-1)),0.5));
   return norm;
 }
 

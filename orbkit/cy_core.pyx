@@ -5,7 +5,7 @@ import numpy as np
 cimport numpy as np
 
 # declare the interface to the C code
-cdef extern void c_lcreator(double* ao_list, long* exp_list, double* coeff_list,
+cdef extern void c_lcreator(double* ao_list, int* exp_list, double* coeff_list,
                     double* at_pos, double* x, double* y, double* z, 
                     int npts, int ao_num, int pnum, int drv, int is_normalized)
 
@@ -13,7 +13,7 @@ cdef extern void c_lcreator(double* ao_list, long* exp_list, double* coeff_list,
 @cython.boundscheck(False)
 @cython.wraparound(False)
 def lcreator(np.ndarray[double, ndim=2, mode="c"] ao_list       not None,
-             np.ndarray[long,   ndim=2, mode="c"] exp_list      not None,
+             np.ndarray[int,   ndim=2, mode="c"] exp_list      not None,
              np.ndarray[double, ndim=2, mode="c"] coeff_list    not None, 
              np.ndarray[double, ndim=1, mode="c"] at_pos        not None,
              np.ndarray[double, ndim=1, mode="c"] x             not None,
@@ -34,12 +34,12 @@ def lcreator(np.ndarray[double, ndim=2, mode="c"] ao_list       not None,
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def aocreator(np.ndarray[long,   ndim=2, mode="c"] lxlylz       not None,
-              np.ndarray[long,   ndim=1, mode="c"] assign       not None,
+def aocreator(np.ndarray[int,   ndim=2, mode="c"] lxlylz       not None,
+              np.ndarray[int,   ndim=1, mode="c"] assign       not None,
               np.ndarray[double, ndim=2, mode="c"] ao_coeffs    not None, 
-              np.ndarray[long,   ndim=1, mode="c"] pnum_list    not None,
+              np.ndarray[int,   ndim=1, mode="c"] pnum_list    not None,
               np.ndarray[double, ndim=2, mode="c"] geo_spec     not None, 
-              np.ndarray[long,   ndim=1, mode="c"] atom_indices not None,
+              np.ndarray[int,   ndim=1, mode="c"] atom_indices not None,
               np.ndarray[double, ndim=1, mode="c"] x            not None,
               np.ndarray[double, ndim=1, mode="c"] y            not None,
               np.ndarray[double, ndim=1, mode="c"] z            not None,
@@ -53,8 +53,8 @@ def aocreator(np.ndarray[long,   ndim=2, mode="c"] lxlylz       not None,
   cdef np.ndarray[double, ndim=2, mode="c"] ao_list = np.zeros([ao_num,npts],
                                                                dtype=np.float64)
   cdef int i
-  cdef long c_ao = 0 # counter for aos
-  cdef long c_p = 0  # counter for primitves 
+  cdef int c_ao = 0 # counter for aos
+  cdef int c_p = 0  # counter for primitves 
   for i in range(assign.shape[0]):    
     lcreator(ao_list[c_ao:,:],lxlylz[c_ao:,:],ao_coeffs[c_p:,:],
              geo_spec[atom_indices[i],:],x,y,z,assign[i],pnum_list[i],

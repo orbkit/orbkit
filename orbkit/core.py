@@ -55,7 +55,7 @@ def require(data,dtype='f',requirements='CA'):
   if dtype == 'f':
     dtype = numpy.float64
   elif dtype == 'i':
-    dtype = numpy.int64
+    dtype = numpy.intc
   return numpy.require(data, dtype=dtype, requirements='CA')
 
 def each_ao_is_normalized(ao_spec):
@@ -126,7 +126,8 @@ def ao_creator(geo_spec,ao_spec,ao_spherical=None,drv=None,
   
   is_normalized = each_ao_is_normalized(ao_spec)
   drv = valdate_drv(drv)
-  
+  lxlylz = require(lxlylz,dtype='i')
+  assign = require(assign,dtype='i')
   ao_list = cy_core.aocreator(lxlylz,assign,ao_coeffs,pnum_list,geo_spec,
                               atom_indices,x,y,z,drv,is_normalized)
   
@@ -920,10 +921,10 @@ def get_lxlylz(ao_spec,get_assign=False,bincount=False):
   if get_assign:
     if bincount:
       assign = numpy.bincount(assign)
-    return (numpy.array(lxlylz,dtype=numpy.int64,order='C'), 
-            numpy.array(assign,dtype=numpy.int64,order='C'))
+    return (numpy.array(lxlylz,dtype=numpy.intc,order='C'), 
+            numpy.array(assign,dtype=numpy.intc,order='C'))
   
-  return numpy.array(lxlylz,dtype=numpy.int64,order='C') 
+  return numpy.array(lxlylz,dtype=numpy.intc,order='C') 
 
 
 def create_mo_coeff(mo,name='mo'):
