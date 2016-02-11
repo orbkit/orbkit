@@ -91,8 +91,7 @@ def run_orbkit(use_qc=None,check_options=True,standalone=False):
   display('\nSetting up the grid...')
   if options.grid_file is not None: 
     # Read the grid from an external file
-    if grid.read(options.grid_file) and (options.vector is None):
-      options.vector = options.dvec
+    grid.read(options.grid_file)
   elif options.adjust_grid is not None:
     # Adjust the grid to geo_spec 
     extend,step = options.adjust_grid      
@@ -100,38 +99,24 @@ def run_orbkit(use_qc=None,check_options=True,standalone=False):
   elif options.random_grid:
     # Create a randomized grid
     grid.random_grid(qc.geo_spec)
-    if (options.vector is None):
-      options.vector = options.dvec
   
   # Initialize grid
-  grid.grid_init(is_vector=(options.vector is not None))  
+  grid.grid_init(is_vector=options.is_vector)
+  if options.is_vector:
+    grid.is_regular = False
   display(grid.get_grid())   # Display the grid
-
-  if options.vector and options.center_grid is not None:
+  
+  if not grid.is_regular and options.center_grid is not None:
     raise IOError('The option --center is only supported for regular grids.')
   elif options.center_grid is not None:
-    atom = options.center_grid
-    if not((isinstance(atom, int)) and (0 < atom <= len(qc.geo_spec))):
-      display('Not a Valid atom number for centering the grid')
-      display('Coose a valid index:')
-      for i,j in enumerate(qc.geo_info): display('\t%s\t%d' % (j[0], i+1))
-      if options.interactive:
-        while not((isinstance(atom, int)) and (0 < atom <= len(qc.geo_spec))):
-          try:
-            atom = int(raw_input('Please insert a correct index: '))
-          except ValueError:
-            pass
-      else: raise IOError('Insert a correct filename for the MO list!')
-
+    atom = grid.check_atom_select(options.center_grid,qc.geo_info,qc.geo_spec,
+                                  interactive=True,display=display)
     # Center the grid to a specific atom and (0,0,0) if requested
     grid.center_grid(qc.geo_spec[atom-1],display=display)
   
   if check_options or standalone:
     options.check_grid_output_compatibilty()
-  
-  display('The computations will be carried out applying a ' +
-          '%s grid.' % ('regular' if options.vector is None else 'vector'))
-  
+    
   t.append(time.time()) # A new time step
   
   # The calculation of all AOs (--calc_ao)
@@ -143,7 +128,6 @@ def run_orbkit(use_qc=None,check_options=True,standalone=False):
     for drv in options.drv:
       data.append(extras.calc_ao(qc,
                                  drv=drv,
-                                 is_vector=(options.vector is not None),
                                  otype=options.otype))
     
     t.append(time.time()) # Final time
@@ -164,14 +148,12 @@ def run_orbkit(use_qc=None,check_options=True,standalone=False):
       data = extras.calc_mo(qc,
                             fid_mo_list,
                             drv=options.drv,
-                            vector=options.vector,
                             otype=options.otype)
     elif options.mo_set != False: 
       data = extras.mo_set(qc,
                            fid_mo_list,
                            drv=options.drv,
                            laplacian=options.laplacian,
-                           vector=options.vector,
                            otype=options.otype)
     
     t.append(time.time()) # Final time
@@ -182,9 +164,9 @@ def run_orbkit(use_qc=None,check_options=True,standalone=False):
   if options.gross_atomic_density is not None:
     atom = options.gross_atomic_density
     rho_atom = extras.numerical_mulliken_charges(atom, qc,
-                                         is_vector=(options.vector is not None))
+                                         is_vector=(options.is_vector is not None))
     
-    if (options.vector is None):
+    if (options.is_vector is None):
       mulliken_num = rho_atom[1]
       rho_atom = rho_atom[0]      
     
@@ -196,7 +178,7 @@ def run_orbkit(use_qc=None,check_options=True,standalone=False):
                         geo_info=qc.geo_info,geo_spec=qc.geo_spec,
                         gross_atomic_density=rho_atom,
                         x=grid.x, y=grid.y, z=grid.z)
-      if (options.vector is None):
+      if (options.is_vector is None):
         output.hdf5_write(fid,mode='a',gname='/numerical_mulliken_population_analysis',
                           **mulliken_num)
     
@@ -207,9 +189,7 @@ def run_orbkit(use_qc=None,check_options=True,standalone=False):
   
   if options.mo_tefd is not None:
     mos = options.mo_tefd
-    ao_list = core.ao_creator(qc.geo_spec, 
-                              qc.ao_spec, 
-                              is_vector=(options.vector is not None))
+    ao_list = core.ao_creator(qc.geo_spec,qc.ao_spec)
     mo_tefd = []
     index = []
     for i,j in mos:
@@ -221,7 +201,7 @@ def run_orbkit(use_qc=None,check_options=True,standalone=False):
                                          qc,
                                          drv=ii_d,
                                          ao_list=ao_list,
-                                         is_vector=(options.vector is not None))
+                                         is_vector=(options.is_vector is not None))
         mo_tefd[-1].append(tefd)
         index[-1].append('%s->%s:%s'%(i,j,ii_d))
     
@@ -250,14 +230,13 @@ def run_orbkit(use_qc=None,check_options=True,standalone=False):
     data = core.rho_compute_no_slice(qc,
                                      drv=options.drv,
                                      laplacian=options.laplacian,
-                                     is_vector=(options.vector is not None),
                                      return_components = False)
   
   else:
     data = core.rho_compute(qc,
                             drv=options.drv,
+                            slice_length=options.slice_length,
                             laplacian=options.laplacian,
-                            vector=options.vector,
                             numproc=options.numproc)
   if options.drv is None:
     rho = data
@@ -268,7 +247,7 @@ def run_orbkit(use_qc=None,check_options=True,standalone=False):
   
   # Compute the reduced electron density if requested 
   if options.z_reduced_density:
-    if options.vector is not None:
+    if options.is_vector is not None:
       display(
       '\nSo far, reducing the density is not supported for ' + 
       'vector grids.\nSkipping the reduction...\n')

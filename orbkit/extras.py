@@ -34,7 +34,7 @@ from orbkit import core,grid,output,options
 from orbkit.display import display
 from orbkit.read import mo_select
 
-def calc_mo(qc, fid_mo_list, drv=None, vector=None, otype=None, ofid=None):
+def calc_mo(qc, fid_mo_list, drv=None, otype=None, ofid=None):
   '''Calculates and saves the selected molecular orbitals or the derivatives thereof.
 
   **Parameters:**
@@ -53,9 +53,6 @@ def calc_mo(qc, fid_mo_list, drv=None, vector=None, otype=None, ofid=None):
     drv : int or string, {None, 'x', 'y', 'z', 0, 1, 2}, optional
       If not None, a derivative calculation of the atomic orbitals 
       is requested.
-    vector : None or int, optional
-      If not None, performs the computations on a vector grid, i.e., 
-      with x, y, and z as vectors.
     
   **Returns:**
     mo_list : numpy.ndarray, shape=((NMO,) + N)
@@ -74,7 +71,10 @@ def calc_mo(qc, fid_mo_list, drv=None, vector=None, otype=None, ofid=None):
   qc_select['mo_spec'] = mo_info['mo_spec']
   
   # Calculate the AOs and MOs 
-  mo_list = core.rho_compute(qc_select,calc_mo=True,drv=drv,vector=vector,
+  mo_list = core.rho_compute(qc_select,
+                             calc_mo=True,
+                             drv=drv,
+                             slice_length=options.slice_length,
                              numproc=options.numproc)
   
   if otype is None:
@@ -101,8 +101,7 @@ def calc_mo(qc, fid_mo_list, drv=None, vector=None, otype=None, ofid=None):
                                       outputname=outputname,
                                       comments=comments,
                                       otype=otype,omit=['h5','vmd','mayavi'],
-                                      drv=drv,
-                                      is_vector=(options.vector is not None))
+                                      drv=drv)
       
       for i in output_written:
         if i.endswith('.cb'):
@@ -128,7 +127,7 @@ def calc_mo(qc, fid_mo_list, drv=None, vector=None, otype=None, ofid=None):
   
   return mo_list, mo_info
   
-def mo_set(qc, fid_mo_list, drv=None, laplacian=False, vector=None, 
+def mo_set(qc, fid_mo_list, drv=None, laplacian=False,
            otype=None, ofid=None, return_all=True):
   '''Calculates and saves the density or the derivative thereof 
   using selected molecular orbitals.
@@ -148,9 +147,6 @@ def mo_set(qc, fid_mo_list, drv=None, laplacian=False, vector=None,
     drv : int or string, {None, 'x', 'y', 'z', 0, 1, 2}, optional
       If not None, a derivative calculation of the atomic orbitals 
       is requested.
-    vector : None or int, optional
-      If not None, performs the computations on a vector grid, i.e., 
-      with x, y, and z as vectors.
     return_all : bool
       If False, no data will be returned.
   
@@ -197,7 +193,7 @@ def mo_set(qc, fid_mo_list, drv=None, laplacian=False, vector=None,
     data = core.rho_compute(qc_select,
                             drv=drv,
                             laplacian=laplacian,
-                            vector=vector,
+                            slice_length=options.slice_length,
                             numproc=options.numproc)
     datasets.append(data)
     if drv is None:
@@ -243,7 +239,7 @@ def mo_set(qc, fid_mo_list, drv=None, laplacian=False, vector=None,
       comments = ('mo_set:'+','.join(j_file))
       output.main_output(rho,qc.geo_info,qc.geo_spec,outputname=fid,
                          otype=otype,omit=['h5','vmd','mayavi'],
-                         comments=comments,is_vector=(vector is not None))
+                         comments=comments)
       if options.drv is not None:
         for i,j in enumerate(options.drv):
           fid = '%s_%03d_d%s' % (ofid, i_file+1, j) 
@@ -251,14 +247,14 @@ def mo_set(qc, fid_mo_list, drv=None, laplacian=False, vector=None,
           comments = ('d%s_of_mo_set:' % j + ','.join(j_file))
           output.main_output(delta_rho[i],qc.geo_info,qc.geo_spec,outputname=fid,
                              otype=otype,omit=['h5','vmd','mayavi'],
-                             comments=comments,is_vector=(vector is not None))  
+                             comments=comments)  
         if options.laplacian:
           fid = '%s_%03d_laplacian' % (ofid, i_file+1) 
           cube_files.append('%s.cb' % fid)
           comments = ('laplacian_of_mo_set:' + ','.join(j_file))
           output.main_output(laplacian_rho,qc.geo_info,qc.geo_spec,outputname=fid,
                              otype=otype,omit=['h5','vmd','mayavi'],
-                             comments=comments,is_vector=(vector is not None))  
+                             comments=comments)  
           
   if 'vmd' in otype and options.vector is None:
       display('\nCreating VMD network file...' +
@@ -279,15 +275,12 @@ def mo_set(qc, fid_mo_list, drv=None, laplacian=False, vector=None,
         datalabels.extend(['d/d%s of %s' % (j,i) for j in drv])
         if options.laplacian:
           datalabels.append('laplacian of %s' % i)
-      #output.view_with_mayavi(grid.x,grid.y,grid.z,
-                               #delta_datasets.reshape((-1,) + tuple(grid.N_)),
-                               #geo_spec=qc.geo_spec,
       output.main_output(delta_datasets.reshape((-1,) + grid.get_shape()),
                          qc.geo_info,qc.geo_spec,otype='mayavi',datalabels=datalabels)
     return datasets, delta_datasets, mo_info
   # mo_set 
 
-def calc_ao(qc, drv=None, is_vector=False, otype=None, ofid=None):  
+def calc_ao(qc, drv=None, otype=None, ofid=None):  
   '''Computes and saves all atomic orbital or a derivative thereof.
   
   **Parameters:**
@@ -299,12 +292,9 @@ def calc_ao(qc, drv=None, is_vector=False, otype=None, ofid=None):
     ofid : str, optional
       Specifies output file name. If None, the filename will be based on
       :mod:`orbkit.options.outputname`.
-    drv : int or string, {None, 'x', 'y', 'z', 0, 1, 2}, optional
+    drv : int or string, {None, 'x', 'y', 'z', 'xx', 'xy', ...}, optional
       If not None, a derivative calculation of the atomic orbitals 
       is requested.
-    is_vector : bool, optional
-      If True, performs the computations on a vector grid, i.e., 
-      with x, y, and z as vectors.
     
   **Returns:**    
   
@@ -313,7 +303,6 @@ def calc_ao(qc, drv=None, is_vector=False, otype=None, ofid=None):
       otype is None.
   '''
   from omp_functions import run
-  global global_val
   
   if ofid is None:
     ofid = options.outputname
@@ -332,20 +321,23 @@ def calc_ao(qc, drv=None, is_vector=False, otype=None, ofid=None):
       ao_spec.append(qc.ao_spec[sel_ao].copy())
       ao_spec[-1]['exp_list'] = [i]
       datalabels.append('lxlylz=%s,atom=%d' %(i,ao_spec[-1]['atom']))
-
-  global_val = {'qc':qc,'drv':drv,'is_vector':is_vector,'otype':otype,
-                'ofid':ofid,'ao_spec':ao_spec}
   
-  ao = run(get_ao,x=numpy.arange(len(ao_spec)).reshape((-1,1)),numproc=options.numproc,display=display)
-  
-  del global_val
-  
+  global_args = {'ao_spec':ao_spec,'qc':qc,'drv':drv,'otype':otype,
+                'ofid':ofid}
+  display('Starting the computation of the %d atomic orbitals'%len(ao_spec)+
+         (' using %d subprocesses.' % options.numproc if options.numproc > 1 
+          else '.' )
+          )
+  ao = run(get_ao,x=numpy.arange(len(ao_spec)).reshape((-1,1)),
+           numproc=options.numproc,display=display,
+           initializer=initializer,global_args=global_args)
+    
   if otype is None or 'h5' in otype or 'mayavi' in otype:   
     ao_list = []
     for i in ao:
       ao_list.extend(i)      
     ao_list = numpy.array(ao_list)
-    if otype is None:
+    if otype is None or options.no_output:
       return ao_list
     
     if 'h5' in otype:
@@ -357,7 +349,7 @@ def calc_ao(qc, drv=None, is_vector=False, otype=None, ofid=None):
                         geo_info=qc.geo_info,geo_spec=qc.geo_spec,
                         lxlylz=numpy.array(lxlylz,dtype=numpy.int64),
                         aolabels=numpy.array(datalabels),
-                        grid_info=numpy.array(is_vector,dtype=int))      
+                        grid_info=numpy.array(grid.is_vector,dtype=int))      
       for f in output.hdf5_open(fid,mode='a'):
         output.hdf5_append(ao_spec,f,name='ao_spec')
         output.hdf5_append(ao_list,f,name='ao_list')
@@ -375,98 +367,31 @@ def calc_ao(qc, drv=None, is_vector=False, otype=None, ofid=None):
     output.vmd_network_creator(fid,
                             cube_files=['%s_AO%s_%03d.cb' % (ofid,
                                         dstr,x) for x in range(len(ao_spec))])
-  return None
   # calc_ao
 
-def save_mo_hdf5(filename,geo_info,geo_spec,ao_spec,mo_spec,is_vector=False,
-                 x=None,y=None,z=None):
-  '''Calculate and save selected MOs to an HDF5 File requiering only a
-  small amount of the RAM.
-  '''
-  import h5py
-  if x is None: x = grid.x
-  if y is None: y = grid.y
-  if z is None: z = grid.z  
-  if not is_vector:
-    N = (len(x), len(y), len(z))
-  else:
-    if len(x) != len(y) or len(x) != len(z):
-      raise ValueError("Dimensions of x-, y-, and z- coordinate differ!")      
-    else:
-      N = (len(x),)
-  
-  # Initialize HDF5_File 
-  fid = filename if filename.endswith('.h5') else '%s.h5' % filename
-  f = h5py.File(fid, 'w')
-  
-  f.create_dataset('x',(1,len(x)),data=x)
-  f.create_dataset('y',(1,len(y)),data=y)
-  f.create_dataset('z',(1,len(z)),data=z)
-  
-  f.create_dataset('geo_info',(numpy.shape(geo_info)),data=numpy.array(geo_info))
-  f.create_dataset('geo_spec',(numpy.shape(geo_spec)),data=geo_spec)
-  
-  mo_name = []
-  occ_num=[]
-  energy=[]
-  sym=[]
-  
-  for mo_info in mo_spec:
-    mo_name.append(mo_info['sym'])
-    occ_num.append(mo_info['occ_num'])
-    energy.append(mo_info['energy'])
-    sym.append(mo_info['sym'])
-    
-    dID = 'mo_info:%s' % mo_info['sym']
-    dset = f.create_dataset(dID,N)
-  
-  
-  f.create_dataset('mo_info:Content',data=numpy.array(mo_name))
-  
-  mo_info = f.create_group('mo_info')
-  mo_info.create_dataset('occ_num',((1,len(mo_spec))),data=occ_num)
-  mo_info.create_dataset('energy',((1,len(mo_spec))),data=energy)
-  mo_info.create_dataset('sym',((1,len(mo_spec))),data=sym)
-  
-  f.close()
-    
-  
-  # Slice the grid 
-  sDim = 0
-  N[sDim] = 1
-  xyz = [x,y,z]
-  zz = [x,y,z]
-  zz[sDim] = numpy.zeros(1)
-  for ii_z in range(len(xyz[sDim])):
-    zz[sDim][:] = xyz[sDim][ii_z]
-    
-    ao_list = core.ao_creator(geo_spec,ao_spec,x=zz[0],y=zz[1],z=zz[2])
-    core.mo_creator(ao_list,mo_spec,x=zz[0],y=zz[1],z=zz[2],
-                    vector=False,HDF5_save=fid,h5py=h5py,s=ii_z,
-                    numproc=options.numproc)
-  
-  return 0
+def initializer(gargs):
+  global global_args
+  global_args = gargs
 
 def get_ao(x):
-  ao_list = core.l_creator(global_val['qc'].geo_spec,global_val['ao_spec'],
-                           int(x),exp_list=global_val['ao_spec'][x]['exp_list'],
-                           is_vector=global_val['is_vector'],
-                           drv=global_val['drv'])
+  ao_list = core.ao_creator(global_args['qc'].geo_spec,
+                            [global_args['ao_spec'][int(x)]],
+                            drv=global_args['drv'])
   
-  if global_val['otype'] is not None:
-    drv = global_val['drv']
+  if global_args['otype'] is not None:
+    drv = global_args['drv']
     comments = '%03d.lxlylz=%s,at=%d' %(x,
-                                         global_val['ao_spec'][x]['exp_list'][0],
-                                         global_val['ao_spec'][x]['atom'])
+                                         global_args['ao_spec'][x]['exp_list'][0],
+                                         global_args['ao_spec'][x]['atom'])
+    
     output.main_output(ao_list[0] if drv is None else ao_list,
-                       global_val['qc'].geo_info,
-                       global_val['qc'].geo_spec,
+                       global_args['qc'].geo_info,
+                       global_args['qc'].geo_spec,
                        comments=comments,
-                       outputname='%s_AO_%03d' % (global_val['ofid'],x),
-                       otype=global_val['otype'],
+                       outputname='%s_AO_%03d' % (global_args['ofid'],x),
+                       otype=global_args['otype'],
                        omit=['h5','vmd','mayavi'],
-                       drv = None if drv is None else [drv],
-                       is_vector=global_val['is_vector'])
+                       drv = None if drv is None else [drv])
   return ao_list
 
 def atom2index(atom,geo_info=None):
@@ -515,7 +440,7 @@ def atom2index(atom,geo_info=None):
 
 def gross_atomic_density(atom,qc,
                     bReturnmo=False,ao_list=None,mo_list=None,
-                    x=None,y=None,z=None,drv=None,is_vector=False):
+                    x=None,y=None,z=None,drv=None,is_vector=None):
   r'''Computes the gross atomic density with respect to the selected atoms.
   
   .. math::
@@ -542,22 +467,10 @@ def gross_atomic_density(atom,qc,
     mo_atom : list of numpy.ndarrays, shape=(len(atoms,NMO) + N)
       Contains the NMO=len(mo_spec) gross atomic molecular orbitals on a grid. 
   '''  
-  
-  if x is None: x = grid.x
-  if y is None: y = grid.y
-  if z is None: z = grid.z
-  
+    
   if (atom == 'all' or atom == -1):
     atom = range(1, len(qc.geo_info) + 1)  
   
-  if not is_vector:
-    N = (len(x), len(y), len(z))
-  else:
-    if len(x) != len(y) or len(x) != len(z):
-      raise ValueError("Dimensions of x-, y-, and z- coordinate differ!")      
-    else:
-      N = (len(x),)
-    
   atom, index = atom2index(atom,geo_info=qc.geo_info)
   
   display('Computing the gross atomic density with respect to '+ 
@@ -571,14 +484,12 @@ def gross_atomic_density(atom,qc,
   
   display('\tCalculating ao_list & mo_list')
   if ao_list is None:
-    ao_list = core.ao_creator(qc.geo_spec,qc.ao_spec,x=x,y=y,z=z,drv=drv,
-                    is_vector=is_vector)
+    ao_list = core.ao_creator(qc.geo_spec,qc.ao_spec,drv=drv)
   if mo_list is None:
-    mo_list = core.mo_creator(ao_list,qc.mo_spec,x=x,y=y,z=z,
-                              is_vector=is_vector)
-    
-  display('\tCalculating the gross atomic density')
+    mo_list = core.mo_creator(ao_list,qc.mo_spec)
   
+  display('\tCalculating the gross atomic density')
+  N = mo_list.shape[1:]
   if bReturnmo: mo_atom = [[] for a in index]
   rho_atom = [numpy.zeros(N) for a in index]
   for i,a in enumerate(index):
@@ -611,7 +522,7 @@ def gross_atomic_density(atom,qc,
 
 def numerical_mulliken_charges(atom,qc,
             ao_list=None,mo_list=None,rho_atom=None,
-            x=None,y=None,z=None,is_vector=False):
+            x=None,y=None,z=None,is_vector=None):
   r'''Compute the Mulliken charges and gross atomic populations of the selected 
   atoms *numerically* using the respective gross atomic densities.
   
@@ -635,11 +546,7 @@ def numerical_mulliken_charges(atom,qc,
       Contains information of Mulliken charge analysis and has following members:
         :population: - Mulliken population for each atom.
         :charges: - Mulliken charges for each atom.
-  '''
-  
-  if x is None: x = grid.x
-  if y is None: y = grid.y
-  if z is None: z = grid.z
+  '''  
   
   if (atom == 'all' or atom == -1 or atom == [-1]):
     atom = range(1, len(qc.geo_info) + 1) 
@@ -647,10 +554,9 @@ def numerical_mulliken_charges(atom,qc,
   atom, index = atom2index(atom,geo_info=qc.geo_info)
   
   rho_atom = gross_atomic_density(atom,qc,
-                    ao_list=ao_list,mo_list=mo_list,
-                    x=x,y=y,z=z,is_vector=is_vector)
+                    ao_list=ao_list,mo_list=mo_list)
   
-  if is_vector:
+  if grid.is_vector:
     display('Warning: You have applied a vector grid.\n' + 
     'The integration is not implemented for such a grid!\n' +
     '\nReturning only the gross atomic densities...')
@@ -672,7 +578,7 @@ def numerical_mulliken_charges(atom,qc,
 def mo_transition_flux_density(i,j,qc,drv='x',
                     ao_list=None,mo_list=None,
                     delta_ao_list=None,delta_mo_list=None,
-                    x=None,y=None,z=None,is_vector=False):
+                    x=None,y=None,z=None,is_vector=None):
   '''Calculate one component (e.g. drv='x') of the 
   transition electoronic flux density between the 
   molecular orbitals i and j.
@@ -694,43 +600,25 @@ def mo_transition_flux_density(i,j,qc,drv='x',
   **Returns:**
   
      mo_tefd : numpy.ndarray
-  '''
-  
-  if x is None: x = grid.x
-  if y is None: y = grid.y
-  if z is None: z = grid.z
-  
-  if not is_vector:
-    if N is None: N = tuple(grid.N_)
-  else:
-    if len(x) != len(y) or len(x) != len(z):
-      display("Dimensions of x-, y-, and z- coordinate differ!")
-      return 0
-    else:
-      N = (len(x),)
-  
+  '''  
   if mo_list is None:
     if ao_list is None:
       display('\tComputing ao_list and ' +
                     'mo #%d, since it is not given.' % i)
-      ao_list = core.ao_creator(qc.geo_spec,qc.ao_spec,x=x,y=y,z=z,
-                    is_vector=is_vector)  
+      ao_list = core.ao_creator(qc.geo_spec,qc.ao_spec)  
     else:
       display('\tComputing mo #%d, since it is not given.' % i)
-    mo = core.mo_creator(ao_list,[qc.mo_spec[i]],x=x,y=y,z=z,
-                    is_vector=is_vector)[0]
+    mo = core.mo_creator(ao_list,[qc.mo_spec[i]])[0]
   else:
     mo = mo_list[i]
   if delta_mo_list is None:
     if delta_ao_list is None:
       display('\tComputing delta_ao_list and the derivative of ' +
                     'mo #%d, since it is not given.' % j)
-      delta_ao_list = core.ao_creator(qc.geo_spec,qc.ao_spec,drv=drv,
-                        x=x,y=y,z=z,is_vector=is_vector)
+      delta_ao_list = core.ao_creator(qc.geo_spec,qc.ao_spec,drv=drv)
     else:
       display('\tComputing mo #%d, since it is not given.' % j)
-    delta_mo = core.mo_creator(delta_ao_list,[qc.mo_spec[j]],x=x,y=y,z=z,
-                    is_vector=is_vector)[0]
+    delta_mo = core.mo_creator(delta_ao_list,[qc.mo_spec[j]])[0]
   else:
     delta_mo = delta_mo_list[i]
   

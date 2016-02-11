@@ -14,11 +14,18 @@ void c_lcreator(double* ao_list, int* exp_list, double* coeff_list,
                 double* at_pos, double* x, double* y, double* z, 
                 int npts, int ao_num, int pnum, int drv, int is_normalized);
 
+void c_ao_overlap();
+
+void c_ao_overlap()
+{
+  
+}
+
 void c_lcreator(double* ao_list, int* exp_list, double* coeff_list, 
                 double* at_pos, double* x, double* y, double* z, 
                 int npts, int ao_num , int pnum, int drv, int is_normalized)
 {
-  // vector grid without derivative
+  // vector grid only!
   double *Norm;
   double X, Y, Z;
   int *lx,*ly,*lz;

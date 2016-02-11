@@ -46,11 +46,18 @@ def slicer(N,vector=1e4,numproc=1):
     xx.append((numpy.array([0,N],dtype=int))) 
   return xx
 
-def run(f,x=numpy.arange(10).reshape((-1,1)),numproc=1,display=sys.stdout.write):
+def initializer(gargs):
+  global global_args
+  global_args = gargs
+
+def run(f,x=numpy.arange(10).reshape((-1,1)),numproc=1,display=sys.stdout.write,
+        initializer=lambda x: x, global_args=None):
   #--- Start the worker processes --
   if numproc > 1:
-    pool = Pool(processes=numproc)
+    pool = Pool(processes=numproc, initializer=initializer, initargs=(global_args,))
     it = pool.imap(f, x)
+  else:
+    initializer(global_args)
   
   #--- Initialize some additional user information ---
   status_old = 0

@@ -1066,16 +1066,17 @@ def read_gaussian_log(filename,all_mo=False,spin=None,orientation='standard',
   count = {'link': 0, 'geometry': 0, 'geometry_input': 0, 'atomic orbitals': 0, 
            'molecular orbitals': [], 'state': []}
 
-  def check_sel(count,i,interactive=False):
+  def check_sel(count,i,interactive=False,default=-1):
     if count == 0:
       raise IndexError
     elif count == 1:
       return 0
-    message = '\tPlease give an integer from 0 to %d: ' % (count-1)
+    message = '\tPlease give an integer from 0 to {0} (default: {0}): '.format(count-1)
     
     try:
       if interactive:
-        i = int(raw_input(message))
+        i = raw_input(message)
+        i = default if i == '' else int(i)
       i = range(count)[i]
     except (IndexError,ValueError):
       raise IOError(message.replace(':','!'))
@@ -1351,7 +1352,7 @@ def read_gaussian_log(filename,all_mo=False,spin=None,orientation='standard',
           else:
             coeffs = line[21:].replace('-',' -').split()
             if not cartesian_basis and offset == 0:
-              if old_ao != line[:14].split()[-1]:
+              if old_ao != line[:14].split()[-1] or len(line[:14].split()) == 4:
                 old_ao = line[:14].split()[-1]
                 c_sao += 1
               i = c_sao-1

@@ -27,7 +27,7 @@ import numpy
 
 # Import orbkit modules
 from orbkit import cSupportCode
-from orbkit import cy_grid
+from orbkit.cy_grid import cy_grid2vector,cy_vector2grid
 
 def grid_init(is_vector=False, force=False):
   '''Sets up the regular x-, y-, z-grid 
@@ -62,14 +62,11 @@ def grid_init(is_vector=False, force=False):
     else:
       # Calculate the grid using the input parameters 
       if delta_[ii]:
-        grid[ii] = numpy.arange(min_[ii],max_[ii]+delta_[ii],delta_[ii])
+        grid[ii] = numpy.arange(min_[ii],max_[ii]+delta_[ii],delta_[ii],dtype=numpy.float64)
         N_[ii] = len(grid[ii])
       else:
-        grid[ii] = numpy.linspace(min_[ii],max_[ii],N_[ii])
+        grid[ii] = numpy.linspace(min_[ii],max_[ii],N_[ii],dtype=numpy.float64)
         delta_[ii] = grid[ii][1]-grid[ii][0]
-      ## Calculate the grid using the input parameters 
-      #delta_[ii] = (max_[ii]-min_[ii]) / float(N_[ii] - 1)
-      #grid[ii] = min_[ii] + numpy.arange(N_[ii]) * delta_[ii]
   
   # Write grid 
   x = grid[0]  
@@ -82,7 +79,8 @@ def grid_init(is_vector=False, force=False):
   
   if is_vector:
     grid2vector()
-  
+  else:
+    setattr(sys.modules[__name__],'is_vector',False)  
   # grid_init 
 
 def get_grid(start='\t'):
@@ -92,10 +90,9 @@ def get_grid(start='\t'):
   grid = [x, y, z]
   display = ''
   for ii in range(3):
-    display += ('%(s)s%(c)smin = %(min).2f %(c)smax = %(max).2f N%(c)s = %(N)d ' % 
+    display += ('%(s)s%(c)s[0] = %(min).2f %(c)s[-1] = %(max).2f N%(c)s = %(N)d ' % 
       {'s': start, 'c': coord[ii], 'min': grid[ii][0], 'max': grid[ii][-1], 
        'N': len(grid[ii])})
-      #{'s': start, 'c': coord[ii], 'min': min_[ii], 'max': max_[ii], 'N': N_[ii]})
     if max_[ii] != min_[ii] and delta_[ii] != 0.:
       # Print the delta values only if min-value is not equal to max-value 
       display += 'd%(c)s = %(d).3f' % {'c': coord[ii], 'd': delta_[ii]}
@@ -122,7 +119,7 @@ def get_shape():
  
  return (len(x),) if is_vector else tuple(N_)
 
-def set_grid(grid):
+def set_grid(xnew,ynew,znew,is_vector=None):
   '''Sets the x-, y-, z-grid.
   '''
   global x, y, z, is_initialized
@@ -138,6 +135,7 @@ def set_grid(grid):
                     'three dimensions.')
   
   length = []
+  grid = [xnew,ynew,znew]
   for i,c in enumerate(grid):
     # Check the type of the grid
     if isinstance(c,NumberTypes):
@@ -174,7 +172,10 @@ def set_grid(grid):
   z = grid[2]
   
   is_initialized = True
-  
+  if isinstance(is_vector,bool):
+    setattr(sys.modules[__name__],'is_vector',is_vector)
+    info_string += ('\n\nThe variable `grid.is_vector` has been set to %s.' % 
+                    is_vector)
   return info_string
   # set_grid 
 
@@ -190,7 +191,7 @@ def grid2vector():
     raise ValueError('You have to initialize a grid before calling '+
                  ' `grid.grid2vector`, i.e., `grid.is_initialized=True`.')
   
-  x,y,z = cy_grid.cy_grid2vector(x,y,z)    
+  x,y,z = cy_grid2vector(x,y,z)    
   is_vector = True
   is_regular = True
   
@@ -215,7 +216,7 @@ def vector2grid(Nx,Ny,Nz):
   if (Nx*Ny*Nz) != len(x):
     raise ValueError('It has to hold that `len(x) = (N_x * N_y * N_z)`')
   
-  x,y,z = cy_grid.cy_vector2grid(x,y,z,Nx,Ny,Nz)  
+  x,y,z = cy_vector2grid(x,y,z,Nx,Ny,Nz)  
   is_vector = False
   
 def matrix_grid2vector(matrix): 
@@ -283,7 +284,7 @@ def grid_sym_op(symop):
   if not is_vector:
     grid2vector()
   
-  x, y, z = numpy.dot(symop,numpy.array(x,y,z))
+  x, y, z = numpy.dot(symop,numpy.array([x,y,z]))
   
   # The grid is not regular anymore.
   is_regular = False
@@ -543,11 +544,35 @@ def adjust_to_geo(qc,extend=5.0,step=0.1):
     # Correct maximum value, if necessary
     max_[i] = (N_[i] - 1) * abs(step) + min_[i]
 
+def check_atom_select(atom,geo_info,geo_spec,interactive=True,
+                      display=sys.stdout.write):
+  if not((isinstance(atom, int)) and (0 < atom <= len(geo_spec))):
+    display('Not a Valid atom number for centering the grid')
+    display('Coose a valid index:')
+    for i,j in enumerate(geo_info): 
+      display('\t%d\t%s\t%s' % (i+1,j[0],geo_spec[i]))
+    if interactive:
+      while not((isinstance(atom, int)) and (0 < atom <= len(geo_spec))):
+        try:
+          atom = int(raw_input('Please insert a correct index: '))
+        except ValueError:
+          pass
+    else: 
+      raise IOError('Insert a correct filename for the MO list!')
+  return atom
+
 def center_grid(ac,display=sys.stdout.write):
   '''Centers the grid to the point ac and to the origin (0,0,0).
   '''
   # All grid related variables should be globals 
   global x, y, z, d3r, min_, max_, N_, delta_
+  
+  if not is_regular:
+    raise ValueError('Center grid is only supported for regular grids.')
+  
+  was_vector = is_vector
+  if was_vector:
+    vector2grid(*N_)
   
   P=[numpy.zeros((3,1)), numpy.reshape(ac,(3,1))]
   
@@ -583,6 +608,8 @@ def center_grid(ac,display=sys.stdout.write):
     if len(numpy.nonzero(0. == numpy.round(grid[ii]*10000))[0])!= 0: 
       display('Warning!\n\tAt least one grid point is equal to zero.\n')
   
+  if was_vector:
+    grid2vector()
   # center_grid 
 
 def reset_grid():
@@ -603,11 +630,11 @@ max_ = [ 8.0,  8.0,  8.0]   #: Specifies maximum grid values (regular grid).
 N_   = [ 101,  101,  101]   #: Specifies the number of grid points (regular grid).
 
 # Initialize some lists 
-x = numpy.array([0])        #: Contains the x-coordinates. 
-y = numpy.array([0])        #: Contains the y-coordinates. 
-z = numpy.array([0])        #: Contains the z-coordinates. 
-delta_ = numpy.zeros((3,1)) #: Contains the grid spacing.
+x = numpy.array([0.0])        #: Contains the x-coordinates. 
+y = numpy.array([0.0])        #: Contains the y-coordinates. 
+z = numpy.array([0.0])        #: Contains the z-coordinates. 
+delta_ = numpy.zeros((3,1))   #: Contains the grid spacing.
 
-is_initialized = False      #: If True, the grid is assumed to be initialized.
-is_vector = False           #: If True, the grid is assumed to be vector grid.
-is_regular = False          #:If True, the grid is assumed to be regular, i.e., a conversion of a vector grid to a regular grid is possible, if ``N_`` is set.
+is_initialized = False        #: If True, the grid is assumed to be initialized.
+is_vector = True              #: If True, the grid is assumed to be vector grid.
+is_regular = False            #: If True, the grid is assumed to be regular, i.e., a conversion of a vector grid to a regular grid is possible, if ``N_`` is set.

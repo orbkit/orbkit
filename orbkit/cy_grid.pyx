@@ -28,8 +28,8 @@ def cy_grid2vector(np.ndarray[double, ndim=1, mode="c"] x not None,
   
   return xyz
 
-@cython.boundscheck(False)
-@cython.wraparound(False)
+#@cython.boundscheck(False)
+#@cython.wraparound(False)
 def cy_vector2grid(np.ndarray[double, ndim=1, mode="c"] x not None,
                    np.ndarray[double, ndim=1, mode="c"] y not None,
                    np.ndarray[double, ndim=1, mode="c"] z not None,
@@ -44,9 +44,9 @@ def cy_vector2grid(np.ndarray[double, ndim=1, mode="c"] x not None,
   cdef int i,j,k
   # x runs slowest
   for i in range(Nx):
-    xnew[i] = x[i] * Ny * Nz
+    xnew[i] = x[i * Ny * Nz]
   for j in range(Ny):
-    ynew[j] = y[j] * Nz
+    ynew[j] = y[j * Nz]
   # z runs fastest
   for k in range(Nz):
     znew[k] = z[k]

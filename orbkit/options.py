@@ -37,12 +37,13 @@ thismodule = sys.modules[__name__]
 
 from orbkit import grid
 
-available = ['filename','itype','outputname','otype',
-             'vector','grid_file','center_grid',
-             'numproc','mo_set','all_mo','drv',
-             'z_reduced_density','gross_atomic_density','mo_tefd',
-             'quiet','no_log','no_output','no_slice','random_grid',
-             'interactive']
+available = [
+  'filename','itype','cclib_parser','outputname','otype',
+  'numproc','mo_set','calc_ao','all_mo','calc_mo','spin','drv','laplacian',
+  'slice_length','is_vector','grid_file','adjust_grid','center_grid','random_grid',
+  'z_reduced_density','gross_atomic_density','mo_tefd',
+  'quiet','no_log','no_output','no_slice','interactive'
+  ]
 
 itypes = ['molden',
           'aomix',
@@ -52,7 +53,9 @@ itypes = ['molden',
           'wfn',
           'wfx',
           'cclib']                        #: Specifies possible input types.
+
 otypes = ['h5', 'cb', 'am', 'hx', 'vmd','mayavi'] #: Specifies possible output types.
+
 drv_options = ['x','y','z',
                'xx','yy','zz','x2','y2','z2',
                'xy','yx','xz','zx','yz','zy']     #: Specifies possible derivative variables.
@@ -77,6 +80,7 @@ def init_parser():
       value = int(float(arg))
     except (IndexError, ValueError):
       value = int(default)
+    
     setattr(parser.values, option.dest, value)
   
   #optparse.Option.STORE_ACTIONS += ('call_back',)
@@ -102,7 +106,7 @@ def init_parser():
                       "' [default: '%default']")
   group.add_option("--cclib_parser",dest="cclib_parser",
                       type="string",
-                      help='''If '--itype=cclib', this argument determines what
+                      help='''if '--itype=cclib', this argument determines what
                       cclib.parser will be used, e.g., 'Gaussian' or 'GAMESS'.''')
   group.add_option("-o", "--output",dest="outputname",
                       type="string",
@@ -117,7 +121,7 @@ def init_parser():
                       '{2}' (ZIBAmiraMesh file),                     
                       '{3}' (ZIBAmira network),                      
                       '{5}' (simple interactive Mayavi interface) 
-                      [default: 'h5']'''.format(*otypes))
+                      [default: '{0}']'''.format(*otypes))
   parser.add_option_group(group)
   
   group = optparse.OptionGroup(parser, "Computational Options")
@@ -147,7 +151,7 @@ def init_parser():
                       for all computations''')
   group.add_option("--spin",dest="spin",
                       default=None, type=spin, choices=['alpha','beta'],
-                      help='''Consider only `alpha` or `beta` molecular orbitals
+                      help='''consider only `alpha` or `beta` molecular orbitals
                       for the computations. Only available for unrestricted
                       calculations.'''.replace('  ','').replace('\n',''))
   group.add_option("-d", "--drv",dest="drv",choices=drv_options,
@@ -164,15 +168,20 @@ def init_parser():
                       ''')
   parser.add_option_group(group)
   
-  group = optparse.OptionGroup(parser, "Grid-Related Options")      
-  group.add_option("-v", "--vector",dest="vector",default=dvec,
-                      action="callback",callback=default_if_called,
-                      callback_kwargs={'default': dvec},
-                      help=('''perform the computations for a vector grid, 
-                      i.e., with x, y, and z as vectors. Compute successively 
-                      VECTOR points at once per subprocess
-                      [default: -v %0.0e]''' % dvec
-                      ).replace('  ','').replace('\n',''))   
+  group = optparse.OptionGroup(parser, "Grid-Related Options")
+  group.add_option("-s", "--slice_length",dest="slice_length",
+                      default=1e4, type="int",
+                      help=('''specify how many grid points are computed at once 
+                      (per subprocess).''').replace('  ','').replace('\n',''))
+  group.add_option("-v", "--vector",dest="is_vector",
+                      default=False, action="store_true", 
+                      help=('''store the output in a vector format.''')
+                      #help=('''perform the computations for a vector grid, 
+                      #i.e., with x, y, and z as vectors. Compute successively 
+                      #VECTOR points at once per subprocess
+                      #[default: -v %0.0e]''' % dvec
+                      #).replace('  ','').replace('\n','')
+                      )   
   group.add_option("--grid", dest="grid_file",
                       type="string",
                       help='''read the grid from the plain text file GRID_FILE''')    
@@ -456,11 +465,11 @@ def check_if_exists(fid, what='',error=IOError,display=sys.stdout.write,
   return fid
 
 def check_grid_output_compatibilty(error=raise_error): 
-  if (grid.is_vector and not grid.is_regular) and ('cb'     in otype or 
-                                                   'vmd'    in otype or
-                                                   'am'     in otype or 
-                                                   'hx'     in otype or 
-                                                   'mayavi' in otype):
+  if not grid.is_regular and ('cb'     in otype or 
+                              'vmd'    in otype or
+                              'am'     in otype or 
+                              'hx'     in otype or 
+                              'mayavi' in otype):
     error('For a non-regular vector grid, only HDF5 ' +
     'is available as output format. Choose: --otype=h5\n')
 
@@ -483,8 +492,9 @@ spin            = None          #: If not None, exclusively 'alpha' or 'beta' mo
 drv             = None          #: Specifies derivative variables. (list of str)
 laplacian       = False         #: If True, computes the laplacian of the density or of the mo_set. (bool)
 #--- Grid-Related Options ---
-vector          = None          #: If not None, vector grid is used. Specifies number of points per subprocess. (int)
-dvec            = 1e4           #(No Option) Specifies the standard value for the points per subprocess. (int)
+slice_length    = 1e4           #: Specifies the number of points per subprocess. (int)
+vector = None
+is_vector       = False         #: If True, vector grid is used for the output. (bool)
 grid_file       = None          #: Specifies file to read grid from. (filename)
 adjust_grid     = None          #: If not None, create a grid using a spacing of X a_0 and having the size of the molecule plus D a_0 in each direction. (list: [D, x])
 center_grid     = None          #: If not None, grid is centered to specified atom and origin. (int) 
