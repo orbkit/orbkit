@@ -274,9 +274,9 @@ def slice_rho(xx):
     calc_mo = Spec['calc_mo']
     
     # Set up Grid
-    x = grid.x[xx[0]:xx[1]]
-    y = grid.y[xx[0]:xx[1]]
-    z = grid.z[xx[0]:xx[1]]
+    x = Spec['x'][xx[0]:xx[1]]
+    y = Spec['y'][xx[0]:xx[1]]
+    z = Spec['z'][xx[0]:xx[1]]
     N = (len(x),)
     
     if drv is not None and calc_mo:
@@ -450,7 +450,9 @@ def rho_compute(qc,calc_mo=False,drv=None,laplacian=False,
     grid.grid2vector()
     display('Converting the regular grid to a vector grid containing ' +
             '%.2e grid points...' % len(grid.x))
-  
+  Spec['x'] = grid.x
+  Spec['y'] = grid.y
+  Spec['z'] = grid.z 
   # Define the slice length
   npts = len(grid.x)
   sNum = int(numpy.floor(npts/slice_length)+1)
