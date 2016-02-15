@@ -48,7 +48,6 @@ def func(x_array,*args):
   
   out = numpy.array(core.rho_compute_no_slice(qc,
                                               calc_mo=args[-1],
-                                              is_vector=True,
                                               drv=None))
   
   if args[-1]: # calc_mo

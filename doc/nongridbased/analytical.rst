@@ -28,8 +28,7 @@ module ``orbkit.analytical_integrals``::
 The atomic orbital overlap matrix can be computed using::
 
   ao_overlap_matrix = analytical_integrals.get_ao_overlap(coord_a,coord_b,
-			    ao_spec,lxlylz_b=None,contraction=True,drv=None,
-			    ao_spherical=None)
+                  ao_spec,lxlylz_b=None,drv=None,ao_spherical=ao_spherical)
 
 where ``coord_a`` and ``coord_b`` are the coordinates (:ref:`geo_spec <qc.geo_spec>`) 
 of the atomic orbital set **a** and **b**, respectively.

@@ -5,9 +5,13 @@
 *.DS_Store
 .*.swp
 
+*build/
 */.*
+*a.out
+examples/basic_examples/Plots/
 *.so
 *cy_*.c
+*.gch
 *.pyc
 *.h5
 *.h5am

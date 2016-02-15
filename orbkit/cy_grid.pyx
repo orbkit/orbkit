@@ -10,7 +10,7 @@ cdef extern from "math.h":
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def cy_grid2vector(np.ndarray[double, ndim=1, mode="c"] x not None,
+def grid2vector(np.ndarray[double, ndim=1, mode="c"] x not None,
                    np.ndarray[double, ndim=1, mode="c"] y not None,
                    np.ndarray[double, ndim=1, mode="c"] z not None):
   cdef int npts = x.shape[0] * y.shape[0] * z.shape[0]
@@ -28,9 +28,9 @@ def cy_grid2vector(np.ndarray[double, ndim=1, mode="c"] x not None,
   
   return xyz
 
-#@cython.boundscheck(False)
-#@cython.wraparound(False)
-def cy_vector2grid(np.ndarray[double, ndim=1, mode="c"] x not None,
+@cython.boundscheck(False)
+@cython.wraparound(False)
+def vector2grid(np.ndarray[double, ndim=1, mode="c"] x not None,
                    np.ndarray[double, ndim=1, mode="c"] y not None,
                    np.ndarray[double, ndim=1, mode="c"] z not None,
                    int Nx, int Ny, int Nz):
@@ -55,7 +55,7 @@ def cy_vector2grid(np.ndarray[double, ndim=1, mode="c"] x not None,
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def cy_sph2cart(np.ndarray[double, ndim=1, mode="c"] r not None,
+def sph2cart(np.ndarray[double, ndim=1, mode="c"] r not None,
                 np.ndarray[double, ndim=1, mode="c"] theta not None,
                 np.ndarray[double, ndim=1, mode="c"] phi not None):
   cdef int npts = r.shape[0] * theta.shape[0] * phi.shape[0]
@@ -76,7 +76,7 @@ def cy_sph2cart(np.ndarray[double, ndim=1, mode="c"] r not None,
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def cy_sph2cart(np.ndarray[double, ndim=1, mode="c"] r not None,
+def cyl2cart(np.ndarray[double, ndim=1, mode="c"] r not None,
                 np.ndarray[double, ndim=1, mode="c"] phi not None,
                 np.ndarray[double, ndim=1, mode="c"] zed not None):
   cdef int npts = r.shape[0] * phi.shape[0] * zed.shape[0]

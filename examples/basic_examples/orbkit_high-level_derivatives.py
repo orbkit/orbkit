@@ -30,17 +30,17 @@ ok.init()
 ok.grid.sph2cart_vector(r,theta,phi)
 
 # orbkit options
-ok.options.filename   = 'h2o.molden'       # input file name
-ok.options.itype      = 'molden'       # input file type
-ok.options.outputname = 'h2o_MO'       # output file (base) name
-ok.options.otype      = 'h5'           # output file type
-ok.options.numproc    = 1              # number of processes for multiprocessing
-ok.options.vector     = 4e4            # number of points per process
-ok.options.calc_mo    = 'MO_List.tab'  # list of molecular orbitals to be used
+ok.options.filename     = 'h2o.molden'       # input file name
+ok.options.itype        = 'molden'       # input file type
+ok.options.outputname   = 'h2o_MO'       # output file (base) name
+ok.options.otype        = 'h5'           # output file type
+ok.options.numproc      = 1              # number of processes for multiprocessing
+ok.options.slice_length = 4e4            # number of points per process
+ok.options.calc_mo      = 'MO_List.tab'  # list of molecular orbitals to be used
 
 # first run: do not calculate derivatives
-ok.options.drv        = None           # do not calculate derivative
-ok.options.no_output  = True           # we will create our own output
+ok.options.drv          = None           # do not calculate derivative
+ok.options.no_output    = True           # we will create our own output
 
 # run orbkit
 mo_list,mo = ok.run_orbkit()

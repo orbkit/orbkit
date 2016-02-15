@@ -1,5 +1,5 @@
 .. image:: orbkit.png
-   :height: 200px
+   :height: 200 px
    :width: 200 px
    :alt: orbkit Logo
    :align: right
@@ -10,16 +10,16 @@ orbkit
 orbkit is a parallel Python program package for post-processing 
 wave function data from output files of quantum chemical programs.
 
-:orbkit: Copyright (C) 2015, Gunter Hermann, Vincent Pohl, and Axel Schild.
-:Website: http://sourceforge.net/p/orbkit
+:orbkit: Copyright (C) 2016, Gunter Hermann, Vincent Pohl, and Axel Schild.
+:Website: https://github.com/orbkit/orbkit
 
 The computational capabilities of orbkit range from grid-based quantities, e.g., molecular orbitals or 
 electron density, to non grid-based quantities for instance Mulliken population charges or
 analytical overlap integrals between molecular orbitals. 
 There are several options and features to control the respective calculations like grid types and parameters. 
 The required data can be extracted from MOLPRO_ (Molden File Format), 
-TURBOMOLE_ (AOMix file format), GAMESS-US_, and Gaussian_ (.log File and Formatted Checkpoint File)
-output files.
+TURBOMOLE_ (AOMix file format), GAMESS-US_, PROAIMS/AIMPAC (wfn/wfx file format), and Gaussian_ (.log File and Formatted Checkpoint File)
+output files. Futhermore, an interface to cclib, a parser for quantum chemical logfiles, is provided.
 A complete list of all input and output formats as well as quantities and features of orbkit is given in 
 :doc:`./general`.
 
@@ -39,7 +39,7 @@ Distribution
 
 The source code and multiple example files of orbkit can be freely downloaded from the web page
  
-:Website: http://sourceforge.net/p/orbkit
+:Website:  https://github.com/orbkit/orbkit
 
 For installation instructions, please check :doc:`./install`.
 
@@ -48,8 +48,9 @@ Citation
 
 If you use orbkit in your work, please cite it as follows:
 
-Gunter Hermann, Vincent Pohl, Axel Schild, "orbkit: A Toolbox for Post-Processing 
-Quantum Chemical Wavefunction Data." available via http://sourceforge.net/p/orbkit (2015).
+Gunter Hermann, Vincent Pohl, Jean Christophe Tremblay, Beate Paulus, Hans-Christian Hege, and Axel Schild,
+"ORBKIT - A Modular Python Toolbox for Cross-Platform Post-Processing of Quantum Chemical Wavefunction Data", 
+arXiv:1601.03069 (2016).
 
 Contact
 -------
@@ -58,7 +59,7 @@ The orbkit support team, Axel, Gunter, and Vincent, welcomes every new
 user and will be available to answer your questions. For any change
 requests, do not hesitate to contact the orbkit support team via
 
-:Support: http://sourceforge.net/p/orbkit/support
+https://github.com/orbkit/orbkit/issues
 
 Contents:
 ---------

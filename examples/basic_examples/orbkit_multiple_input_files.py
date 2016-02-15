@@ -21,7 +21,7 @@ from time import time
 from orbkit import multiple_files as mult
 from orbkit.display import init_display,display,tForm
 
-create_plots = True # Specifies, if plots shall be created
+create_plots = False # Specifies, if plots shall be created
 
 # Options for the depiction of contour plots of selected molecular orbitals
 selected_mos = ['24.1','23.2'] # Specifies, which MOs to be plotted

@@ -67,6 +67,14 @@ set the grid parameters which are global values within this module::
   grid.max_ = [ 8.0,  8.0,  8.0]   #: Specifies maximum grid values (regular grid).
   grid.N_   = [ 101,  101,  101]   #: Specifies the number of grid points (regular grid).
 
+
+.. note::
+
+  If you prefer setting the grid spacing instead of the number of data points,
+  you may set this parameters by::
+    
+    ok.grid.delta_ = [0.1, 0.2, 0.1]
+
 Now, you can initialize the grid::
 
   grid.grid_init(is_vector=False, force=False)
@@ -97,7 +105,7 @@ the molecular geometry is calling::
 Here, orbkit creates grid parameters (``grid.min_``, ``grid.max_``, ``grid.N_``) 
 with a grid spacing of 0.1 a\ :sub:`0` and the size of the molecule plus 
 5 a\ :sub:`0` in each direction. After calling this function you have to
-initialize the grid using ``grid.grid_init()``.
+**initialize the grid** using ``grid.grid_init()``.
 
 The last way to initialize a grid is by setting the *x*, *y*, *z* coordinates 
 manually::
@@ -109,9 +117,13 @@ manually::
   # We have already initialized a grid for orbkit:
   grid.is_initialized = True
 
-
 Here, x, y and z have to be one-dimensional ``numpy.array`` of type ``float``
 (``numpy.float64``). 
+
+If you have set a regular grid, please be sure that you set the following variables::
+
+  grid.is_vector = False
+  grid.is_regualar = True
 
 .. attention::
   
@@ -165,24 +177,25 @@ All major computational processes are carried out by the module
 slices the grid, and distributes the slices to the subprocesses::
   
   from orbkit import core
-  data = core.rho_compute(qc,calc_mo=False,vector=None,drv=None,numproc=1)
+  data = core.rho_compute(qc,calc_mo=False,slice_length=1e4,
+                          drv=None,laplacian=False,numproc=1)
 
 If you set ``calc_mo=True``, all molecular orbitals will be computed and
-returned. If you want to use a **vector grid**, the variable vector has to 
-be set to an integer value specifying the number of grid points per subprocess. 
+returned. The variable ``slice_length`` contains an integer value specifying the number of 
+grid points per subprocess.
 
 Derivatives can be computed by changing the variable ``drv``, e.g., 
 ``drv=['x','zz','xy']`` will invoke the computation of the first derivative
 with respect to :math:`x`, the second derivative with respect to :math:`z`, and the mixed
 derivative :math:`xy`. 
 
-
 If the number of processes (``numproc``) is smaller or equal one, no subprocesses will be 
 started, i.e., orbkit uses only a single CPU. If you even want to omit the
 slicing of the grid, you can use::
 
-  data = core.rho_compute_no_slice(qc,calc_mo=False,is_vector=False,drv=None,
-				   return_components=False,x=None,y=None,z=None)
+  data = core.rho_compute_no_slice(qc,calc_mo=False,drv=None,laplacian=False
+                                   return_components=False,
+                                   is_vector=None,x=None,y=None,z=None)
 
 Here, you can even return the atomic orbitals (and/or their derivatives) as well
 with ``return_components``.
@@ -193,41 +206,28 @@ If you do not want to use those functions, you can go further to the
 function computing the atomic orbitals and the function combining these orbitals
 to molecular orbitals::
   
-  ao_list = core.ao_creator(geo_spec,ao_spec,ao_spherical=None,
-			    is_vector=False,drv=None,
-			    x=None,y=None,z=None)
-  mo_list = core.mo_creator(ao_list,mo_spec,mo_coeff=None,
-			    is_vector=False,x=None,y=None,z=None)
+  ao_list = core.ao_creator(geo_spec,ao_spec,ao_spherical=ao_spherical,drv=None,
+                            is_vector=None,x=None,y=None,z=None)
+  mo_list = core.mo_creator(ao_list,mo_spec)
 
 Those functions use the only specific members of the ``QCinfo`` class. 
 Again, you can specify the grid (``x``, ``y``, ``z``, and ``is_vector``) 
 without using the ``orbkit.grid`` module. 
-
-The function ``ao_creator`` computes the contracted atomic orbitals, with
-the function::
-
-  ao = core.l_creator(geo_spec,ao_spec,sel_ao,exp_list=None,coeff_list=None,
-		      at_pos=None,is_vector=False,drv=None,
-		      x=None,y=None,z=None)
-
-It can be stressed that you can set all members of ``QCinfo`` manually. So in
-principle, you can set ``geo_spec=None`` and ``ao_spec=None``.
 
 The functionalities ``calc_mo`` and ``mo_set``, i.e., the computation of 
 selected molecular orbitals and the calculation of the density with a 
 selected set of molecular orbitals, are handled by two functions of the module
 ``orbkit.extras``::
 
-  mo_list, mo_info = extras.calc_mo(qc, fid_mo_list, drv=None, vector=None, 
-				    otype=None, ofid=None)
+  mo_list, mo_info = extras.calc_mo(qc, fid_mo_list, drv=None, otype=None, ofid=None)
 
 and::
 
-  data = extras.mo_set(qc, fid_mo_list, drv=None, laplacian=False, vector=None, 
+  data = extras.mo_set(qc, fid_mo_list, drv=None, laplacian=False, 
 		       otype=None, ofid=None, return_all=True)
-
-where ``fid_mo_list`` is a list molecular orbital labels, 
-cf. :ref:`mo high-level` (High-Level Interface).
+		       
+``fid_mo_list`` is a list molecular orbital labels, cf. :ref:`mo high-level` (High-Level Interface).
+Here, ``slice_length`` and ``numproc`` are read from the respective ``orbkit.options`` variables.
 
 Output Functions
 ----------------
@@ -238,4 +238,4 @@ In this module, there are functions for every output type. These functions
 are managed by::
 
   output.main_output(data,geo_info,geo_spec,outputname='new',otype='h5',
-		     drv=None,omit=[],is_vector=False,**kwargs)
+		     drv=None,omit=[],**kwargs)

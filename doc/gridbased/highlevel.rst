@@ -104,14 +104,29 @@ For more information on the different output types, refer to
 Grid Related Options
 --------------------
 
-By default orbkit carries out all computations on a regular grid, i.e., 
-:math:`N_{\sf data points} = N_{\sf x} \times N_{\sf y} \times N_{\sf z}`.
-In order to invoke the application of a vector grid, i.e.,
-:math:`N_{\sf data points} = N_{\sf x} = N_{\sf y} = N_{\sf z}`,
-the following option, containing the number of points per subprocess,
-has to be set::
+Although the default setting for a grid in orbkit is a regular grid, i.e., 
+:math:`N_{\sf data points} = N_{\sf x} \times N_{\sf y} \times N_{\sf z}`,
+orbkit carries out all computations on a a vector grid, i.e.,
+:math:`N_{\sf data points} = N_{\sf x} = N_{\sf y} = N_{\sf z}`.
+Thus for the regular case, the grid and all output data is converted 
+automatically back and forth within the computational procedures.
+
+To omit the back transformation to a regular grid, you may set::
+
+  options.is_vector = True
+
+For the main computational tasks, the grid is divided into slices,
+the length of which, i.e., the number of grid of points per 
+subprocess, can be set by::
  
-  ok.options.vector = 1e4 
+  ok.options.slice_length = 1e4 
+
+.. note::
+  
+  If you want to omit the slicing, please set::
+    
+    ok.options.no_slice = True
+    
 
 There are several ways to specify the grid in orbkit (in a.u.):
   
@@ -137,6 +152,13 @@ grid points (**vector grid**). For more information, refer to
   ok.grid.max_ = [ 10.0,  10.0,   5.0]   # maximum grid value
   ok.grid.min_ = [-10.0, -10.0,  -5.0]   # minimum grid value
 
+.. note::
+
+  If you prefer setting the grid spacing instead of the number of data points,
+  you may set this parameters by::
+    
+    ok.grid.delta_ = [0.1, 0.2, 0.1]
+  
 **Specifying the grid manually**::
 
   import numpy

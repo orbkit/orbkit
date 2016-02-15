@@ -18,7 +18,7 @@ if create_plot and not save_data_values:
   save_data_values = True
 
 numproc = 4             #: Specifies number of subprocesses.
-vector = 1e4            #: Specifies number of points per subprocess.
+slice_length = 1e4      #: Specifies number of points per subprocess.
 
 in_fid  = 'h2o.molden'      #: Specifies input file name.
 
@@ -74,7 +74,7 @@ def func(x_array,*args):
   '''
   global count_calls,vec,rho,vec_mo,mos
   
-  if args[-2]: # is_vector
+  if args[-2]: # vectorized
     x_array = x_array.reshape((-1,3))
     grid.x = numpy.array(x_array[:,0],copy=True)
     grid.y = numpy.array(x_array[:,1],copy=True)
@@ -91,13 +91,13 @@ def func(x_array,*args):
     
     count_calls += 1
   
-  # We have already initialized a grid for orbkit
+  # We have already initialized a grid for orbkit!
   grid.is_initialized = True
   
   # Run orbkit
   out = core.rho_compute(qc,
                          calc_mo=args[-1],
-                         vector=vector,
+                         slice_length=slice_length,
                          drv=None,
                          numproc=numproc)
   
@@ -125,7 +125,7 @@ xmin = numpy.array([-20.,-20.,-20.],dtype=float) #: Specifies the minimum integr
 xmax = numpy.array([ 20., 20., 20.],dtype=float) #: Specifies the maximum integration limit for each variable
 abserr = 1e-3                                    #: Specifies the absolute error: |error| < abserr requested (If zero, it will be ignored.)
 relerr = 1e-3                                    #: Specifies the relative error: |error| < relerr*|integral| requested (If zero, it will be ignored.)
-is_vector = True                                 #: If True, uses a vector of points in cubature, instead of a single point calculation. (Much faster!)
+vectorized = True                                 #: If True, uses a vector of points in cubature, instead of a single point calculation. (Much faster!)
 
 '''
 Example One
@@ -137,10 +137,10 @@ calc_mo = False
 
 # Call the cubature routine together with orbkit.
 integral,error = cubature(ndim, func, xmin, xmax, 
-                          args=[is_vector,calc_mo], 
+                          args=[vectorized,calc_mo], 
                           adaptive='h', abserr=abserr, relerr=relerr, 
                           norm=0, maxEval=0,
-                          vectorized=is_vector)
+                          vectorized=vectorized)
 
 print('After %d function calls the integral is %.14f. (Error: %.4e)' % 
       (count_calls,integral,error))
@@ -158,9 +158,9 @@ calc_mo = True
 
 # Call the cubature routine together with orbkit.
 integral_mo,error_mo = cubature(ndim, func, xmin, xmax, 
-                                args=[is_vector,calc_mo], 
+                                args=[vectorized,calc_mo], 
                                 adaptive='h', abserr=abserr, relerr=relerr, 
-                                norm=0, maxEval=0, vectorized=is_vector)
+                                norm=0, maxEval=0, vectorized=vectorized)
 
 print('After %d function calls the integral of...' % count_calls)
 for i,(inte,err) in enumerate(zip(integral_mo,error_mo)):

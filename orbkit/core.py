@@ -32,55 +32,8 @@ import numpy
 from multiprocessing import Pool
 
 # Import orbkit modules
-from orbkit import grid,cSupportCode
+from orbkit import grid,cy_core
 from orbkit.display import display
-
-from orbkit import cy_core
-
-def valdate_drv(drv):
-  if drv is None or drv == '': return 0
-  elif drv == 'x': return 1
-  elif drv == 'y': return 2
-  elif drv == 'z': return 3
-  elif drv == 'xx' or drv == 'x2': return 4
-  elif drv == 'yy' or drv == 'y2': return 5
-  elif drv == 'zz' or drv == 'z2': return 6
-  elif drv == 'xy' or drv == 'yx': return 7
-  elif drv == 'xz' or drv == 'zx': return 8
-  elif drv == 'yz' or drv == 'zy': return 9
-  elif not (isinstance(drv,int) and 0 <= drv <= 9):
-    raise ValueError("The selection `drv=%s` is not valid!"  % drv)
-
-def require(data,dtype='f',requirements='CA'):
-  if dtype == 'f':
-    dtype = numpy.float64
-  elif dtype == 'i':
-    dtype = numpy.intc
-  return numpy.require(data, dtype=dtype, requirements='CA')
-
-def each_ao_is_normalized(ao_spec):
-  is_normalized = []
-  for sel_ao in range(len(ao_spec)):
-    is_normalized.append((ao_spec[sel_ao]['pnum'] < 0))
-  
-  if all(is_normalized) != any(is_normalized):
-    raise ValueError('Either all or none of the atomic orbitals have to be normalized!')
-  return all(is_normalized)
-
-def prepare_ao_calc(ao_spec):    
-  pnum_list = []
-  atom_indices = []
-  ao_coeffs = numpy.zeros((0,2))  
-  for sel_ao in range(len(ao_spec)):
-    atom_indices.append(ao_spec[sel_ao]['atom'])
-    c = ao_spec[sel_ao]['coeffs']
-    ao_coeffs = numpy.append(ao_coeffs,c,axis=0)
-    pnum_list.append(len(c))
-      
-  pnum_list = require(pnum_list, dtype='i')
-  atom_indices = require(atom_indices, dtype='i')
-  ao_coeffs = require(ao_coeffs, dtype='f')
-  return ao_coeffs,pnum_list,atom_indices
 
 def ao_creator(geo_spec,ao_spec,ao_spherical=None,drv=None,
                x=None,y=None,z=None,is_vector=None):
@@ -136,7 +89,7 @@ def ao_creator(geo_spec,ao_spec,ao_spherical=None,drv=None,
   ao_coeffs,pnum_list,atom_indices = prepare_ao_calc(ao_spec)
   
   is_normalized = each_ao_is_normalized(ao_spec)
-  drv = valdate_drv(drv)
+  drv = validate_drv(drv)
   lxlylz = require(lxlylz,dtype='i')
   assign = require(assign,dtype='i')
   ao_list = cy_core.aocreator(lxlylz,assign,ao_coeffs,pnum_list,geo_spec,
@@ -197,7 +150,7 @@ def cartesian2spherical(ao_list,ao_spec,ao_spherical):
   
     The conversion is currently only supported up to g atomic orbitals.
   '''
-  exp_list,assign = get_lxlylz(ao_spec,get_assign=True)
+  lxlylz,assign = get_lxlylz(ao_spec,get_assign=True)
 
   l = [[] for i in ao_spec]
   for i,j in enumerate(assign):
@@ -210,7 +163,7 @@ def cartesian2spherical(ao_list,ao_spec,ao_spherical):
     sph0 = get_cart2sph(*k0)
     for c0 in range(len(sph0[0])):
       for i,j in enumerate(l[j0]):
-        if tuple(exp_list[j]) == sph0[0][c0]:
+        if tuple(lxlylz[j]) == sph0[0][c0]:
           index0 = i + l[j0][0]
       ao_list_sph[i0,:] += sph0[1][c0]*sph0[2]*ao_list[index0,:]
   
@@ -274,9 +227,9 @@ def slice_rho(xx):
     calc_mo = Spec['calc_mo']
     
     # Set up Grid
-    x = Spec['x'][xx[0]:xx[1]]
-    y = Spec['y'][xx[0]:xx[1]]
-    z = Spec['z'][xx[0]:xx[1]]
+    x = grid.x[xx[0]:xx[1]]
+    y = grid.y[xx[0]:xx[1]]
+    z = grid.z[xx[0]:xx[1]]
     N = (len(x),)
     
     if drv is not None and calc_mo:
@@ -450,9 +403,7 @@ def rho_compute(qc,calc_mo=False,drv=None,laplacian=False,
     grid.grid2vector()
     display('Converting the regular grid to a vector grid containing ' +
             '%.2e grid points...' % len(grid.x))
-  Spec['x'] = grid.x
-  Spec['y'] = grid.y
-  Spec['z'] = grid.z 
+  
   # Define the slice length
   npts = len(grid.x)
   sNum = int(numpy.floor(npts/slice_length)+1)
@@ -955,7 +906,7 @@ def get_lxlylz(ao_spec,get_assign=False,bincount=False):
   
   **Returns:**
   
-  lxlylz : numpy.ndarray, dtype=numpy.int64, shape = (NAO,3)
+  lxlylz : numpy.ndarray, dtype=numpy.intc, shape = (NAO,3)
     Contains the expontents lx, ly, lz for the Cartesian Gaussians.
   assign : list of int, optional
     Contains the index of the atomic orbital in ao_spec.
@@ -977,6 +928,45 @@ def get_lxlylz(ao_spec,get_assign=False,bincount=False):
   
   return numpy.array(lxlylz,dtype=numpy.intc,order='C') 
 
+def validate_drv(drv):
+  if drv is None or drv == '': return 0
+  elif drv == 'x': return 1
+  elif drv == 'y': return 2
+  elif drv == 'z': return 3
+  elif drv == 'xx' or drv == 'x2': return 4
+  elif drv == 'yy' or drv == 'y2': return 5
+  elif drv == 'zz' or drv == 'z2': return 6
+  elif drv == 'xy' or drv == 'yx': return 7
+  elif drv == 'xz' or drv == 'zx': return 8
+  elif drv == 'yz' or drv == 'zy': return 9
+  elif not (isinstance(drv,int) and 0 <= drv <= 9):
+    raise ValueError("The selection `drv=%s` is not valid!"  % drv)
+  else:
+    return drv
+
+def each_ao_is_normalized(ao_spec):
+  is_normalized = []
+  for sel_ao in range(len(ao_spec)):
+    is_normalized.append((ao_spec[sel_ao]['pnum'] < 0))
+  
+  if all(is_normalized) != any(is_normalized):
+    raise ValueError('Either all or none of the atomic orbitals have to be normalized!')
+  return all(is_normalized)
+
+def prepare_ao_calc(ao_spec):    
+  pnum_list = []
+  atom_indices = []
+  ao_coeffs = numpy.zeros((0,2))  
+  for sel_ao in range(len(ao_spec)):
+    atom_indices.append(ao_spec[sel_ao]['atom'])
+    c = ao_spec[sel_ao]['coeffs']
+    ao_coeffs = numpy.append(ao_coeffs,c,axis=0)
+    pnum_list.append(len(c))
+      
+  pnum_list = require(pnum_list, dtype='i')
+  atom_indices = require(atom_indices, dtype='i')
+  ao_coeffs = require(ao_coeffs, dtype='f')
+  return ao_coeffs,pnum_list,atom_indices
 
 def create_mo_coeff(mo,name='mo'):
   '''Converts the input variable to an :literal:`mo_coeff` numpy.ndarray.
@@ -1019,6 +1009,13 @@ def is_mo_spec(mo):
       return_val = False
   
   return return_val
+
+def require(data,dtype='f',requirements='CA'):
+  if dtype == 'f':
+    dtype = numpy.float64
+  elif dtype == 'i':
+    dtype = numpy.intc
+  return numpy.require(data, dtype=dtype, requirements='CA')
 
 def integration(matrix,x=None,y=None,z=None):
   from scipy import integrate

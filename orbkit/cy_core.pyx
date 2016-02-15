@@ -4,8 +4,8 @@ import cython
 import numpy as np
 cimport numpy as np
 
-# declare the interface to the C code
-cdef extern void c_lcreator(double* ao_list, int* exp_list, double* coeff_list,
+cdef extern from "c_grid-based.h":
+  void c_lcreator(double* ao_list, int* lxlylz, double* coeff_list,
                     double* at_pos, double* x, double* y, double* z, 
                     int npts, int ao_num, int pnum, int drv, int is_normalized)
 
@@ -13,7 +13,7 @@ cdef extern void c_lcreator(double* ao_list, int* exp_list, double* coeff_list,
 @cython.boundscheck(False)
 @cython.wraparound(False)
 def lcreator(np.ndarray[double, ndim=2, mode="c"] ao_list       not None,
-             np.ndarray[int,   ndim=2, mode="c"] exp_list      not None,
+             np.ndarray[int,    ndim=2, mode="c"] lxlylz        not None,
              np.ndarray[double, ndim=2, mode="c"] coeff_list    not None, 
              np.ndarray[double, ndim=1, mode="c"] at_pos        not None,
              np.ndarray[double, ndim=1, mode="c"] x             not None,
@@ -24,22 +24,22 @@ def lcreator(np.ndarray[double, ndim=2, mode="c"] ao_list       not None,
              int drv,
              int is_normalized):  
   """
-  lcreator(ao_list,exp_list,coeff_list,at_pos,x,y,z,ao_num,pnum,drv,is_normalized)
+  lcreator(ao_list,lxlylz,coeff_list,at_pos,x,y,z,ao_num,pnum,drv,is_normalized)
   """
   cdef int npts = x.shape[0]
   
-  c_lcreator(&ao_list[0,0],&exp_list[0,0],&coeff_list[0,0],
+  c_lcreator(&ao_list[0,0],&lxlylz[0,0],&coeff_list[0,0],
                          &at_pos[0],&x[0],&y[0],&z[0],npts,ao_num,pnum,
                          drv,is_normalized)
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def aocreator(np.ndarray[int,   ndim=2, mode="c"] lxlylz       not None,
-              np.ndarray[int,   ndim=1, mode="c"] assign       not None,
+def aocreator(np.ndarray[int,    ndim=2, mode="c"] lxlylz       not None,
+              np.ndarray[int,    ndim=1, mode="c"] assign       not None,
               np.ndarray[double, ndim=2, mode="c"] ao_coeffs    not None, 
-              np.ndarray[int,   ndim=1, mode="c"] pnum_list    not None,
+              np.ndarray[int,    ndim=1, mode="c"] pnum_list    not None,
               np.ndarray[double, ndim=2, mode="c"] geo_spec     not None, 
-              np.ndarray[int,   ndim=1, mode="c"] atom_indices not None,
+              np.ndarray[int,    ndim=1, mode="c"] atom_indices not None,
               np.ndarray[double, ndim=1, mode="c"] x            not None,
               np.ndarray[double, ndim=1, mode="c"] y            not None,
               np.ndarray[double, ndim=1, mode="c"] z            not None,

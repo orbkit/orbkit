@@ -29,16 +29,12 @@ License along with orbkit.  If not, see <http://www.gnu.org/licenses/>.
 '''
 import numpy
 from multiprocessing import Pool
-# test how to import weave
-try:
-    from scipy import weave
-except:    
-    import weave
 
-from orbkit import cSupportCode
-from orbkit.core import exp,lquant,slicer,get_lxlylz,get_cart2sph,l_deg,create_mo_coeff
+from orbkit import cy_overlap
+from orbkit.core import exp,lquant,slicer,get_lxlylz,get_cart2sph,l_deg
+from orbkit.core import create_mo_coeff,validate_drv,require
 
-def get_ao_overlap(coord_a,coord_b,ao_spec,lxlylz_b=None,contraction=True,
+def get_ao_overlap(coord_a,coord_b,ao_spec,lxlylz_b=None,
                    drv=None,ao_spherical=None):
   '''Computes the overlap matrix of a basis set, where `Bra` basis set
   corresponds to the geometry :literal:`coord_a` and `Ket` basis set corresponds 
@@ -54,23 +50,15 @@ def get_ao_overlap(coord_a,coord_b,ao_spec,lxlylz_b=None,contraction=True,
   
   coord_a : geo_spec
     Specifies the geometry of the `Bra` basis set. 
-    See :ref:`Central Variables` in the manual for details.
-  
+    See :ref:`Central Variables` in the manual for details.  
   coord_b : geo_spec
     Specifies the geometry of the `Ket` basis set. 
-    See :ref:`Central Variables` in the manual for details.
-  
+    See :ref:`Central Variables` in the manual for details.  
   ao_spec : 
-    See :ref:`Central Variables` in the manual for details.
-  
+    See :ref:`Central Variables` in the manual for details.  
   lxlylz_b : numpy.ndarray, dtype=numpy.int64, shape = (NAO,3), optional
     Contains the expontents lx, ly, lz for the primitive Cartesian Gaussians of
-    the `Ket` basis set.
-  
-  contraction : bool, optional
-    If True, the basis set will be contracted after the computation of the 
-    overlap matrix.
-  
+    the `Ket` basis set.  
   ao_spherical : optional
     Specifies if the input is given in a spherical harmonic Gaussian basis set.
     See :ref:`Central Variables` in the manual for details.
@@ -94,23 +82,16 @@ def get_ao_overlap(coord_a,coord_b,ao_spec,lxlylz_b=None,contraction=True,
       raise ValueError('The exponents lxlylz for basis set a and basis set b ' +
                       'have to have the same shape.')
   
-  # Derivative Calculation requested? 
-  if drv is not None:
-    # With respect to which variable the derivative shall be computed?
-    if not isinstance(drv, (int, long)):
-      drv = 'xyz'.find(drv)
-    if drv == -1: # Was the selection valid? If not drv='x'
-      drv = 0
-      display("The selection of the derivative variable was not valid!" +
-                " (drv = 'x' or 'y' or 'z')")
-      display("Calculating the derivative with respect to x...")
-
-  ra = numpy.array([])
-  ra.shape = (0,3)
+  # Derivative Calculation requested?  
+  drv = validate_drv(drv)
+  if drv > 3:
+    raise ValueError('Only first derivatives are currently supported for ' +
+                     'analytical integrals.')
+  
+  ra = numpy.zeros((0,3))
   rb = numpy.array(ra, copy=True)
 
-  coeff = numpy.array([])
-  coeff.shape = (0,2)
+  coeff = numpy.zeros((0,2))
 
   index = []
   b = 0
@@ -134,85 +115,21 @@ def get_ao_overlap(coord_a,coord_b,ao_spec,lxlylz_b=None,contraction=True,
     raise ValueError('Either all or none of the atomic orbitals have to be normalized!')
   is_normalized = all(is_normalized)
   
-  index = numpy.array(index,dtype=numpy.int64)
-  if contraction:
-    ao_overlap_matrix = numpy.zeros((len(lxlylz_a),len(lxlylz_b)))
-  else:
-    ao_overlap_matrix = numpy.zeros((len(index),len(index)))
+  ra = require(ra,dtype='f')
+  rb = require(rb,dtype='f')
+  lxlylz_a = require(lxlylz_a,dtype='i')
+  lxlylz_b = require(lxlylz_b,dtype='i')
+  coeff = require(coeff,dtype='f')
+  index = require(index,dtype='i')
+  ao_overlap_matrix = cy_overlap.aooverlap(ra,rb,
+                                           lxlylz_a,lxlylz_b,
+                                           coeff,index,
+                                           drv,int(is_normalized))
 
-  # Ask for respective the C++ code
-  code = ao_overlap_code(is_drv=(drv is not None))
-  # A list of Python variable names that should be transferred from
-  # Python into the C/C++ code. 
-  arg_names = ['ra', 'rb', 'coeff', 'index', 
-               'lxlylz_a', 'lxlylz_b', 'ao_overlap_matrix','drv','is_normalized']
-  support_code = cSupportCode.overlap + cSupportCode.norm
-  
-  weave.inline(code, arg_names = arg_names, 
-               support_code = support_code,
-               headers=["<vector>"],verbose = 1)
-  
   if not (ao_spherical is None or ao_spherical == []):
-    if not contraction:
-      raise IOError('No contraction is currently not supported for a '+ 
-                    'spherical harmonics. Please apply `cartesian2spherical_aoom()`'+
-                    ' manually after the contraction.')
     # Convert the overlap matrix to the real-valued spherical harmonic basis.
     ao_overlap_matrix = cartesian2spherical_aoom(ao_overlap_matrix,ao_spec,ao_spherical)
   
-  return ao_overlap_matrix
-
-def contract_ao_overlap_matrix(ao_uncontracted,ao_spec):
-  '''Converts an overlap matrix built up from primitive (uncontracted) Cartesian 
-  Gaussians to an overlap matrix of built up from contracted Cartesian Gaussians.
-  
-  **Parameters:**
-  
-  ao_uncontracted : numpy.ndarray, shape = (NAO,NAO)
-    Contains the uncontracted overlap matrix.
-  
-  ao_spec : 
-     See :ref:`Central Variables` in the manual for details.
-  
-  **Returns:**
-  
-  ao_overlap_matrix : numpy.ndarray, shape = (NAO,NAO)
-    Contains the contracted overlap matrix.
-  '''
-  lxlylz_a = get_lxlylz(ao_spec)
-  index = []
-  b = 0
-  for sel_ao in range(len(ao_spec)):
-    if 'exp_list' in ao_spec[sel_ao].keys():
-      l = ao_spec[sel_ao]['exp_list']
-    else:
-      l = exp[lquant[ao_spec[sel_ao]['type']]]
-    for i in l:
-      for j in ao_spec[sel_ao]['coeffs']:
-        index.append([sel_ao,b])
-      b += 1
-  
-  index = numpy.array(index,dtype=numpy.int64)
-  ao_overlap_matrix = numpy.zeros((len(lxlylz_a),len(lxlylz_a)))
-  
-  code = '''
-  int i_l, j_l;
-  
-  for (int i=0; i<Nindex[0]; i++)
-  {
-    for (int j=0; j<Nindex[0]; j++)
-    {
-      i_l = INDEX2(i,1);
-      j_l = INDEX2(j,1);
-      
-      AO_OVERLAP_MATRIX2(i_l,j_l) += AO_UNCONTRACTED2(i,j);
-    }
-  }
-  '''
-  arg_names = ['index','ao_uncontracted', 'ao_overlap_matrix']
-
-  weave.inline(code, arg_names = arg_names,verbose = 1)
-    
   return ao_overlap_matrix
 
 def cartesian2spherical_aoom(ao_overlap_matrix,ao_spec,ao_spherical):
@@ -268,7 +185,7 @@ def cartesian2spherical_aoom(ao_overlap_matrix,ao_spec,ao_spherical):
           aoom_sph[i0,i1] += (sph0[1][c0]*sph0[2]*sph1[1][c1]*sph1[2]
                               *ao_overlap_matrix[index0,index1])
   return aoom_sph
-  
+
 def get_mo_overlap(mo_a,mo_b,ao_overlap_matrix):
   '''Computes the overlap of two molecular orbitals.
   
@@ -300,30 +217,15 @@ def get_mo_overlap(mo_a,mo_b,ao_overlap_matrix):
     raise ValueError('The coefficients of mo_b have to be a vector of the ' + 
                      'length of the ao_overlap_matrix.')
   
-  code = '''
-  double overlap = 0.;
-  for (int k=0; k<Nao_overlap_matrix[0]; k++)
-  {
-    for (int l=0; l<Nao_overlap_matrix[1]; l++)
-    {
-      overlap += MO_A1(k) * MO_B1(l) * AO_OVERLAP_MATRIX2(k,l);
-    }
-  }
-  return_val = overlap;
-  '''
-  arg_names = ['mo_a', 'mo_b', 'ao_overlap_matrix']
-  
-  return weave.inline(code, arg_names = arg_names,verbose = 1)
-  
-def run_slice(sector):
-  mo_overlap_matrix = numpy.zeros((sector[1]-sector[0],multiov['shape'][1]))
-  mo_a = multiov['mo_a']
-  mo_b = multiov['mo_b']
-  ao_overlap_matrix = multiov['ao_overlap_matrix']
-  arg_names = ['mo_a', 'mo_b', 'ao_overlap_matrix', 'mo_overlap_matrix','sector']
-  weave.inline(moom_code, arg_names = arg_names, 
-          support_code = cSupportCode.overlap + cSupportCode.norm,verbose = 1)
-  return mo_overlap_matrix
+  return cy_overlap.mooverlap(mo_a,mo_b,ao_overlap_matrix)
+
+def initializer(gargs):
+  global global_args
+  global_args = gargs
+
+def get_slice(x):  
+  return cy_overlap.mooverlapmatrix(global_args['mo_a'],global_args['mo_b'],
+                             global_args['ao_overlap_matrix'],x[0],x[1])
 
 def get_mo_overlap_matrix(mo_a,mo_b,ao_overlap_matrix,numproc=1):
   '''Computes the overlap of two sets of molecular orbitals.
@@ -344,43 +246,39 @@ def get_mo_overlap_matrix(mo_a,mo_b,ao_overlap_matrix,numproc=1):
   mo_overlap_matrix : numpy.ndarray, shape = (NMO,NMO)
     Contains the overlap matrix between the two sets of input molecular orbitals.
   '''
-  global multiov
-  multiov = {'ao_overlap_matrix': ao_overlap_matrix,
-             'mo_a': create_mo_coeff(mo_a,name='mo_a'),
-             'mo_b': create_mo_coeff(mo_b,name='mo_b'),
-             }
-  
-  shape_a = numpy.shape(multiov['mo_a'])
-  shape_b = numpy.shape(multiov['mo_b'])
-  multiov['shape'] = (shape_a[0],shape_b[0])
-  
-  if shape_a[1] != shape_b[1]:
+  global_args = {'mo_a': create_mo_coeff(mo_a,name='mo_a'),
+                 'mo_b': create_mo_coeff(mo_b,name='mo_b'),
+                 'ao_overlap_matrix': ao_overlap_matrix}
+    
+  if global_args['mo_a'].shape[1] != global_args['mo_b'].shape[1]:
     raise ValueError('mo_a and mo_b have to correspond to the same basis set, '+
                      'i.e., shape_a[1] != shape_b[1]')
   
-  mo_overlap_matrix = numpy.zeros(multiov['shape']) 
   
-  xx = slicer(N=len(multiov['mo_a']),
-              vector=round(len(multiov['mo_a'])/float(numproc)),
+  xx = slicer(N=len(global_args['mo_a']),
+              vector=numpy.ceil(len(global_args['mo_a'])/float(numproc)),
               numproc=numproc)
-
-  #--- Start the worker processes
+  
+  # Start the worker processes
   if numproc > 1:
-    pool = Pool(processes=numproc)
-    it = pool.imap(run_slice, xx)
+    pool = Pool(processes=numproc, initializer=initializer, initargs=(global_args,))
+    it = pool.imap(get_slice, xx)
+  else:
+    initializer(global_args)
+  
+  mo_overlap_matrix = numpy.zeros((len(mo_a),len(mo_b)),dtype=numpy.float64)
   
   #--- Send each task to single processor
   for l,[m,n] in enumerate(xx):
     #--- Call function to compute one-electron density
-    mo_overlap_matrix[m:n,:] = it.next() if numproc > 1 else run_slice(xx[l])
-    
+    mo_overlap_matrix[m:n,:] = it.next() if numproc > 1 else get_slice(xx[l])
+  
   #--- Close the worker processes
   if numproc > 1:  
     pool.close()
     pool.join()
   
-  del multiov
-  
+  #cy_overlap.mooverlapmatrix(moom,mo_a,mo_b,ao_overlap_matrix,0,len(moom))
   return mo_overlap_matrix
 
 def get_dipole_moment(qc,component=['x','y','z']):
@@ -557,153 +455,3 @@ def print2D(x,format='%+.2f ',start='\t'):
     for j in range(shape[1]):
       s += format % x[i,j]
     print s
-
-def ao_overlap_code(is_drv=False):
-  '''Returns the requested C++ code.
-  
-  **Parameters:**
-  
-  is_drv : bool
-    If True, returns the code for the computation of the
-    derivative of an atomic orbital.
-  '''
-  
-  if not is_drv:
-    code = '''
-    // Hint: ao_spec coeff -> [exponent, coefficient]
-    S_Primitive A, B;
-    int i_ao, j_ao;
-    int i_l, j_l;
-    int index_i,index_j;
-    bool contraction = (Nindex[0] != Nao_overlap_matrix[0]);
-    
-    std::vector<double> norm(Nindex[0]);
-    
-    for (int i=0; i<Nindex[0]; i++)
-    {
-      i_l = INDEX2(i,1);
-      norm.at(i) = ao_norm(LXLYLZ_A2(i_l,0), LXLYLZ_A2(i_l,1), LXLYLZ_A2(i_l,2),&COEFF2(i,0),is_normalized);
-    }
-    
-    
-    for (int i=0; i<Nindex[0]; i++)
-    {
-      for (int j=0; j<Nindex[0]; j++)
-      {
-        i_ao = INDEX2(i,0);
-        j_ao = INDEX2(j,0);
-        i_l = INDEX2(i,1);
-        j_l = INDEX2(j,1);
-        if (contraction)
-        {
-          index_i = INDEX2(i,1);
-          index_j = INDEX2(j,1);
-        }
-        else
-        {
-          index_i = i;
-          index_j = j;
-        }
-        
-        for (int rr=0; rr<3; rr++)
-        {
-          A.R[rr] = RA2(i_ao,rr);
-          B.R[rr] = RB2(j_ao,rr);
-          A.l[rr] = LXLYLZ_A2(i_l,rr);
-          B.l[rr] = LXLYLZ_B2(j_l,rr);
-        }
-        
-        A.alpha = COEFF2(i,0);
-        B.alpha = COEFF2(j,0);
-        
-        AO_OVERLAP_MATRIX2(index_i,index_j) += COEFF2(i,1) * COEFF2(j,1) *
-            norm.at(i) * norm.at(j) * get_overlap(&A, &B);
-      }
-    }
-    
-    '''
-  else:
-    code = '''
-    // Hint: ao_spec coeff -> [exponent, coefficient]
-    S_Primitive A, B;
-    int i_ao, j_ao;
-    int i_l, j_l;
-    int index_i,index_j;
-    bool contraction = (Nindex[0] != Nao_overlap_matrix[0]);
-    
-    std::vector<double> norm(Nindex[0]);
-    
-    for (int i=0; i<Nindex[0]; i++)
-    {
-      i_l = INDEX2(i,1);
-      norm.at(i) = ao_norm(LXLYLZ_A2(i_l,0), LXLYLZ_A2(i_l,1), LXLYLZ_A2(i_l,2),&COEFF2(i,0),is_normalized);
-    }
-    
-    
-    for (int i=0; i<Nindex[0]; i++)
-    {
-      for (int j=0; j<Nindex[0]; j++)
-      {
-        i_ao = INDEX2(i,0);
-        j_ao = INDEX2(j,0);
-        i_l = INDEX2(i,1);
-        j_l = INDEX2(j,1);
-        if (contraction)
-        {
-          index_i = INDEX2(i,1);
-          index_j = INDEX2(j,1);
-        }
-        else
-        {
-          index_i = i;
-          index_j = j;
-        }
-        
-        for (int rr=0; rr<3; rr++)
-        {
-          A.R[rr] = RA2(i_ao,rr);
-          B.R[rr] = RB2(j_ao,rr);
-          A.l[rr] = LXLYLZ_A2(i_l,rr);
-          B.l[rr] = LXLYLZ_B2(j_l,rr);
-        }
-        
-        A.alpha = COEFF2(i,0);
-        B.alpha = COEFF2(j,0);
-        
-        if (B.l[drv] == 0)
-        {
-          B.l[drv] = LXLYLZ_B2(j_l,drv)+1;
-          AO_OVERLAP_MATRIX2(index_i,index_j) += (-2 * B.alpha) * COEFF2(i,1) * 
-                      COEFF2(j,1) * norm.at(i) * norm.at(j) * get_overlap(&A, &B);
-        }
-        else
-        {
-          B.l[drv] = LXLYLZ_B2(j_l,drv)-1;
-          AO_OVERLAP_MATRIX2(index_i,index_j) += LXLYLZ_B2(j_l,drv) * COEFF2(i,1) * 
-                        COEFF2(j,1) * norm.at(i) * norm.at(j) * get_overlap(&A, &B);
-          B.l[drv] = LXLYLZ_B2(j_l,drv)+1;
-          AO_OVERLAP_MATRIX2(index_i,index_j) += (-2. * B.alpha) * COEFF2(i,1) * 
-                      COEFF2(j,1) * norm.at(i) * norm.at(j) * get_overlap(&A, &B);
-        }
-      }
-    }
-    
-    '''
-  return code
-
-moom_code = '''
-int i0 = int(sector[0]);
-for (int i=i0; i<int(sector[1]); i++)
-{
-  for (int j=0; j<Nmo_b[0]; j++)
-  {
-    for (int k=0; k<Nao_overlap_matrix[0]; k++)
-    {
-      for (int l=0; l<Nao_overlap_matrix[1]; l++)
-      {
-        MO_OVERLAP_MATRIX2(i-i0,j)  += MO_A2(i,k) * MO_B2(j,l) * AO_OVERLAP_MATRIX2(k,l);
-      }
-    }
-  }
-}
-'''

@@ -27,7 +27,7 @@ import numpy
 
 # Import orbkit modules
 from orbkit import cSupportCode
-from orbkit.cy_grid import cy_grid2vector,cy_vector2grid
+from orbkit import cy_grid
 
 def grid_init(is_vector=False, force=False):
   '''Sets up the regular x-, y-, z-grid 
@@ -191,7 +191,7 @@ def grid2vector():
     raise ValueError('You have to initialize a grid before calling '+
                  ' `grid.grid2vector`, i.e., `grid.is_initialized=True`.')
   
-  x,y,z = cy_grid2vector(x,y,z)    
+  x,y,z = cy_grid.grid2vector(x,y,z)    
   is_vector = True
   is_regular = True
   
@@ -216,7 +216,7 @@ def vector2grid(Nx,Ny,Nz):
   if (Nx*Ny*Nz) != len(x):
     raise ValueError('It has to hold that `len(x) = (N_x * N_y * N_z)`')
   
-  x,y,z = cy_vector2grid(x,y,z,Nx,Ny,Nz)  
+  x,y,z = cy_grid.vector2grid(x,y,z,Nx,Ny,Nz)  
   is_vector = False
   
 def matrix_grid2vector(matrix): 
@@ -362,7 +362,7 @@ def sph2cart_vector(r,theta,phi):
   '''
   # All grid related variables should be globals 
   global x, y, z, is_initialized, is_vector, is_regular
-  x,y,z = cy_sph2cart(numpy.asarray(r,dtype=numpy.float64),
+  x,y,z = cy_grid.sph2cart(numpy.asarray(r,dtype=numpy.float64),
                       numpy.asarray(theta,dtype=numpy.float64),
                       numpy.asarray(phi,dtype=numpy.float64))
   
@@ -387,7 +387,7 @@ def cyl2cart_vector(r,phi,zed):
   # All grid related variables should be globals 
   global x, y, z, is_initialized, is_vector, is_regular
   
-  x,y,z = cy_sph2cart(numpy.asarray(r,dtype=numpy.float64),
+  x,y,z = cy_grid.cyl2cart(numpy.asarray(r,dtype=numpy.float64),
                       numpy.asarray(phi,dtype=numpy.float64),
                       numpy.asarray(zed,dtype=numpy.float64))
   
@@ -616,7 +616,7 @@ def reset_grid():
   '''Resets the grid parameters.'''
   global is_initialized, is_vector, is_regular, min_, max_, N_
   is_initialized = False
-  is_vector = False
+  is_vector = True
   is_regular = False
   min_ = [-8.0, -8.0, -8.0]
   max_ = [ 8.0,  8.0,  8.0]
@@ -634,6 +634,7 @@ x = numpy.array([0.0])        #: Contains the x-coordinates.
 y = numpy.array([0.0])        #: Contains the y-coordinates. 
 z = numpy.array([0.0])        #: Contains the z-coordinates. 
 delta_ = numpy.zeros((3,1))   #: Contains the grid spacing.
+d3r = 0.0                     #: A volume element
 
 is_initialized = False        #: If True, the grid is assumed to be initialized.
 is_vector = True              #: If True, the grid is assumed to be vector grid.

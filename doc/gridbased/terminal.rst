@@ -120,17 +120,21 @@ data points (**vector grid**):
 
 .. note:: A :literal:`#` at the beginning of a line implicates a comment line.
 
-By default, orbkit divides 3-dimensional **regular grids** into 2-dimensional 
-slices or 1-dimensional **vector grids** into 1-dimensional slices of equal length. 
+orbkit performs all computations internally on a **vector grid**. 
+For this purpose it converts a **regular grid** beforehand to a **vector grid**.
+After the computation the original grid is recreated.
+
+By default, orbkit the 1-dimensional **vector grids** into 1-dimensional slices of equal length. 
 The atomic orbitals, the molecular orbitals, and the density are calculated for 
 each slice separately. At the end of the calculation, the data
 is reassembled and stored in an output file. 
+This enables an easy parallelization and requires a smaller amount of RAM.
 
-For **vector grids**, the length of the 1-dimensional slices can be defined with
+The length of the 1-dimensional slices can be set with
 
 .. code-block:: bash
 
-    $ orbkit -i INPUT --vector=1e4
+    $ orbkit -i INPUT --slice_length=1e4
 
 In the default setting, orbkit performs the density calculation by starting 
 only one subprocess. The number of subprocesses, which are distributed over 

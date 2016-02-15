@@ -39,7 +39,7 @@ First, we have to import some modules and set some of orbkits options::
   orbkit.grid.is_initialized = True
 
   numproc = 4             #: Specifies number of subprocesses.
-  vector = 1e4            #: Specifies number of points per subprocess.
+  slice_length = 1e4      #: Specifies number of points per subprocess.
 
 Then, we have to read the input file::
 
@@ -77,7 +77,7 @@ example. Finally, we have to reshape orbkit's output::
     # Compute the squared molecular orbitals with orbkit
     out = orbkit.rho_compute(qc,
 			     calc_mo=True,
-			     vector=vector,
+			     slice_length=slice_length,
 			     drv=None,
 			     laplacian=False, 
 			     numproc=numproc)

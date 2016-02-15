@@ -107,7 +107,7 @@ def calc_mo(qc, fid_mo_list, drv=None, otype=None, ofid=None):
         if i.endswith('.cb'):
           cube_files.append(i)
     
-    if 'vmd' in otype:
+    if 'vmd' in otype and cube_files != []:
       display('\nCreating VMD network file...' +
                       '\n\t%(o)s.vmd' % {'o': ofid})
       output.vmd_network_creator(ofid,cube_files=cube_files)
@@ -207,7 +207,7 @@ def mo_set(qc, fid_mo_list, drv=None, laplacian=False,
       delta_datasets.append(delta_rho)
     
     if options.z_reduced_density:
-      if vector is not None:
+      if grid.is_vector:
         display('\nSo far, reducing the density is not supported for vector grids.\n')
       elif drv is not None:
         display('\nSo far, reducing the density is not supported for the derivative of the density.\n')
@@ -256,7 +256,7 @@ def mo_set(qc, fid_mo_list, drv=None, laplacian=False,
                              otype=otype,omit=['h5','vmd','mayavi'],
                              comments=comments)  
           
-  if 'vmd' in otype and options.vector is None:
+  if 'vmd' in otype and cube_files != []:
       display('\nCreating VMD network file...' +
                       '\n\t%(o)s.vmd' % {'o': ofid})
       output.vmd_network_creator(ofid,cube_files=cube_files)
@@ -322,8 +322,16 @@ def calc_ao(qc, drv=None, otype=None, ofid=None):
       ao_spec[-1]['exp_list'] = [i]
       datalabels.append('lxlylz=%s,atom=%d' %(i,ao_spec[-1]['atom']))
   
-  global_args = {'ao_spec':ao_spec,'qc':qc,'drv':drv,'otype':otype,
-                'ofid':ofid}
+  global_args = {'geo_spec':qc.geo_spec,
+                 'geo_info':qc.geo_info,
+                 'ao_spec':ao_spec,
+                 'drv':drv,
+                 'x':grid.x,
+                 'y':grid.y,
+                 'z':grid.z,
+                 'is_vector':grid.is_vector,
+                 'otype':otype,
+                 'ofid':ofid}
   display('Starting the computation of the %d atomic orbitals'%len(ao_spec)+
          (' using %d subprocesses.' % options.numproc if options.numproc > 1 
           else '.' )
@@ -354,12 +362,10 @@ def calc_ao(qc, drv=None, otype=None, ofid=None):
         output.hdf5_append(ao_spec,f,name='ao_spec')
         output.hdf5_append(ao_list,f,name='ao_list')
       
-    if 'mayavi' in otype and options.vector is None:
-      output.view_with_mayavi(grid.x,grid.y,grid.z,
-                               ao_list,
-                               geo_spec=qc.geo_spec,
-                               datalabels=datalabels)
-  
+    if 'mayavi' in otype:
+      output.main_output(ao_list,qc.geo_info,qc.geo_spec,
+                         otype='mayavi',datalabels=datalabels)
+
   if 'vmd' in otype and options.vector is None:
     fid = '%s_AO%s' % (ofid,dstr)
     display('\nCreating VMD network file...' +
@@ -372,9 +378,13 @@ def calc_ao(qc, drv=None, otype=None, ofid=None):
 def initializer(gargs):
   global global_args
   global_args = gargs
+  grid.set_grid(global_args['x'],
+                global_args['y'],
+                global_args['z'],
+                is_vector=global_args['is_vector'])
 
 def get_ao(x):
-  ao_list = core.ao_creator(global_args['qc'].geo_spec,
+  ao_list = core.ao_creator(global_args['geo_spec'],
                             [global_args['ao_spec'][int(x)]],
                             drv=global_args['drv'])
   
@@ -385,8 +395,8 @@ def get_ao(x):
                                          global_args['ao_spec'][x]['atom'])
     
     output.main_output(ao_list[0] if drv is None else ao_list,
-                       global_args['qc'].geo_info,
-                       global_args['qc'].geo_spec,
+                       global_args['geo_info'],
+                       global_args['geo_spec'],
                        comments=comments,
                        outputname='%s_AO_%03d' % (global_args['ofid'],x),
                        otype=global_args['otype'],
@@ -439,8 +449,7 @@ def atom2index(atom,geo_info=None):
   return atom, index
 
 def gross_atomic_density(atom,qc,
-                    bReturnmo=False,ao_list=None,mo_list=None,
-                    x=None,y=None,z=None,drv=None,is_vector=None):
+                    bReturnmo=False,ao_list=None,mo_list=None,drv=None):
   r'''Computes the gross atomic density with respect to the selected atoms.
   
   .. math::
@@ -521,8 +530,7 @@ def gross_atomic_density(atom,qc,
   # gross_atomic_density 
 
 def numerical_mulliken_charges(atom,qc,
-            ao_list=None,mo_list=None,rho_atom=None,
-            x=None,y=None,z=None,is_vector=None):
+            ao_list=None,mo_list=None,rho_atom=None):
   r'''Compute the Mulliken charges and gross atomic populations of the selected 
   atoms *numerically* using the respective gross atomic densities.
   
@@ -577,8 +585,7 @@ def numerical_mulliken_charges(atom,qc,
 
 def mo_transition_flux_density(i,j,qc,drv='x',
                     ao_list=None,mo_list=None,
-                    delta_ao_list=None,delta_mo_list=None,
-                    x=None,y=None,z=None,is_vector=None):
+                    delta_ao_list=None,delta_mo_list=None):
   '''Calculate one component (e.g. drv='x') of the 
   transition electoronic flux density between the 
   molecular orbitals i and j.

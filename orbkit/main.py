@@ -163,10 +163,9 @@ def run_orbkit(use_qc=None,check_options=True,standalone=False):
 
   if options.gross_atomic_density is not None:
     atom = options.gross_atomic_density
-    rho_atom = extras.numerical_mulliken_charges(atom, qc,
-                                         is_vector=(options.is_vector is not None))
+    rho_atom = extras.numerical_mulliken_charges(atom, qc)
     
-    if (options.is_vector is None):
+    if not grid.is_vector:
       mulliken_num = rho_atom[1]
       rho_atom = rho_atom[0]      
     
@@ -178,7 +177,7 @@ def run_orbkit(use_qc=None,check_options=True,standalone=False):
                         geo_info=qc.geo_info,geo_spec=qc.geo_spec,
                         gross_atomic_density=rho_atom,
                         x=grid.x, y=grid.y, z=grid.z)
-      if (options.is_vector is None):
+      if not options.is_vector:
         output.hdf5_write(fid,mode='a',gname='/numerical_mulliken_population_analysis',
                           **mulliken_num)
     
@@ -198,10 +197,10 @@ def run_orbkit(use_qc=None,check_options=True,standalone=False):
       for ii_d in options.drv:
         display('\nMO-TEFD: %s->%s %s-component'%(i,j,ii_d))
         tefd = extras.mo_transition_flux_density(i, j,
-                                         qc,
-                                         drv=ii_d,
-                                         ao_list=ao_list,
-                                         is_vector=(options.is_vector is not None))
+                                                 qc,
+                                                 drv=ii_d,
+                                                 ao_list=ao_list
+                                                 )
         mo_tefd[-1].append(tefd)
         index[-1].append('%s->%s:%s'%(i,j,ii_d))
     
@@ -247,7 +246,7 @@ def run_orbkit(use_qc=None,check_options=True,standalone=False):
   
   # Compute the reduced electron density if requested 
   if options.z_reduced_density:
-    if options.is_vector is not None:
+    if grid.is_vector:
       display(
       '\nSo far, reducing the density is not supported for ' + 
       'vector grids.\nSkipping the reduction...\n')

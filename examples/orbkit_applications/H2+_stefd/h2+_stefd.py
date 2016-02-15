@@ -14,8 +14,9 @@ fid_in  = 'h2+.molden'
 # Choose the molecular orbitals to be calculated
 selected_MO = ['1.1_a','1.5_a']
 
-# number of processes
+# number of processes and points per process
 numproc = 2
+slice_length = 1e4
 
 # Open molden file and read parameters
 qc = read.main_read(fid_in, itype='molden',all_mo=True)
@@ -32,11 +33,11 @@ selected_MO = ['1.1_a','1.5_a']
 qc.mo_spec = read.mo_select(qc.mo_spec, selected_MO, strict=True)['mo_spec']
 
 # Calculate molecular orbitals
-mo_list = core.rho_compute(qc,calc_mo=True,vector=None,drv=None,
+mo_list = core.rho_compute(qc,calc_mo=True,slice_length=slice_length,drv=None,
                               numproc=numproc) 
 
 # Calculate analytic derivatives of molecular orbitals 
-mo_list_drv = core.rho_compute(qc,calc_mo=True,vector=None,drv='xyz',
+mo_list_drv = core.rho_compute(qc,calc_mo=True,slice_length=slice_length,drv='xyz',
                                   numproc=numproc)
 
 # Calculate Transition Electronic Flux Densities (time independent)

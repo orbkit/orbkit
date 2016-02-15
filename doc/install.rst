@@ -17,14 +17,16 @@ For a proper execution of orbkit, the following Python modules are
 required:
 
 1) Python_ 2.6 - 2.7
-2) SciPy_ Library of algorithms and mathematical tools
+2) Cython_
 3) NumPy_ Library of high-level mathematical functions
-4) h5py_ Interface to the HDF5 binary data format
-5) mayavi_ Tool for 3D scientific data visualization (optional)
+4) SciPy_ Library of algorithms and mathematical tools
+5) h5py_ Interface to the HDF5 binary data format
+6) mayavi_ Tool for 3D scientific data visualization (optional)
 
 The package h5py is not mandatory but strongly recommended.
 
 .. _Python: http://www.python.org
+.. _Cython: http://cython.org/
 .. _SciPy: http://www.scipy.org/
 .. _NumPy: http://www.numpy.org/
 .. _h5py: http://www.h5py.org/
@@ -33,61 +35,98 @@ The package h5py is not mandatory but strongly recommended.
 Instructions
 ------------
 
-The manual installation of orbkit is a simple procedure and can 
+
+orbkit needs to be installed manually, i.e.,
+the Cython modules need to be pre-compiled and some 
+environment variables need to be set. 
+In the following, we describe this procedure exemplary 
+for the different platforms.
+
+Linux
+.....
+
+The manual installation of orbkit is simple and can 
 be carried out using ``bash`` as follows:
 
 Choose the directory, where you want to install orbkit. Open a terminal window, 
-e.g. ``gnome-terminal``, and navigate to this directory. In this example, we 
-will use the home directory. If you want to use a different directory simply replace 
-``$HOME`` by your preferred folder throughout the whole section.
+e.g. ``gnome-terminal``, and navigate to this directory. In this example we 
+will use the home directory. If you use a different directory simply replace 
+``$HOME`` by your preferred folder throughout the whole section::
 
-    .. code-block:: bash
+    $ cd $HOME
 
-        $ cd $HOME
-
-Get a copy of orbkit, either with `git`_ or using a `tarball`_. It is strongly
-recommended to use `git`_, since this version always contains the newest 
+Get a copy of orbkit, either with git or using a tarball. It is strongly
+recommended to use git, since this version always contains the newest 
 bug fixes and features. If git is not available on your system, the newest 
-version can additionally be cloned from http://sourceforge.net/p/orbkit/code.
+version can additionally be cloned from https://github.com/orbkit/orbkit.
 
-  .. _git:
+  * Using git:
 
-  * Using **git**:
+    Clone the repository::
 
-    Clone the repository:
+        $ git clone https://github.com/orbkit/orbkit.git
+        $ git checkout cython
 
-    .. code-block:: bash
+  * Using a tarball:
 
-        $ git clone http://git.code.sf.net/p/orbkit/code orbkit
+    Download the latest orbkit release and extract the file::
 
-  .. _tarball:
+        $ wget https://github.com/orbkit/orbkit/archive/cython.zip
+        $ tar xzvf orbkit-cython.zip
+        $ mv orbkit-cython orbkit
 
-  * Using a **tarball**:
-
-    Download the latest orbkit release and extract the file (``v0.3.0`` has to be 
-    replaced by your version number):
-
-    .. code-block:: bash
-
-        $ wget http://sourceforge.net/projects/orbkit/files/latest/download 
-        $ tar xzvf orbkit.v0.3.0.tar.gz
-
-In order to use orbkit, you have to add the orbkit directory to your ``PYTHONPATH``
-environment variable either temporarily by typing
-
-.. code-block:: bash
+Set an environment variable to this directory::
 
     $ export ORBKITPATH=$HOME/orbkit
+
+Now, you have to build to orbkit::
+
+    $ cd $ORBKITPATH
+    $ python setup.py build_ext --inplace clean
+
+In order to use orbkit, you have to add the orbkit directory to your ``$PYTHONPATH``
+environment variable either temporarily by typing::
+
     $ export PYTHONPATH=$PYHONPATH:$ORBKITPATH
 
 or permanently by adding these lines to your ~/.bashrc file.
 
 To use orbkit as a standalone program, you have to modify your 
-``PATH`` variable in the same way:
+$PATH variable in the same way::
 
-.. code-block:: bash
-
-    $ export ORBKITPATH=$HOME/orbkit
     $ export PATH=$PATH:$ORBKITPATH/tools
 
-orbkit has been properly tested on Linux, but should also work on other systems.
+Windows
+.......
+
+We have tested orbkit on Windows using the free Visual Studio 2015 Community Edition 
+(https://www.visualstudio.com/en-us/downloads/download-visual-studio-vs.aspx)
+and the free version of the Python environment Entought Canopy 
+(https://www.enthought.com/products/canopy/). 
+
+Download and unzip the newest version of orbkit (or use git and clone the newest version):
+from 
+  
+  https://github.com/orbkit/orbkit/archive/cython.zip
+
+In the following, we assume that orbkit can be found at ``C:\orbkit``
+
+Install Visual Studio 2015 including the Python-Tools for Visual Studio.
+After installing Canopy (and using it as your default Python environment), 
+install the required Python packages using the graphical package manager. 
+
+If you are using the 64-bit version of Canopy (Python), please start the
+``VS2013 x64 Native Tools Command Prompt``. For 32-bit, start the 
+``VS2013 x86 Native Tools Command Prompt``.
+
+Navigate to the orbkit folder::
+
+  > cd C:\orbkit
+
+Set some environment variables and build orbkit::
+
+  > SET DISTUTILS_USE_SDK=1
+  > SET MSSdk=1
+  > python setup.py build_ext --inplace --compiler=msvc clean
+
+Finally, you have to set the PYTHONPATH and the PATH variables to use orbkit.
