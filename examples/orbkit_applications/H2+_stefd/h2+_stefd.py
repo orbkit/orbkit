@@ -42,7 +42,7 @@ mo_list_drv = core.rho_compute(qc,calc_mo=True,slice_length=slice_length,drv='xy
 
 # Calculate Transition Electronic Flux Densities (time independent)
 
-# Calculate the STEFD
+# Calculate the STEFD [in units of (i E_h/(hbar a_0^2))]
 j_stefd = -0.5 * (  mo_list[numpy.newaxis,0] * mo_list_drv[:,1] 
                   - mo_list[numpy.newaxis,1] * mo_list_drv[:,0])
 

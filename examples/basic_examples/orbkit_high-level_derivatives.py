@@ -89,8 +89,6 @@ except Exception:
 
 if maya == False:
     print('mayavi module could not be loaded and vector field cannot be shown')
-    print('load ' + ok.options.outputname + '.' + ok.options.otype + \
-            ' to visualize data yourself.')
 else:
     mo_num = 3
     mlab.quiver3d(x,y,z,delta_mo_list[0,mo_num,:],delta_mo_list[1,mo_num,:],\
