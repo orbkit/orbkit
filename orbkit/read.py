@@ -669,7 +669,7 @@ def read_gamess(filename, all_mo=False, spin=None, read_properties=False,
         if AO[ii][jj]['coeffs'] !=  basis_set[AO[ii][0]['atom_type']][jj]['coeffs']:
           raise IOError('Different basis sets for the same atom.')
   # Numpy array 
-  for ii in basis_set.iterkeys():
+  for ii in basis_set.keys():
     for jj in range(len(basis_set[ii])):
       basis_set[ii][jj]['coeffs'] = numpy.array(basis_set[ii][jj]['coeffs'])
 
@@ -2211,11 +2211,11 @@ def mo_select(mo_spec, fid_mo_list, strict=False):
     lumo = (mo_occup>0.).nonzero()[0][-1]+1 + 1 # molden numbering
     sel = []
     for i in selected_mo:
-      i = i.lower().split(':')
+      i = i.lower().replace('homo',str(homo)).replace('lumo',str(lumo)).split(':')
       if len(i) == 1:
         sel.append(eval(i[0]))
       else:
-        i = range(*[eval(j) for j in i])
+        i = list(range(*[eval(j) for j in i]))
         sel.extend(i)
     return sel
   
@@ -2234,8 +2234,8 @@ def mo_select(mo_spec, fid_mo_list, strict=False):
       for i in fid_mo_list:
         if not isinstance(i, list):
           i = i.split(',') if isinstance(i,str) else [i]
-        selected_mo.extend(map(str,i))
-        mo_in_file.append(map(str,i))
+        selected_mo.extend(list(map(str,i)))
+        mo_in_file.append(list(map(str,i)))
     else:
       try:
         fid=open(fid_mo_list,'r')
@@ -2251,7 +2251,7 @@ def mo_select(mo_spec, fid_mo_list, strict=False):
     
     # Print some information
     for i,j in enumerate(mo_in_file):
-      display('\tLine %d: %s' % (i+1,str(j)))
+      display('\tLine %d: %s' % (i+1,', '.join(j)))
     
     # Check if the molecular orbitals are specified by symmetry 
     # (e.g. 1.1 in MOLPRO nomenclature) or 
@@ -2262,7 +2262,7 @@ def mo_select(mo_spec, fid_mo_list, strict=False):
         if isinstance(i,int):
           continue
         i = i.replace('homo','1').replace('lumo','2')
-	for r in ['-','+',':']:
+        for r in ['-','+',':']:
           i = i.replace(r,'')
         int(i)
     except ValueError:
@@ -2288,9 +2288,9 @@ def mo_select(mo_spec, fid_mo_list, strict=False):
       selected_mo = get_selection(selected_mo)
       
       if not strict:
-        selected_mo = map(int, selected_mo)            
+        selected_mo = list(map(int, selected_mo))            
         selected_mo.sort()
-      selected_mo = map(str, selected_mo)
+      selected_mo = list(map(str, selected_mo))
       what = lambda x,y: str(x+1)
       selected_mo_spec,selected_mo_ii = assign_selected_mo(selected_mo,
                                                            mo_spec,
@@ -2298,12 +2298,12 @@ def mo_select(mo_spec, fid_mo_list, strict=False):
                                                            what=what)
       selected_mo = selected_mo_ii
       for i in range(len(mo_in_file)):
-        mo_in_file[i] = map(str, get_selection(mo_in_file[i]))
+        mo_in_file[i] = list(map(str, get_selection(mo_in_file[i])))
     
     # Print some information
     display('\nThe following orbitals will be considered...')
     for i,j in enumerate(mo_in_file):
-      display('\tLine %d: %s' % (i+1,str(j)))
+      display('\tLine %d: %s' % (i+1,', '.join(j)))
   
   display('')
   return {'mo': selected_mo, 'mo_ii': selected_mo_ii,

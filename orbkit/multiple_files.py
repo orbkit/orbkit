@@ -105,7 +105,7 @@ def read(fid_list,itype='molden',all_mo=True,nosym=False,**kwargs):
         n_ao[key[1]] = len(qc.mo_spec[0]['coeffs'])
       sym[key[1]] += 1
     
-    for k,it in sym.iteritems():
+    for k,it in sym.items():
       if k in sym_list:
         sym_list[k] = max(sym_list[k],it)
       else:
@@ -118,7 +118,7 @@ def read(fid_list,itype='molden',all_mo=True,nosym=False,**kwargs):
   # Presorting of the MOs according to their symmetry
   
   sym = []
-  for k,it in sym_list.iteritems():
+  for k,it in sym_list.items():
     sym.append((k,len(sym)))
     mo_coeff_all.append(numpy.zeros((n_r,it,n_ao[k])))
     mo_energy_all.append(numpy.zeros((n_r,it)))
@@ -222,10 +222,10 @@ def order_using_analytical_overlap(fid_list,itype='molden',deg=0,numproc=1,
     display('\tusing a least squares polynomial fit of degree %d.' % deg)
     std = numpy.array([numpy.std(i-geo_spec_all[0]) for i in geo_spec_all])
   
-  mo_overlap = [[] for i in sym.iterkeys()]
-  index_list = [[] for i in sym.iterkeys()]
+  mo_overlap = [[] for i in sym.keys()]
+  index_list = [[] for i in sym.keys()]
 
-  for s in sym.itervalues():
+  for s in sym.values():
     shape = numpy.shape(mo_coeff_all[s])
     index_list[s] = numpy.ones((shape[0],shape[1]),dtype=int)
     index_list[s] *= numpy.arange(shape[1],dtype=int)
@@ -243,7 +243,7 @@ def order_using_analytical_overlap(fid_list,itype='molden',deg=0,numproc=1,
                                   ao_spherical=ao_spherical)
     
     cs = 0
-    for s in sym.itervalues():
+    for s in sym.values():
       mo_coeff = mo_coeff_all[s]
       shape = numpy.shape(mo_coeff)
       if deg > 0 and r1 >= deg:
@@ -357,9 +357,9 @@ def order_using_extrapolation(fid_list,itype='molden',deg=1,
     matrix, index_list = function(matrix,index_list=index_list[ii_s],backward=False,mu=mu,deg=deg)
     return matrix, index_list
   
-  index_list = [None for i in sym.iterkeys()]
+  index_list = [None for i in sym.keys()]
   
-  for s,ii_s in sym.iteritems():
+  for s,ii_s in sym.items():
     display('Starting ordering of MOs of symmetry %s' % s)
     
     shape = numpy.shape(mo_coeff_all[ii_s])
@@ -618,13 +618,13 @@ def save_hdf5(fid,variables=['geo_info',
         data = globals()[i]
         if not (data == [] or data is None):          
           if i == 'sym':
-            data = numpy.array([[k,l] for k,l in data.iteritems()])
+            data = numpy.array([[k,l] for k,l in data.items()])
           hdf5_append(data,HDF5_file,name=i)
           data_stored.append(i)
       elif i not in kwargs:
         raise ValueError('Variable `%s` is not in globals() or in **kwargs' % i)
     
-    for j in kwargs.iterkeys():
+    for j in kwargs.keys():
       hdf5_append(kwargs[j],HDF5_file,name=j)
       data_stored.append(j)
     
@@ -657,7 +657,7 @@ def read_hdf5(fid,variables=['geo_info',
         if i == 'sym':
           s = dict(globals()[i])
           globals()[i] = {}
-          for k,l in s.iteritems():
+          for k,l in s.items():
             globals()[i][k] = int(l)
       except KeyError:
         pass
@@ -680,7 +680,7 @@ def construct_qc():
     QC[rr].ao_spec = ao_spec
     QC[rr].ao_spherical = ao_spherical
     QC[rr].mo_spec = []
-    for s,ii_s in sym.iteritems():
+    for s,ii_s in sym.items():
       for i,coeffs in enumerate(mo_coeff_all[ii_s][rr]):
         QC[rr].mo_spec.append({'coeffs': coeffs,
                                'energy' : mo_energy_all[ii_s][rr,i],

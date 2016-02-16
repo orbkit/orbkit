@@ -66,7 +66,7 @@ t.append(time())
 
 if create_plots:
   # Plot molecular orbital coefficients before the ordering routine starts
-  for j,i in mult.sym.iteritems():
+  for j,i in mult.sym.items():
     mo = mult.mo_coeff_all[i]
     mult.plot(mo,                   # Specifies the 3D matrix to be plotted
               symmetry='%s NaCl MO - Before Ordering' %j,
@@ -87,7 +87,7 @@ t.append(time())
 if create_plots:
   # Plot molecular orbitals and overlap after the ordering routine
   cs = 0 
-  for j,i in mult.sym.iteritems():
+  for j,i in mult.sym.items():
     mo = mult.mo_coeff_all[i]
     mult.plot(mo,                   # Specifies the 3D matrix to be plotted
               symmetry='%s NaCl MO - Ordered' %j,
@@ -121,6 +121,13 @@ hdf5_fid = 'nacl.h5' # Specifies the filename of the HDF5 file
 mult.save_hdf5(hdf5_fid)
 
 # Reset the `orbkit.multiple_files` module
+try:
+  from importlib import reload # >= Python3.4
+except ImportError:
+  try: 
+    from imp import reload # <= Python3.3
+  except ImportError:
+    pass # Python2.X
 reload(mult)
 
 # Read in the results

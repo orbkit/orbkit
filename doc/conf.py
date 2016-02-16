@@ -104,7 +104,7 @@ if not on_rtd:
 	html_theme = "sphinx_rtd_theme"
 	html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
   except ImportError:
-	print 'sphinx_rtd_theme is not installed using sphinxdoc'
+	print('sphinx_rtd_theme is not installed using sphinxdoc')
 	html_theme = 'sphinxdoc'
 	html_theme_path = []
 

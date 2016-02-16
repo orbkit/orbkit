@@ -40,11 +40,10 @@ Installation Requirements
 
 For a proper execution of orbkit, the following Python modules are required:
 
-1) Python 2.6 - 2.7 (http://www.python.org) 
-   Python 3.x probably works, too, but is officially not (yet) supported
-3) Cython (http://cython.org/)
-4) NumPy Library of high-level mathematical functions (http://www.numpy.org/)
-2) SciPy Library of algorithms and mathematical tools (http://www.scipy.org/)
+1) Python 2.6 - 2.7 (http://www.python.org), Python 3.x
+2) Cython (http://cython.org/)
+3) NumPy Library of high-level mathematical functions (http://www.numpy.org/)
+4) SciPy Library of algorithms and mathematical tools (http://www.scipy.org/)
 5) h5py Interface to the HDF5 binary data format (http://www.h5py.org/)
 6) Mayavi Tool for 3D scientific data visualization (optional)
 

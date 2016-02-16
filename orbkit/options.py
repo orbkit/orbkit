@@ -239,7 +239,7 @@ def init_parser():
     sys.exit(1)
   if kwargs.otype is None:
     kwargs.otype = ['h5']
-  for i,j in vars(kwargs).iteritems():
+  for i,j in vars(kwargs).items():
     setattr(thismodule,i,j)
   
   # Check the options for compatibility and correctness
@@ -251,12 +251,12 @@ def init_parser():
   # init_parser 
 
 def raise_error(string,error=IOError):
-  if parser in globals():
+  if hasattr(thismodule,'parser'):
     error = parser.error
   raise error(string)
 
 def print_message(string):
-  print string
+  print(string)
 
 def check_options(error=raise_error,display=print_message,
                   interactive=False,info=True,check_io=True):
@@ -493,7 +493,7 @@ drv             = None          #: Specifies derivative variables. (list of str)
 laplacian       = False         #: If True, computes the laplacian of the density or of the mo_set. (bool)
 #--- Grid-Related Options ---
 slice_length    = 1e4           #: Specifies the number of points per subprocess. (int)
-vector = None
+vector          = None          #  This option is only present because of backward compatibility
 is_vector       = False         #: If True, vector grid is used for the output. (bool)
 grid_file       = None          #: Specifies file to read grid from. (filename)
 adjust_grid     = None          #: If not None, create a grid using a spacing of X a_0 and having the size of the molecule plus D a_0 in each direction. (list: [D, x])
@@ -501,7 +501,7 @@ center_grid     = None          #: If not None, grid is centered to specified at
 random_grid     = False         #: If True, creates random grid around atom positions. (bool)
 #--- Additional Options ---
 z_reduced_density = False       #: If True, reduces the density with respect to the z-axis. (bool)
-gross_atomic_density = None   #: Computes the gross atomic electron density with respect to specified atom. (int or list of int)
+gross_atomic_density = None     #: Computes the gross atomic electron density with respect to specified atom. (int or list of int)
 mo_tefd         = None          #: Computes the molecular orbital transition electronic flux density between the orbitals I and J specify the requested component with :data:`orbkit.options.drv`. (list of [I, J])
 #--- Options for Advanced Users ---
 quiet           = False         #: If True, omits terminal output. (bool)

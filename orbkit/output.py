@@ -293,6 +293,8 @@ def hdf5_append(x,group,name='data'):
     root directory of HDF5 file/group is chosen.  
   '''
   if isinstance(x,numpy.ndarray):
+    if x.dtype.type is numpy.unicode_:
+      x = numpy.asarray(x,dtype=numpy.string_)
     h5_dset = group.create_dataset(name,numpy.shape(x),data=x)
   elif isinstance(x,list):
     if name != '':
@@ -367,10 +369,10 @@ def hdf5_write(fid,mode='w',gname='',**kwargs):
   for f in hdf5_open(fid,mode=mode):
     if gname is not '':
       group = f.create_group(gname)
-      for i,j in kwargs.iteritems(): 
+      for i,j in kwargs.items(): 
         group.create_dataset(i,numpy.shape(j),data=j)
     else:
-      for i,j in kwargs.iteritems(): 
+      for i,j in kwargs.items(): 
         f.create_dataset(i,numpy.shape(j),data=j)
 
 def HDF5_creator(data,filename,geo_info,geo_spec,mode='w',data_id='rho',group=None,
@@ -419,7 +421,7 @@ def HDF5_creator(data,filename,geo_info,geo_spec,mode='w',data_id='rho',group=No
       except TypeError:
         mo_name.append(str(i))
       
-    dset = f.create_dataset('MO:Content',data=numpy.array(mo_name))
+    dset = f.create_dataset('MO:Content',data=numpy.array(mo_name,dtype='S'))
   
   if options.z_reduced_density:
     dset = f.create_dataset(data_id,numpy.shape(data),data=data)
@@ -453,12 +455,12 @@ def HDF5_creator(data,filename,geo_info,geo_spec,mode='w',data_id='rho',group=No
     for ii in range(len(mo_spec)):
       occ_num.append(mo_spec[ii]['occ_num'])
       energy.append(mo_spec[ii]['energy'])
-      sym.append(mo_spec[ii]['sym'])
+      sym.append(numpy.string_(mo_spec[ii]['sym']))
     dset = MO_info.create_dataset('occ_num',((1,len(mo_spec))),data=occ_num)
     dset = MO_info.create_dataset('energy',((1,len(mo_spec))),data=energy)
     dset = MO_info.create_dataset('sym',((1,len(mo_spec))),data=sym)
   
-  dset = f.create_dataset('geo_info',(numpy.shape(geo_info)),data=numpy.array(geo_info))
+  dset = f.create_dataset('geo_info',(numpy.shape(geo_info)),data=numpy.array(geo_info,dtype='S'))
   dset = f.create_dataset('geo_spec',(numpy.shape(geo_spec)),data=geo_spec)
   
   HDF5_file.close()
@@ -679,7 +681,6 @@ def colormap_creator_peaks(filename,peaks,peak_width=0.02,peak_minus=None,
   counter += 1
   
   for i,p in enumerate(peaks):
-    print p
     # Write the peak 
     # Left edge of the peak
     fid.write(c_str % {'o': 0, 'c': counter, 'p': p-peak_width/2., 

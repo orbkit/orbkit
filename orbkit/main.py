@@ -320,12 +320,17 @@ def run_orbkit(use_qc=None,check_options=True,standalone=False):
 def init(reset_display=True):  
   ''' Resets all :mod:`orbkit.options` and :mod:`orbkit.display`. 
   '''
+  try:
+    from importlib import reload # >= Python3.4
+  except ImportError:
+    try: 
+      from imp import reload # <= Python3.3
+    except ImportError:
+      pass # Python2.X
+    
   reload(options)
   if reset_display:
     reload(display_module)
-  
-  return 
-  # init
 
 #if __name__ == '__main__':
 def run_standalone():

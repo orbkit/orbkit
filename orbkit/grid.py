@@ -26,7 +26,6 @@ import sys
 import numpy
 
 # Import orbkit modules
-from orbkit import cSupportCode
 from orbkit import cy_grid
 
 def grid_init(is_vector=False, force=False):
@@ -65,7 +64,7 @@ def grid_init(is_vector=False, force=False):
         grid[ii] = numpy.arange(min_[ii],max_[ii]+delta_[ii],delta_[ii],dtype=numpy.float64)
         N_[ii] = len(grid[ii])
       else:
-        grid[ii] = numpy.linspace(min_[ii],max_[ii],N_[ii],dtype=numpy.float64)
+        grid[ii] = numpy.array(numpy.linspace(min_[ii],max_[ii],N_[ii]),dtype=numpy.float64) # backward compatibility
         delta_[ii] = grid[ii][1]-grid[ii][0]
   
   # Write grid 
@@ -253,7 +252,7 @@ def mv2g(**kwargs):
   '''
   import itertools
   return_val = {}
-  for i,j in kwargs.iteritems():
+  for i,j in kwargs.items():
     j = numpy.asarray(j,dtype=float)
     shape = numpy.shape(j)
     where = numpy.argwhere(shape==numpy.product(N_))

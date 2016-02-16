@@ -32,7 +32,7 @@ import numpy
 from multiprocessing import Pool
 
 # Import orbkit modules
-from orbkit import grid,cy_core
+from orbkit import grid,cy_grid,cy_core
 from orbkit.display import display
 
 def ao_creator(geo_spec,ao_spec,ao_spherical=None,drv=None,
@@ -74,7 +74,7 @@ def ao_creator(geo_spec,ao_spec,ao_spherical=None,drv=None,
   if not is_vector:
     N = (len(x),len(y),len(z))
     # Convert regular grid to vector grid
-    x,y,z = grid.cy_grid2vector(x.copy(),y.copy(),z.copy())
+    x,y,z = cy_grid.grid2vector(x.copy(),y.copy(),z.copy())
   else:
     if len(x) != len(y) or len(x) != len(z):
       raise ValueError("Dimensions of x-, y-, and z- coordinate differ!")
@@ -638,7 +638,7 @@ def rho_compute_no_slice(qc,calc_mo=False,drv=None,
     N = (len(x),len(y),len(z))
     d3r = numpy.product([x[1]-x[0],y[1]-y[0],z[1]-z[0]])
     # Convert regular grid to vector grid
-    x,y,z = grid.cy_grid2vector(x.copy(),y.copy(),z.copy())
+    x,y,z = cy_grid.grid2vector(x.copy(),y.copy(),z.copy())
     is_vector = True
     display('Converting the regular grid to a vector grid containing ' +
             '%.2e grid points...' % len(grid.x))
@@ -761,9 +761,8 @@ def rho_compute_no_slice(qc,calc_mo=False,drv=None,
 # Information on atomic orbitals
 
 # Assign the quantum number l to every AO symbol (s,p,d,etc.) 
-orbit = 'spd' + string.lowercase[5:].replace('s','').replace('p','')
+orbit = 'spd' + string.ascii_lowercase[5:].replace('s','').replace('p','')
 lquant = dict([(j, i) for i,j in enumerate(orbit)])
-del i,j
 
 def l_deg(l=0,ao=None,cartesian_basis=True):
   '''Calculates the degeneracy of a given atomic orbitals.
@@ -787,7 +786,7 @@ def l_deg(l=0,ao=None,cartesian_basis=True):
       l = len(ao)
   elif isinstance(l,str):
     l = lquant[l]
-  return (l+1)*(l+2)/2 if cartesian_basis else (2*l+1)
+  return int((l+1)*(l+2)/2) if cartesian_basis else int(2*l+1)
   # l_deg 
 
 # Molden AO order 

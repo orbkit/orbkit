@@ -438,7 +438,7 @@ def get_lc(indices,atom2mo):
 
   return numpy.nonzero(lc)[0]
 
-def print2D(x,format='%+.2f ',start='\t'):
+def print2D(x,format='%+.2f ',start='\t',end=''):
   '''Prints a 2D matrix.
   
   **Parameters:**
@@ -454,4 +454,4 @@ def print2D(x,format='%+.2f ',start='\t'):
     s = start
     for j in range(shape[1]):
       s += format % x[i,j]
-    print s
+    print(s + end)
