@@ -984,7 +984,7 @@ def create_mo_coeff(mo,name='mo'):
   '''
   if (not is_mo_spec(mo)):
     if (not isinstance(mo,(list,numpy.ndarray))):
-      raise ValueError('%s has to be mo_spec or an numpy coefficient array.'%s)
+      raise ValueError('%s has to be mo_spec or an numpy coefficient array.'%name)
   else:
     tmp = []
     for i in mo:
@@ -992,7 +992,7 @@ def create_mo_coeff(mo,name='mo'):
     mo = tmp
   mo = numpy.array(mo, dtype=numpy.float64)  
   if mo.ndim != 2:
-    raise ValueError('%s has to be 2-dimensional.'%s)  
+    raise ValueError('%s has to be 2-dimensional.'%name)  
   return mo
 
 def is_mo_spec(mo):

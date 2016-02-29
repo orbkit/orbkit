@@ -26,7 +26,7 @@ import os
 import copy
 import numpy
 
-from orbkit.core import l_deg, lquant, orbit, exp, exp_wfn
+from orbkit.core import l_deg, lquant, orbit, exp, exp_wfn,create_mo_coeff
 from orbkit.display import display
 from orbkit.qcinfo import QCinfo, get_atom_symbol
 
@@ -342,15 +342,7 @@ def read_molden(filename, all_mo=False, spin=None, i_md=-1, interactive=True,
   
   # Spherical basis?
   if not cartesian_basis[i_md]:    
-    qc.ao_spherical = []
-    for i,ao in enumerate(qc.ao_spec):
-      ii = ao['type']
-      l = lquant[ii]
-      for m in (range(0,l+1) if l != 1 else [1,0]):
-        qc.ao_spherical.append([i,(l,m)])
-        if m != 0:
-          qc.ao_spherical.append([i,(l,-m)])
-    
+    qc.ao_spherical = get_ao_spherical(ao_spec) 
   
   # Are all MOs requested for the calculation? 
   if not all_mo:
@@ -2062,37 +2054,38 @@ def convert_cclib(ccData, all_mo=False, spin=None):
       for kk in range(pnum):
         qc.ao_spec[-1]['coeffs'][kk][0] = ccData.gbasis[ii][jj][1][kk][0]
         qc.ao_spec[-1]['coeffs'][kk][1] = ccData.gbasis[ii][jj][1][kk][1]
-        
-  # Reconstruct exponents list for ao_spec
-  cartesian_basis = True
-  for i in ccData.aonames:
-    if '+' in i or '-' in i:
-      cartesian_basis = False
-
-  if not cartesian_basis:
-      qc.ao_spherical = []
   
-  count = 0
-  for i,j in enumerate(qc.ao_spec):
-    l = l_deg(lquant[j['type']],cartesian_basis=cartesian_basis)
-    if cartesian_basis:
-      j['exp_list'] = []
-      
-    for ll in range(l):
+  if hasattr(ccData,'aonames'):
+    # Reconstruct exponents list for ao_spec
+    cartesian_basis = True
+    for i in ccData.aonames:
+      if '+' in i or '-' in i:
+        cartesian_basis = False
+
+    if not cartesian_basis:
+        qc.ao_spherical = []
+    
+    count = 0
+    for i,ao in enumerate(qc.ao_spec):
+      l = l_deg(lquant[ao['type']],cartesian_basis=cartesian_basis)
       if cartesian_basis:
-        j['exp_list'].append((ccData.aonames[count].lower().count('x'),
-                              ccData.aonames[count].lower().count('y'),
-                              ccData.aonames[count].lower().count('z')))
-      else:
-        m = ccData.aonames[count].lower().split('_')[-1]
-        m = m.replace('+',' +').replace('-',' -').replace('s','s 0').split(' ') 
-        p = 'yzx'.find(m[0][-1])
-        if p != -1:
-          m = p - 1
+        ao['exp_list'] = []
+        
+      for ll in range(l):
+        if cartesian_basis:
+          ao['exp_list'].append((ccData.aonames[count].lower().count('x'),
+                                ccData.aonames[count].lower().count('y'),
+                                ccData.aonames[count].lower().count('z')))
         else:
-          m = int(m[-1])
-        qc.ao_spherical.append([i,(lquant[j['type']],m)])
-      count += 1
+          m = ccData.aonames[count].lower().split('_')[-1]
+          m = m.replace('+',' +').replace('-',' -').replace('s','s 0').split(' ') 
+          p = 'yzx'.find(m[0][-1])
+          if p != -1:
+            m = p - 1
+          else:
+            m = int(m[-1])
+          qc.ao_spherical.append([i,(lquant[ao['type']],m)])
+        count += 1
   
   # Converting all information about molecular orbitals
   ele_num = numpy.sum(ccData.atomnos) - numpy.sum(ccData.coreelectrons) - ccData.charge
@@ -2104,7 +2097,7 @@ def convert_cclib(ccData, all_mo=False, spin=None):
     if not hasattr(ccData,'nooccnos'):
       raise IOError('There are natural orbital coefficients (`nocoeffs`) in the cclib' + 
                     ' ccData, but no natural occupation numbers (`nooccnos`)!')
-    is_natorb = True 
+    is_natorb = True
   
   restricted = (len(ccData.mosyms) == 1)
   if spin is not None:
@@ -2123,7 +2116,8 @@ def convert_cclib(ccData, all_mo=False, spin=None):
     add = ['_a','_b']      
     orb_sym = ['alpha','beta']
   
-  for ii in range(ccData.nmo):    
+  nmo = ccData.nmo if hasattr(ccData,'nmo') else len(ccData.mocoeffs[0])  
+  for ii in range(nmo):    
     for i,j in enumerate(add):
       a = '%s%s' % (ccData.mosyms[i][ii],j)
       if a not in sym.keys(): sym[a] = 1
@@ -2150,7 +2144,24 @@ def convert_cclib(ccData, all_mo=False, spin=None):
         qc.mo_spec[-1]['spin'] = orb_sym[i]
         if spin is not None and spin != orb_sym[i]:
           del qc.mo_spec[-1]
+  
+  # Use default range for atomic basis functions if aonames is not present
+  if not hasattr(ccData,'aonames'):
+    display('The attribute `aonames` is not present in the parsed data.')
+    display('Using the default order of basis functions.')
     
+    # Check which basis functions have been used
+    c_cart = sum([l_deg(l=ao['type'], cartesian_basis=True) for ao in qc.ao_spec])
+    c_sph = sum([l_deg(l=ao['type'], cartesian_basis=False) for ao in qc.ao_spec])
+    
+    c = create_mo_coeff(qc.mo_spec,'').shape[-1]
+    if c != c_cart and c == c_sph: # Spherical basis
+      qc.ao_spherical = get_ao_spherical(qc.ao_spec,p=[0,1])
+    elif c != c_cart:
+      display('Warning: The basis set type does not match with pure spherical ' +
+              'or pure Cartesian basis!') 
+      display('Please specify qc.mo_spec["exp_list"] or qc.ao_spherical by your self.')
+  
   # Are all MOs requested for the calculation? 
   if not all_mo:
     for i in range(len(qc.mo_spec))[::-1]:
@@ -2159,6 +2170,19 @@ def convert_cclib(ccData, all_mo=False, spin=None):
 
   return qc
 
+def get_ao_spherical(ao_spec,p=[1,0]):
+  ao_spherical = []
+  for i,ao in enumerate(ao_spec):
+    ii = ao['type']
+    l = lquant[ii]
+    for m in (range(0,l+1) if l != 1 else p):
+      ao_spherical.append([i,(l,m)])
+      #if m != 0:
+        #ao_spherical.append([i,(l,-m)])
+    for m in (range(1,l+1) if l != 1 else p):
+      if m != 0:
+        ao_spherical.append([i,(l,-m)])
+  return ao_spherical
 
 def mo_select(mo_spec, fid_mo_list, strict=False):
   '''Selects molecular orbitals from an external file or a list of molecular 
