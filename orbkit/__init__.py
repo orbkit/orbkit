@@ -1,7 +1,7 @@
 # -*- coding: iso-8859-1 -*-
 '''Imports all important orbkit modules'''
 __all__ = ['grid','options','main','QCinfo','display','run_orbkit','init',
-           'main_read','main_output','rho_compute','rho_compute_no_slice'
+           'main_read','main_output','rho_compute','rho_compute_no_slice',
            'calc_ao','calc_mo','mo_set','gross_atomic_density',
            'mo_transition_flux_density','get_dipole_moment',
            'atomic_populations'
