@@ -129,6 +129,7 @@ def read_molden(filename, all_mo=False, spin=None, i_md=-1, interactive=True,
   has_alpha = []
   has_beta = []
   restricted = []
+  cartesian_basis = []
   count = 0
   # Go through the file line by line 
   for il in range(len(flines)):
@@ -140,6 +141,14 @@ def read_molden(filename, all_mo=False, spin=None, i_md=-1, interactive=True,
       has_alpha.append(False)
       has_beta.append(False)
       restricted.append(False)
+      cartesian_basis.append(True)
+    if '[5d]' in line.lower() or '[5d7f]' in line.lower():
+      cartesian_basis[-1] = False
+    if '[5d10f]'  in line.lower() or '[7f]' in line.lower():
+      display('Warning: The input file %s contains ' % filename +
+                    ' mixed spherical and cartesian function.'  + 
+                    'orbkit does not support these basis functions yet. '+
+                    'Pleas contact us, if you need this feature.')
     if 'Spin' in line and 'alpha' in line.lower():
       has_alpha[-1] = True
     if 'Spin' in line and 'beta' in line.lower():
@@ -177,6 +186,7 @@ def read_molden(filename, all_mo=False, spin=None, i_md=-1, interactive=True,
   
   # Set a counter for the AOs 
   basis_count = 0
+  sym = {}
 
   # Declare synonyms for molden keywords 
   synonyms = {'Sym': 'sym',
@@ -303,11 +313,16 @@ def read_molden(filename, all_mo=False, spin=None, i_md=-1, interactive=True,
                 info[1] = float(info[1])
               elif not '.' in info[1]:
                 from re import search
-                a = search(r'\d+', info[1]).group()
-                if a == info[1]:
-                  info[1] = '%s.1' % a
-                else:
-                  info[1] = info[1].replace(a, '%s.' % a)
+                try:
+                  a = search(r'\d+', info[1]).group()
+                  if a == info[1]:
+                    info[1] = '%s.1' % a
+                  else:
+                    info[1] = info[1].replace(a, '%s.' % a)
+                except AttributeError:
+                  if info[1] not in sym.keys(): sym[info[1]] = 1
+                  else: sym[info[1]] += 1
+                  info[1] = '%d.%s' % (sym[info[1]],info[1]) 
               qc.mo_spec[-1][synonyms[info[0]]] = info[1]
           else:
             if ('[' or ']') in line:
@@ -324,6 +339,18 @@ def read_molden(filename, all_mo=False, spin=None, i_md=-1, interactive=True,
                 # If it cannot be converted print error message 
                 display('Error in coefficient %d of MO %s!' % (index, 
                   qc.mo_spec[-1]['sym']) + '\nSetting this coefficient to zero...')
+  
+  # Spherical basis?
+  if not cartesian_basis[i_md]:    
+    qc.ao_spherical = []
+    for i,ao in enumerate(qc.ao_spec):
+      ii = ao['type']
+      l = lquant[ii]
+      for m in (range(0,l+1) if l != 1 else [1,0]):
+        qc.ao_spherical.append([i,(l,m)])
+        if m != 0:
+          qc.ao_spherical.append([i,(l,-m)])
+    
   
   # Are all MOs requested for the calculation? 
   if not all_mo:
