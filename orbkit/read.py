@@ -436,7 +436,7 @@ def read_gamess(filename, all_mo=False, spin=None, read_properties=False,
       has_alpha = False
       has_beta = True
       
-    elif mokey in line:
+    elif mokey in line and len(thisline) < 3:
       # The section containing information about 
       # the molecular orbitals begins 
       sec_flag = 'mo_info'
@@ -453,7 +453,7 @@ def read_gamess(filename, all_mo=False, spin=None, read_properties=False,
         has_alpha = False
         mo_skip = 0
     
-    elif 'NATURAL ORBITALS' in line:
+    elif 'NATURAL ORBITALS' in line and len(thisline) <= 3:
       display('The natural orbitals are not extracted.')
       
     elif ' NUMBER OF OCCUPIED ORBITALS (ALPHA)          =' in line:
