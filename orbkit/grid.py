@@ -58,6 +58,7 @@ def grid_init(is_vector=False, force=False):
       # If min-value is equal to max-value, write only min-value to grid  
       grid[ii]   = numpy.array([min_[ii]])
       delta_[ii] = 1
+      N_[ii]     = 1
     else:
       # Calculate the grid using the input parameters 
       if delta_[ii]:

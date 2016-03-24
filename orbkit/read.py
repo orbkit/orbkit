@@ -2145,7 +2145,7 @@ def convert_cclib(ccData, all_mo=False, spin=None):
         if spin is not None and spin != orb_sym[i]:
           del qc.mo_spec[-1]
   
-  # Use default range for atomic basis functions if aonames is not present
+  # Use default order for atomic basis functions if aonames is not present
   if not hasattr(ccData,'aonames'):
     display('The attribute `aonames` is not present in the parsed data.')
     display('Using the default order of basis functions.')

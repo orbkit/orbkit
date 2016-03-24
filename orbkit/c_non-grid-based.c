@@ -18,7 +18,7 @@ double get_overlap(S_Primitive *pA, S_Primitive *pB)
   
   for (i=0; i<3; i++)
   {
-    rr += pow((pA->R[i] - pB->R[i]), 2);
+    rr += (pA->R[i] - pB->R[i]) * (pA->R[i] - pB->R[i]);
   }
   
   EAB = exp( -((pA->alpha * pB->alpha) / 

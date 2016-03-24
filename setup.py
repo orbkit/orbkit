@@ -11,7 +11,7 @@ setup(
     cmdclass = {'build_ext': build_ext},
     ext_modules = [Extension("orbkit.cy_grid",
                     sources=["orbkit/cy_grid.pyx"],
-                    include_dirs=[numpy.get_include()]
+                    include_dirs=[numpy.get_include()],
                     ),
                    Extension("orbkit.cy_core",
                     sources=["orbkit/cy_core.pyx",
@@ -24,8 +24,8 @@ setup(
                     sources=["orbkit/cy_overlap.pyx",
                              "orbkit/c_non-grid-based.c",
                              "orbkit/c_support.c"],
-                     include_dirs=[numpy.get_include()],
-                     depends=[join('orbkit', '*.h')]
-                     ),
+                    include_dirs=[numpy.get_include()],
+                    depends=[join('orbkit', '*.h')],
+                    ),
                    ],
 )

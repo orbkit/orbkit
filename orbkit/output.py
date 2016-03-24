@@ -730,7 +730,7 @@ def meshgrid2(*arrs):
   return tuple(ans[::-1])
 
 def view_with_mayavi(x,y,z,data,geo_spec=None,datalabels=None,
-                     iso_min=1e-8,iso_val=0.01,iso_max=1.0):
+                     iso_min=1e-4,iso_val=0.01,iso_max=10.0):
   ''' Creates an interactive mayavi dialog showing isosurface plots of the input
   data. 
   
@@ -751,11 +751,11 @@ def view_with_mayavi(x,y,z,data,geo_spec=None,datalabels=None,
     Contains information about the plotted data with len(datalabels) == len(data).
   '''
   try:
-    from enthought.traits.api import HasTraits, Range, Instance, on_trait_change, Bool, Str,List
-    from enthought.traitsui.api import View, Item, Group, ListStrEditor
+    from enthought.traits.api import HasTraits, Range, Instance, on_trait_change, Bool, Str,List,Button
+    from enthought.traitsui.api import View, Item, Group, ListStrEditor,HSplit
   except ImportError:
-    from traits.api import HasTraits, Range, Instance, on_trait_change, Bool, Str,List
-    from traitsui.api import View, Item, Group, ListStrEditor
+    from traits.api import HasTraits, Range, Instance, on_trait_change, Bool, Str,List,Button
+    from traitsui.api import View, Item, Group, ListStrEditor,HSplit
   
   try:
     from enthought.mayavi import mlab
@@ -786,39 +786,41 @@ def view_with_mayavi(x,y,z,data,geo_spec=None,datalabels=None,
   Z,Y,X = meshgrid2(z,y,x)
   
   class MyModel(HasTraits):  
-      select  = Range(0, len(data)-1, 0, mode='spinner')
+      select  = Range(0, len(data)-1, 0)
       last_select = deepcopy(select)
-      iso_value  = Range(iso_min, iso_max, iso_val)
-      opacity    = Range(0, 1.0, 0.6)
+      iso_value  = Range(iso_min, iso_max, iso_val,mode='logslider')
+      opacity    = Range(0, 1.0, 0.85)
       show_atoms = Bool(True)
       label = Str()
       available = List(Str)
       available = datalabels
       
+      prev_button = Button('Previous')
+      next_button = Button('Next')
+      
       scene = Instance(MlabSceneModel, ())
       
       plot_atoms = Instance(PipelineBase)
       plot0 = Instance(PipelineBase)
-      plot1 = Instance(PipelineBase)
       
       # When the scene is activated, or when the parameters are changed, we
       # update the plot.
       @on_trait_change('select,iso_value,show_atoms,opacity,label,scene.activated')
-      def update_plot(self): 
+      def update_plot(self):
+        #if self.select < len(data)-1:
+          #self.select += 1
+        
         if self.plot0 is None:          
           src = mlab.pipeline.scalar_field(X,Y,Z,data[self.select])
           self.plot0 = self.scene.mlab.pipeline.iso_surface(\
-                      src, contours= [self.iso_value], opacity=self.opacity,color=(0, 0, 0.8))
-          self.plot1 = self.scene.mlab.pipeline.iso_surface(\
-                      src, contours= [-self.iso_value], opacity=self.opacity, color=(0.8, 0, 0))
+                      src, contours= [-self.iso_value,self.iso_value], opacity=self.opacity,colormap='blue-red',vmin=-1e-8,vmax=1e-8)
+          lut = self.plot0.module_manager.scalar_lut_manager.lut.table.to_array()
+          self.plot0.module_manager.scalar_lut_manager.lut.table = lut[::-1]
           self.plot0.contour.scene.background = (1,1,1)
         elif self.select != self.last_select:
           self.plot0.mlab_source.set(scalars=data[self.select])
-          self.plot1.mlab_source.set(scalars=data[self.select])
-        self.plot0.contour.contours = [self.iso_value]
+        self.plot0.contour.contours = [-self.iso_value,self.iso_value]
         self.plot0.actor.property.opacity = self.opacity
-        self.plot1.contour.contours = [-self.iso_value]
-        self.plot1.actor.property.opacity = self.opacity
         self.last_select = deepcopy(self.select)
         if datalabels is not None:
           self.label = datalabels[self.select]
@@ -827,18 +829,38 @@ def view_with_mayavi(x,y,z,data,geo_spec=None,datalabels=None,
             self.plot_atoms = self.scene.mlab.points3d(geo_spec[:,0],geo_spec[:,1],geo_spec[:,2])
           self.plot_atoms.visible = self.show_atoms
       
+      def _prev_button_fired(self):
+        if self.select > 0:
+          self.select -= 1
+      def _next_button_fired(self):
+        if self.select < len(data)-1:
+          self.select += 1
+      
+      
       # The layout of the dialog created
       items = (Item('scene', editor=SceneEditor(scene_class=MayaviScene),
-                      height=250, width=300, show_label=False),                  
-                  Group(
-                          '_', 'select',Item('label',style='readonly', show_label=False), 
-                          'iso_value', 'opacity','show_atoms'
-                      ),
-              )
-      if datalabels is not None:        
-        items += (Item('available', 
-                       editor=ListStrEditor(title='Available Data',editable=True),
-                       show_label=False,style='readonly'),)
+                      height=400, width=600, 
+                      show_label=False),)
+      items0 = ()
+      if len(data) > 1:
+        items0 += (Group('select',
+                        HSplit(Item('prev_button', show_label=False),
+                               Item('next_button', show_label=False)
+                              )),)               
+      items0 += (Group('iso_value', 'opacity','show_atoms'
+                      ),)
+              
+      if datalabels is not None:
+        if len(datalabels) > 1:        
+            items1 = (Item('available', 
+                       editor=ListStrEditor(title='Available Data',editable=False),
+                       show_label=False,style='readonly',width=300
+                       ),)
+            items0 = HSplit(items0,items1)
+        items += (Group('_',Item('label',label='Selected Data',style='readonly', show_label=True),'_'),
+               items0,)
+      else:
+        items += items0
       view = View(*items,
                   resizable=True
                   )
