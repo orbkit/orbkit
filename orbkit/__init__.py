@@ -7,7 +7,7 @@ __all__ = ['grid','options','main','QCinfo','display','run_orbkit','init',
            'atomic_populations'
            ]
 
-__version__ = '0.3.0'
+__version__ = '0.5'
 
 # Import high-level orbkit modules
 from orbkit import grid,options,display,main,atomic_populations

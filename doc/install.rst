@@ -16,7 +16,7 @@ Prerequisites
 For a proper execution of orbkit, the following Python modules are
 required:
 
-1) Python_ 2.6 - 2.7
+1) Python_ 2.6 - 2.7, 3.X
 2) Cython_
 3) NumPy_ Library of high-level mathematical functions
 4) SciPy_ Library of algorithms and mathematical tools
@@ -42,8 +42,8 @@ environment variables need to be set.
 In the following, we describe this procedure exemplary 
 for the different platforms.
 
-Linux
-.....
+Linux and Mac OS X
+..................
 
 The manual installation of orbkit is simple and can 
 be carried out using ``bash`` as follows:
@@ -55,10 +55,9 @@ will use the home directory. If you use a different directory simply replace
 
     $ cd $HOME
 
-Get a copy of orbkit, either with git or using a tarball. It is strongly
+Get a copy of orbkit, either with git or using a zip archive. It is strongly
 recommended to use git, since this version always contains the newest 
-bug fixes and features. If git is not available on your system, the newest 
-version can additionally be cloned from https://github.com/orbkit/orbkit.
+bug fixes and features. 
 
   * Using git:
 
@@ -67,12 +66,12 @@ version can additionally be cloned from https://github.com/orbkit/orbkit.
         $ git clone https://github.com/orbkit/orbkit.git
         $ git checkout cython
 
-  * Using a tarball:
+  * Using a zip archive:
 
     Download the latest orbkit release and extract the file::
 
         $ wget https://github.com/orbkit/orbkit/archive/cython.zip
-        $ tar xzvf orbkit-cython.zip
+        $ unzip orbkit-cython.zip
         $ mv orbkit-cython orbkit
 
 Set an environment variable to this directory::

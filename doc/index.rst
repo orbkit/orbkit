@@ -50,7 +50,9 @@ If you use orbkit in your work, please cite it as follows:
 
 Gunter Hermann, Vincent Pohl, Jean Christophe Tremblay, Beate Paulus, Hans-Christian Hege, and Axel Schild,
 "ORBKIT - A Modular Python Toolbox for Cross-Platform Post-Processing of Quantum Chemical Wavefunction Data", 
-arXiv:1601.03069 (2016).
+`arXiv:1601.03069`__ (2016).
+
+__ http://arxiv.org/abs/1601.03069
 
 Contact
 -------
