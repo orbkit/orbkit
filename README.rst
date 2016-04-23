@@ -23,10 +23,10 @@ Citation
 If you use orbkit in your work, please cite it as follows:
 
 Gunter Hermann, Vincent Pohl, Jean Christophe Tremblay, Beate Paulus, Hans-Christian Hege, and Axel Schild,
-"ORBKIT - A Modular Python Toolbox for Cross-Platform Post-Processing of Quantum Chemical Wavefunction Data", 
-`arXiv:1601.03069`__ (2016).
+"ORBKIT: A Modular Python Toolbox for Cross-Platform Postprocessing of Quantum Chemical Wavefunction Data", 
+*J. Comput. Chem.* **2016**, `DOI: 10.1002/jcc.24358`__.
 
-__ http://arxiv.org/abs/1601.03069
+__ dx.doi.org/10.1002/jcc.24358
 
 Support
 -------
@@ -83,9 +83,7 @@ version can additionally be cloned from https://github.com/orbkit/orbkit.
     Clone the repository::
 
         $ git clone https://github.com/orbkit/orbkit.git
-        $ git checkout cython
-
-  * Using a zip archive:
+  * **OR:** Using a zip archive:
 
     Download the latest orbkit release and extract the file::
 
@@ -103,11 +101,14 @@ Now, you have to build to orbkit::
     $ python setup.py build_ext --inplace clean
 
 In order to use orbkit, you have to add the orbkit directory to your ``$PYTHONPATH``
-environment variable either temporarily by typing::
+environment variable either *temporarily* by typing::
 
     $ export PYTHONPATH=$PYHONPATH:$ORBKITPATH
 
-or permanently by adding these lines to your ~/.bashrc file.
+or permanently by adding these two lines to your ~/.bashrc file::
+
+    $ export ORBKITPATH=$HOME/orbkit
+    $ export PYTHONPATH=$PYHONPATH:$ORBKITPATH
 
 To use orbkit as a standalone program, you have to modify your 
 $PATH variable in the same way::
