@@ -26,7 +26,7 @@ Gunter Hermann, Vincent Pohl, Jean Christophe Tremblay, Beate Paulus, Hans-Chris
 "ORBKIT: A Modular Python Toolbox for Cross-Platform Postprocessing of Quantum Chemical Wavefunction Data", 
 *J. Comput. Chem.* **2016**, `DOI: 10.1002/jcc.24358`__.
 
-__ dx.doi.org/10.1002/jcc.24358
+__ http://dx.doi.org/10.1002/jcc.24358
 
 Support
 -------
