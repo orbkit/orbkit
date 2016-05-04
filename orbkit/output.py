@@ -199,7 +199,7 @@ def cube_creator(rho,filename,geo_info,geo_spec,comments='',**kwargs):
   fid.close()
 
 def vmd_network_creator(filename,cube_files=None,render=False,iso=(-0.01,0.01),
-                        abspath=True,**kwargs):
+                        abspath=False,**kwargs):
   '''Creates a VMD script file from a list of cube files provided.
   
   **Parameters:**
@@ -243,7 +243,7 @@ def vmd_network_creator(filename,cube_files=None,render=False,iso=(-0.01,0.01),
     else:
       title = title.replace('\n','').replace(' ','')
     linecache.clearcache()
-    pid = path.abspath(f) if abspath else path.relpath(f,path.relpath(filename))
+    pid = path.abspath(f) if abspath else path.relpath(f,path.dirname(filename))
     mo += vmd_network_draft.mo_string % {
                                   'c': i, 
                                   'n1': pid,

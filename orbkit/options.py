@@ -24,7 +24,7 @@ License along with orbkit.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
 lgpl_short = '''This is orbkit.
-Copyright (C) 2015 Gunter Hermann, Vincent Pohl, and Axel Schild. 
+Copyright (C) 2016 Gunter Hermann, Vincent Pohl, and Axel Schild. 
 This program comes with ABSOLUTELY NO WARRANTY. 
 This is free software, and you are welcome to redistribute it 
 under certain conditions. Type '-l' for details.

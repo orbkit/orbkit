@@ -66,7 +66,7 @@ bug fixes and features.
         $ git clone https://github.com/orbkit/orbkit.git
         $ git checkout cython
 
-  * Using a zip archive:
+  * **OR:** Using a zip archive:
 
     Download the latest orbkit release and extract the file::
 
@@ -94,6 +94,8 @@ To use orbkit as a standalone program, you have to modify your
 $PATH variable in the same way::
 
     $ export PATH=$PATH:$ORBKITPATH/tools
+
+or permanently by adding these lines to your ~/.bashrc file.
 
 Windows
 .......

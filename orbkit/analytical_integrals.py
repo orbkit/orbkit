@@ -323,7 +323,7 @@ def get_ao_dipole_matrix(qc,component='x'):
   
   qc : class
     QCinfo class. (See :ref:`Central Variables` for details.)
-  component : int or string, {'x','y', 'z', 0, 1, 2}
+  component : int or string, {'x','y', 'z'}
     Specifies the compontent of the dipole moment operator which shall be applied.
   
   **Returns:**
@@ -370,7 +370,7 @@ def get_nuclear_dipole_moment(qc,component='x'):
   
   qc : class
     QCinfo class. (See :ref:`Central Variables` for details.)
-  component : int or string, {'x','y', 'z', 0, 1, 2}
+  component : string, {'x','y', 'z'}
     Specifies the compontent of the dipole moment operator which shall be applied.
   
   **Returns:**
