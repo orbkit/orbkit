@@ -126,22 +126,16 @@ def set_grid(xnew,ynew,znew,is_vector=None):
   coord = ['x', 'y', 'z']
   delta_ = numpy.zeros((3,1)) #: Contains the grid spacing.
   
-  NumberTypes = (int, long, float) #: Contains the supported types.
-  
-  # Check the input variable
-  correct_type = (isinstance(grid,list) or isinstance(grid,numpy.ndarray))
-  if not correct_type or len(grid) != 3:
-    raise TypeError('The `grid` variable has to be a list or a numpy array with ' + 
-                    'three dimensions.')
+  NumberTypes = (int, float) #: Contains the supported types.
   
   length = []
   grid = [xnew,ynew,znew]
   for i,c in enumerate(grid):
     # Check the type of the grid
     if isinstance(c,NumberTypes):
-      c = numpy.array([c],dtype=float)      
+      c = numpy.array([c],dtype=numpy.float64)      
     elif isinstance(c,(list,tuple)): 
-      c = numpy.array(c,dtype=float)    
+      c = numpy.array(c,dtype=numpy.float64)    
     elif not isinstance(c,numpy.ndarray):
       raise TypeError('%s (dimension %d) is of inappropriate type. (%s)' %(coord[i],i,type(c)))
     # Reshape if necessary

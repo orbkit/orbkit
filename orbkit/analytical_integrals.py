@@ -331,7 +331,7 @@ def get_ao_dipole_matrix(qc,component='x'):
   ao_dipole_matrix : numpy.ndarray, shape=(NAO,NAO)
     Contains the expectation value matrix.
   '''
-  if not isinstance(component, (int, long)):
+  if not isinstance(component, int):
     component = 'xyz'.find(component)
   if component == -1: # Was the selection valid?
     raise ValueError("The selection of the component was not valid!" +
@@ -378,7 +378,7 @@ def get_nuclear_dipole_moment(qc,component='x'):
   nuclear_dipole_moment : float
     Contains the nuclear dipole moment.
   '''
-  if not isinstance(component, (int, long)):
+  if not isinstance(component, int):
     component = 'xyz'.find(component)
   if component == -1: # Was the selection valid?
     raise ValueError("The selection of the component was not valid!" +
