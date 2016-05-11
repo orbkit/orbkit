@@ -159,7 +159,7 @@ Note: The function saves the molecular orbital values. (Not the squared values!)
 '''
 count_calls = 0
 calc_mo = True
-fdim = 5
+fdim = len(qc.mo_spec)           #: now func will return the number of orbitals
 
 # Call the cubature routine together with orbkit.
 try:
