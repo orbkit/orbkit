@@ -273,4 +273,13 @@ def get_atom_symbol(atom):
   except ValueError:    
     return atom.upper()
 
+def dump(data,fid):
+  import cPickle
+  with open(fid, "wb") as output:
+    cPickle.dump(data,output,cPickle.HIGHEST_PROTOCOL)
 
+def load(fid):
+  import cPickle
+  with open(fid, "rb") as input:       
+    data = cPickle.load(input)
+  return data

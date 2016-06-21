@@ -52,7 +52,12 @@ def func(x_array,*args):
   
   if args[-1]: # calc_mo
     out **= 2.
-  return numpy.transpose(out*x_array[:,0])
+  
+  out = numpy.transpose(out*x_array[:,0])
+  if args[-2]:
+    # Old syntax of cubature
+    out = numpy.reshape(out,(-1,))
+  return out
 
 def get_segment(iphi):
   '''Input function for `omp_functions.run`. 
@@ -75,15 +80,15 @@ def get_segment(iphi):
   xmin = numpy.array([ 0.,phi[iphi]  +phi0, -8],dtype=float)
   xmax = numpy.array([15.,phi[iphi+1]+phi0,  8],dtype=float)
   # use cubature and function <okCylinder> to integrate
-  try:    # old cubature syntax
-    intVal,error = cubature(3,func,xmin,xmax,args=[calc_mo],norm=0,\
+  try:    # old cubature syntax    
+    intVal,error = cubature(3,func,xmin,xmax,args=[True,calc_mo],norm=0,\
                             adaptive='h',abserr=abserr,relerr=relerr,maxEval=0,\
                             vectorized=True)
   except: # new cubature syntax
     # number of return values of func
     if calc_mo: fdim = len(qc.mo_spec)
     else: fdim = 1
-    intVal,error = cubature(func,3,fdim,xmin,xmax,args=[calc_mo],norm=0,\
+    intVal,error = cubature(func,3,fdim,xmin,xmax,args=[False,calc_mo],norm=0,\
                             adaptive='h',abserr=abserr,relerr=relerr,maxEval=0,\
                             vectorized=True)
   return intVal,error

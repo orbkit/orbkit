@@ -144,7 +144,7 @@ try:
                             vectorized=vectorized)
 except:
   print('Calculation failed.')
-  print('Should work with cubature 0.13.1 which has a different syntax than ealier versions.')
+  print('Should work with cubature 0.13.1 which has a different syntax than earlier versions.')
 
 print('After %d function calls the integral is %.14f. (Error: %.4e)' % 
       (count_calls,integral,error))

@@ -250,7 +250,8 @@ def get_mo_overlap_matrix(mo_a,mo_b,ao_overlap_matrix,numproc=1):
                  'mo_b': create_mo_coeff(mo_b,name='mo_b'),
                  'ao_overlap_matrix': ao_overlap_matrix}
     
-  if global_args['mo_a'].shape[1] != global_args['mo_b'].shape[1]:
+  if ((global_args['mo_a'].shape[1] != ao_overlap_matrix.shape[0]) or
+      (global_args['mo_b'].shape[1] != ao_overlap_matrix.shape[1])):
     raise ValueError('mo_a and mo_b have to correspond to the same basis set, '+
                      'i.e., shape_a[1] != shape_b[1]')
   

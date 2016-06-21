@@ -85,6 +85,7 @@ def mooverlap(np.ndarray[double, ndim=1, mode="c"] mo_a           not None,
               np.ndarray[double, ndim=2, mode="c"] aoom           not None
               ):
   cdef int nao = aoom.shape[0]
+  cdef int mao = aoom.shape[1]
   cdef double overlap = 0.0
   cdef int k,l
   
@@ -102,6 +103,7 @@ def mooverlapmatrix(np.ndarray[double, ndim=2, mode="c"] mo_a     not None,
                     int i_start,
                     int i_end):
   cdef int nao = aoom.shape[0]
+  cdef int mao = aoom.shape[1]
   cdef int nmo_a = mo_a.shape[0]
   cdef int nmo_b = mo_b.shape[0]
   cdef np.ndarray[double, ndim=2, mode="c"] moom = np.zeros([i_end-i_start,nmo_b],
@@ -113,7 +115,7 @@ def mooverlapmatrix(np.ndarray[double, ndim=2, mode="c"] mo_a     not None,
     for j in range(nmo_b):
       tmpsum = 0.0
       for k in range(nao):
-        for l in range(nao):
+        for l in range(mao):
           tmpsum += mo_a[i,k] * mo_b[j,l] * aoom[k,l]
       moom[i-i_start,j] = tmpsum
   

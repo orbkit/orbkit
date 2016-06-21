@@ -215,7 +215,7 @@ def order_using_analytical_overlap(fid_list,itype='molden',deg=0,numproc=1,
     
   display('\nStarting the ordering routine using the molecular orbital overlap...')
 
-  iterate= range(1,len(geo_spec_all))
+  iterate= list(range(1,len(geo_spec_all)))
   
   if deg > 0:
     display('\tThe molecular orbital coefficients will be extrapolated')
@@ -235,7 +235,7 @@ def order_using_analytical_overlap(fid_list,itype='molden',deg=0,numproc=1,
     r1 = rr-1
     r2 = rr
     
-    if deg > 0 and r1 >= deg:
+    if (deg is None) or (deg > 0 and r1 >= deg):
       ao_overlap = get_ao_overlap(geo_spec_all[r2],geo_spec_all[r2],ao_spec,
                                   ao_spherical=ao_spherical)
     else:
@@ -246,7 +246,7 @@ def order_using_analytical_overlap(fid_list,itype='molden',deg=0,numproc=1,
     for s in sym.values():
       mo_coeff = mo_coeff_all[s]
       shape = numpy.shape(mo_coeff)
-      if deg > 0 and r1 >= deg:
+      if deg is not None and deg > 0 and r1 >= deg:
         mo_r1 = get_extrapolation(r1,r2,mo_coeff,grid1d=std,deg=deg)
       else:
         mo_r1 = mo_coeff[r1]

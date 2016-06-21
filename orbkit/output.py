@@ -925,7 +925,7 @@ def pdb_creator(geo_info,geo_spec,filename='new',charges=None,comments='',
   # Close the file 
   fid.close()
 
-def xyz_creator(geo_info,geo_spec,filename='new',charges=None,comments='',
+def xyz_creator(geo_info,geo_spec,filename='new',mode='w',charges=None,comments='',
     angstrom=True):
   '''Creates a xyz file containing the molecular coordinates. 
   
@@ -947,7 +947,7 @@ def xyz_creator(geo_info,geo_spec,filename='new',charges=None,comments='',
   aa_to_au = 1/0.52917720859 if angstrom else 1.
   
   # Open an empty file 
-  fid = open('%(f)s.xyz' % {'f': filename},'w')
+  fid = open('%s.xyz' % filename,mode)
   
   # Write number of atoms and a comment line
   fid.write('%d\n%s\n' % (len(geo_spec),comments))

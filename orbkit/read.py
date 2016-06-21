@@ -1654,7 +1654,7 @@ def read_aomix(filename, all_mo=False, spin=None, i_md=-1, interactive=True,
                 if a == info[1]:
                   info[1] = '%s.1' % a
                 else:
-                  info[1] = info[1].replace(a, '%s.' % a)
+                  info[1] = info[1].replace(a, '%s.' % a, 1)
               qc.mo_spec[-1][synonyms[info[0]]] = info[1]
           else:
             if ('[' or ']') in line:
@@ -2260,9 +2260,12 @@ def mo_select(mo_spec, fid_mo_list, strict=False):
     mo_occup = numpy.array([i['occ_num'] for i in mo_spec])
     homo = (mo_occup>0.).nonzero()[0][-1]   + 1 # molden numbering
     lumo = (mo_occup>0.).nonzero()[0][-1]+1 + 1 # molden numbering
+    mo_energy = numpy.array([i['energy'] for i in mo_spec])
+    last_bound = sum(mo_energy<=0.0)            # molden numbering
     sel = []
     for i in selected_mo:
-      i = i.lower().replace('homo',str(homo)).replace('lumo',str(lumo)).split(':')
+      i = i.lower().replace('homo',str(homo)).replace('lumo',str(lumo))
+      i = i.replace('last_bound',str(last_bound)).split(':')
       if len(i) == 1:
         sel.append(eval(i[0]))
       else:
@@ -2312,7 +2315,7 @@ def mo_select(mo_spec, fid_mo_list, strict=False):
       for i in selected_mo:
         if isinstance(i,int):
           continue
-        i = i.replace('homo','1').replace('lumo','2')
+        i = i.replace('homo','1').replace('lumo','2').replace('last_bound','3')
         for r in ['-','+',':']:
           i = i.replace(r,'')
         int(i)
