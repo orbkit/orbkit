@@ -544,14 +544,14 @@ def adjust_to_geo(qc,extend=5.0,step=0.1):
     Specifies the grid spacing.
   
   '''
-  global min_, max_, N_
+  global min_, max_, N_,delta_
   
   for i in range(3):
     min_[i] = min(qc.geo_spec[:,i]) - abs(extend)
     max_[i] = max(qc.geo_spec[:,i]) + abs(extend)
     dist = (max_[i] - min_[i])
-    N_[i] = int(numpy.ceil(dist/step))
-    rest = N_[i]*step - dist
+    N_[i] = int(numpy.ceil(dist/step))+1
+    rest = (N_[i]-1)*step - dist
     # Correct minimum and maximum value, if necessary
     min_[i] -= rest/2.
     max_[i] += rest/2.

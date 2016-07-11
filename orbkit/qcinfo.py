@@ -278,7 +278,7 @@ def dump(data,fid):
   with open(fid, "wb") as output:
     cPickle.dump(data,output,cPickle.HIGHEST_PROTOCOL)
 
-def load(fid):
+def load(fid,**kwargs):
   import cPickle
   with open(fid, "rb") as input:       
     data = cPickle.load(input)

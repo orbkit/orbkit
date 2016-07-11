@@ -52,9 +52,10 @@ itypes = ['molden',
           'gaussian.fchk',
           'wfn',
           'wfx',
-          'cclib']                        #: Specifies possible input types.
+          'cclib',
+          'orbkit.dump']                        #: Specifies possible input types.
 
-otypes = ['h5', 'cb', 'am', 'hx', 'vmd','mayavi'] #: Specifies possible output types.
+otypes = ['h5', 'cb', 'am', 'hx', 'vmd', 'mayavi'] #: Specifies possible output types.
 
 drv_options = ['x','y','z',
                'xx','yy','zz','x2','y2','z2',

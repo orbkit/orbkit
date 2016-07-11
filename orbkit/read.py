@@ -28,7 +28,7 @@ import numpy
 
 from orbkit.core import l_deg, lquant, orbit, exp, exp_wfn,create_mo_coeff
 from orbkit.display import display
-from orbkit.qcinfo import QCinfo, get_atom_symbol
+from orbkit.qcinfo import QCinfo, get_atom_symbol, load
 
 def main_read(filename,itype='molden',all_mo=False,spin=None,cclib_parser=None,
               **kwargs):
@@ -66,7 +66,8 @@ def main_read(filename,itype='molden',all_mo=False,spin=None,cclib_parser=None,
             'aomix' : read_aomix,
             'cclib' : read_with_cclib,
             'wfn': read_wfn,
-            'wfx': read_wfx}
+            'wfx': read_wfx,
+            'orbkit.dump': load}
   
   display('Loading %s file...' % itype)
   
