@@ -131,25 +131,32 @@ def read_molden(filename, all_mo=False, spin=None, i_md=-1, interactive=True,
   has_beta = []
   restricted = []
   cartesian_basis = []
+  mixed_warning = []
+  by_orca = []
   count = 0
   # Go through the file line by line 
   for il in range(len(flines)):
     line = flines[il]            # The current line as string
     
     # Check the file for keywords 
-    if '[Molden Format]' in line:
+    if '[molden format]' in line.lower():
       count += 1
       has_alpha.append(False)
       has_beta.append(False)
       restricted.append(False)
       cartesian_basis.append(True)
+      mixed_warning.append(False)
+      by_orca.append(False)
+    if 'orca' in line.lower():
+      by_orca[-1] = True
     if '[5d]' in line.lower() or '[5d7f]' in line.lower():
       cartesian_basis[-1] = False
-    if '[5d10f]'  in line.lower() or '[7f]' in line.lower():
-      display('Warning: The input file %s contains ' % filename +
-                    ' mixed spherical and cartesian function.'  + 
-                    'orbkit does not support these basis functions yet. '+
-                    'Pleas contact us, if you need this feature.')
+    if '[5d10f]'  in line.lower():
+      mixed_warning[-1] = '5D, 10F'
+      cartesian_basis[-1] = False
+    if '[7f]'  in line.lower():
+      mixed_warning[-1] = '6D, 7F'
+      cartesian_basis[-1] = True
     if 'Spin' in line and 'alpha' in line.lower():
       has_alpha[-1] = True
     if 'Spin' in line and 'beta' in line.lower():
@@ -198,6 +205,7 @@ def read_molden(filename, all_mo=False, spin=None, i_md=-1, interactive=True,
   MO_keys = synonyms.keys()
   
   count = 0
+  max_l = 0
   start_reading = False
   # Go through the file line by line 
   for il in range(len(flines)):
@@ -281,10 +289,11 @@ def read_molden(filename, all_mo=False, spin=None, i_md=-1, interactive=True,
             # Calculate the degeneracy of this AO and increase basis_count 
             for i_ao in ao_type:
               # Calculate the degeneracy of this AO and increase basis_count 
-              basis_count += l_deg(lquant[i_ao])
+              basis_count += l_deg(lquant[i_ao],cartesian_basis=cartesian_basis[i_md])
+              max_l = max(max_l,lquant[i_ao])
               qc.ao_spec.append({'atom': at_num,
                               'type': i_ao,
-                              'pnum': pnum,
+                              'pnum': -pnum if by_orca[i_md] else pnum,
                               'coeffs': numpy.zeros((pnum, 2))
                               })
           else:
@@ -318,6 +327,8 @@ def read_molden(filename, all_mo=False, spin=None, i_md=-1, interactive=True,
                   a = search(r'\d+', info[1]).group()
                   if a == info[1]:
                     info[1] = '%s.1' % a
+                  elif info[1].endswith(a):
+                    raise AttributeError
                   else:
                     info[1] = info[1].replace(a, '%s.' % a)
                 except AttributeError:
@@ -343,8 +354,14 @@ def read_molden(filename, all_mo=False, spin=None, i_md=-1, interactive=True,
   
   # Spherical basis?
   if not cartesian_basis[i_md]:    
-    qc.ao_spherical = get_ao_spherical(ao_spec) 
-  
+    qc.ao_spherical = get_ao_spherical(qc.ao_spec,p=[1,0])
+  if max_l > 2 and mixed_warning[i_md]:
+    display('='*80)
+    display('The input file %s contains ' % filename +
+            'mixed spherical and Cartesian function (%s).' %  mixed_warning[i_md] + 
+            'ORBKIT does not support these basis functions yet. '+
+            'Pleas contact us, if you need this feature!')    
+    display('='*80)
   # Are all MOs requested for the calculation? 
   if not all_mo:
     for i in range(len(qc.mo_spec))[::-1]:
@@ -365,10 +382,38 @@ def read_molden(filename, all_mo=False, spin=None, i_md=-1, interactive=True,
     # Rename MOs according to spin
     for mo in qc.mo_spec:
       mo['sym'] += '_%s' % mo['spin'][0]
-    
+  
+  # Orca uses for all molecular orbitals the same name 
+  sym = [i['sym'] for i in qc.mo_spec]
+  if sym[1:] == sym[:-1]:
+    sym = sym[0].split('.')[-1]
+    for i in range(len(qc.mo_spec)):
+      qc.mo_spec[i]['sym'] = '%d.%s' % (i+1,sym)
+  
   # Convert geo_info and geo_spec to numpy.ndarrays
   qc.format_geo()
-    
+  
+  # Check the normalization
+  from orbkit.analytical_integrals import get_ao_overlap,get_lxlylz
+  norm = numpy.diagonal(get_ao_overlap(qc.geo_spec,qc.geo_spec,qc.ao_spec))
+  
+  if sum(numpy.abs(norm-1.)) > 1e-8:
+    display('The atomic orbitals are not normalized correctly, renormalizing...\n')
+    if not by_orca[i_md]: 
+      j = 0
+      for i in range(len(qc.ao_spec)):
+        qc.ao_spec[i]['coeffs'][:,1] /= numpy.sqrt(norm[j])
+        for n in range(l_deg(lquant[qc.ao_spec[i]['type']],cartesian_basis=True)):
+          j += 1
+    else:
+      qc.ao_spec[0]['N'] = 1/numpy.sqrt(norm[:,numpy.newaxis])
+  
+    if cartesian_basis[i_md]:
+      from orbkit.cy_overlap import ommited_cca_norm
+      cca = ommited_cca_norm(get_lxlylz(qc.ao_spec))
+      for mo in qc.mo_spec:
+        mo['coeffs'] *= cca
+  
   return qc
   # read_molden 
 
@@ -1729,7 +1774,7 @@ def read_aomix(filename, all_mo=False, spin=None, i_md=-1, interactive=True,
     from orbkit.analytical_integrals import create_mo_coeff, get_lxlylz
     def dfact(n):
       if n <= 0:
-        return 1;
+        return 1
       else:
         return n * dfact(n-2)
 
@@ -2161,7 +2206,7 @@ def convert_cclib(ccData, all_mo=False, spin=None):
     elif c != c_cart:
       display('Warning: The basis set type does not match with pure spherical ' +
               'or pure Cartesian basis!') 
-      display('Please specify qc.mo_spec["exp_list"] or qc.ao_spherical by your self.')
+      display('Please specify qc.mo_spec["exp_list"] and/or qc.ao_spherical by your self.')
   
   # Are all MOs requested for the calculation? 
   if not all_mo:
@@ -2178,11 +2223,11 @@ def get_ao_spherical(ao_spec,p=[1,0]):
     l = lquant[ii]
     for m in (range(0,l+1) if l != 1 else p):
       ao_spherical.append([i,(l,m)])
-      #if m != 0:
-        #ao_spherical.append([i,(l,-m)])
-    for m in (range(1,l+1) if l != 1 else p):
       if m != 0:
         ao_spherical.append([i,(l,-m)])
+    #for m in (range(1,l+1) if l != 1 else p):
+      #if m != 0:
+        #ao_spherical.append([i,(l,-m)])
   return ao_spherical
 
 def mo_select(mo_spec, fid_mo_list, strict=False):

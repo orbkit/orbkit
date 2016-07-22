@@ -4,8 +4,12 @@ import cython
 import numpy as np
 cimport numpy as np
 
+cdef extern from "math.h":
+    double sqrt(double x)
+
 cdef extern from "c_support.h":
   double ao_norm(int l,int m,int n,double alpha, int is_normalized)
+  int doublefactorial(int n)
 
 cdef extern from "c_non-grid-based.h":
   ctypedef struct S_Primitive:
@@ -14,7 +18,36 @@ cdef extern from "c_non-grid-based.h":
           double R[3]
   double get_overlap(S_Primitive *pA, S_Primitive *pB)
 
+@cython.boundscheck(False)
+@cython.wraparound(False)
+def ommited_cca_norm(np.ndarray[int, ndim=2, mode="c"] lxlylz not None):
+  """
+  Get basis function normalization ommited in CCA standard. 
+  
+  Adaped from Psi4 Program code (FCHKWriter::write src/lib/libmints/writer.cc):
 
+    // For Cartesian functions we need to add a basis function normalization
+    // constant of
+    //      _______________________________
+    //     / (2lx-1)!! (2ly-1)!! (2lz-1)!!
+    //    /  -----------------------------
+    //  \/             (2l-1)!!
+    //
+    // which is omitted in the CCA standard, adopted by Psi4.
+  """
+  cdef int ao_num = lxlylz.shape[0]
+  cdef double divisor = 0.0
+  cdef np.ndarray[double, ndim=1, mode="c"] norm = np.zeros([ao_num],
+                                                               dtype=np.float64)
+  for i in range(ao_num):
+    divisor = doublefactorial(2*(lxlylz[i,0] + lxlylz[i,1] + lxlylz[i,2]) - 1)
+    norm[i] = sqrt( doublefactorial(2*lxlylz[i,0] - 1) 
+                  * doublefactorial(2*lxlylz[i,1] - 1) 
+                  * doublefactorial(2*lxlylz[i,2] - 1) 
+                  / divisor
+                  )
+  return norm
+  
 @cython.boundscheck(False)
 @cython.wraparound(False)
 def aooverlap(np.ndarray[double, ndim=2, mode="c"] ra           not None,

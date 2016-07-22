@@ -125,7 +125,10 @@ def get_ao_overlap(coord_a,coord_b,ao_spec,lxlylz_b=None,
                                            lxlylz_a,lxlylz_b,
                                            coeff,index,
                                            drv,int(is_normalized))
-
+  if 'N' in ao_spec[0]:
+    for i in range(len(ao_overlap_matrix)):
+      ao_overlap_matrix[i,:] *= ao_spec[0]['N'][i]*ao_spec[0]['N'][:,0]
+  
   if not (ao_spherical is None or ao_spherical == []):
     # Convert the overlap matrix to the real-valued spherical harmonic basis.
     ao_overlap_matrix = cartesian2spherical_aoom(ao_overlap_matrix,ao_spec,ao_spherical)

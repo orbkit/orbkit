@@ -95,7 +95,9 @@ def ao_creator(geo_spec,ao_spec,ao_spherical=None,drv=None,
   assign = require(assign,dtype='i')
   ao_list = cy_core.aocreator(lxlylz,assign,ao_coeffs,pnum_list,geo_spec,
                               atom_indices,x,y,z,drv,is_normalized)
-  
+  if 'N' in ao_spec[0]:
+    # Renormalize atomic orbital
+    ao_list *= ao_spec[0]['N']
   if not (ao_spherical is None or ao_spherical == []):
     ao_list = cartesian2spherical(ao_list,ao_spec,ao_spherical)
   
@@ -427,8 +429,10 @@ def rho_compute(qc,calc_mo=False,drv=None,laplacian=False,
   else:
     display("The calculation will be carried out with %d subprocesses." 
             % numproc)
-  display("\nThere are %d contracted AOs and %d MOs to be calculated."
-            % (len(Spec['mo_spec'][0]['coeffs']), mo_num))
+  display("\nThere are %d contracted %s AOs and %d MOs to be calculated." %
+          (len(Spec['mo_spec'][0]['coeffs']),
+           'Cartesian' if not Spec['ao_spherical'] else 'spherical', 
+           mo_num))
   
   # Initialize some additional user information 
   status_old = 0
@@ -696,6 +700,11 @@ def rho_compute_no_slice(qc,calc_mo=False,drv=None,
     drv = ['xx','yy','zz']
   
   display('\nStarting the calculation without slicing the grid...')
+  display("\nThere are %d contracted %s AOs and %d MOs to be calculated." %
+          (len(mo_spec[0]['coeffs']),
+           'Cartesian' if not ao_spherical else 'spherical', 
+           len(mo_spec)))
+  
   
   if drv is not None:
     try:

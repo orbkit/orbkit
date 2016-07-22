@@ -9,6 +9,11 @@ cdef extern from "c_grid-based.h":
                     double* at_pos, double* x, double* y, double* z, 
                     int npts, int ao_num, int pnum, int drv, int is_normalized)
 
+cdef extern from "c_support.h":
+  double ao_norm(int l,int m,int n,double alpha, int is_normalized)
+
+def aonorm(int l,int m,int n,double alpha, int is_normalized):
+  return ao_norm(l,m,n,alpha,is_normalized)
 
 @cython.boundscheck(False)
 @cython.wraparound(False)

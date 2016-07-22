@@ -1,0 +1,24 @@
+molecule {
+  N 0.257  -0.363   0.000  
+  H 0.257   0.727   0.000  
+  H 0.771  -0.727   0.890  
+  H 0.771  -0.727  -0.890  
+}
+
+set {
+  basis		cc-pVTZ
+  puream	true	# Use a (pure) spherical harmonic Gaussian basis set
+  print_basis	true	# Print the atomic orbital coefficients and exponents? 
+  print_mos	true	# Print the molecular orbital coefficients?
+  molden_write	true	# 1st variant to write a molden file
+}
+
+# Do a Hartree Fock calculation
+energy, wfn = energy('scf', return_wfn=True)
+
+# 2nd variant to write a molden file:
+molden(wfn, 'output.molden')
+
+# Write a GAUSSIAN Formatted Checkpoint File
+fchk(wfn, 'output.fchk')
+
