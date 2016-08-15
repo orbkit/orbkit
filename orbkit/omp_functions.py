@@ -50,7 +50,10 @@ def initializer(gargs):
   global global_args
   global_args = gargs
 
-def run(f,x=numpy.arange(10).reshape((-1,1)),numproc=1,display=sys.stdout.write,
+def display(string):
+  print(string)
+
+def run(f,x=numpy.arange(10).reshape((-1,1)),numproc=1,display=display,
         initializer=lambda x: x, global_args=None):
   #--- Start the worker processes --
   if numproc > 1:

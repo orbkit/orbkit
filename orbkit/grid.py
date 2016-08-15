@@ -56,7 +56,7 @@ def grid_init(is_vector=False, force=False):
   for ii in range(3):
     if max_[ii] == min_[ii]:
       # If min-value is equal to max-value, write only min-value to grid  
-      grid[ii]   = numpy.array([min_[ii]])
+      grid[ii]   = numpy.array([min_[ii]],dtype=numpy.float64)
       delta_[ii] = 1
       N_[ii]     = 1
     else:
@@ -126,22 +126,16 @@ def set_grid(xnew,ynew,znew,is_vector=None):
   coord = ['x', 'y', 'z']
   delta_ = numpy.zeros((3,1)) #: Contains the grid spacing.
   
-  NumberTypes = (int, long, float) #: Contains the supported types.
-  
-  # Check the input variable
-  correct_type = (isinstance(grid,list) or isinstance(grid,numpy.ndarray))
-  if not correct_type or len(grid) != 3:
-    raise TypeError('The `grid` variable has to be a list or a numpy array with ' + 
-                    'three dimensions.')
+  NumberTypes = (int, float) #: Contains the supported types.
   
   length = []
   grid = [xnew,ynew,znew]
   for i,c in enumerate(grid):
     # Check the type of the grid
     if isinstance(c,NumberTypes):
-      c = numpy.array([c],dtype=float)      
+      c = numpy.array([c],dtype=numpy.float64)      
     elif isinstance(c,(list,tuple)): 
-      c = numpy.array(c,dtype=float)    
+      c = numpy.array(c,dtype=numpy.float64)    
     elif not isinstance(c,numpy.ndarray):
       raise TypeError('%s (dimension %d) is of inappropriate type. (%s)' %(coord[i],i,type(c)))
     # Reshape if necessary
@@ -176,8 +170,23 @@ def set_grid(xnew,ynew,znew,is_vector=None):
     setattr(sys.modules[__name__],'is_vector',is_vector)
     info_string += ('\n\nThe variable `grid.is_vector` has been set to %s.' % 
                     is_vector)
+     
   return info_string
   # set_grid 
+
+def set_boundaries(is_regular=False,Nx=None,Ny=None,Nz=None):
+  global is_vector, min_, max_, delta_, N_
+  min_ = [x.min(),y.min(),z.min()]
+  max_ = [x.max(),y.max(),z.max()]
+  if is_regular:
+    N_ = [len(x),len(y),len(z)]
+    delta_ = [x[1]-x[0],y[1]-y[0],z[1]-z[0]]
+  elif all(Nx,Ny,Nz) is not None:
+    N_ = [Nx,Ny,Nz]
+    grid = numpy.array([x,y,z]).reshape(3,Nx,Ny,Nz)
+    delta_ = [grid[1,0,0]-grid[0,0,0],
+              grid[0,1,0]-grid[0,0,0],
+              grid[0,0,1]-grid[0,0,0]]
 
 def grid2vector():
   '''Converts the regular grid characterized by x-, y-, z-vectors
@@ -535,15 +544,17 @@ def adjust_to_geo(qc,extend=5.0,step=0.1):
     Specifies the grid spacing.
   
   '''
-  global min_, max_, N_
+  global min_, max_, N_,delta_
   
   for i in range(3):
     min_[i] = min(qc.geo_spec[:,i]) - abs(extend)
     max_[i] = max(qc.geo_spec[:,i]) + abs(extend)
-    N_[i] = int(numpy.ceil((max_[i] - min_[i]) / float(abs(step)))) + 1
-    # Correct maximum value, if necessary
-    max_[i] = (N_[i] - 1) * abs(step) + min_[i]
-    delta_[0] = 0
+    dist = (max_[i] - min_[i])
+    N_[i] = int(numpy.ceil(dist/step))+1
+    rest = (N_[i]-1)*step - dist
+    # Correct minimum and maximum value, if necessary
+    min_[i] -= rest/2.
+    max_[i] += rest/2.
 
 def check_atom_select(atom,geo_info,geo_spec,interactive=True,
                       display=sys.stdout.write):

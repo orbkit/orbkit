@@ -24,7 +24,7 @@ License along with orbkit.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
 lgpl_short = '''This is orbkit.
-Copyright (C) 2015 Gunter Hermann, Vincent Pohl, and Axel Schild. 
+Copyright (C) 2016 Gunter Hermann, Vincent Pohl, and Axel Schild. 
 This program comes with ABSOLUTELY NO WARRANTY. 
 This is free software, and you are welcome to redistribute it 
 under certain conditions. Type '-l' for details.
@@ -52,9 +52,10 @@ itypes = ['molden',
           'gaussian.fchk',
           'wfn',
           'wfx',
-          'cclib']                        #: Specifies possible input types.
+          'cclib',
+          'orbkit.dump']                        #: Specifies possible input types.
 
-otypes = ['h5', 'cb', 'am', 'hx', 'vmd','mayavi'] #: Specifies possible output types.
+otypes = ['h5', 'cb', 'am', 'hx', 'vmd', 'mayavi'] #: Specifies possible output types.
 
 drv_options = ['x','y','z',
                'xx','yy','zz','x2','y2','z2',

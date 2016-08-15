@@ -23,8 +23,10 @@ Citation
 If you use orbkit in your work, please cite it as follows:
 
 Gunter Hermann, Vincent Pohl, Jean Christophe Tremblay, Beate Paulus, Hans-Christian Hege, and Axel Schild,
-"ORBKIT - A Modular Python Toolbox for Cross-Platform Post-Processing of Quantum Chemical Wavefunction Data", 
-arXiv:1601.03069 (2016).
+"ORBKIT: A Modular Python Toolbox for Cross-Platform Postprocessing of Quantum Chemical Wavefunction Data", 
+*J. Comput. Chem.* **2016**, `DOI: 10.1002/jcc.24358`__.
+
+__ http://dx.doi.org/10.1002/jcc.24358
 
 Support
 -------
@@ -40,12 +42,12 @@ Installation Requirements
 
 For a proper execution of orbkit, the following Python modules are required:
 
-1) Python 2.6 - 2.7 (http://www.python.org), Python 3.x
+1) Python 2.6 - 2.7, Python 3.x (http://www.python.org)
 2) Cython (http://cython.org/)
 3) NumPy Library of high-level mathematical functions (http://www.numpy.org/)
 4) SciPy Library of algorithms and mathematical tools (http://www.scipy.org/)
 5) h5py Interface to the HDF5 binary data format (http://www.h5py.org/)
-6) Mayavi Tool for 3D scientific data visualization (optional)
+6) Mayavi Tool for 3D scientific data visualization (optional, http://code.enthought.com/projects/mayavi/)
 
 The package h5py is not mandatory but strongly recommended.
 
@@ -58,8 +60,8 @@ environment variables need to be set.
 In the following, we describe this procedure exemplary 
 for the different platforms.
 
-Linux
-.....
+Linux and Mac OS X
+..................
 
 The manual installation of orbkit is simple and can 
 be carried out using ``bash`` as follows:
@@ -71,7 +73,7 @@ will use the home directory. If you use a different directory simply replace
 
     $ cd $HOME
 
-Get a copy of orbkit, either with git or using a tarball. It is strongly
+Get a copy of orbkit, either with git or using a zip archive. It is strongly
 recommended to use git, since this version always contains the newest 
 bug fixes and features. If git is not available on your system, the newest 
 version can additionally be cloned from https://github.com/orbkit/orbkit.
@@ -81,14 +83,12 @@ version can additionally be cloned from https://github.com/orbkit/orbkit.
     Clone the repository::
 
         $ git clone https://github.com/orbkit/orbkit.git
-        $ git checkout cython
-
-  * Using a tarball:
+  * **OR:** Using a zip archive:
 
     Download the latest orbkit release and extract the file::
 
         $ wget https://github.com/orbkit/orbkit/archive/cython.zip
-        $ tar xzvf orbkit-cython.zip
+        $ unzip orbkit-cython.zip
         $ mv orbkit-cython orbkit
 
 Set an environment variable to this directory::
@@ -101,11 +101,14 @@ Now, you have to build to orbkit::
     $ python setup.py build_ext --inplace clean
 
 In order to use orbkit, you have to add the orbkit directory to your ``$PYTHONPATH``
-environment variable either temporarily by typing::
+environment variable either *temporarily* by typing::
 
     $ export PYTHONPATH=$PYHONPATH:$ORBKITPATH
 
-or permanently by adding these lines to your ~/.bashrc file.
+or permanently by adding these two lines to your ~/.bashrc file::
+
+    $ export ORBKITPATH=$HOME/orbkit
+    $ export PYTHONPATH=$PYHONPATH:$ORBKITPATH
 
 To use orbkit as a standalone program, you have to modify your 
 $PATH variable in the same way::

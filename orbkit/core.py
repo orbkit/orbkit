@@ -95,7 +95,9 @@ def ao_creator(geo_spec,ao_spec,ao_spherical=None,drv=None,
   assign = require(assign,dtype='i')
   ao_list = cy_core.aocreator(lxlylz,assign,ao_coeffs,pnum_list,geo_spec,
                               atom_indices,x,y,z,drv,is_normalized)
-  
+  if 'N' in ao_spec[0]:
+    # Renormalize atomic orbital
+    ao_list *= ao_spec[0]['N']
   if not (ao_spherical is None or ao_spherical == []):
     ao_list = cartesian2spherical(ao_list,ao_spec,ao_spherical)
   
@@ -300,7 +302,8 @@ def initializer(global_args):
   Spec = global_args
   
 def rho_compute(qc,calc_mo=False,drv=None,laplacian=False,
-                numproc=1,slice_length=1e4,vector=None,**kwargs):
+                numproc=1,slice_length=1e4,vector=None,save_hdf5=False,
+                **kwargs):
   r'''Calculate the density, the molecular orbitals, or the derivatives thereof.
   
   orbkit divides 3-dimensional regular grids into 2-dimensional slices and 
@@ -426,8 +429,10 @@ def rho_compute(qc,calc_mo=False,drv=None,laplacian=False,
   else:
     display("The calculation will be carried out with %d subprocesses." 
             % numproc)
-  display("\nThere are %d contracted AOs and %d MOs to be calculated."
-            % (len(Spec['mo_spec'][0]['coeffs']), mo_num))
+  display("\nThere are %d contracted %s AOs and %d MOs to be calculated." %
+          (len(Spec['mo_spec'][0]['coeffs']),
+           'Cartesian' if not Spec['ao_spherical'] else 'spherical', 
+           mo_num))
   
   # Initialize some additional user information 
   status_old = 0
@@ -437,14 +442,33 @@ def rho_compute(qc,calc_mo=False,drv=None,laplacian=False,
   # Make slices 
   # Initialize an array to store the results 
   mo_norm = numpy.zeros((mo_num,))
+  
+  def zeros(shape,name,save_hdf5):
+    if not save_hdf5:
+      return numpy.zeros(shape)
+    else:
+      return f.create_dataset(name,shape,dtype=numpy.float64,chunks=shape[:-1] + (slice_length,))
+  def reshape(data,shape):
+    if not save_hdf5:
+      return data.reshape(shape)
+    else:
+      data.attrs['shape'] = shape
+      return data[...].reshape(shape)
+  
+  if save_hdf5:
+    import h5py
+    f = h5py.File(str(save_hdf5), 'w')
+    f['x'] = grid.x
+    f['y'] = grid.y
+    f['z'] = grid.z
+  
   if calc_mo:
-    mo_list = numpy.zeros((mo_num,npts) if drv is None 
-                          else (len(drv),mo_num,npts))
+    mo_list = zeros((mo_num,npts) if drv is None 
+                    else (len(drv),mo_num,npts),"mo_list",save_hdf5)
   else:
-    rho = numpy.zeros(npts)
+    rho = zeros(npts,"rho",save_hdf5)
     if is_drv:
-      delta_rho = numpy.zeros((len(drv),npts))
-
+      delta_rho = zeros((len(drv),npts),"rho",save_hdf5)
   
   # Write the slices in x to an array xx 
   xx = []
@@ -520,19 +544,25 @@ def rho_compute(qc,calc_mo=False,drv=None,laplacian=False,
                 % {'m':norm, 'n':Spec['mo_spec'][ii_mo]['sym']})
   
   if calc_mo:    
-    if not was_vector: mo_list = mo_list.reshape(((mo_num,) if drv is None 
+    #if not was_vector: 
+    mo_list = reshape(mo_list,((mo_num,) if drv is None 
                                          else (len(drv),mo_num,)) + N)
+    if save_hdf5: f.close()
     return mo_list
   
   if not was_vector:
     # Print the number of electrons
     display("We have " + str(numpy.sum(rho)*grid.d3r) + " electrons.")
   
-  if not was_vector: rho = rho.reshape(N)
+  #if not was_vector: 
+  rho = reshape(rho,N)
   if not is_drv:
+    if save_hdf5: f.close()
     return rho
   else:
-    if not was_vector: delta_rho = delta_rho.reshape((len(drv),) + N)
+    #if not was_vector: 
+    delta_rho = reshape(delta_rho,(len(drv),) + N)
+    if save_hdf5: f.close()
     if laplacian: return rho, delta_rho, delta_rho.sum(axis=0)
     return rho, delta_rho
   # rho_compute 
@@ -670,6 +700,11 @@ def rho_compute_no_slice(qc,calc_mo=False,drv=None,
     drv = ['xx','yy','zz']
   
   display('\nStarting the calculation without slicing the grid...')
+  display("\nThere are %d contracted %s AOs and %d MOs to be calculated." %
+          (len(mo_spec[0]['coeffs']),
+           'Cartesian' if not ao_spherical else 'spherical', 
+           len(mo_spec)))
+  
   
   if drv is not None:
     try:

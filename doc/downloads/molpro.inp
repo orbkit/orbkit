@@ -1,0 +1,17 @@
+***,NH3
+gprint,basis,orbitals=50,civector	! Print the basis set, molecular orbitals, and CI vectors
+gthresh,printci=0.0 			! Print all CI coefficients
+
+geometry={
+  N 0.257  -0.363   0.000  
+  H 0.257   0.727   0.000  
+  H 0.771  -0.727   0.890  
+  H 0.771  -0.727  -0.890  
+}
+
+basis=cc-pVTZ 				! Select basis set
+
+hf 					! Perform HF calculation
+
+
+put,molden,nh3.molden,NEW		! write a molden file

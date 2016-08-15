@@ -111,9 +111,8 @@ def func(x_array,*args):
   
   if args[-1]: # calc_mo
     out **= 2. 
-    out = numpy.reshape(numpy.transpose(out),(-1,))
   
-  return out
+  return out.transpose()
 
 '''
 Cubature
@@ -121,11 +120,12 @@ Cubature
 '''
 from cubature import cubature
 ndim = 3                                         #: Specifies the number of dimensions being integrated
+fdim = 1                                         #: Specifies the length of the output vector of func
 xmin = numpy.array([-20.,-20.,-20.],dtype=float) #: Specifies the minimum integration limit for each variable
 xmax = numpy.array([ 20., 20., 20.],dtype=float) #: Specifies the maximum integration limit for each variable
 abserr = 1e-3                                    #: Specifies the absolute error: |error| < abserr requested (If zero, it will be ignored.)
 relerr = 1e-3                                    #: Specifies the relative error: |error| < relerr*|integral| requested (If zero, it will be ignored.)
-vectorized = True                                 #: If True, uses a vector of points in cubature, instead of a single point calculation. (Much faster!)
+vectorized = True                                #: If True, uses a vector of points in cubature, instead of a single point calculation. (Much faster!)
 
 '''
 Example One
@@ -136,11 +136,15 @@ count_calls = 0
 calc_mo = False
 
 # Call the cubature routine together with orbkit.
-integral,error = cubature(ndim, func, xmin, xmax, 
-                          args=[vectorized,calc_mo], 
-                          adaptive='h', abserr=abserr, relerr=relerr, 
-                          norm=0, maxEval=0,
-                          vectorized=vectorized)
+try:
+  integral,error = cubature(func, ndim, fdim, xmin, xmax, 
+                            args=[vectorized,calc_mo], 
+                            adaptive='h', abserr=abserr, relerr=relerr, 
+                            norm=0, maxEval=0,
+                            vectorized=vectorized)
+except:
+  print('Calculation failed.')
+  print('Should work with cubature 0.13.1 which has a different syntax than earlier versions.')
 
 print('After %d function calls the integral is %.14f. (Error: %.4e)' % 
       (count_calls,integral,error))
@@ -155,12 +159,17 @@ Note: The function saves the molecular orbital values. (Not the squared values!)
 '''
 count_calls = 0
 calc_mo = True
+fdim = len(qc.mo_spec)           #: now func will return the number of orbitals
 
 # Call the cubature routine together with orbkit.
-integral_mo,error_mo = cubature(ndim, func, xmin, xmax, 
-                                args=[vectorized,calc_mo], 
-                                adaptive='h', abserr=abserr, relerr=relerr, 
-                                norm=0, maxEval=0, vectorized=vectorized)
+try:
+  integral_mo,error_mo = cubature(func, ndim, fdim, xmin, xmax, 
+                                  args=[vectorized,calc_mo], 
+                                  adaptive='h', abserr=abserr, relerr=relerr, 
+                                  norm=0, maxEval=0, vectorized=vectorized)
+except:
+  print('Calculation failed.')
+  print('Should work with cubature 0.13.1 which has a different syntax than ealier versions.')
 
 print('After %d function calls the integral of...' % count_calls)
 for i,(inte,err) in enumerate(zip(integral_mo,error_mo)):

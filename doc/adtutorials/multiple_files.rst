@@ -163,7 +163,7 @@ We suggest two different approaches, which may be applied to an arbitrary number
 of dimensions:
 
 .. image:: sketch_ordering.png
-   :scale: 50 %
+   :scale: 80 %
    :alt: Sketch of ordering in two dimensions
    :align: center
 

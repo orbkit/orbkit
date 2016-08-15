@@ -14,7 +14,7 @@ The execution is demonstrated within the Terminal and within a Python shell.
 
 
 
-For simplicity, we use the molden file ``h2o.md`` as an example.
+For simplicity, we use the molden file ``h2o.molden`` as an example.
 This file can be found in ``$ORBKITPATH/examples``. Moreover, we assume that
 you have followed the instructions in :ref:`installation-instructions`. 
 
@@ -42,7 +42,7 @@ Now, let us run orbkit for a grid adapted to the molecular geometry
 
 .. code-block:: bash
 
-    $ orbkit -i h2o.md -o vis/h2o --otype=vmd --adjust_grid=5 0.5 --calc_mo=homo-1:lumo+2
+    $ orbkit -i h2o.molden -o vis/h2o --otype=vmd --adjust_grid=5 0.5 --calc_mo=homo-1:lumo+2
 
 orbkit creates four cube files and a VMD script file ``vis/h2o_MO.vmd``.
 This can be displayed using VMD by calling
@@ -71,7 +71,7 @@ you can combine it with other output options, e.g., ``--otype=vmd``.
 
 .. code-block:: bash
 
-    $ orbkit -i h2o.md --otype=mayavi --adjust_grid=5 0.5 --calc_mo=homo-1:lumo+2
+    $ orbkit -i h2o.molden --otype=mayavi --adjust_grid=5 0.5 --calc_mo=homo-1:lumo+2
 
 When the computations are finished, the data will be depicted in an interactive window:
 
@@ -101,7 +101,7 @@ Set the options
 
 .. code-block:: python
 
-    >> options.filename = 'h2o.md'
+    >> options.filename = 'h2o.molden'
     >> options.outputname = 'vis/h2o'
     >> options.otype = ['vmd','mayavi']
     >> options.adjust_grid = [5,0.1]
@@ -127,7 +127,7 @@ Read the input file,
 
 .. code-block:: python
 
-    >> qc = read.main_read('h2o.md',itype='molden',all_mo=True)
+    >> qc = read.main_read('h2o.molden',itype='molden',all_mo=True)
 
 initialize the grid,
 

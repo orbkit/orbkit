@@ -3,140 +3,151 @@ General Aspects
 
 This section lists all available input formats from the several quantum chemistry programs and the 
 requirements for their proper processing with orbkit.
-Besides, we have implemented an interface to cclib_.
+Alongside to the available program output files, there is an `interface to cclib`_.
 This platform can extract the data from additional computational chemistry packages.
 At the end of this section, all existing quantities, features and output formats of orbkit are introduced.
+
+.. note:: 
+
+    Although, quantum chemistry programs often support multiple output file formats,
+    all files do not necessarily have the same quality.
+    In order to prevent frustration, here is a list of recommended file formats for different quantum chemistry programs:  
+
+    +------------------------------------+-----------------------------+
+    |                                    | **Recommanded File Format** |
+    +------------------------------------+-----------------------------+
+    | **MOLPRO**                         | `Molden File`_              |
+    +------------------------------------+-----------------------------+
+    | **GAUSSIAN**                       | `GAUSSIAN .log File`_       |
+    +------------------------------------+-----------------------------+
+    | **GAMESS-US**                      | `GAMESS-US Output File`_    |
+    +------------------------------------+-----------------------------+
+    | **TURBOMOLE**                      | `AOMix File`_               |
+    +------------------------------------+-----------------------------+
+    | **Psi4**                           | `Molden File`_              |
+    +------------------------------------+-----------------------------+
+    | **ORCA**                           | `Molden File`_              |
+    +------------------------------------+-----------------------------+
+
 
 .. contents:: Table of Contents:
   :local:
   :depth: 2
 
-Requirements for the Input Files
---------------------------------
-
-In order to operate without problems, the input files of orbkit have to fulfill
-some requirements.
-
-Cartesian Harmonic Gaussian basis sets
-......................................
-
-Internally, orbkit works with Cartesian Harmonic Gaussian basis sets. Unless 
-otherwise stated (cf. :ref:`Central Variables <qc.ao_spec>` for details), it 
-assumes the standard Molden basis function order for the exponents 
-:math:`(l_x,l_y,l_z)`:
-
-  * s:
-    (0,0,0)
-  * p:
-    (1,0,0), (0,1,0), (0,0,1)
-  * d: 
-    (2,0,0), (0,2,0), (0,0,2),
-    (1,1,0), (1,0,1), (0,1,1)
-  * f: 
-    (3,0,0), (0,3,0), (0,0,3), 
-    (1,2,0), (2,1,0), (2,0,1), 
-    (1,0,2), (0,1,2), (0,2,1), 
-    (1,1,1)
-  * g: 
-    (4,0,0), (0,4,0), (0,0,4), 
-    (3,1,0), (3,0,1), (1,3,0), 
-    (0,3,1), (1,0,3), (0,1,3), 
-    (2,2,0), (2,0,2), (0,2,2), 
-    (2,1,1), (1,2,1), (1,1,2)
-
-.. hint:: 
-
-  Unless the exponents are not defined explicitly using "exp_list" in 
-  ``qc.ao_spec`` (cf. :ref:`Central Variables <qc.ao_spec>` for details), 
-  orbkit is restricted to s, p, d, f, and g atomic orbitals (Molden file 
-  limitation).
-
-Real-Valued (Pure) Spherical Harmonic Gaussian basis sets
-.........................................................
-
-orbkit supports Spherical Harmonic Gaussian basis sets currently for 
-Gaussian .log files (up to g atomic orbitals). After computing the Cartesian Gaussian basis set,
-it converts the atomic orbitals to a Spherical Harmonic Gaussian basis. 
-The conversion procedure is adapted from
-
-  H.B. Schlegel and M.J. Frisch, *International Journal of Quantum Chemistry*, 
-  **54**, 83 (1995).
-
-Notes on the Input File Formats
-...............................
+Supported Input File Formats
+----------------------------
 
 Subsequently, you can find a brief overview of all available input file formats 
 and some advices for the input file preparation.
 
-**Molden File Format:**
+.. _`Molden File`:
 
-  * Contains Cartesian Harmonics by default
+Molden File Format
+..................
+
   * Starts with :literal:`[Molden Format]`
   * Contains the sections :literal:`[Atoms]`, :literal:`[GTO]`, :literal:`[MO]`
   * If more than one :literal:`[Molden Format]` keyword is present, orbkit 
     provides an interactive selection.
+  * Contains `Cartesian Harmonic Gaussian`_ basis set by default
+  * For `Real-Valued (Pure) Spherical Harmonic`_ basis set the following keywords are present: 
+    :literal:`[5D]`, :literal:`[7F]`, :literal:`[5D7F]`, :literal:`[9G]`
+  * For more information see 
   * How to create Molden files:
 
-    * MOLPRO: http://www.molpro.net/info/2012.1/doc/manual/node102.html
+    * **MOLPRO**: Here is an example input file :download:`molpro.inp <downloads/molpro.inp>` (http://www.molpro.net/info/2012.1/doc/manual/node102.html)
+    * **PSI4**: Here is an example input file :download:`psi4.in <downloads/psi4.in>` (http://www.psicode.org/psi4manual/master/molden.html)
+    * **ORCA**: (https://sites.google.com/site/orcainputlibrary/printing-and-visualization)
 
+      .. code-block:: bash
+
+          $ orca_2mkl gbw-basename -molden
+
+.. attention::
+  
+  For TURBOMOLE, please use the `AOMix File`_ format and **not** the molden file format,
+  since here, the norm of the atomic orbitals and the order of molecular orbital coefficients are not consistent.
+  
     .. * TURBOMOLE: tm2molden
 
-**AOMix File Format:**
+.. _`AOMix File`:
 
-  * Contains Cartesian Harmonics by default
+AOMix File Format
+.................
+
+  * Very similar to the molden file format
   * Starts with :literal:`[AOMix Format]`
   * Contains the sections :literal:`[Atoms]`, :literal:`[GTO]`, :literal:`[MO]`
   * If more than one :literal:`[AOMix Format]` keyword is present, orbkit 
     provides an interactive selection.
+  * Contains `Cartesian Harmonic Gaussian`_ basis set by default
   * How to create AOMix files:
 
-    * TURBOMOLE: t2aomix
+    * **TURBOMOLE**: Run ``t2aomix`` in the TURBOMOLE working directory
 
+.. _`GAUSSIAN .log File`:
 
-**GAMESS-US Output File:**
+GAUSSIAN .log File
+..................
 
-  * Please use Cartesian Harmonics (**default**)
-  * Hint: GAMESS-US uses a non-standard order of basis functions. Thus, the 
-    "exp_list" is explicitly defined in ``qc.ao_spec`` 
-    (cf. :ref:`Central Variables <qc.ao_spec>` for details)
-
-**GAUSSIAN .log File:**
-
-  * Spherical Harmonics are chosen by default
   * Use the following parameters in your root section
 
     .. code-block:: bash
 
         gfinput IOP(6/7=3)
 
-  * You may switch manually to Cartesian Harmonics using `6D 10F`
-  * If more than one "linked" file/geometry/atomic orbitals/molecular orbitals 
+  * `Real-Valued (Pure) Spherical Harmonic`_ basis set is chosen by default
+  * You may switch manually to `Cartesian Harmonic Gaussian`_ basis set using :literal:`6D 10F`
+  * If more than one *"linked"* file/geometry/atomic orbitals/molecular orbitals 
     section is present in the .log file, orbkit provides an interactive selection.
 
-**GAUSSIAN Formatted Checkpoint File:**
+.. _`GAUSSIAN Formatted Checkpoint File`:
 
-  * Contains Cartesian Harmonics by default
+GAUSSIAN Formatted Checkpoint File
+..................................
+
+  * Contains `Cartesian Harmonic Gaussian`_ basis set by default
   * Not applicable for natural orbitals => occupation numbers are not printed
+  * Labels of the molecular orbitals are also not printed
   * How to create FChk files:
 
-    * Add :literal:`%Chk=chkpt-file` to your Gaussian input file
-    * Use :literal:`formchk` to convert the chk file:
+    * **GAUSSIAN**:
+      
+      * Add :literal:`%Chk=chkpt-file` to your Gaussian input file
+      * Use :literal:`formchk` to convert the chk file:
 
-      .. code-block:: bash
+        .. code-block:: bash
 
-          $ formchk chkpt-file formatted-file
+            $ formchk chkpt-file formatted-file
+    * **PSI4**: Here is an example input file :download:`psi4.in <downloads/psi4.in>` (http://psicode.org/psi4manual/master/fchk.html)
 
-**wfn/wfx Files:**
 
-  * Contains Cartesian Harmonics by default
+.. _`GAMESS-US Output File`:
+
+GAMESS-US Output File
+.....................
+
+  * Please use `Cartesian Harmonic Gaussian`_ basis set (**default**)
+  * Hint: GAMESS-US uses a non-standard order of basis functions. Thus, the 
+    "exp_list" is explicitly defined in ``qc.ao_spec`` 
+    (cf. :ref:`Central Variables <qc.ao_spec>` for details)
+
+.. _`wfn/wfx File`:
+
+wfn/wfx Files
+.............
+
+  * Contains `Cartesian Harmonic Gaussian`_ basis set by default
   * How to create wfn/wfx files:
 
-    * For ORCA: 
+    * **ORCA**: (https://sites.google.com/site/orcainputlibrary/orbital-and-density-analysis)
 
       .. code-block:: bash
 
           $ orca_2aim gbw-basename
 
+.. _`interface to cclib`:
+          
 Interface to cclib Library
 ..........................
 
@@ -145,9 +156,12 @@ It is well checked for multiple versions of different programs.
 The interface for cclib_ that we have implemented converts data extracted with cclib into the data structure of orbkit.
 A tutorial for the usage of this interface is given in :doc:`./adtutorials/cclib`.
 
+.. hint: 
 
-Capabilities
-------------
+  The cclib interface is only tested for a few example. If anything does not properly work, please contact us.
+  
+Capabilities of orbkit
+----------------------
 
 orbkit is designed with a modular structure. This allows to use it not only 
 as a standalone version but also to combine its individual  modules or functions 
@@ -251,5 +265,61 @@ Output Formats
 +------------------------------------+------------------------+--------------------------+-------------------------+
 | **XYZ and PBE Files**              |          |bm|          |           |bm|           |           |cm|          |
 +------------------------------------+------------------------+--------------------------+-------------------------+
+
+Notes on Gaussian Basis Sets
+----------------------------
+
+In modern quantum chemistry for finite systems, there are two widely used basis set types:
+Cartesian harmonic Gaussian basis sets and real-valued (pure) spherical harmonic Gaussian basis sets.
+While orbkit internally uses the former type, it is able to handle the latter using a transformation.
+
+.. _`Cartesian Harmonic Gaussian`:
+
+Cartesian Harmonic Gaussian Basis Sets
+......................................
+
+Internally, orbkit works with Cartesian Harmonic Gaussian basis sets. Unless 
+otherwise stated (cf. :ref:`Central Variables <qc.ao_spec>` for details), it 
+assumes the standard Molden basis function order for the exponents 
+:math:`(l_x,l_y,l_z)`:
+
+  * s:
+    (0,0,0)
+  * p:
+    (1,0,0), (0,1,0), (0,0,1)
+  * d: 
+    (2,0,0), (0,2,0), (0,0,2),
+    (1,1,0), (1,0,1), (0,1,1)
+  * f: 
+    (3,0,0), (0,3,0), (0,0,3), 
+    (1,2,0), (2,1,0), (2,0,1), 
+    (1,0,2), (0,1,2), (0,2,1), 
+    (1,1,1)
+  * g: 
+    (4,0,0), (0,4,0), (0,0,4), 
+    (3,1,0), (3,0,1), (1,3,0), 
+    (0,3,1), (1,0,3), (0,1,3), 
+    (2,2,0), (2,0,2), (0,2,2), 
+    (2,1,1), (1,2,1), (1,1,2)
+
+.. hint:: 
+
+  Unless the exponents are not defined explicitly using "exp_list" in 
+  ``qc.ao_spec`` (cf. :ref:`Central Variables <qc.ao_spec>` for details), 
+  orbkit is restricted to s, p, d, f, and g atomic orbitals (Molden file 
+  limitation).
+
+.. _`Real-Valued (Pure) Spherical Harmonic`:
+
+Real-Valued (Pure) Spherical Harmonic Gaussian basis sets
+.........................................................
+
+orbkit supports Spherical Harmonic Gaussian basis sets currently up to g atomic orbitals. 
+After computing the Cartesian Gaussian basis set,
+it converts the atomic orbitals to a Spherical Harmonic Gaussian basis. 
+The conversion procedure is adapted from
+
+  H.B. Schlegel and M.J. Frisch, *International Journal of Quantum Chemistry*, 
+  **54**, 83 (1995).
 
 .. _cclib: https://github.com/cclib/cclib

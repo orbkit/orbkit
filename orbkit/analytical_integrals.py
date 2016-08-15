@@ -126,7 +126,10 @@ def get_ao_overlap(coord_a,coord_b,ao_spec,lxlylz_b=None,
                                            lxlylz_a,lxlylz_b,
                                            coeff,index,
                                            drv,int(is_normalized))
-
+  if 'N' in ao_spec[0]:
+    for i in range(len(ao_overlap_matrix)):
+      ao_overlap_matrix[i,:] *= ao_spec[0]['N'][i]*ao_spec[0]['N'][:,0]
+  
   if not (ao_spherical is None or ao_spherical == []):
     # Convert the overlap matrix to the real-valued spherical harmonic basis.
     ao_overlap_matrix = cartesian2spherical_aoom(ao_overlap_matrix,ao_spec,ao_spherical)
@@ -251,7 +254,8 @@ def get_mo_overlap_matrix(mo_a,mo_b,ao_overlap_matrix,numproc=1):
                  'mo_b': create_mo_coeff(mo_b,name='mo_b'),
                  'ao_overlap_matrix': ao_overlap_matrix}
     
-  if global_args['mo_a'].shape[1] != global_args['mo_b'].shape[1]:
+  if ((global_args['mo_a'].shape[1] != ao_overlap_matrix.shape[0]) or
+      (global_args['mo_b'].shape[1] != ao_overlap_matrix.shape[1])):
     raise ValueError('mo_a and mo_b have to correspond to the same basis set, '+
                      'i.e., shape_a[1] != shape_b[1]')
   
@@ -324,7 +328,7 @@ def get_ao_dipole_matrix(qc,component='x'):
   
   qc : class
     QCinfo class. (See :ref:`Central Variables` for details.)
-  component : int or string, {'x','y', 'z', 0, 1, 2}
+  component : int or string, {'x','y', 'z'}
     Specifies the compontent of the dipole moment operator which shall be applied.
   
   **Returns:**
@@ -332,7 +336,7 @@ def get_ao_dipole_matrix(qc,component='x'):
   ao_dipole_matrix : numpy.ndarray, shape=(NAO,NAO)
     Contains the expectation value matrix.
   '''
-  if not isinstance(component, (int, long)):
+  if not isinstance(component, int):
     component = 'xyz'.find(component)
   if component == -1: # Was the selection valid?
     raise ValueError("The selection of the component was not valid!" +
@@ -371,7 +375,7 @@ def get_nuclear_dipole_moment(qc,component='x'):
   
   qc : class
     QCinfo class. (See :ref:`Central Variables` for details.)
-  component : int or string, {'x','y', 'z', 0, 1, 2}
+  component : string, {'x','y', 'z'}
     Specifies the compontent of the dipole moment operator which shall be applied.
   
   **Returns:**
@@ -379,7 +383,7 @@ def get_nuclear_dipole_moment(qc,component='x'):
   nuclear_dipole_moment : float
     Contains the nuclear dipole moment.
   '''
-  if not isinstance(component, (int, long)):
+  if not isinstance(component, int):
     component = 'xyz'.find(component)
   if component == -1: # Was the selection valid?
     raise ValueError("The selection of the component was not valid!" +

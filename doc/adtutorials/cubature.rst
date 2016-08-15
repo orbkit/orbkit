@@ -10,7 +10,7 @@ molecular orbitals of the water molecule in a user-defined volume.
   - http://ab-initio.mit.edu/wiki/index.php/Cubature
   - https://github.com/saullocastro/cubature (Python interface)
 
-For simplicity, we use the molden file ``h2o.md`` as an example.
+For simplicity, we use the molden file ``h2o.molden`` as an example.
 This file can be found in ``$ORBKITPATH/examples``. Moreover, we assume that
 you have followed the :ref:`installation-instructions` and that you have 
 installed the Python interface to cubature_. 
@@ -44,7 +44,7 @@ First, we have to import some modules and set some of orbkits options::
 Then, we have to read the input file::
 
   # Open molden file and read parameters
-  qc = orbkit.main_read('h2o.md',itype='molden',all_mo=False)
+  qc = orbkit.main_read('h2o.molden',itype='molden',all_mo=False)
 
 Setting up a Function for Cubature 
 ----------------------------------

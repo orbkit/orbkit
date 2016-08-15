@@ -59,6 +59,8 @@ delta2_rho.sort(axis=0)
 import pylab as plt
 from numpy import sign
 plt.plot((sign(delta2_rho[1])*rho).reshape((-1,)),s.reshape((-1),),'.')
+plt.ylabel('Reduced Density Gradient')
+plt.xlabel(r'Electron Density $\times$ Sign of Second Hessian Eigenvalue')
 plt.ylim(0,2)
 plt.xlim(-0.05,0.05)
 plt.show()

@@ -61,7 +61,7 @@ Input/Output
 
 The input filename can be specified by::
 
-  ok.options.filename = 'h2o.md'
+  ok.options.filename = 'h2o.molden'
 
 The file type has to be specified via::
 
