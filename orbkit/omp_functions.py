@@ -28,22 +28,21 @@ from time import time
 from multiprocessing import Pool
 
 quiet = False
-
-def slicer(N,vector=1e4,numproc=1):
+def slicer(N,slice_length=1e4,numproc=1):
   i = 0
-  vector = 1 if int(vector) <= 0.0 else int(vector)
-  sNum = int((N/(vector))+1)
+  slice_length = 1 if int(slice_length) <= 0.0 else int(slice_length)
+  sNum = int((N/(slice_length)))
   xx = []
   if numproc > 1:
     for s in range(sNum):
       if i == N:
         N -= 1
         break
-      elif (i + vector) >= N:
+      elif (i + slice_length) >= N:
         xx.append((numpy.array([i,N],dtype=int)))      
       else:
-        xx.append((numpy.array([i,i + vector],dtype=int)))
-      i += vector
+        xx.append((numpy.array([i,i + slice_length],dtype=int)))
+      i += slice_length
   else:
     xx.append((numpy.array([0,N],dtype=int))) 
   return xx

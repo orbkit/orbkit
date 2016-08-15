@@ -104,7 +104,7 @@ def get_grid(start='\t'):
 def tolist():
   '''Returns a list containing the current x-, y-, z-grid.
   '''
-  return [x, y, z]
+  return [numpy.copy(x), numpy.copy(y), numpy.copy(z)]
   
 def todict():
   '''Returns a dictionary containing the current x-, y-, z-grid.
