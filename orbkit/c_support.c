@@ -4,40 +4,25 @@
 #include <stdlib.h>
 
 #include "c_support.h"
-  
+
+double ipow(double base, int exp)
+{
+    double result = 1.;
+    while (exp>0)
+    {
+        if (exp & 1)
+            result *= base;
+        exp >>= 1;
+        base *= base;
+    }
+
+    return result;
+}
+
 double xyz(double x,double y,double z,int lx,int ly,int lz)
 {
   //  FUNCTION xyz  calculate x^lx * y^ly * z^lz 
-  double Xl, Yl, Zl;
-  
-  if (lx == 0)
-    Xl = 1;
-  else if (lx == 1)
-    Xl = x;
-  else if (lx == 2)
-    Xl = x*x;
-  else
-    Xl = pow(x, lx);
-    
-  if (ly == 0)
-    Yl = 1;
-  else if (ly == 1)
-    Yl = y;
-  else if (ly == 2)
-    Yl = y*y;
-  else
-    Yl = pow(y, ly);
-    
-  if (lz == 0)
-    Zl = 1;
-  else if (lz == 1)
-    Zl = z;
-  else if (lz == 2)
-    Zl = z*z;
-  else
-    Zl = pow(z, lz);
-
-  return Xl * Yl * Zl;
+  return ipow(x,lx)*ipow(y,ly)*ipow(z,lz);
 }
 
 double get_ao_xyz(double X, double Y, double Z, int lx, int ly, int lz, double alpha, int drv)

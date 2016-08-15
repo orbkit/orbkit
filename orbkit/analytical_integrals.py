@@ -34,8 +34,8 @@ from orbkit import cy_overlap
 from orbkit.core import exp,lquant,slicer,get_lxlylz,get_cart2sph,l_deg
 from orbkit.core import create_mo_coeff,validate_drv,require
 
-def get_ao_overlap(coord_a,coord_b,ao_spec,lxlylz_b=None,
-                   drv=None,ao_spherical=None):
+def get_ao_overlap(coord_a,coord_b,ao_spec,ao_spherical=None,lxlylz_b=None,
+                   drv=None):
   '''Computes the overlap matrix of a basis set, where `Bra` basis set
   corresponds to the geometry :literal:`coord_a` and `Ket` basis set corresponds 
   to the geometry :literal:`coord_b`.
@@ -55,19 +55,27 @@ def get_ao_overlap(coord_a,coord_b,ao_spec,lxlylz_b=None,
     Specifies the geometry of the `Ket` basis set. 
     See :ref:`Central Variables` in the manual for details.  
   ao_spec : 
-    See :ref:`Central Variables` in the manual for details.  
-  lxlylz_b : numpy.ndarray, dtype=numpy.int64, shape = (NAO,3), optional
-    Contains the expontents lx, ly, lz for the primitive Cartesian Gaussians of
-    the `Ket` basis set.  
+    See :ref:`Central Variables` in the manual for details.   
   ao_spherical : optional
     Specifies if the input is given in a spherical harmonic Gaussian basis set.
     See :ref:`Central Variables` in the manual for details.
+  lxlylz_b : numpy.ndarray, dtype=numpy.int64, shape = (NAO,3), optional
+    Contains the expontents lx, ly, lz for the primitive Cartesian Gaussians of
+    the `Ket` basis set. 
   
   **Returns:**
   
   ao_overlap_matrix : numpy.ndarray, shape = (NAO,NAO)
     Contains the overlap matrix.
   '''
+  if isinstance(drv, list):
+    aoom = []
+    for ii_d in drv:
+      aoom.append(get_ao_overlap(coord_a,coord_b,ao_spec,
+                                 ao_spherical=ao_spherical,
+                                 lxlylz_b=lxlylz_b,
+                                 drv=ii_d))
+    return aoom
   lxlylz_a = get_lxlylz(ao_spec)
 
   if lxlylz_b is None:
@@ -159,6 +167,7 @@ def cartesian2spherical_aoom(ao_overlap_matrix,ao_spec,ao_spherical):
     Only supported up to g atomic orbitals and only for contracted 
     atomic orbitals.
   '''
+  
   # Get the exponents of the Cartesian basis functions
   exp_list,assign = get_lxlylz(ao_spec,get_assign=True)
   
@@ -171,22 +180,30 @@ def cartesian2spherical_aoom(ao_overlap_matrix,ao_spec,ao_spherical):
   for i,j in enumerate(assign):
     l[j].append(i) 
   
+  indices = []
+  c = 0
+  for i0,(j0,k0) in enumerate(ao_spherical):
+    sph0 = get_cart2sph(*k0)    
+    for c0 in range(len(sph0[0])):
+      for i,j in enumerate(l[j0]):
+        if tuple(exp_list[j]) == sph0[0][c0]:
+          indices.append(i + l[j0][0])
+      c += 1
+  
+  c = 0
   aoom_sph = numpy.zeros((len(ao_spherical),len(ao_spherical)))
   for i0,(j0,k0) in enumerate(ao_spherical):
-    sph0 = get_cart2sph(*k0)
-    for i1,(j1,k1) in enumerate(ao_spherical):
-      sph1 = get_cart2sph(*k1)
-      for c0 in range(len(sph0[0])):
-        for i,j in enumerate(l[j0]):
-          if tuple(exp_list[j]) == sph0[0][c0]:
-            index0 = i + l[j0][0]
+    sph0 = get_cart2sph(*k0)    
+    for c0 in range(len(sph0[0])):
+      d = 0 
+      for i1,(j1,k1) in enumerate(ao_spherical):
+        sph1 = get_cart2sph(*k1)
         for c1 in range(len(sph1[0])):
-          for i,j in enumerate(l[j1]):
-            if tuple(exp_list[j]) == sph1[0][c1]:
-              index1 = i + l[j1][0]
-          
-          aoom_sph[i0,i1] += (sph0[1][c0]*sph0[2]*sph1[1][c1]*sph1[2]
-                              *ao_overlap_matrix[index0,index1])
+          aoom_sph[i0,i1] += (sph0[1][c0]*sph0[2] * sph1[1][c1]*sph1[2]
+                              * ao_overlap_matrix[indices[c],indices[d]])
+          d += 1
+      c+=1
+  
   return aoom_sph
 
 def get_mo_overlap(mo_a,mo_b,ao_overlap_matrix):
@@ -335,6 +352,12 @@ def get_ao_dipole_matrix(qc,component='x'):
   ao_dipole_matrix : numpy.ndarray, shape=(NAO,NAO)
     Contains the expectation value matrix.
   '''
+  
+  if isinstance(component, list):
+    aoom = []
+    for ii_d in component:
+      aoom.append(get_ao_dipole_matrix(qc,component=ii_d))
+    return aoom
   if not isinstance(component, int):
     component = 'xyz'.find(component)
   if component == -1: # Was the selection valid?

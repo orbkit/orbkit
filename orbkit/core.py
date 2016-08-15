@@ -155,6 +155,22 @@ def cartesian2spherical(ao_list,ao_spec,ao_spherical):
   
     The conversion is currently only supported up to g atomic orbitals.
   '''
+  # Get the exponents of the Cartesian basis functions
+  #indices = get_lxlylz(ao_spec,get_label=True)
+  
+  #shape = list(ao_list.shape)
+  #shape[0] = len(ao_spherical)
+  #ao_list_sph = numpy.zeros(shape)
+  #for i0,(j0,k0) in enumerate(ao_spherical):
+    #sph0 = cy_core.get_cart2sph(*k0)
+    #for c0 in range(len(sph0[0])):
+      #index0 = int(numpy.argwhere(indices == j0*1000 + sph0[0][c0]))
+      #ao_list_sph[i0,:] += sph0[1][c0]*sph0[2]*ao_list[index0,:]
+  
+  #return ao_list_sph
+  
+  
+  
   lxlylz,assign = get_lxlylz(ao_spec,get_assign=True)
 
   l = [[] for i in ao_spec]
@@ -933,7 +949,7 @@ def get_cart2sph(l,m):
   '''
   return cart2sph[l][l+m]
 
-def get_lxlylz(ao_spec,get_assign=False,bincount=False):
+def get_lxlylz(ao_spec,get_assign=False,bincount=False,get_label=False):
   '''Extracts the exponents lx, ly, lz for the Cartesian Gaussians.
   
   **Parameters:**
@@ -959,13 +975,16 @@ def get_lxlylz(ao_spec,get_assign=False,bincount=False):
       l = exp[lquant[ao_spec[sel_ao]['type']]]
     lxlylz.extend(l)
     assign.extend([sel_ao]*len(l))
-  if get_assign:
+  lxlylz = numpy.array(lxlylz,dtype=numpy.intc,order='C')
+  assign = numpy.array(assign,dtype=numpy.intc,order='C')
+  if get_label:
+    return 1000*assign + (lxlylz * numpy.array([100,10,1])).sum(axis=1,dtype=numpy.intc)
+  elif get_assign:
     if bincount:
       assign = numpy.bincount(assign)
-    return (numpy.array(lxlylz,dtype=numpy.intc,order='C'), 
-            numpy.array(assign,dtype=numpy.intc,order='C'))
+    return (lxlylz,assign)
   
-  return numpy.array(lxlylz,dtype=numpy.intc,order='C') 
+  return lxlylz
 
 def validate_drv(drv):
   if drv is None or drv == '': return 0

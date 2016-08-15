@@ -27,6 +27,8 @@ import numpy
 from time import time
 from multiprocessing import Pool
 
+quiet = False
+
 def slicer(N,vector=1e4,numproc=1):
   i = 0
   vector = 1 if int(vector) <= 0.0 else int(vector)
@@ -72,7 +74,7 @@ def run(f,x=numpy.arange(10).reshape((-1,1)),numproc=1,display=display,
       return_val[l] = it.next() if numproc > 1 else f(ifid)  
       #--- Print out the progress of the computation ---
       status = numpy.floor(l*10/float(len(x)))*10
-      if display is not None and not status % 10 and status != status_old:
+      if not quiet and display is not None and not status % 10 and status != status_old:
         t.append(time())
         display("\tFinished %(f)d%% (%(s)d slices in %(t).3fs)"
                         % {'f': status,
@@ -87,7 +89,7 @@ def run(f,x=numpy.arange(10).reshape((-1,1)),numproc=1,display=display,
       pool.join()
       pool.terminate()
   
-  if display is not None:
+  if not quiet and display is not None:
     display("\t" + 40*"-")
     display("\tComputation required %(t).3fs" % {'t': t[-1]-t[0]})
   

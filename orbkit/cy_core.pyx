@@ -4,6 +4,10 @@ import cython
 import numpy as np
 cimport numpy as np
 
+cdef extern from "math.h":
+    double sqrt(double x)
+    double pow(double x,int y)
+
 cdef extern from "c_grid-based.h":
   void c_lcreator(double* ao_list, int* lxlylz, double* coeff_list,
                     double* at_pos, double* x, double* y, double* z, 
@@ -11,9 +15,13 @@ cdef extern from "c_grid-based.h":
 
 cdef extern from "c_support.h":
   double ao_norm(int l,int m,int n,double alpha, int is_normalized)
+  double get_ao_xyz(double X, double Y, double Z, int lx, int ly, int lz, double alpha, int drv)
 
 def aonorm(int l,int m,int n,double alpha, int is_normalized):
   return ao_norm(l,m,n,alpha,is_normalized)
+
+def aoxyz(double x, double y, double z, int lx, int ly, int lz, double alpha, int drv):
+  return get_ao_xyz(x, y, z, lx,ly,lz,alpha,drv)
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
@@ -68,7 +76,6 @@ def aocreator(np.ndarray[int,    ndim=2, mode="c"] lxlylz       not None,
     c_p += pnum_list[i]
   return ao_list
   
-
 @cython.boundscheck(False)
 @cython.wraparound(False)
 def mocreator(np.ndarray[double, ndim=2, mode="c"] ao_list      not None,

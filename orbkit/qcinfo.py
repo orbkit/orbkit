@@ -65,6 +65,10 @@ class QCinfo:
       keys.append(i_mo['sym'].split('.'))
     keys = numpy.array(keys,dtype=int)
     self.mo_spec = list(numpy.array(self.mo_spec)[numpy.lexsort(keys.T)])
+  
+  def get_mo_labels(self):
+    return ['MO %(sym)s, Occ=%(occ_num).2f, E=%(energy)+.4f E_h' % 
+                  i for i in self.mo_spec]
 
   def get_com(self,nuc_list=None):
     '''Computes the center of mass.
@@ -171,6 +175,17 @@ class CIinfo:
     self.occ    = []
     self.info   = None
     self.method = method
+
+  def __str__(self):
+    string = '%s: ' % self.method
+    if self.info is not None:
+      string += '%(state)s (%(spin)s)' % self.info
+    return  string
+  def __eq__(self, other): 
+    try:
+      return self.__dict__ == other.__dict__
+    except ValueError:
+      return False
   def copy(self):
     ciinfo = self.__class__(method=self.method)
     if self.coeffs != []:

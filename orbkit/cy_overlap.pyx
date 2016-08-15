@@ -110,7 +110,7 @@ def aooverlap(np.ndarray[double, ndim=2, mode="c"] ra           not None,
         aoom[i_l,j_l] += ((-2 * B.alpha) * coeff_list[i,1] * coeff_list[j,1] 
                           * norm[i] * norm[j] * get_overlap(&A, &B))
   return aoom
-
+  
 @cython.boundscheck(False)
 @cython.wraparound(False)
 def mooverlap(np.ndarray[double, ndim=1, mode="c"] mo_a           not None,
