@@ -104,7 +104,7 @@ def get_grid(start='\t'):
 def tolist():
   '''Returns a list containing the current x-, y-, z-grid.
   '''
-  return [x, y, z]
+  return [numpy.copy(x), numpy.copy(y), numpy.copy(z)]
   
 def todict():
   '''Returns a dictionary containing the current x-, y-, z-grid.
@@ -543,6 +543,7 @@ def adjust_to_geo(qc,extend=5.0,step=0.1):
     N_[i] = int(numpy.ceil((max_[i] - min_[i]) / float(abs(step)))) + 1
     # Correct maximum value, if necessary
     max_[i] = (N_[i] - 1) * abs(step) + min_[i]
+    delta_[0] = 0
 
 def check_atom_select(atom,geo_info,geo_spec,interactive=True,
                       display=sys.stdout.write):

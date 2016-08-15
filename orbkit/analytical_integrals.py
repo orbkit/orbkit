@@ -31,8 +31,9 @@ import numpy
 from multiprocessing import Pool
 
 from orbkit import cy_overlap
-from orbkit.core import exp,lquant,slicer,get_lxlylz,get_cart2sph,l_deg
+from orbkit.core import exp,lquant,get_lxlylz,get_cart2sph,l_deg
 from orbkit.core import create_mo_coeff,validate_drv,require
+from orbkit.omp_functions import slicer
 
 def get_ao_overlap(coord_a,coord_b,ao_spec,lxlylz_b=None,
                    drv=None,ao_spherical=None):
@@ -256,7 +257,7 @@ def get_mo_overlap_matrix(mo_a,mo_b,ao_overlap_matrix,numproc=1):
   
   
   xx = slicer(N=len(global_args['mo_a']),
-              vector=numpy.ceil(len(global_args['mo_a'])/float(numproc)),
+              slice_length=numpy.ceil(len(global_args['mo_a'])/float(numproc+1)),
               numproc=numproc)
   
   # Start the worker processes
