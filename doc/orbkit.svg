@@ -1,0 +1,648 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="345"
+   height="345"
+   id="svg3133"
+   version="1.1"
+   inkscape:version="0.48.5 r10040"
+   sodipodi:docname="Neues Dokument 2">
+  <defs
+     id="defs3135" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.98994949"
+     inkscape:cx="420.92368"
+     inkscape:cy="137.65007"
+     inkscape:document-units="px"
+     inkscape:current-layer="svg3133"
+     showgrid="false"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0"
+     inkscape:window-width="1920"
+     inkscape:window-height="1100"
+     inkscape:window-x="0"
+     inkscape:window-y="28"
+     inkscape:window-maximized="1" />
+  <metadata
+     id="metadata3138">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     transform="translate(-137.41739,-87.087669)"
+     id="g3217">
+    <polygon
+       class="fil80"
+       points="5182,2818 5188,2800 5193,2779 5197,2759 5198,2737 5197,2716 5193,2695 5188,2675 5182,2656 5173,2637 5163,2620 5152,2603 5139,2588 5124,2575 5109,2563 5091,2553 5073,2543 5055,2537 5036,2531 5015,2528 4995,2527 4974,2528 4954,2531 4935,2537 4915,2543 4898,2553 4881,2563 4866,2575 4852,2588 4839,2603 4827,2620 4817,2637 4809,2656 4802,2675 4797,2695 4794,2716 4793,2737 4794,2759 4797,2779 4802,2800 4809,2818 4817,2836 4827,2853 4839,2869 4852,2884 4866,2898 4881,2910 4898,2921 4915,2929 4935,2936 4954,2941 4974,2944 4995,2946 5015,2944 5036,2941 5055,2936 5073,2929 5091,2921 5109,2910 5124,2898 5139,2884 5152,2869 5163,2853 5173,2836 "
+       id="polygon4411-7"
+       style="fill:#00ffff;fill-rule:evenodd"
+       transform="matrix(0.17556002,0,0,0.2533028,-518.45004,-520.54368)"
+       inkscape:export-filename="/home/vincpohl/Dropbox/Send/orbkit_logo/logo2.png"
+       inkscape:export-xdpi="400"
+       inkscape:export-ydpi="400" />
+    <polygon
+       class="fil80"
+       points="4523,2834 4503,2817 4481,2803 4455,2794 4428,2791 4401,2794 4377,2803 4354,2817 4335,2834 4318,2856 4306,2881 4298,2909 4295,2939 4298,2969 4306,2996 4318,3022 4335,3043 4354,3061 4377,3074 4401,3083 4428,3086 4455,3083 4481,3074 4503,3061 4523,3043 4540,3022 4552,2996 4559,2969 4562,2939 4559,2909 4552,2881 4540,2856 "
+       id="polygon4413-9"
+       style="fill:#00ffff;fill-rule:evenodd"
+       transform="matrix(0.17556002,0,0,0.2533028,-518.45004,-520.54368)"
+       inkscape:export-filename="/home/vincpohl/Dropbox/Send/orbkit_logo/logo2.png"
+       inkscape:export-xdpi="400"
+       inkscape:export-ydpi="400" />
+    <polygon
+       class="fil45"
+       points="4528,3538 4483,3525 4438,3512 4394,3499 4351,3488 4309,3475 4308,3448 4305,3422 4299,3397 4291,3373 4285,3377 4280,3382 4273,3388 4268,3393 4263,3400 4258,3406 4255,3414 4253,3420 4234,3423 4214,3425 4195,3427 4176,3429 4155,3430 4135,3430 4115,3430 4094,3431 4074,3431 4053,3431 4033,3432 4013,3433 3992,3434 3973,3436 3954,3438 3934,3441 3920,3408 3906,3375 3894,3342 3880,3308 3865,3275 3851,3243 3834,3210 3818,3177 3756,3061 3787,3049 3818,3035 3850,3020 3880,3004 3911,2987 3941,2970 3971,2953 4001,2936 4031,2918 4061,2900 4091,2883 4121,2866 4152,2849 4182,2833 4213,2818 4245,2803 4249,2790 4245,2778 4239,2765 4238,2751 4257,2738 4278,2726 4298,2714 4319,2702 4339,2691 4360,2681 4383,2672 4404,2664 4444,2695 4750,2528 4757,2524 4762,2518 4767,2513 4774,2507 4780,2502 4787,2498 4794,2495 4802,2493 4825,2493 4849,2493 4872,2492 4895,2492 4918,2490 4940,2489 4963,2488 4985,2487 5007,2486 5029,2485 5052,2483 5073,2482 5096,2481 5118,2480 5141,2479 5163,2478 5193,2487 5225,2497 5256,2505 5287,2514 5318,2523 5349,2530 5381,2538 5412,2544 5445,2552 5476,2558 5508,2563 5540,2570 5572,2576 5603,2582 5636,2588 5668,2593 5656,2697 5654,2802 5655,2908 5654,3011 5655,3023 5633,3040 5610,3059 5586,3079 5562,3099 5536,3119 5509,3141 5482,3163 5455,3185 5426,3209 5398,3231 5369,3255 5342,3277 5313,3301 5284,3324 5255,3347 5227,3371 5199,3393 5171,3416 5144,3437 5118,3459 5092,3479 5068,3499 5044,3519 5022,3537 5000,3555 4981,3571 4962,3586 4944,3601 4928,3614 4914,3626 4902,3637 4892,3645 4878,3640 4858,3633 4835,3625 4807,3616 4775,3607 4738,3597 4701,3586 4660,3575 4617,3563 4573,3551 "
+       id="polygon4415-7"
+       style="fill:#000000;fill-rule:evenodd"
+       transform="matrix(0.17556002,0,0,0.2533028,-518.45004,-520.54368)"
+       inkscape:export-filename="/home/vincpohl/Dropbox/Send/orbkit_logo/logo2.png"
+       inkscape:export-xdpi="400"
+       inkscape:export-ydpi="400" />
+    <polygon
+       class="fil81"
+       points="4849,3129 4865,3119 4881,3110 4896,3099 4912,3089 4928,3078 4945,3064 4964,3048 4985,3036 5007,3022 5027,3008 5047,2993 5068,2977 5087,2961 5108,2944 5127,2927 5146,2910 5165,2893 5185,2877 5204,2860 5225,2844 5245,2829 5265,2815 5287,2801 5306,2789 5324,2777 5344,2765 5363,2754 5382,2743 5402,2732 5421,2720 5440,2708 5460,2698 5479,2686 5498,2674 5516,2662 5536,2649 5555,2637 5573,2625 5592,2611 5579,2605 5566,2601 5552,2597 5538,2593 5524,2590 5510,2588 5496,2585 5482,2583 5467,2581 5453,2578 5438,2576 5424,2574 5410,2571 5396,2568 5382,2564 5368,2560 5170,2510 5165,2505 5163,2500 5161,2495 5156,2490 5140,2504 5123,2516 5104,2527 5086,2536 5068,2545 5048,2555 5030,2564 5013,2575 4993,2576 5144,2490 5175,2497 5207,2502 5238,2510 5270,2516 5301,2524 5332,2531 5362,2540 5393,2547 5424,2555 5455,2562 5486,2569 5518,2576 5549,2583 5581,2588 5612,2595 5644,2599 5618,2615 5593,2630 5567,2646 5540,2662 5514,2678 5489,2694 5463,2712 5438,2728 5412,2745 5387,2762 5361,2778 5335,2795 5310,2812 5285,2831 5260,2848 5235,2865 5209,2883 5185,2902 5160,2920 5135,2938 5111,2956 5086,2975 5061,2994 5038,3012 5013,3031 4989,3050 4965,3069 4941,3088 4918,3109 4894,3128 4871,3147 4848,3168 4809,3162 4770,3156 4733,3148 4694,3139 4657,3129 4619,3118 4582,3107 4544,3095 4507,3083 4470,3070 4432,3058 4395,3046 4357,3035 4320,3024 4282,3013 4243,3004 4243,2996 4256,2990 4270,2982 4283,2975 4297,2967 4310,2961 4324,2955 4337,2951 4351,2949 4331,2973 4349,2990 4367,2996 4389,3002 4416,3011 4446,3021 4480,3031 4516,3042 4553,3053 4590,3065 4628,3076 4664,3087 4701,3099 4734,3109 4764,3118 4791,3127 4813,3134 4832,3141 "
+       id="polygon4417-3"
+       style="fill:#3771c8;fill-rule:evenodd"
+       transform="matrix(0.17556002,0,0,0.2533028,-518.45004,-520.54368)"
+       inkscape:export-filename="/home/vincpohl/Dropbox/Send/orbkit_logo/logo2.png"
+       inkscape:export-xdpi="400"
+       inkscape:export-ydpi="400" />
+    <polygon
+       class="fil82"
+       points="4898,3143 4916,3128 4935,3113 4953,3098 4971,3083 4989,3068 5008,3053 5026,3039 5044,3025 5064,3011 5082,2998 5101,2984 5120,2971 5140,2959 5152,3102 5163,3107 5172,3109 5176,3110 5180,3110 5184,3111 5188,3111 5197,3112 5208,3115 5349,2973 5346,2847 5342,2843 5336,2840 5330,2839 5324,2839 5318,2840 5311,2840 5306,2839 5301,2837 5322,2823 5344,2809 5365,2795 5387,2781 5408,2766 5430,2752 5451,2738 5472,2724 5494,2709 5515,2695 5536,2681 5557,2669 5580,2655 5601,2641 5623,2628 5644,2615 5637,2712 5635,2807 5635,2904 5633,3004 5612,3022 5588,3041 5564,3061 5537,3083 5510,3104 5482,3127 5454,3151 5424,3174 5395,3198 5365,3221 5334,3246 5304,3271 5274,3294 5244,3319 5214,3343 5185,3366 5156,3389 5128,3411 5101,3433 5074,3453 5050,3474 5026,3492 5003,3510 4983,3526 4964,3541 4947,3555 4931,3567 4919,3577 4908,3585 4899,3592 4894,3597 4891,3599 4878,3567 4874,3517 4869,3468 4865,3422 4862,3376 4857,3330 4853,3284 4849,3238 4845,3189 4863,3174 4881,3158 "
+       id="polygon4419-0"
+       style="fill:#6ba3ff;fill-opacity:1;fill-rule:evenodd"
+       transform="matrix(0.17556002,0,0,0.2533028,-518.45004,-520.54368)"
+       inkscape:export-filename="/home/vincpohl/Dropbox/Send/orbkit_logo/logo2.png"
+       inkscape:export-xdpi="400"
+       inkscape:export-ydpi="400" />
+    <polygon
+       class="fil82"
+       points="5464,2592 5490,2598 5515,2603 5541,2607 5567,2612 5452,2687 5446,2680 5441,2672 5436,2665 5426,2664 5410,2648 5393,2634 5375,2624 5355,2615 5336,2609 5316,2606 5294,2606 5273,2611 5265,2617 5257,2625 5249,2632 5242,2640 5234,2648 5229,2657 5223,2665 5219,2675 5216,2666 5211,2658 5204,2650 5197,2643 5189,2636 5180,2630 5173,2625 5167,2620 5164,2598 5161,2574 5159,2551 5162,2526 5187,2531 5212,2537 5236,2543 5261,2548 5286,2554 5311,2560 5336,2566 5362,2571 5388,2576 5412,2583 5438,2588 "
+       id="polygon4421-6"
+       style="fill:#5272a0;fill-opacity:1;fill-rule:evenodd"
+       transform="matrix(0.17556002,0,0,0.2533028,-518.45004,-520.54368)"
+       inkscape:export-filename="/home/vincpohl/Dropbox/Send/orbkit_logo/logo2.png"
+       inkscape:export-xdpi="400"
+       inkscape:export-ydpi="400" />
+    <polygon
+       class="fil73"
+       points="5135,2897 5125,2907 5110,2907 5095,2907 5081,2908 5066,2909 5052,2911 5038,2913 5024,2915 5011,2920 4998,2923 4985,2928 4973,2934 4962,2940 4951,2947 4940,2954 4929,2963 4920,2971 4909,2963 4905,2952 4907,2939 4913,2927 4925,2908 4941,2896 4960,2891 4981,2889 5002,2889 5024,2889 5044,2887 5062,2879 5084,2870 5105,2863 5128,2853 5149,2844 5169,2831 5186,2816 5199,2796 5207,2774 5191,2763 5175,2759 5159,2759 5144,2762 5128,2767 5112,2774 5095,2778 5077,2780 5081,2770 5085,2759 5088,2748 5095,2738 5110,2733 5126,2730 5142,2728 5159,2727 5176,2726 5193,2726 5209,2727 5226,2728 5229,2714 5233,2701 5237,2687 5244,2674 5250,2661 5259,2650 5270,2640 5281,2630 5304,2621 5325,2620 5345,2626 5363,2635 5379,2648 5395,2661 5411,2674 5427,2684 5427,2692 5367,2703 5376,2695 5369,2686 5362,2678 5352,2672 5343,2668 5332,2665 5322,2665 5311,2666 5301,2671 5291,2673 5284,2676 5278,2683 5274,2689 5271,2698 5267,2706 5264,2714 5262,2721 5267,2732 5264,2742 5260,2751 5260,2762 5265,2761 5272,2762 5277,2765 5284,2770 5290,2773 5296,2774 5303,2773 5309,2768 5299,2777 5288,2786 5276,2794 5264,2802 5252,2810 5242,2818 5229,2826 5217,2834 5205,2843 5193,2851 5182,2860 5170,2868 5158,2878 5147,2888 "
+       id="polygon4423-8"
+       style="fill:#bfbfbf;fill-rule:evenodd"
+       transform="matrix(0.17556002,0,0,0.2533028,-518.45004,-520.54368)"
+       inkscape:export-filename="/home/vincpohl/Dropbox/Send/orbkit_logo/logo2.png"
+       inkscape:export-xdpi="400"
+       inkscape:export-ydpi="400" />
+    <polygon
+       class="fil74"
+       points="5405,2714 5377,2728 5365,2721 "
+       id="polygon4425-6"
+       style="fill:#7f7f7f;fill-rule:evenodd;stroke:#ffffff;stroke-width:54.50197983;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       transform="matrix(0.04715709,0.01619315,-0.00250211,0.06573858,74.585023,28.145757)"
+       inkscape:export-filename="/home/vincpohl/Dropbox/Send/orbkit_logo/logo2.png"
+       inkscape:export-xdpi="400"
+       inkscape:export-ydpi="400" />
+    <polygon
+       class="fil74"
+       points="5286,2716 5289,2705 5295,2695 5303,2688 5313,2681 5350,2684 5343,2687 5333,2688 5323,2689 5314,2691 5305,2693 5296,2698 5290,2705 "
+       id="polygon4427-0"
+       style="fill:#7f7f7f;fill-rule:evenodd;stroke:#ffffff;stroke-width:54.50197983;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       transform="matrix(0.04715709,0.01619315,-0.00250211,0.06573858,74.585023,28.145757)"
+       inkscape:export-filename="/home/vincpohl/Dropbox/Send/orbkit_logo/logo2.png"
+       inkscape:export-xdpi="400"
+       inkscape:export-ydpi="400" />
+    <polygon
+       class="fil84"
+       points="5286,2742 5288,2734 5292,2728 5299,2721 5305,2716 5313,2710 5319,2706 5335,2705 5336,2713 5340,2718 5346,2722 5352,2724 5346,2731 5339,2736 5332,2742 5324,2747 5316,2750 5307,2753 5297,2756 5288,2757 5285,2749 "
+       id="polygon4429-1"
+       style="fill:#5272a0;fill-opacity:1;fill-rule:evenodd"
+       transform="matrix(0.17556002,0,0,0.2533028,-518.45004,-520.54368)"
+       inkscape:export-filename="/home/vincpohl/Dropbox/Send/orbkit_logo/logo2.png"
+       inkscape:export-xdpi="400"
+       inkscape:export-ydpi="400" />
+    <polygon
+       class="fil79"
+       points="5206,2965 5220,2954 5234,2942 5249,2932 5264,2920 5279,2909 5295,2898 5311,2888 5328,2877 5326,2898 5326,2919 5328,2940 5329,2963 5212,3074 "
+       id="polygon4431-2"
+       style="fill:#3f3f3f;fill-rule:evenodd"
+       transform="matrix(0.17556002,0,0,0.2533028,-518.45004,-520.54368)"
+       inkscape:export-filename="/home/vincpohl/Dropbox/Send/orbkit_logo/logo2.png"
+       inkscape:export-xdpi="400"
+       inkscape:export-ydpi="400" />
+    <polygon
+       class="fil74"
+       points="5218,2897 5234,2885 5251,2874 5269,2862 5286,2851 5292,2851 5299,2852 5304,2853 5308,2853 5313,2854 5317,2855 5321,2855 5326,2855 5313,2866 5297,2878 5281,2891 5265,2903 5249,2915 5233,2928 5217,2940 5201,2952 5196,2953 5190,2953 5185,2952 5178,2951 5173,2950 5167,2948 5160,2946 5155,2943 5171,2933 5186,2921 5202,2909 "
+       id="polygon4433-8"
+       style="fill:#7f7f7f;fill-rule:evenodd"
+       transform="matrix(0.17556002,0,0,0.2533028,-518.45004,-520.54368)"
+       inkscape:export-filename="/home/vincpohl/Dropbox/Send/orbkit_logo/logo2.png"
+       inkscape:export-xdpi="400"
+       inkscape:export-ydpi="400" />
+    <polygon
+       class="fil45"
+       points="5231,2752 5245,2753 5251,2763 5251,2777 5245,2788 5237,2787 5230,2785 5225,2780 5223,2773 5223,2766 5225,2761 5227,2757 "
+       id="polygon4435-3"
+       style="fill:#000000;fill-rule:evenodd"
+       transform="matrix(0.17556002,0,0,0.2533028,-518.45004,-520.54368)"
+       inkscape:export-filename="/home/vincpohl/Dropbox/Send/orbkit_logo/logo2.png"
+       inkscape:export-xdpi="400"
+       inkscape:export-ydpi="400" />
+    <polygon
+       class="fil85"
+       points="5187,2685 5183,2678 5178,2673 5172,2669 5164,2665 5157,2671 5149,2676 5143,2681 5136,2688 5131,2693 5126,2700 5121,2708 5118,2717 5115,2718 5111,2720 5108,2721 5102,2721 5102,2716 5105,2710 5109,2705 5113,2700 5116,2695 5117,2690 5115,2686 5109,2680 5109,2670 5112,2660 5118,2653 5128,2647 5143,2644 5159,2646 5174,2650 5187,2659 5198,2670 5204,2681 5205,2694 5200,2708 5197,2704 5193,2698 5190,2691 "
+       id="polygon4437-5"
+       style="fill:#ff7f7f;fill-rule:evenodd"
+       transform="matrix(0.17556002,0,0,0.2533028,-518.45004,-520.54368)"
+       inkscape:export-filename="/home/vincpohl/Dropbox/Send/orbkit_logo/logo2.png"
+       inkscape:export-xdpi="400"
+       inkscape:export-ydpi="400" />
+    <polygon
+       class="fil81"
+       points="5161,2683 5169,2680 5173,2684 5176,2689 5179,2693 5179,2699 5179,2704 5176,2708 5172,2709 5159,2710 5155,2704 5156,2697 5159,2689 "
+       id="polygon4439-0"
+       style="fill:#ff3f3f;fill-rule:evenodd"
+       transform="matrix(0.17556002,0,0,0.2533028,-518.45004,-520.54368)"
+       inkscape:export-filename="/home/vincpohl/Dropbox/Send/orbkit_logo/logo2.png"
+       inkscape:export-xdpi="400"
+       inkscape:export-ydpi="400" />
+    <polygon
+       class="fil86"
+       points="5124,2806 5139,2801 5153,2796 5168,2793 5184,2791 5173,2802 5161,2811 5148,2820 5136,2829 5124,2836 5110,2844 5096,2849 5082,2855 5067,2860 5052,2864 5037,2868 5021,2871 5004,2874 4988,2875 4972,2876 4955,2876 4970,2871 4985,2867 4999,2862 5013,2855 5027,2849 5041,2843 5055,2836 5068,2830 5082,2823 5096,2817 5110,2811 "
+       id="polygon4441-9"
+       style="fill:#aa0000;fill-rule:evenodd"
+       transform="matrix(0.17556002,0,0,0.2533028,-518.45004,-520.54368)"
+       inkscape:export-filename="/home/vincpohl/Dropbox/Send/orbkit_logo/logo2.png"
+       inkscape:export-xdpi="400"
+       inkscape:export-ydpi="400" />
+    <polygon
+       class="fil79"
+       points="5173,2968 5177,2970 5182,2971 5188,2973 5183,3088 5171,3085 5169,2967 "
+       id="polygon4443-1"
+       style="fill:#3f3f3f;fill-rule:evenodd"
+       transform="matrix(0.17556002,0,0,0.2533028,-518.45004,-520.54368)"
+       inkscape:export-filename="/home/vincpohl/Dropbox/Send/orbkit_logo/logo2.png"
+       inkscape:export-xdpi="400"
+       inkscape:export-ydpi="400" />
+    <polygon
+       class="fil74"
+       points="5114,2792 5103,2797 5090,2802 5079,2806 5066,2809 5076,2803 5088,2797 5099,2792 5112,2788 5124,2785 5136,2781 5149,2779 5162,2776 5149,2779 5138,2782 5126,2788 "
+       id="polygon4445-3"
+       style="fill:#7f7f7f;fill-rule:evenodd"
+       transform="matrix(0.17556002,0,0,0.2533028,-518.45004,-520.54368)"
+       inkscape:export-filename="/home/vincpohl/Dropbox/Send/orbkit_logo/logo2.png"
+       inkscape:export-xdpi="400"
+       inkscape:export-ydpi="400" />
+    <polygon
+       class="fil82"
+       points="5142,2621 5133,2621 5132,2602 5131,2584 5125,2567 5110,2554 5081,2555 5087,2549 5095,2545 5102,2541 5111,2537 5119,2532 5128,2528 5136,2524 5145,2518 "
+       id="polygon4447-1"
+       style="fill:#162d50;fill-rule:evenodd"
+       transform="matrix(0.17556002,0,0,0.2533028,-518.45004,-520.54368)"
+       inkscape:export-filename="/home/vincpohl/Dropbox/Send/orbkit_logo/logo2.png"
+       inkscape:export-xdpi="400"
+       inkscape:export-ydpi="400" />
+    <polygon
+       class="fil44"
+       points="5110,2621 5102,2628 5108,2595 "
+       id="polygon4449-6"
+       style="fill:#ffffff;fill-rule:evenodd"
+       transform="matrix(0.17556002,0,0,0.2533028,-518.45004,-520.54368)"
+       inkscape:export-filename="/home/vincpohl/Dropbox/Send/orbkit_logo/logo2.png"
+       inkscape:export-xdpi="400"
+       inkscape:export-ydpi="400" />
+    <polygon
+       class="fil88"
+       points="5102,2570 5074,2641 5067,2628 5059,2613 5055,2597 5053,2583 5056,2571 5064,2563 5080,2563 "
+       id="polygon4451-3"
+       style="fill:#ffff00;fill-rule:evenodd"
+       transform="matrix(0.17556002,0,0,0.2533028,-518.45004,-520.54368)"
+       inkscape:export-filename="/home/vincpohl/Dropbox/Send/orbkit_logo/logo2.png"
+       inkscape:export-xdpi="400"
+       inkscape:export-ydpi="400" />
+    <polygon
+       class="fil73"
+       points="5088,2708 5080,2722 5072,2737 5066,2752 5059,2767 5053,2783 5047,2798 5042,2814 5042,2797 5046,2781 5053,2765 5061,2750 5070,2734 5079,2719 5087,2702 5092,2686 5097,2693 "
+       id="polygon4453-1"
+       style="fill:#bfbfbf;fill-rule:evenodd"
+       transform="matrix(0.17556002,0,0,0.2533028,-518.45004,-520.54368)"
+       inkscape:export-filename="/home/vincpohl/Dropbox/Send/orbkit_logo/logo2.png"
+       inkscape:export-xdpi="400"
+       inkscape:export-ydpi="400" />
+    <polygon
+       class="fil89"
+       points="5052,2526 5036,2536 5018,2544 5002,2553 4985,2561 4968,2570 4952,2578 4935,2587 4918,2597 4901,2606 4884,2616 4868,2626 4852,2636 4836,2647 4821,2659 4813,2631 4810,2602 4810,2572 4811,2541 4817,2531 4825,2526 4835,2523 4847,2522 4858,2523 4870,2522 4881,2520 4891,2516 5083,2507 5068,2516 "
+       id="polygon4455-4"
+       style="fill:#5272a0;fill-opacity:1;fill-rule:evenodd"
+       transform="matrix(0.17556002,0,0,0.2533028,-518.45004,-520.54368)"
+       inkscape:export-filename="/home/vincpohl/Dropbox/Send/orbkit_logo/logo2.png"
+       inkscape:export-xdpi="400"
+       inkscape:export-ydpi="400" />
+    <polygon
+       class="fil86"
+       points="5052,2952 5040,2953 5027,2952 5013,2948 4999,2942 5008,2939 5018,2935 5031,2932 5044,2929 5059,2927 5073,2927 5087,2927 5101,2929 5088,2938 5076,2944 5065,2949 "
+       id="polygon4457-5"
+       style="fill:#aa0000;fill-rule:evenodd"
+       transform="matrix(0.17556002,0,0,0.2533028,-518.45004,-520.54368)"
+       inkscape:export-filename="/home/vincpohl/Dropbox/Send/orbkit_logo/logo2.png"
+       inkscape:export-xdpi="400"
+       inkscape:export-ydpi="400" />
+    <polygon
+       class="fil73"
+       points="4978,2600 4984,2597 4992,2593 4999,2592 5007,2592 5015,2593 5023,2596 5035,2601 5043,2609 5050,2618 5055,2629 5060,2639 5066,2649 5071,2658 5080,2665 5074,2681 5069,2697 5062,2712 5056,2727 5048,2742 5041,2756 5032,2770 5024,2783 5012,2783 5004,2763 4995,2743 4985,2722 4974,2702 4967,2681 4962,2659 4960,2635 4966,2611 4971,2605 "
+       id="polygon4459-6"
+       style="fill:#bfbfbf;fill-rule:evenodd"
+       transform="matrix(0.17556002,0,0,0.2533028,-518.45004,-520.54368)"
+       inkscape:export-filename="/home/vincpohl/Dropbox/Send/orbkit_logo/logo2.png"
+       inkscape:export-xdpi="400"
+       inkscape:export-ydpi="400" />
+    <polygon
+       class="fil45"
+       points="5037,2651 5039,2671 5041,2688 5039,2705 5029,2721 5021,2720 5013,2717 5007,2714 5000,2708 4995,2703 4991,2697 4986,2690 4982,2684 4981,2669 4982,2654 4986,2641 4995,2629 5001,2630 5007,2631 5013,2633 5018,2636 5023,2640 5028,2643 5032,2647 "
+       id="polygon4461-5"
+       style="fill:#000000;fill-rule:evenodd"
+       transform="matrix(0.17556002,0,0,0.2533028,-518.45004,-520.54368)"
+       inkscape:export-filename="/home/vincpohl/Dropbox/Send/orbkit_logo/logo2.png"
+       inkscape:export-xdpi="400"
+       inkscape:export-ydpi="400" />
+    <polygon
+       class="fil90"
+       points="5012,2648 5021,2661 5028,2675 5031,2690 5028,2705 5021,2708 5015,2708 5011,2705 5007,2700 5003,2693 5001,2686 4998,2679 4994,2674 4993,2663 4995,2651 5002,2645 "
+       id="polygon4463-8"
+       style="fill:#3fffff;fill-rule:evenodd"
+       transform="matrix(0.17556002,0,0,0.2533028,-518.45004,-520.54368)"
+       inkscape:export-filename="/home/vincpohl/Dropbox/Send/orbkit_logo/logo2.png"
+       inkscape:export-xdpi="400"
+       inkscape:export-ydpi="400" />
+    <polygon
+       class="fil74"
+       points="4958,2827 4942,2827 4928,2826 4915,2822 4907,2814 4911,2809 4915,2808 4921,2809 4925,2810 4930,2811 4935,2811 4939,2809 4943,2803 4931,2782 4920,2761 4910,2737 4901,2714 4896,2689 4896,2664 4900,2641 4912,2617 4916,2613 4922,2610 4927,2607 4933,2606 4938,2604 4943,2603 4948,2601 4953,2599 4943,2626 4942,2651 4945,2676 4954,2700 4965,2723 4974,2746 4983,2770 4988,2792 4994,2795 4999,2797 5004,2801 5011,2804 5015,2807 5019,2811 5024,2817 5026,2823 5010,2823 4994,2824 4975,2826 "
+       id="polygon4465-9"
+       style="fill:#7f7f7f;fill-rule:evenodd"
+       transform="matrix(0.17556002,0,0,0.2533028,-518.45004,-520.54368)"
+       inkscape:export-filename="/home/vincpohl/Dropbox/Send/orbkit_logo/logo2.png"
+       inkscape:export-xdpi="400"
+       inkscape:export-ydpi="400" />
+    <polygon
+       class="fil75"
+       points="5024,2982 5017,2987 5011,2992 5003,2996 4996,3000 4989,3005 4983,3010 4977,3006 4969,3004 4962,3002 4954,3000 4945,2999 4939,2998 4931,2996 4925,2992 4936,2992 4945,2985 4954,2977 4962,2968 4969,2959 4977,2955 4984,2955 4993,2964 5033,2969 5029,2976 "
+       id="polygon4467-9"
+       style="fill:#d40000;fill-rule:evenodd"
+       transform="matrix(0.17556002,0,0,0.2533028,-518.45004,-520.54368)"
+       inkscape:export-filename="/home/vincpohl/Dropbox/Send/orbkit_logo/logo2.png"
+       inkscape:export-xdpi="400"
+       inkscape:export-ydpi="400" />
+    <polygon
+       class="fil81"
+       points="4817,2503 4975,2496 4989,2501 4806,2509 "
+       id="polygon4469-7"
+       style="fill:#2c5aa0;fill-rule:evenodd"
+       transform="matrix(0.17556002,0,0,0.2533028,-518.45004,-520.54368)"
+       inkscape:export-filename="/home/vincpohl/Dropbox/Send/orbkit_logo/logo2.png"
+       inkscape:export-xdpi="400"
+       inkscape:export-ydpi="400" />
+    <polygon
+       class="fil74"
+       points="4994,2845 4951,2864 4953,2861 4955,2858 4960,2854 4966,2850 4972,2847 4979,2845 4986,2844 "
+       id="polygon4471-2"
+       style="fill:#7f7f7f;fill-rule:evenodd"
+       transform="matrix(0.17556002,0,0,0.2533028,-518.45004,-520.54368)"
+       inkscape:export-filename="/home/vincpohl/Dropbox/Send/orbkit_logo/logo2.png"
+       inkscape:export-xdpi="400"
+       inkscape:export-ydpi="400" />
+    <polygon
+       class="fil91"
+       points="4880,3002 4891,3005 4901,3008 4912,3011 4923,3014 4933,3017 4943,3021 4953,3024 4963,3027 4955,3037 4947,3042 4938,3044 4928,3044 4919,3042 4909,3039 4899,3035 4890,3030 4885,3026 4883,3019 4882,3010 "
+       id="polygon4473-8"
+       style="fill:#bf7f7f;fill-rule:evenodd"
+       transform="matrix(0.17556002,0,0,0.2533028,-518.45004,-520.54368)"
+       inkscape:export-filename="/home/vincpohl/Dropbox/Send/orbkit_logo/logo2.png"
+       inkscape:export-xdpi="400"
+       inkscape:export-ydpi="400" />
+    <polygon
+       class="fil73"
+       points="4912,2866 4902,2871 4893,2876 4882,2879 4871,2880 4861,2880 4849,2877 4839,2871 4832,2864 4827,2855 4831,2846 4837,2847 4845,2847 4853,2848 4862,2848 4870,2847 4879,2845 4885,2840 4892,2834 4896,2841 4901,2847 4909,2850 4918,2853 4929,2852 4921,2860 "
+       id="polygon4475-6"
+       style="fill:#bfbfbf;fill-rule:evenodd"
+       transform="matrix(0.17556002,0,0,0.2533028,-518.45004,-520.54368)"
+       inkscape:export-filename="/home/vincpohl/Dropbox/Send/orbkit_logo/logo2.png"
+       inkscape:export-xdpi="400"
+       inkscape:export-ydpi="400" />
+    <polygon
+       class="fil86"
+       points="4902,2892 4914,2890 4927,2890 4910,2904 4892,2911 4874,2912 4854,2910 4834,2906 4814,2899 4796,2894 4778,2890 4706,2873 4720,2862 4735,2850 4749,2837 4764,2826 4779,2815 4795,2805 4811,2796 4827,2790 4841,2800 4845,2791 4849,2782 4854,2776 4861,2770 4867,2764 4876,2759 4883,2754 4891,2749 4901,2757 4905,2764 4902,2773 4896,2781 4889,2790 4883,2798 4881,2808 4886,2818 4879,2826 4870,2830 4861,2831 4851,2831 4841,2829 4832,2829 4823,2830 4816,2834 4811,2851 4816,2866 4824,2881 4834,2895 4845,2903 4856,2906 4867,2905 4879,2902 4891,2897 "
+       id="polygon4477-2"
+       style="fill:#aa0000;fill-rule:evenodd"
+       transform="matrix(0.17556002,0,0,0.2533028,-518.45004,-520.54368)"
+       inkscape:export-filename="/home/vincpohl/Dropbox/Send/orbkit_logo/logo2.png"
+       inkscape:export-xdpi="400"
+       inkscape:export-ydpi="400" />
+    <polygon
+       class="fil77"
+       points="4920,3063 4914,3065 4910,3069 4905,3074 4900,3079 4886,3051 "
+       id="polygon4479-1"
+       style="fill:#9e9e3f;fill-rule:evenodd"
+       transform="matrix(0.17556002,0,0,0.2533028,-518.45004,-520.54368)"
+       inkscape:export-filename="/home/vincpohl/Dropbox/Send/orbkit_logo/logo2.png"
+       inkscape:export-xdpi="400"
+       inkscape:export-ydpi="400" />
+    <polygon
+       class="fil81"
+       points="4717,2751 4701,2762 4684,2772 4667,2781 4651,2791 4634,2800 4617,2808 4613,2804 4630,2793 4646,2782 4663,2773 4680,2762 4696,2752 4714,2742 4731,2732 4748,2722 4765,2713 4781,2702 4798,2692 4816,2683 4832,2672 4849,2661 4866,2650 4882,2640 4878,2651 4861,2660 4845,2669 4828,2678 4812,2688 4796,2699 4780,2709 4764,2719 4748,2730 4732,2741 "
+       id="polygon4481-8"
+       style="fill:#214478;fill-rule:evenodd"
+       transform="matrix(0.17556002,0,0,0.2533028,-518.45004,-520.54368)"
+       inkscape:export-filename="/home/vincpohl/Dropbox/Send/orbkit_logo/logo2.png"
+       inkscape:export-xdpi="400"
+       inkscape:export-ydpi="400" />
+    <polygon
+       class="fil82"
+       points="4636,2883 4642,2875 4646,2866 4648,2858 4649,2848 4649,2839 4647,2831 4644,2827 4643,2823 4643,2819 4643,2815 4875,2673 4872,2683 4875,2694 4878,2705 4883,2716 4885,2727 4884,2736 4878,2744 4863,2750 4855,2753 4849,2758 4843,2764 4838,2770 4833,2775 4827,2778 4821,2780 4812,2778 4681,2866 4689,2889 4693,2912 4696,2936 4702,2959 4706,2963 4709,2967 4713,2969 4716,2966 4719,2979 4723,2993 4728,3008 4731,3023 4707,3031 4706,3007 4703,2980 4694,2954 4677,2932 4667,2929 4657,2928 4646,2929 4635,2932 4627,2936 4619,2942 4615,2952 4613,2963 4605,2956 4599,2949 4594,2940 4590,2931 4587,2921 4585,2911 4582,2902 4577,2892 4582,2896 4587,2898 4592,2899 4599,2899 4604,2898 4611,2897 4617,2897 4622,2897 4630,2891 "
+       id="polygon4483-0"
+       style="fill:#162d50;fill-rule:evenodd"
+       transform="matrix(0.17556002,0,0,0.2533028,-518.45004,-520.54368)"
+       inkscape:export-filename="/home/vincpohl/Dropbox/Send/orbkit_logo/logo2.png"
+       inkscape:export-xdpi="400"
+       inkscape:export-ydpi="400" />
+    <polygon
+       class="fil75"
+       points="4710,2911 4707,2900 4707,2889 4880,2928 4877,2938 4875,2949 4874,2958 4875,2969 4860,2965 4841,2962 4821,2959 4799,2956 4777,2953 4754,2949 4733,2942 4714,2934 4714,2922 "
+       id="polygon4485-1"
+       style="fill:#d40000;fill-rule:evenodd"
+       transform="matrix(0.17556002,0,0,0.2533028,-518.45004,-520.54368)"
+       inkscape:export-filename="/home/vincpohl/Dropbox/Send/orbkit_logo/logo2.png"
+       inkscape:export-xdpi="400"
+       inkscape:export-ydpi="400" />
+    <polygon
+       class="fil77"
+       points="4830,3042 4837,3046 4848,3050 4857,3054 4867,3058 4876,3065 4881,3071 4883,3081 4881,3092 4875,3088 4868,3080 4863,3070 4858,3061 "
+       id="polygon4487-4"
+       style="fill:#9e9e3f;fill-rule:evenodd"
+       transform="matrix(0.17556002,0,0,0.2533028,-518.45004,-520.54368)"
+       inkscape:export-filename="/home/vincpohl/Dropbox/Send/orbkit_logo/logo2.png"
+       inkscape:export-xdpi="400"
+       inkscape:export-ydpi="400" />
+    <polygon
+       class="fil83"
+       points="4838,2988 4849,2998 4858,3007 4866,3017 4869,3031 4861,3028 4852,3026 4842,3024 4834,3023 4826,3020 4821,3014 4818,3007 4819,2994 4821,2990 4826,2988 4833,2988 "
+       id="polygon4489-2"
+       style="fill:#7f0000;fill-rule:evenodd"
+       transform="matrix(0.17556002,0,0,0.2533028,-518.45004,-520.54368)"
+       inkscape:export-filename="/home/vincpohl/Dropbox/Send/orbkit_logo/logo2.png"
+       inkscape:export-xdpi="400"
+       inkscape:export-ydpi="400" />
+    <polygon
+       class="fil87"
+       points="4803,3108 4790,3103 4778,3100 4765,3097 4751,3096 4753,3084 4760,3075 4768,3068 4778,3061 4789,3058 4799,3056 4811,3056 4822,3057 4833,3061 4841,3067 4850,3075 4856,3086 4855,3095 4860,3102 4861,3109 4853,3115 4839,3116 4826,3114 4814,3112 "
+       id="polygon4491-4"
+       style="fill:#9e3f3f;fill-rule:evenodd"
+       transform="matrix(0.17556002,0,0,0.2533028,-518.45004,-520.54368)"
+       inkscape:export-filename="/home/vincpohl/Dropbox/Send/orbkit_logo/logo2.png"
+       inkscape:export-xdpi="400"
+       inkscape:export-ydpi="400" />
+    <polygon
+       class="fil71"
+       points="4850,3498 4856,3550 4863,3601 4832,3592 4795,3582 4755,3570 4714,3558 4670,3547 4624,3534 4579,3522 4535,3510 4494,3498 4454,3488 4417,3478 4386,3470 4360,3463 4341,3458 4328,3454 4324,3453 4316,3399 4307,3345 4297,3292 4286,3239 4276,3185 4265,3132 4256,3079 4248,3024 4284,3034 4321,3044 4356,3054 4393,3065 4428,3075 4465,3086 4500,3097 4536,3108 4572,3118 4608,3129 4644,3140 4680,3151 4716,3160 4752,3171 4788,3181 4824,3190 4828,3243 4833,3294 4837,3346 4841,3396 4846,3447 "
+       id="polygon4493-8"
+       style="fill:#6ba3ff;fill-opacity:1;fill-rule:evenodd"
+       transform="matrix(0.17556002,0,0,0.2533028,-518.45004,-520.54368)"
+       inkscape:export-filename="/home/vincpohl/Dropbox/Send/orbkit_logo/logo2.png"
+       inkscape:export-xdpi="400"
+       inkscape:export-ydpi="400" />
+    <polygon
+       class="fil81"
+       points="4685,2573 4713,2557 4739,2541 4767,2526 4794,2510 4764,2531 4734,2553 4703,2572 4672,2591 4641,2611 4609,2628 4577,2646 4545,2663 4513,2679 4481,2697 4448,2714 4416,2730 4384,2747 4353,2764 4321,2782 4290,2801 4265,2812 4241,2825 4218,2837 4194,2850 4170,2863 4147,2875 4124,2888 4102,2900 4078,2913 4056,2926 4032,2939 4009,2952 3986,2964 3963,2977 3940,2988 3916,3000 3943,2985 3969,2969 3995,2954 4022,2939 4049,2924 4076,2909 4104,2893 4131,2878 4158,2863 4185,2848 4213,2833 4240,2818 4268,2803 4296,2788 4324,2773 4352,2757 4380,2742 4407,2727 4435,2712 4462,2697 4490,2680 4518,2665 4546,2650 4574,2635 4602,2619 4630,2604 4657,2588 "
+       id="polygon4495-0"
+       style="fill:#2c5aa0;fill-opacity:1;fill-rule:evenodd"
+       transform="matrix(0.17556002,0,0,0.2533028,-518.45004,-520.54368)"
+       inkscape:export-filename="/home/vincpohl/Dropbox/Send/orbkit_logo/logo2.png"
+       inkscape:export-xdpi="400"
+       inkscape:export-ydpi="400" />
+    <polygon
+       class="fil82"
+       points="4078,2922 4120,2899 4162,2878 4204,2858 4247,2836 4289,2816 4330,2795 4372,2774 4414,2752 4456,2730 4497,2706 4536,2681 4576,2656 4589,2649 4603,2643 4616,2636 4630,2629 4643,2622 4656,2616 4670,2610 4682,2602 4695,2596 4708,2588 4721,2581 4734,2572 4747,2564 4759,2556 4772,2547 4783,2538 4802,2669 4545,2829 4529,2832 4514,2830 4499,2824 4485,2817 4470,2810 4455,2805 4439,2803 4421,2806 4404,2801 4390,2801 4378,2806 4367,2815 4356,2825 4348,2837 4338,2849 4329,2860 4337,2889 4334,2912 4321,2931 4301,2944 4279,2956 4255,2968 4233,2979 4214,2993 4197,2993 4180,2992 4162,2993 4144,2993 4124,2994 4106,2995 4087,2996 4067,2997 4048,2999 4029,3001 4009,3005 3990,3007 3971,3010 3953,3013 3934,3016 3917,3021 3957,2994 3997,2969 4037,2944 "
+       id="polygon4497-7"
+       style="fill:#162d50;fill-rule:evenodd"
+       transform="matrix(0.17556002,0,0,0.2533028,-518.45004,-520.54368)"
+       inkscape:export-filename="/home/vincpohl/Dropbox/Send/orbkit_logo/logo2.png"
+       inkscape:export-xdpi="400"
+       inkscape:export-ydpi="400" />
+    <polygon
+       class="fil91"
+       points="4792,2987 4794,2996 4796,3007 4796,3017 4796,3027 4785,3028 4778,3026 4773,3022 4769,3014 4767,3006 4765,2996 4763,2987 4761,2980 4773,2976 4781,2976 4788,2980 "
+       id="polygon4499-5"
+       style="fill:#bf7f7f;fill-rule:evenodd"
+       transform="matrix(0.17556002,0,0,0.2533028,-518.45004,-520.54368)"
+       inkscape:export-filename="/home/vincpohl/Dropbox/Send/orbkit_logo/logo2.png"
+       inkscape:export-xdpi="400"
+       inkscape:export-ydpi="400" />
+    <polygon
+       class="fil77"
+       points="4720,3049 4726,3044 4734,3040 4743,3039 4751,3038 4761,3038 4769,3038 4778,3039 4785,3040 4777,3043 4768,3048 4761,3054 4753,3059 4746,3067 4739,3073 4735,3081 4731,3088 4726,3079 4723,3070 4720,3059 "
+       id="polygon4501-2"
+       style="fill:#9e9e3f;fill-rule:evenodd"
+       transform="matrix(0.17556002,0,0,0.2533028,-518.45004,-520.54368)"
+       inkscape:export-filename="/home/vincpohl/Dropbox/Send/orbkit_logo/logo2.png"
+       inkscape:export-xdpi="400"
+       inkscape:export-ydpi="400" />
+    <polygon
+       class="fil83"
+       points="4740,2981 4749,2987 4750,2998 4751,3011 4755,3022 4749,3014 4744,3005 4741,2994 "
+       id="polygon4503-8"
+       style="fill:#7f0000;fill-rule:evenodd"
+       transform="matrix(0.17556002,0,0,0.2533028,-518.45004,-520.54368)"
+       inkscape:export-filename="/home/vincpohl/Dropbox/Send/orbkit_logo/logo2.png"
+       inkscape:export-xdpi="400"
+       inkscape:export-ydpi="400" />
+    <polygon
+       class="fil80"
+       points="4652,3041 4647,3028 4643,3015 4637,3004 4632,2995 4637,2993 4644,2992 4650,2990 4657,2990 4663,2990 4670,2991 4675,2993 4680,2997 4689,3013 4691,3034 4691,3056 4692,3078 4677,3072 4666,3064 4658,3053 "
+       id="polygon4505-6"
+       style="fill:#00ffff;fill-rule:evenodd"
+       transform="matrix(0.17556002,0,0,0.2533028,-518.45004,-520.54368)"
+       inkscape:export-filename="/home/vincpohl/Dropbox/Send/orbkit_logo/logo2.png"
+       inkscape:export-xdpi="400"
+       inkscape:export-ydpi="400" />
+    <polygon
+       class="fil90"
+       points="4646,2950 4652,2949 4658,2950 4663,2950 4668,2951 4673,2953 4676,2955 4679,2959 4634,2962 4633,2958 4635,2955 4638,2953 4641,2950 "
+       id="polygon4507-5"
+       style="fill:#3fffff;fill-rule:evenodd"
+       transform="matrix(0.17556002,0,0,0.2533028,-518.45004,-520.54368)"
+       inkscape:export-filename="/home/vincpohl/Dropbox/Send/orbkit_logo/logo2.png"
+       inkscape:export-xdpi="400"
+       inkscape:export-ydpi="400" />
+    <polygon
+       class="fil74"
+       points="4632,2856 4629,2864 4622,2870 4615,2875 4605,2874 4599,2875 4593,2875 4588,2871 4584,2868 4580,2864 4576,2860 4573,2855 4571,2851 4569,2844 4570,2837 4573,2831 4577,2826 4584,2823 4590,2820 4597,2818 4602,2817 4615,2819 4623,2829 4629,2843 "
+       id="polygon4509-2"
+       style="fill:#7f7f7f;fill-rule:evenodd"
+       transform="matrix(0.17556002,0,0,0.2533028,-518.45004,-520.54368)"
+       inkscape:export-filename="/home/vincpohl/Dropbox/Send/orbkit_logo/logo2.png"
+       inkscape:export-xdpi="400"
+       inkscape:export-ydpi="400" />
+    <polygon
+       class="fil87"
+       points="4529,2899 4535,2895 4544,2892 4553,2889 4562,2910 4573,2932 4584,2952 4596,2973 4607,2994 4619,3014 4631,3036 4643,3056 4638,3057 4633,3057 4627,3056 4621,3055 4615,3053 4608,3051 4602,3046 4597,3042 4525,2907 "
+       id="polygon4511-4"
+       style="fill:#9e3f3f;fill-rule:evenodd"
+       transform="matrix(0.17556002,0,0,0.2533028,-518.45004,-520.54368)"
+       inkscape:export-filename="/home/vincpohl/Dropbox/Send/orbkit_logo/logo2.png"
+       inkscape:export-xdpi="400"
+       inkscape:export-ydpi="400" />
+    <polygon
+       class="fil74"
+       points="4555,2867 4550,2870 4545,2874 4540,2876 4534,2878 4529,2878 4524,2877 4518,2875 4509,2850 4514,2848 4521,2847 4530,2845 4539,2845 4546,2846 4553,2849 4557,2855 4559,2864 "
+       id="polygon4513-1"
+       style="fill:#7f7f7f;fill-rule:evenodd"
+       transform="matrix(0.17556002,0,0,0.2533028,-518.45004,-520.54368)"
+       inkscape:export-filename="/home/vincpohl/Dropbox/Send/orbkit_logo/logo2.png"
+       inkscape:export-xdpi="400"
+       inkscape:export-ydpi="400" />
+    <polygon
+       class="fil92"
+       points="4512,2981 4521,2981 4531,2982 4541,2984 4547,2996 4554,3009 4559,3022 4564,3036 4472,3008 4477,2998 4485,2991 4494,2986 4502,2983 "
+       id="polygon4515-5"
+       style="fill:#7fffff;fill-rule:evenodd"
+       transform="matrix(0.17556002,0,0,0.2533028,-518.45004,-520.54368)"
+       inkscape:export-filename="/home/vincpohl/Dropbox/Send/orbkit_logo/logo2.png"
+       inkscape:export-xdpi="400"
+       inkscape:export-ydpi="400" />
+    <polygon
+       class="fil82"
+       points="4371,2966 4378,2968 4384,2972 4392,2976 4398,2978 4406,2979 4422,2980 4438,2979 4452,2976 4466,2970 4479,2964 4490,2956 4502,2947 4513,2936 4531,2959 4523,2963 4512,2964 4501,2965 4490,2967 4480,2969 4470,2973 4461,2981 4455,2992 4443,2995 4430,2995 4417,2993 4404,2988 4392,2983 4379,2979 4365,2975 4352,2972 4358,2967 4365,2965 "
+       id="polygon4517-0"
+       style="fill:#162d50;fill-rule:evenodd"
+       transform="matrix(0.17556002,0,0,0.2533028,-518.45004,-520.54368)"
+       inkscape:export-filename="/home/vincpohl/Dropbox/Send/orbkit_logo/logo2.png"
+       inkscape:export-xdpi="400"
+       inkscape:export-ydpi="400" />
+    <polygon
+       class="fil73"
+       points="4489,2917 4488,2903 4486,2889 4482,2875 4475,2862 4469,2848 4460,2836 4451,2824 4460,2823 4468,2825 4474,2830 4480,2834 4484,2840 4488,2847 4492,2853 4498,2860 4502,2876 4504,2894 4503,2912 4497,2928 4488,2929 "
+       id="polygon4519-6"
+       style="fill:#bfbfbf;fill-rule:evenodd"
+       transform="matrix(0.17556002,0,0,0.2533028,-518.45004,-520.54368)"
+       inkscape:export-filename="/home/vincpohl/Dropbox/Send/orbkit_logo/logo2.png"
+       inkscape:export-xdpi="400"
+       inkscape:export-ydpi="400" />
+    <polygon
+       class="fil74"
+       points="4397,2824 4406,2825 4414,2826 4423,2829 4430,2830 4445,2841 4457,2856 4467,2874 4472,2892 4472,2911 4469,2928 4460,2944 4445,2956 4431,2956 4417,2955 4404,2953 4390,2950 4379,2946 4367,2938 4357,2929 4349,2917 4343,2895 4345,2873 4353,2852 4365,2833 4372,2827 4380,2825 4388,2824 "
+       id="polygon4521-1"
+       style="fill:#7f7f7f;fill-rule:evenodd"
+       transform="matrix(0.17556002,0,0,0.2533028,-518.45004,-520.54368)"
+       inkscape:export-filename="/home/vincpohl/Dropbox/Send/orbkit_logo/logo2.png"
+       inkscape:export-xdpi="400"
+       inkscape:export-ydpi="400" />
+    <polygon
+       class="fil79"
+       points="4390,2721 4375,2731 4359,2739 4343,2748 4326,2756 4309,2762 4292,2768 4283,2753 4283,2742 4291,2734 4302,2729 4318,2724 4331,2719 4345,2713 4354,2704 4359,2701 4366,2699 4371,2694 4377,2691 4382,2689 4388,2687 4395,2685 4402,2685 4419,2701 4406,2712 "
+       id="polygon4523-5"
+       style="fill:#3f3f3f;fill-rule:evenodd"
+       transform="matrix(0.17556002,0,0,0.2533028,-518.45004,-520.54368)"
+       inkscape:export-filename="/home/vincpohl/Dropbox/Send/orbkit_logo/logo2.png"
+       inkscape:export-xdpi="400"
+       inkscape:export-ydpi="400" />
+    <polygon
+       class="fil74"
+       points="4261,2752 4262,2750 4281,2781 4270,2786 4263,2781 4258,2773 4255,2762 4255,2754 4257,2754 4260,2753 "
+       id="polygon4525-5"
+       style="fill:#7f7f7f;fill-rule:evenodd"
+       transform="matrix(0.17556002,0,0,0.2533028,-518.45004,-520.54368)"
+       inkscape:export-filename="/home/vincpohl/Dropbox/Send/orbkit_logo/logo2.png"
+       inkscape:export-xdpi="400"
+       inkscape:export-ydpi="400" />
+    <polygon
+       class="fil93"
+       points="4247,3148 4253,3177 4260,3207 4266,3236 4272,3266 4278,3297 4282,3327 4286,3357 4248,3395 4239,3328 4240,3259 4243,3189 4241,3118 "
+       id="polygon4527-2"
+       style="fill:#2c5aa0;fill-rule:evenodd"
+       transform="matrix(0.17556002,0,0,0.2533028,-518.45004,-520.54368)"
+       inkscape:export-filename="/home/vincpohl/Dropbox/Send/orbkit_logo/logo2.png"
+       inkscape:export-xdpi="400"
+       inkscape:export-ydpi="400" />
+    <polygon
+       class="fil81"
+       points="4091,3015 4112,3013 4134,3012 4157,3011 4179,3010 4201,3009 4223,3009 3882,3043 3902,3040 3923,3036 3943,3032 3963,3029 3984,3026 4005,3024 4027,3021 4048,3019 4070,3016 "
+       id="polygon4529-6"
+       style="fill:#2c5aa0;fill-rule:evenodd"
+       transform="matrix(0.17556002,0,0,0.2533028,-518.45004,-520.54368)"
+       inkscape:export-filename="/home/vincpohl/Dropbox/Send/orbkit_logo/logo2.png"
+       inkscape:export-xdpi="400"
+       inkscape:export-ydpi="400" />
+    <polygon
+       class="fil71"
+       points="4002,3049 4030,3045 4058,3042 4086,3040 4114,3037 4141,3035 4169,3032 4197,3030 4224,3028 4218,3214 4227,3392 3946,3407 3930,3364 3912,3322 3891,3280 3871,3240 3848,3199 3827,3158 3806,3117 3785,3076 3811,3072 3838,3069 3865,3065 3891,3061 3919,3058 3947,3055 3974,3052 "
+       id="polygon4531-4"
+       style="fill:#6ba3ff;fill-opacity:1;fill-rule:evenodd"
+       transform="matrix(0.17556002,0,0,0.2533028,-518.45004,-520.54368)"
+       inkscape:export-filename="/home/vincpohl/Dropbox/Send/orbkit_logo/logo2.png"
+       inkscape:export-xdpi="400"
+       inkscape:export-ydpi="400" />
+    <polygon
+       class="fil81"
+       points="3848,3037 3848,3049 3792,3056 3904,3005 3898,3011 3891,3016 3885,3022 3877,3026 3871,3029 3863,3032 3856,3035 "
+       id="polygon4533-5"
+       style="fill:#2c5aa0;fill-rule:evenodd"
+       transform="matrix(0.17556002,0,0,0.2533028,-518.45004,-520.54368)"
+       inkscape:export-filename="/home/vincpohl/Dropbox/Send/orbkit_logo/logo2.png"
+       inkscape:export-xdpi="400"
+       inkscape:export-ydpi="400" />
+    <g
+       style="fill:#ff0000;fill-opacity:1;fill-rule:evenodd;stroke:#ffffff;stroke-width:1.54868031;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       id="g4537-0"
+       transform="matrix(2.0153776,0.88140778,0.03200492,1.882635,-377.63582,-602.8275)"
+       inkscape:export-xdpi="400"
+       inkscape:export-ydpi="400"
+       inkscape:export-filename="/home/vincpohl/Dropbox/Send/orbkit_logo/logo2.png">
+      <g
+         id="g4539-9"
+         transform="matrix(1.0629921,0,0,-1.0629921,-186.02362,789.27165)"
+         xml:space="preserve"
+         stroke-miterlimit="10.433"
+         font-style="normal"
+         font-variant="normal"
+         font-weight="normal"
+         font-stretch="normal"
+         font-size-adjust="none"
+         letter-spacing="normal"
+         word-spacing="normal"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;letter-spacing:normal;word-spacing:normal;text-anchor:start;fill:#ff0000;fill-opacity:1;stroke:#ffffff;stroke-width:1.45690668;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"><path
+           d="m 480.81732,439.75084 2.92899,0.022 0.022,3.72608 c -2.18,-0.14 -3.72899,-0.16202 -6.17899,-0.16202 -2.44,0 -3.29877,-0.057 -5.49877,0.083 l -0.022,-3.72608 2.20877,0.057 0.12582,-14.18661 c -5.73,1.69 -5.93,7.87 -5.93,11 -0.05,4.44 -1.44,6.53 -4.43,6.53 l -3.59,0 c -0.75,0 -1.59,0 -1.59,-0.89 0,-0.75 0.59,-0.85 1.14,-0.91 1.9,-0.34 1.95,-4.12 1.95,-4.37 0,-1.75 0.05,-6.19 2.99,-9.38 2.5,-2.69 5.93,-3.73 9.46,-4.08 l -0.17062,-16.02397 -2.71383,-0.031 -0.0198,-3.58748 c 2.2,0.16 3.51383,0.19103 5.95383,0.19103 2.44,0 4.04899,0.022 6.22899,-0.13798 l 0.0198,3.58748 -2.92899,-0.022 0.17062,16.02397 c 4.62,0.39 7.56,1.94 9.31,3.54 3.44,3.23 3.64,7.96 3.64,8.62 0,2.23 0.05,5.33 2.09,5.67 0.35,0.06 0.99,0.16 0.99,0.91 0,0.89 -0.85,0.89 -1.6,0.89 l -3.58,0 c -1.7,0 -4.39,-0.2 -4.43,-7.08 -0.05,-6.01 -2.19,-9.36 -6.42,-10.5 z"
+           id="path4541-8"
+           inkscape:connector-curvature="0"
+           style="fill:#ff0000;fill-opacity:1;stroke:#ffffff;stroke-width:1.45690668;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+           sodipodi:nodetypes="cccscccccssscscccccscccccscsssccc" /></g>    </g>
+    <rect
+       y="87.087669"
+       x="137.41739"
+       height="345"
+       width="345"
+       id="rect4269"
+       style="fill:none;stroke:none" />
+  </g>
+</svg>
