@@ -276,24 +276,24 @@ def get_mo_overlap_matrix(mo_a,mo_b,ao_overlap_matrix,numproc=1):
     raise ValueError('mo_a and mo_b have to correspond to the same basis set, '+
                      'i.e., shape_a[1] != shape_b[1]')
   
-  
-  xx = slicer(N=len(global_args['mo_a']),
-              slice_length=numpy.ceil(len(global_args['mo_a'])/float(numproc+1)),
-              numproc=numproc)
+  numproc = min(len(global_args['mo_a']),max(1,numproc))
+  ij = numpy.linspace(0, len(global_args['mo_a']), 
+                      num=numproc+1, endpoint=True,  dtype=numpy.intc)
+  ij = zip(ij[:-1],ij[1:])
   
   # Start the worker processes
   if numproc > 1:
     pool = Pool(processes=numproc, initializer=initializer, initargs=(global_args,))
-    it = pool.imap(get_slice, xx)
+    it = pool.imap(get_slice, ij)
   else:
     initializer(global_args)
   
   mo_overlap_matrix = numpy.zeros((len(mo_a),len(mo_b)),dtype=numpy.float64)
   
   #--- Send each task to single processor
-  for l,[m,n] in enumerate(xx):
+  for l,[m,n] in enumerate(ij):
     #--- Call function to compute one-electron density
-    mo_overlap_matrix[m:n,:] = it.next() if numproc > 1 else get_slice(xx[l])
+    mo_overlap_matrix[m:n,:] = it.next() if numproc > 1 else get_slice(ij[l])
   
   #--- Close the worker processes
   if numproc > 1:  

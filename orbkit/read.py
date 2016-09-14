@@ -2311,12 +2311,16 @@ def mo_select(mo_spec, fid_mo_list, strict=False):
     sel = []
     for i in selected_mo:
       i = i.lower().replace('homo',str(homo)).replace('lumo',str(lumo))
-      i = i.replace('last_bound',str(last_bound)).split(':')
-      if len(i) == 1:
-        sel.append(eval(i[0]))
-      else:
-        i = list(range(*[eval(j) for j in i]))
+      i = i.replace('last_bound',str(last_bound))
+      if ':' in i:
+        k = [1,len(mo_spec)+1,1]
+        i = i.split(':')
+        for ik,j in enumerate(i):
+          if j != '': k[ik] = j
+        i = list(range(*[int(j) for j in k]))
         sel.extend(i)
+      else:
+        sel.append(int(i))
     return sel
   
   if isinstance(fid_mo_list,str) and fid_mo_list.lower() == 'all_mo':
