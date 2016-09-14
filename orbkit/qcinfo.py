@@ -163,6 +163,38 @@ class QCinfo:
     for key in keys:
       dct[key] = getattr(self,key)
     return dct
+  
+  def get_ase_atoms(self,bbox=None):
+    '''Create an ASE atoms object.
+    (cf. https://wiki.fysik.dtu.dk/ase/ase/atoms.html )
+    
+    **Parameters:**
+    
+    bbox : list of floats (bbox=[xmin,xmax,ymin,ymax,zmin,zmax]), optional
+      If not None, sets the unit cell to the grid boundaries and moves the 
+      molecule in its center.
+    
+    **Returns:**
+    
+    atoms : Atoms object 
+      See https://wiki.fysik.dtu.dk/ase/ase/atoms.html for details
+    
+    .. Note::
+    
+      ASE has to be in the PYTHONPATH
+    '''
+    from ase import Atoms
+    from ase.units import Bohr
+    
+    atoms = Atoms("".join(self.geo_info[:,0]), positions=self.geo_spec*Bohr)
+    if bbox is not None:
+      if len(bbox) != 6: 
+        raise ValueError("bbox has to have 6 elements")
+      bbox = numpy.array(bbox)
+      atoms.translate(-bbox[::2]*Bohr)
+      atoms.cell = numpy.eye(3) * (bbox[1::2] - bbox[::2])*Bohr
+    return atoms
+    
 
 class CIinfo:
   '''Class managing all information from the from the output 

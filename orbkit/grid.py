@@ -123,9 +123,7 @@ def set_grid(xnew,ynew,znew,is_vector=None):
   '''Sets the x-, y-, z-grid.
   '''
   global x, y, z, is_initialized
-  coord = ['x', 'y', 'z']
-  delta_ = numpy.zeros((3,1)) #: Contains the grid spacing.
-  
+  coord = ['x', 'y', 'z']  
   NumberTypes = (int, float) #: Contains the supported types.
   
   length = []
@@ -170,7 +168,7 @@ def set_grid(xnew,ynew,znew,is_vector=None):
     setattr(sys.modules[__name__],'is_vector',is_vector)
     info_string += ('\n\nThe variable `grid.is_vector` has been set to %s.' % 
                     is_vector)
-     
+  set_boundaries(is_regular=(is_vector==False))
   return info_string
   # set_grid 
 
@@ -187,6 +185,12 @@ def set_boundaries(is_regular=False,Nx=None,Ny=None,Nz=None):
     delta_ = [grid[1,0,0]-grid[0,0,0],
               grid[0,1,0]-grid[0,0,0],
               grid[0,0,1]-grid[0,0,0]]
+
+def get_bbox():
+  bbox = numpy.zeros(6)
+  bbox[::2] = min_
+  bbox[1::2] = max_
+  return bbox
 
 def grid2vector():
   '''Converts the regular grid characterized by x-, y-, z-vectors

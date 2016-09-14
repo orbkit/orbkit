@@ -187,7 +187,7 @@ def cube_creator(rho,filename,geo_info,geo_spec,comments='',**kwargs):
   for rr in range(len(grid.x)):
     for ss in range(len(grid.y)):
       for tt in range(len(grid.z)):
-        string += ('%(rho).6E' % {'rho': rho[rr,ss,tt]}).rjust(13)
+        string += ('%(rho).5E' % {'rho': rho[rr,ss,tt]}).rjust(13)
         if (tt % 6 == 5): 
           string += '\n'
       string += '\n'
@@ -836,7 +836,7 @@ def view_with_mayavi(x,y,z,data,geo_spec=None,datalabels=None,
       select  = Range(0, len(data)-1, 0)
       last_select = deepcopy(select)
       iso_value  = Range(iso_min, iso_max, iso_val,mode='logslider')
-      opacity    = Range(0, 1.0, 0.85)
+      opacity    = Range(0, 1.0, 1.0)
       show_atoms = Bool(True)
       label = Str()
       available = List(Str)
@@ -859,8 +859,10 @@ def view_with_mayavi(x,y,z,data,geo_spec=None,datalabels=None,
         
         if self.plot0 is None:          
           src = mlab.pipeline.scalar_field(X,Y,Z,data[self.select])
-          self.plot0 = self.scene.mlab.pipeline.iso_surface(\
-                      src, contours= [-self.iso_value,self.iso_value], opacity=self.opacity,colormap='blue-red',vmin=-1e-8,vmax=1e-8)
+          self.plot0 = self.scene.mlab.pipeline.iso_surface(
+                      src, contours= [-self.iso_value,self.iso_value], 
+                      opacity=self.opacity,colormap='blue-red',
+                      vmin=-1e-8,vmax=1e-8)
           lut = self.plot0.module_manager.scalar_lut_manager.lut.table.to_array()
           self.plot0.module_manager.scalar_lut_manager.lut.table = lut[::-1]
           self.plot0.contour.scene.background = (1,1,1)
@@ -873,7 +875,9 @@ def view_with_mayavi(x,y,z,data,geo_spec=None,datalabels=None,
           self.label = datalabels[self.select]
         if geo_spec is not None: 
           if self.plot_atoms is None:            
-            self.plot_atoms = self.scene.mlab.points3d(geo_spec[:,0],geo_spec[:,1],geo_spec[:,2])
+            self.plot_atoms = self.scene.mlab.points3d(
+                                      geo_spec[:,0],geo_spec[:,1],geo_spec[:,2],
+                                      scale_factor=0.75,resolution=20)
           self.plot_atoms.visible = self.show_atoms
       
       def _prev_button_fired(self):
