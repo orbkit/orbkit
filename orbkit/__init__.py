@@ -9,15 +9,15 @@ __all__ = ['grid','options','main','QCinfo','display','run_orbkit','init',
 
 __version__ = '0.5'
 
-# Import high-level orbkit modules
-from orbkit import grid,options,display,main,atomic_populations
+# Import high-level  modules
+from . import grid,options,display,main,atomic_populations
 
-from orbkit.qcinfo import QCinfo
-from orbkit.grid import grid_init,get_grid,set_grid
-from orbkit.main import run_orbkit,init
-from orbkit.read import main_read
-from orbkit.output import main_output
-from orbkit.core import rho_compute,rho_compute_no_slice
-from orbkit.extras import calc_ao,calc_mo,mo_set,gross_atomic_density,\
+from .qcinfo import QCinfo
+from .grid import grid_init,get_grid,set_grid
+from .main import run_orbkit,init
+from .read import main_read
+from .output import main_output
+from .core import rho_compute,rho_compute_no_slice
+from .extras import calc_ao,calc_mo,mo_set,gross_atomic_density,\
                           mo_transition_flux_density
-from orbkit.analytical_integrals import get_dipole_moment
+from .analytical_integrals import get_dipole_moment
