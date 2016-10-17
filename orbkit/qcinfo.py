@@ -42,8 +42,8 @@ class QCinfo:
   See :ref:`Central Variables` in the manual for details.
   '''
   def __init__(self):
-    self.geo_spec = []
     self.geo_info = []
+    self.geo_spec = []
     self.ao_spec  = []
     self.ao_spherical = None
     self.mo_spec  = []
@@ -164,7 +164,7 @@ class QCinfo:
       dct[key] = getattr(self,key)
     return dct
   
-  def get_ase_atoms(self,bbox=None):
+  def get_ase_atoms(self,bbox=None,view=False):
     '''Create an ASE atoms object.
     (cf. https://wiki.fysik.dtu.dk/ase/ase/atoms.html )
     
@@ -193,6 +193,11 @@ class QCinfo:
       bbox = numpy.array(bbox)
       atoms.translate(-bbox[::2]*Bohr)
       atoms.cell = numpy.eye(3) * (bbox[1::2] - bbox[::2])*Bohr
+    
+    if view:
+      from ase import visualize
+      visualize.view(atoms)
+      
     return atoms
     
 
@@ -209,15 +214,22 @@ class CIinfo:
     self.method = method
 
   def __str__(self):
-    string = '%s: ' % self.method
+    string = '%s' % self.method
     if self.info is not None:
-      string += '%(state)s (%(spin)s)' % self.info
+      string += ' State %(state)s (%(spin)s)' % self.info    
+    if numpy.shape(self.coeffs) != (0,):
+      string += ':\tNorm = %0.8f (%d Coefficients)' %(self.get_norm(),
+                                                      len(self.coeffs))
     return  string
   def __eq__(self, other): 
     try:
       return self.__dict__ == other.__dict__
     except ValueError:
       return False
+  def get_norm(self):
+    return sum(self.coeffs**2)
+  def renormalize(self):
+    self.coeffs /= self.get_norm()
   def copy(self):
     ciinfo = self.__class__(method=self.method)
     if self.coeffs != []:

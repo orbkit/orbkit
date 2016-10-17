@@ -987,7 +987,7 @@ def get_lxlylz(ao_spec,get_assign=False,bincount=False,get_label=False):
   return lxlylz
 
 def validate_drv(drv):
-  if drv is None or drv == '': return 0
+  if drv is None or drv == 'None' or drv == '': return 0
   elif drv == 'x': return 1
   elif drv == 'y': return 2
   elif drv == 'z': return 3

@@ -83,6 +83,10 @@ def grid_init(is_vector=False, force=False):
     setattr(sys.modules[__name__],'is_vector',False)  
   # grid_init 
 
+# Synonyms
+init = grid_init
+init_grid = grid_init
+
 def get_grid(start='\t'):
   '''Returns a string describing the current x-, y-, z-grid.
   '''
@@ -559,6 +563,7 @@ def adjust_to_geo(qc,extend=5.0,step=0.1):
     # Correct minimum and maximum value, if necessary
     min_[i] -= rest/2.
     max_[i] += rest/2.
+    delta_[i] = 0.5
 
 def check_atom_select(atom,geo_info,geo_spec,interactive=True,
                       display=sys.stdout.write):

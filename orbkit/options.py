@@ -57,7 +57,7 @@ itypes = ['molden',
 
 otypes = ['h5', 'cb', 'am', 'hx', 'vmd', 'mayavi'] #: Specifies possible output types.
 
-drv_options = ['x','y','z',
+drv_options = ['None','x','y','z',
                'xx','yy','zz','x2','y2','z2',
                'xy','yx','xz','zx','yz','zy']     #: Specifies possible derivative variables.
 
