@@ -2279,6 +2279,7 @@ def mo_select(mo_spec, fid_mo_list, strict=False):
     alpha or the beta orbitals are taken into account for the counting 
     within the Integer List.
   '''
+  import re
   display('\nProcessing molecular orbital list...')
   
   mo_in_file = []
@@ -2302,6 +2303,14 @@ def mo_select(mo_spec, fid_mo_list, strict=False):
     selected_mo_ii = numpy.array(selected_mo_ii)
     return selected_mo_spec,selected_mo_ii
   
+  def expr2int(expr):
+    if isinstance(expr,int):
+      return expr
+    x = 0
+    for i in re.findall(r'\d+|[+-]\d+',expr):
+      x += int(i)
+    return x
+  
   def get_selection(selected_mo):
     mo_occup = numpy.array([i['occ_num'] for i in mo_spec])
     homo = (mo_occup>0.).nonzero()[0][-1]   + 1 # molden numbering
@@ -2317,7 +2326,7 @@ def mo_select(mo_spec, fid_mo_list, strict=False):
         i = i.split(':')
         for ik,j in enumerate(i):
           if j != '': k[ik] = j
-        i = list(range(*[int(j) for j in k]))
+        i = list(range(*[expr2int(j) for j in k]))
         sel.extend(i)
       else:
         sel.append(int(i))

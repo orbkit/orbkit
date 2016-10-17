@@ -27,6 +27,7 @@ Example for the Execution::
 
 from copy import deepcopy
 import numpy
+from time import time
 
 from orbkit.read import main_read
 from orbkit.display import display,init_display
@@ -231,6 +232,7 @@ def order_using_analytical_overlap(fid_list,itype='molden',deg=0,numproc=1,
     index_list[s] *= numpy.arange(shape[1],dtype=int)
   
   c = 0
+  t = time()
   for rr in iterate:
     r1 = rr-1
     r2 = rr
@@ -284,8 +286,9 @@ def order_using_analytical_overlap(fid_list,itype='molden',deg=0,numproc=1,
       mo_occ_all[s][r2,:] = mo_occ_all[s][r2,index]
     
     c += 1
-    if not c % int(numpy.ceil(len(iterate)/10.)):
-      display('\tFinished %d of %d geometries' % (c, len(iterate)))
+    #if not c % int(numpy.ceil(len(iterate)/10.)):
+    display('\tFinished %d of %d geometries (%.1f s)' % (c, len(iterate), time()-t))
+    t = time()
   
   tmp = []
   for i in mo_overlap:
@@ -897,8 +900,7 @@ def show_selected_mos(selected_mos,r0=0,steps=1,select_slice='xz',where=0.0,
     mo = []
     for rr in r:
       ao_list = ao_creator(geo_spec_all[rr],ao_spec,ao_spherical=ao_spherical)
-      mo.append(mo_creator(ao_list,None,
-                mo_coeff=mo_coeff_all[sym[j]][rr,int(i)-1,numpy.newaxis])[0].reshape(tuple(npts)))
+      mo.append(mo_creator(ao_list,mo_coeff_all[sym[j]][rr,int(i)-1,numpy.newaxis])[0].reshape(tuple(npts)))
     
     f, pics = contour_mult_mo(xyz[k[0]],xyz[k[1]],mo,
                     xlabel=select_slice[0],ylabel=select_slice[1],
