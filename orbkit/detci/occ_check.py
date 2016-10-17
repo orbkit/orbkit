@@ -1,5 +1,5 @@
-from ci_orbkit import cy_occ_check
-from orbkit import omp_functions
+from . import cy_occ_check
+from .. import omp_functions
 import numpy
 
 def slice_occ(ij):  

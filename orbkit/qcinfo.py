@@ -229,6 +229,13 @@ class CIinfo:
     return ciinfo
   def todict(self):
     return self.__dict__
+  def apply_threshold(self,threshold,keep_length=False):    
+    i = numpy.abs(self.coeffs) >= threshold
+    if keep_length:
+      self.coeffs[numpy.invert(i)] = 0.0
+    else:
+      self.coeffs = self.coeffs[i]
+      self.occ = self.occ[i]
   def hdf5_save(self,fid='out.h5',group='/ci:0',mode='w'):
     from orbkit.output import hdf5_open,hdf5_append
     from copy import copy

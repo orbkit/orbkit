@@ -1,8 +1,31 @@
-from orbkit.display import display
+from ..display import display
 import numpy
 from copy import copy
-from orbkit.qcinfo import CIinfo
+from ..qcinfo import CIinfo
 
+def orthonorm(ci):
+  '''Orthonomalize CI coefficients after Grahm-Schmidt 
+  
+  **Parameters:**
+  
+    ci: 
+  
+  **Returns:**
+  
+    ci: 
+      Contains the orthonormalized CI coefficients for each Slater-determinant
+  '''
+  # Grahm-Schmidt orthonormalization
+  display('Orthonormalization of CI-coefficients with Gram-Schmidt...\n')
+  for ii in range(len(ci)):
+    scal = numpy.dot(ci[ii].coeffs,ci[ii].coeffs)
+    ci[ii].coeffs /= numpy.sqrt(scal)
+    for jj in range(ii+1,len(ci)):
+      scal = numpy.dot(ci[ii].coeffs,ci[jj].coeffs)
+      ci[jj].coeffs -= ci[ii].coeffs*scal
+      
+  return ci
+      
 def gamess_cis(filename,select_state=None,threshold=0.0):
   '''Reads GAMESS-US CIS output. 
   
@@ -555,7 +578,7 @@ def turbomole_tddft(filename,nmoocc,nforbs=0,select_state=None,threshold=0.0,bor
   
   nel = (nmoocc + nforbs) * 2
   lumo = (nmoocc + nforbs)
-  states = []
+  states = [{'eigenvalue':0.0}]
   with open(filename,'r') as f:
     start = False
     for i,line in enumerate(f):
@@ -563,13 +586,12 @@ def turbomole_tddft(filename,nmoocc,nforbs=0,select_state=None,threshold=0.0,bor
         start = True
         l = line.split()
         states.append({'eigenvalue': float(l[-1].replace('D','E')),
-                       'number': int(l[0]),
                        'coeffs': []})
       elif start:
         for i in range((len(line)-1)/20):
           states[-1]['coeffs'].append(float(line[i*20:(i+1)*20].replace('D','E')))
   
-  for i in range(len(states)):
+  for i in range(1,len(states)):
     states[i]['coeffs'] = numpy.array(states[i]['coeffs']).reshape((2,nmoocc,-1))
     states[i]['xia'] = 0.5 * (
                         (states[i]['coeffs'][0] + states[i]['coeffs'][1])
@@ -578,78 +600,58 @@ def turbomole_tddft(filename,nmoocc,nforbs=0,select_state=None,threshold=0.0,bor
                         (states[i]['coeffs'][0] - states[i]['coeffs'][1])
                         )
     del states[i]['coeffs']
-    
-  coeffs = numpy.zeros((len(states)+1,numpy.prod(states[0]['xia'].shape)+1))
-  for ii in range(len(states)):
-    count = 1
-    for jj in range(states[ii]['xia'].shape[0]):
-      for kk in range(states[ii]['xia'].shape[1]):
-        if abs(states[ii]['xia'][jj,kk]) > threshold:
-          coeffs[ii+1][count] = states[ii]['xia'][jj,kk]
-        count += 1       
   
-  # Gram-Schmidt
-  if bortho:
-    display('Orthonormalizing the TD-DFT coefficients with Gram-Schmidt...\n')
-    coeffs[0][0] = 1.0
-    for ii in range(len(states)+1):
-      scal = numpy.dot(coeffs[ii],coeffs[ii])
-      coeffs[ii] /= numpy.sqrt(scal)
-      for jj in range(ii+1,len(states)+1):
-        scal = numpy.dot(coeffs[ii],coeffs[jj])
-        coeffs[jj] -= coeffs[ii]*scal
-
+  coeffs = numpy.zeros((len(states),numpy.prod(states[1]['xia'].shape)))
+  coeffs[0,0] = 1.0
+  for i in range(1,len(states)):
+    coeffs[i] = states[i]['xia'].reshape((-1,))
+  
   # Set up configurations
   ci = []
-
-  # Ground state
-  if select_state is None or 0 in select_state:
-    ci.append(CIinfo(method='tddft'))
-    ci[-1].info   = []
-    ci[-1].coeffs = []
-    ci[-1].occ    = []
-    ci[-1].info = {'state': '0',
-                   'energy': 0.0,          
-                   'fileinfo': filename,
-                   'read_threshold': threshold,
-                   'spin': 'Unknown',
-                   'nel': nel}
-    ci[-1].coeffs.append(1.0)
-    ci[-1].occ.append([-1,-1])
-
-  # Excited states
-  for ii in range(len(states)):
-    if select_state is None or ii in select_state:
+  for i in range(len(states)):
+    if select_state is None or i in select_state:
       ci.append(CIinfo(method='tddft'))
-      ci[-1].info   = []
-      ci[-1].coeffs = []
+      ci[-1].coeffs = coeffs[i]
       ci[-1].occ    = []
-      ene = numpy.abs(states[ii]['eigenvalue'])
-      ci[-1].info = {'state': str(ii+1),
-                     'energy': ene,
+      ci[-1].info = {'state': str(i),
+                     'energy': numpy.abs(states[i]['eigenvalue']),
                      'fileinfo': filename,
                      'read_threshold': threshold,
                      'spin': 'Unknown',
                      'nel': nel}
-      count = 1
-      for jj in range(states[ii]['xia'].shape[0]):
-        for kk in range(states[ii]['xia'].shape[1]):
-          if abs(coeffs[ii+1,count]) > 0.0:
-            ci[-1].coeffs.append(coeffs[ii+1,count])
+      if not i:
+        ci[-1].occ.append([-1,-1])
+      else:        
+        for jj in range(states[i]['xia'].shape[0]):
+          for kk in range(states[i]['xia'].shape[1]):
             ci[-1].occ.append([jj+nforbs,kk+lumo])
-          count += 1
+      ci[-1].occ = numpy.array(ci[-1].occ,dtype=numpy.intc)
+  
+  # Gram-Schmidt
+  display('Orthonormalizing the TD-DFT coefficients with Gram-Schmidt...\n')
+  ci = orthonorm(ci)
 
+
+  if bortho:
+    for c in ci:
+      c.apply_threshold(threshold,keep_length=True)
+    ci = orthonorm(ci)
+    
+  for c in ci:
+    c.apply_threshold(threshold,keep_length=False)
+    
   #--- Calculating norm of CI states
   display('\nIn total, %d states have been read.' % len(ci)) 
   display('Norm of the states:')
-  for i in range(len(ci)):
-    j = numpy.array(ci[i].coeffs,dtype=float)
-    norm = numpy.sum(j**2)
-    ci[i].coeffs = j
+  for i in ci:
+    display(str(i))
+    #j = numpy.array(ci[i].coeffs,dtype=float)
+    #norm = numpy.sum(j**2)
+    #ci[i].coeffs = j
     # Write Norm to log-file
-    display('\tState %s:\tNorm = %0.8f (%d Coefficients)' % (ci[i].info['state'],norm, len(ci[i].coeffs)))
+    #display('\tState %s:\tNorm = %0.8f (%d Coefficients)' % (ci[i].info['state'],norm, len(ci[i].coeffs)))
     # Transform to numpy arrays
-    ci[i].occ = numpy.array([s for s in ci[i].occ],dtype=numpy.intc)
+    #ci[i].occ = numpy.array([s for s in ci[i].occ],dtype=numpy.intc)
   display('')
   
   return ci

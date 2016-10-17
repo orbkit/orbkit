@@ -1,7 +1,7 @@
-from ci_orbkit import cy_ci
-from orbkit.analytical_integrals import get_nuclear_dipole_moment
-from orbkit.display import display
-from orbkit import omp_functions
+from . import cy_ci
+from ..analytical_integrals import get_nuclear_dipole_moment
+from ..display import display
+from .. import omp_functions
 import numpy
 
 def mu(cia,cib,qc,zero,sing,omr,omv):
