@@ -578,7 +578,7 @@ def turbomole_tddft(filename,nmoocc,nforbs=0,select_state=None,threshold=0.0,bor
   
   nel = (nmoocc + nforbs) * 2
   lumo = (nmoocc + nforbs)
-  states = [{'eigenvalue':0.0}]
+  states = []
   with open(filename,'r') as f:
     start = False
     for i,line in enumerate(f):
@@ -591,7 +591,7 @@ def turbomole_tddft(filename,nmoocc,nforbs=0,select_state=None,threshold=0.0,bor
         for i in range((len(line)-1)/20):
           states[-1]['coeffs'].append(float(line[i*20:(i+1)*20].replace('D','E')))
   
-  for i in range(1,len(states)):
+  for i in range(len(states)):
     states[i]['coeffs'] = numpy.array(states[i]['coeffs']).reshape((2,nmoocc,-1))
     states[i]['xia'] = 0.5 * (
                         (states[i]['coeffs'][0] + states[i]['coeffs'][1])
@@ -600,59 +600,57 @@ def turbomole_tddft(filename,nmoocc,nforbs=0,select_state=None,threshold=0.0,bor
                         (states[i]['coeffs'][0] - states[i]['coeffs'][1])
                         )
     del states[i]['coeffs']
-  
-  coeffs = numpy.zeros((len(states),numpy.prod(states[1]['xia'].shape)))
+
+  coeffs = numpy.zeros((len(states)+1,numpy.prod(states[1]['xia'].shape)+1))
+  for i in range(len(states)):
+    coeffs[i+1][1:] = states[i]['xia'].reshape((-1,))
   coeffs[0,0] = 1.0
-  for i in range(1,len(states)):
-    coeffs[i] = states[i]['xia'].reshape((-1,))
   
   # Set up configurations
   ci = []
-  for i in range(len(states)):
+  for i in range(len(states)+1):
     if select_state is None or i in select_state:
       ci.append(CIinfo(method='tddft'))
       ci[-1].coeffs = coeffs[i]
       ci[-1].occ    = []
       ci[-1].info = {'state': str(i),
-                     'energy': numpy.abs(states[i]['eigenvalue']),
+                     'energy': 0.0 if i==0 else numpy.abs(states[i+1]['eigenvalue']),
                      'fileinfo': filename,
                      'read_threshold': threshold,
                      'spin': 'Unknown',
                      'nel': nel}
       if not i:
         ci[-1].occ.append([-1,-1])
-      else:        
+        for jj in range(states[i]['xia'].shape[0]):
+          for kk in range(states[i]['xia'].shape[1]):
+            ci[-1].occ.append([0,0])
+      else:
+        ci[-1].occ.append([0,0])
         for jj in range(states[i]['xia'].shape[0]):
           for kk in range(states[i]['xia'].shape[1]):
             ci[-1].occ.append([jj+nforbs,kk+lumo])
       ci[-1].occ = numpy.array(ci[-1].occ,dtype=numpy.intc)
-  
+
   # Gram-Schmidt
   display('Orthonormalizing the TD-DFT coefficients with Gram-Schmidt...\n')
   ci = orthonorm(ci)
-
 
   if bortho:
     for c in ci:
       c.apply_threshold(threshold,keep_length=True)
     ci = orthonorm(ci)
-    
+  else:
+    for c in ci:
+      c.apply_threshold(threshold,keep_length=False)
+  
   for c in ci:
-    c.apply_threshold(threshold,keep_length=False)
+      c.apply_threshold(0.0,keep_length=False)
     
   #--- Calculating norm of CI states
   display('\nIn total, %d states have been read.' % len(ci)) 
   display('Norm of the states:')
   for i in ci:
     display(str(i))
-    #j = numpy.array(ci[i].coeffs,dtype=float)
-    #norm = numpy.sum(j**2)
-    #ci[i].coeffs = j
-    # Write Norm to log-file
-    #display('\tState %s:\tNorm = %0.8f (%d Coefficients)' % (ci[i].info['state'],norm, len(ci[i].coeffs)))
-    # Transform to numpy arrays
-    #ci[i].occ = numpy.array([s for s in ci[i].occ],dtype=numpy.intc)
-  display('')
   
   return ci
 

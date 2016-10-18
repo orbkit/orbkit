@@ -214,9 +214,11 @@ class CIinfo:
     self.method = method
 
   def __str__(self):
-    string = '%s' % self.method
+    string = '%s' % self.method.upper()
     if self.info is not None:
-      string += ' State %(state)s (%(spin)s)' % self.info    
+      string += ' State %(state)s' % self.info    
+      if self.info['spin'] != 'Unknown':
+         string += ' (%(spin)s)' % self.info['spin']
     if numpy.shape(self.coeffs) != (0,):
       string += ':\tNorm = %0.8f (%d Coefficients)' %(self.get_norm(),
                                                       len(self.coeffs))
@@ -242,7 +244,7 @@ class CIinfo:
   def todict(self):
     return self.__dict__
   def apply_threshold(self,threshold,keep_length=False):    
-    i = numpy.abs(self.coeffs) >= threshold
+    i = numpy.abs(self.coeffs) > threshold
     if keep_length:
       self.coeffs[numpy.invert(i)] = 0.0
     else:
