@@ -69,7 +69,10 @@ class QCinfo:
   def get_mo_labels(self):
     return ['MO %(sym)s, Occ=%(occ_num).2f, E=%(energy)+.4f E_h' % 
                   i for i in self.mo_spec]
-
+  
+  def get_mo_energies(self):
+    return numpy.array([i['energy'] for i in self.mo_spec])
+  
   def get_com(self,nuc_list=None):
     '''Computes the center of mass.
     '''
@@ -164,7 +167,7 @@ class QCinfo:
       dct[key] = getattr(self,key)
     return dct
   
-  def get_ase_atoms(self,bbox=None,view=False):
+  def get_ase_atoms(self,bbox=None,**kwargs):
     '''Create an ASE atoms object.
     (cf. https://wiki.fysik.dtu.dk/ase/ase/atoms.html )
     
@@ -186,7 +189,9 @@ class QCinfo:
     from ase import Atoms
     from ase.units import Bohr
     
-    atoms = Atoms("".join(self.geo_info[:,0]), positions=self.geo_spec*Bohr)
+    atoms = Atoms("".join(self.geo_info[:,0]), 
+                  positions=self.geo_spec*Bohr,
+                  **kwargs)
     if bbox is not None:
       if len(bbox) != 6: 
         raise ValueError("bbox has to have 6 elements")
@@ -194,11 +199,27 @@ class QCinfo:
       atoms.translate(-bbox[::2]*Bohr)
       atoms.cell = numpy.eye(3) * (bbox[1::2] - bbox[::2])*Bohr
     
-    if view:
-      from ase import visualize
-      visualize.view(atoms)
-      
     return atoms
+  # Synonym
+  atoms = get_ase_atoms
+  def view(self,select=slice(None,None,None),bbox=None,**kwargs):
+    '''Opens ase-gui with the atoms of the QCinfo class.
+    (cf. https://wiki.fysik.dtu.dk/ase/ase/visualize/visualize.html )
+    
+    **Parameters:**
+    
+    select : slice or (array of int), default: all atoms
+      Specifies the atoms to be shown.
+    bbox : list of floats (bbox=[xmin,xmax,ymin,ymax,zmin,zmax]), optional
+      If not None, sets the unit cell to the grid boundaries and moves the 
+      molecule in its center.    
+    
+    .. Note::
+    
+      ASE has to be in the PYTHONPATH
+    '''    
+    from ase import visualize    
+    visualize.view(self.get_ase_atoms(bbox=bbox,**kwargs)[select])
     
 
 class CIinfo:
@@ -217,8 +238,8 @@ class CIinfo:
     string = '%s' % self.method.upper()
     if self.info is not None:
       string += ' State %(state)s' % self.info    
-      if self.info['spin'] != 'Unknown':
-         string += ' (%(spin)s)' % self.info['spin']
+      if 'spin' in self.info.keys() and self.info['spin'] != 'Unknown':
+         string += ' (%(spin)s)' % self.info
     if numpy.shape(self.coeffs) != (0,):
       string += ':\tNorm = %0.8f (%d Coefficients)' %(self.get_norm(),
                                                       len(self.coeffs))
