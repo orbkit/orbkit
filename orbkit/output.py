@@ -155,7 +155,7 @@ def cube_creator(rho,filename,geo_info,geo_spec,comments='',**kwargs):
   comments : str, optional
     Specifies the second (comment) line of the cube file.  
   '''
-  
+  AssertionError (rho.shape != tuple(grid.N_)), 'The grid does not fit the data.'
   # Open an empty file 
   fid = open('%(f)s.cb' % {'f': filename}, 'w')
   
@@ -473,6 +473,9 @@ def hx_network_creator(rho,filename):
   # Create a .cmap colormap file using the default values 
   display('\tCreating ZIBAmira colormap file...\n\t\t%(f)s.cmap' % 
                 {'f': filename})
+  
+  AssertionError (rho.shape != tuple(grid.N_)), 'The grid does not fit the data.'
+  
   colormap_creator(rho,filename)
   
   # Create a .hx network file based on the file orbkit.hx_network_draft.py 

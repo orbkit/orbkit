@@ -29,7 +29,7 @@ def compare(cia,cib,moocc,numproc=1):
   multici = {'cia': cia, 'cib': cib,'moocc': moocc}
   
   numproc = min(len(cia.coeffs),max(1,numproc))
-  ij = numpy.linspace(0, len(cia.coeffs), num=numproc+1, endpoint=True,  dtype=numpy.intc)
+  ij = numpy.array(numpy.linspace(0, len(cia.coeffs), num=numproc+1, endpoint=True),  dtype=numpy.intc) # backward compatibility
   ij = zip(ij[:-1],ij[1:])
   
   return_value = omp_functions.run(slice_occ,x=ij,numproc=numproc,display=lambda x: None)

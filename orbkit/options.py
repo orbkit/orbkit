@@ -302,7 +302,7 @@ def check_options(error=raise_error,display=print_message,
       setattr(thismodule,'outputname',fid_base)
     elif not (os.path.dirname(outputname) == '' or 
               os.path.exists(os.path.dirname(outputname))):
-      error('Output path %s does not exist!' % os.path.dirname(outputname))
+      error('Output path "%s" does not exist!' % os.path.dirname(outputname))
       
   
   # Check the output types for correctness
