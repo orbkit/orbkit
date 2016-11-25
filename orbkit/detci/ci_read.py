@@ -1,131 +1,93 @@
 from ..display import display
 import numpy
 from copy import copy
-from ..qcinfo import CIinfo
+from ..qcinfo import QCinfo,CIinfo
 
-def orthonorm(ci):
-  '''Orthonomalize CI coefficients after Grahm-Schmidt 
+def main_ci_read(qc,filename,itype='psi4_detci',threshold=0.0,
+                 select=None,nforbs=0,bortho=False,
+                 **kwargs):
+  '''Reads determinant CI calculation. 
+  
+  Supported input files (``itype``):
+  
+  itype           QC-Program  Level of Theory
+  ==============  ==========  =====================
+  'psi4_detci'    PSI4        All CI calculations
+  'gamess_cis'    GAMESS-US   CIS
+  'tmol_tddft'    TURBOMOLE   TD-DFT
+  'molpro_mcscf'  MOLPRO      MCSCF
+  ==============  ==========  =====================
   
   **Parameters:**
   
-    ci: 
-  
-  **Returns:**
-  
-    ci: 
-      Contains the orthonormalized CI coefficients for each Slater-determinant
-  '''
-  # Grahm-Schmidt orthonormalization
-  display('Orthonormalization of CI-coefficients with Gram-Schmidt...\n')
-  for ii in range(len(ci)):
-    scal = numpy.dot(ci[ii].coeffs,ci[ii].coeffs)
-    ci[ii].coeffs /= numpy.sqrt(scal)
-    for jj in range(ii+1,len(ci)):
-      scal = numpy.dot(ci[ii].coeffs,ci[jj].coeffs)
-      ci[jj].coeffs -= ci[ii].coeffs*scal
-      
-  return ci
-      
-def gamess_cis(filename,select_state=None,threshold=0.0):
-  '''Reads GAMESS-US CIS output. 
-  
-  **Parameters:**
-  
+    qc : class QCinfo
+      See :ref:`Central Variables` for details.
     filename : str
       Specifies the filename for the input file.
-    select_state : None or list of int, optional
-      If not None, specifies the states to be read (0 corresponds to the ground 
-      state), else read all electronic states.
+    itype : str, choices={'psi4_detci', 'gamess_cis', 'tmol_tddft', 'molpro_mcscf'}
+      Specifies the type of the input file.
     threshold : float, optional
       Specifies a read threshold for the CI coefficients.
+    select : None or (list of) int (counting from zero), optional
+      if None, reads all states, else ...
+      | TURBOMOLE & GAMESS-US: Specifies the STATE to be read (0 -> ground state)
+      | PSI4 & MOLPRO: Specifies the CALCULATION to be read
+    nforbs : int, optional, TURBOMOLE-specific
+      Specifies the number of frozen orbitals.
+    bortho : bool, optional, TURBOMOLE-specific
+      If True, an orthonormalization of  the TD-DFT coefficients is perfomed
+      with Gram-Schmidt.
   
   **Returns:**
   
-    ci : list of CIinfo class instances
+    qc : class QCinfo
+      New instance of QCinfo. See :ref:`Central Variables` for details.
+      qc.mo_spec is possibly reordered.
+    ci : list of CIinfo class instances 
       See :ref:`Central Variables` for details.
   '''
-  # Initialize variables
-  ci = []
-  ci_flag = False
-  prttol = False
-  init_state = False
-  rhfspin = 0
-  min_c = -1
+  display('Opened \n\t%s\n' % filename)  
+  assert isinstance(qc,QCinfo), '`qc` has to be an instance of the QCinfo class'
   
-  display('\nReading data of CIS calculation from GAMESS-US...')
-  with open(filename) as fileobject:
-    for line in fileobject:
-      thisline = line.split()             # The current line split into segments
-      #--- Check the file for keywords ---
-      # Initialize Hartree-Fock ground state
-      if 'NUMBER OF ELECTRONS' in line:
-        nel = int(thisline[-1])
-      elif 'SPIN MULTIPLICITY' in line:
-        rhfspin = int(thisline[-1])
-      elif ' FINAL RHF ENERGY IS' in line and 0 in select_state:
-          ci.append(CIinfo(method='cis'))
-          ci[-1].info   = []
-          ci[-1].coeffs = []
-          ci[-1].occ    = []
-          ci[-1].occ.append([0,0])
-          ci[-1].coeffs.append(1.0)
-          ci[-1].info = {'state': '0',
-                         'energy': float(thisline[4]),
-                         'fileinfo': filename,
-                         'read_threshold': threshold,
-                         'spin': multiplicity[rhfspin],
-                         'nel': nel}
-      # Printing parameter
-      elif ' PRINTING CIS COEFFICIENTS LARGER THAN' in line:
-        min_c = float(thisline[-1])
-      # Initialize new excited state
-      elif ' EXCITED STATE ' in line and 'ENERGY=' and 'SPACE SYM' in line:
-        if select_state is None or int(thisline[2]) in select_state:
-          init_state = True
-          cis_skip = 6
-          ci.append(CIinfo(method='cis'))
-          ci[-1].info   = []
-          ci[-1].coeffs = []
-          ci[-1].occ    = []
-          ci[-1].info = {'state': thisline[2],
-                         'energy': float(thisline[4]),
-                         'fileinfo': filename,
-                         'read_threshold': threshold,
-                         'spin': multiplicity[int(2*float(thisline[7])+1)],
-                         'nel': nel}
-      if init_state == True:
-        if not cis_skip:
-          if '----------------------------------------------' in line:
-            init_state = False
-          else:
-            if abs(float(thisline[2])) > threshold:
-              ci[-1].occ.append(thisline[:2])
-              ci[-1].coeffs.append(thisline[2])
-        elif cis_skip:
-          cis_skip -= 1
-          
-  #--- Calculating norm of CI states
-  display('\nIn total, %d states have been read.' % len(ci)) 
-  display('Norm of the states:')
-  for i in range(len(ci)):
-    j = numpy.array(ci[i].coeffs,dtype=float)
-    norm = numpy.sum(j**2)
-    ci[i].coeffs = j
-    # Write Norm to log-file
-    display('\tState %s:\tNorm = %0.8f (%d Coefficients)' % (ci[i].info['state'],norm, len(ci[i].coeffs)))
-    # Transform to numpy arrays
-    ci[i].occ = numpy.array([s for s in ci[i].occ],dtype=numpy.intc)-1
-  display('')
-  if min_c > threshold:
-    display('\nInfo:'+
-       '\n\tSmallest coefficient (|c|=%f) is larger than the read threshold (%f).' 
-       %(min_c,threshold) + 
-       '\n\tUse `PRTTOL=0.0` in the `$CIS` input card to print ' +
-       'all CI coefficients.\n')
+  # What kind of input file has to be read?
+  reader = {'psi4_detci': psi4_detci, 
+            'gamess_cis': gamess_cis, 
+            'tmol_tddft': tmol_tddft, 
+            'molpro_mcscf': molpro_mcscf}
+  
+  display('Loading %s file...' % itype)
+  if itype not in reader.keys():
+    display('Available reader (`itype`) are:\n  ' + ', '.join(reader.keys()))
+    raise NotImplementedError("itype='%s' not implemented!"%itype)
+  
+  kwargs['nmoocc'] = qc.get_nmoocc()
+  
+  ci = reader[itype](filename,select_state=select,threshold=threshold, 
+                     select_run=select,                 # PSI4/MOLPRO specific
+                     nforbs=nforbs,bortho=bortho,       # TURBOMOLE specific
+                     **kwargs)
+  
+  # Get a copy of qc
+  qc = qc.copy()
+  if itype in ['tmol_tddft','gamess_cis']: # CIS-like
+    moocc = qc.get_mo_occ()
+  elif itype in ['psi4_detci','molpro_mcscf']: # detCI-like
+    # Reorder qc.mo_spec
+    irreps=None if 'irreps' not in ci[0].info.keys() else ci[0].info['irreps']                                                
+    closed,active,external = molpro_mo_order_ci(ci[0].info['occ_info'],
+                                                qc.mo_spec,
+                                                irreps=irreps
+                                                )
+    qc.mo_spec = closed+active+external
+    moocc = numpy.zeros(len(closed),dtype=numpy.intc) + 2
+  
+  # Add moocc to CI class instances
+  for i in ci:
+    i.set_moocc(moocc)
   
   return ci
 
-def psi4_detci(filename,threshold=0.0):
+def psi4_detci(filename,select_run=None,threshold=0.0,**kwargs):
   '''Reads PSI4 DETCI output. 
   
   **Parameters:**
@@ -133,36 +95,56 @@ def psi4_detci(filename,threshold=0.0):
     filename : str
       Specifies the filename for the input file.
     select_run : (list of) int
-      Specifies the MCSCF calculation (1PROGRAM * MULTI) to be read. 
-      For the selected MCSCF calculation, all electronic states will be read.
+      Specifies the DETCI calculation (D E T C I) to be read. 
+      For the selected DETCI calculation, all electronic states will be read.
     threshold : float, optional
       Specifies a read threshold for the CI coefficients.
   
   **Returns:**
   
-    ci : (list of) list of CIinfo class instances 
+    ci : list of CIinfo class instances 
       See :ref:`Central Variables` for details.
+  
+  ..#ATTENTION: Changed return value to list of CI classes
   '''
-  global active
   display('\nReading data of DETCI calculation from PSI4...')
   count = 0
-  ci = []
+  numci = []
   # Go through the file line by line 
   with open(filename) as fileobject:
     for line in fileobject:
       if 'D E T C I' in line:
         count += 1
-        ci.append([])
+        numci.append(0)
+      if '* ROOT' in line:
+        numci[-1] += 1
   
-  select_run = numpy.arange(count)
-  single_run_selected = True
   if count == 0:
     display('The input file %s does not contain any DETCI calculations!\n' % (filename) + 
             'It does not contain the keyword:\n\tD E T C I')
     raise IOError('Not a valid input file')
   else:
-    display('The input file %s contains %d DETCI calculation(s).' % (filename,count))
+    display('The input file %s contains %d DETCI calculation(s)' % (filename,count))
+    display('with %s root(s)%s.'%(', '.join(map(str,numci)),
+                               ', respectively' if len(numci)>1 else ''))
+    
+    if select_run is None:
+      select_run = numpy.arange(count)   
+    if isinstance(select_run,int) and 0 <= select_run < count:
+      select_run = [select_run]
+      ci = [[]]
+    elif isinstance(select_run,(list,numpy.ndarray)):
+      ci = []
+      for i in select_run:
+        ci.append([])
+        if not isinstance(i,int):
+          raise IOError(str(i) + ' is not a valid selection for select_run')
+    else: 
+      raise IOError(str(select_run) + ' is a not valid selection for select_run')    
+  select_run = numpy.array(select_run)
   
+  display('\n\tYour selection (counting from zero): %s' % 
+          ', '.join(map(str,select_run)))
   
   general_information = {'fileinfo': filename,
                          'read_threshold': threshold}
@@ -284,9 +266,6 @@ def psi4_detci(filename,threshold=0.0):
   display('Norm of the states:')
   for i in range(len(ci)):
     for j in range(len(ci[i])):
-      #index = 
-      #if abs(float(j)) > threshold:
-      
       norm = sum(ci[i][j].coeffs**2)
       display('\tState %s (%s):\tNorm = %0.8f (%d Coefficients)' % 
               (ci[i][j].info['state'],ci[i][j].info['spin'],
@@ -299,14 +278,225 @@ def psi4_detci(filename,threshold=0.0):
        '\n\tUse `set num_dets_print -1` in the PSI4 input file to print ' +
        'all CI coefficients.\n')
   
-  if single_run_selected and len(ci) == 1:
-    ci = ci[0]
+  ci_new = []
+  for i in ci:
+    ci_new.extend(i)
+  
+  return ci_new
+
+def gamess_cis(filename,select_state=None,threshold=0.0,**kwargs):
+  '''Reads GAMESS-US CIS output. 
+  
+  **Parameters:**
+  
+    filename : str
+      Specifies the filename for the input file.
+    select_state : None or list of int, optional
+      If not None, specifies the states to be read (0 corresponds to the ground 
+      state), else read all electronic states.
+    threshold : float, optional
+      Specifies a read threshold for the CI coefficients.
+  
+  **Returns:**
+  
+    ci : list of CIinfo class instances
+      See :ref:`Central Variables` for details.
+  '''
+  display('\nReading data of CIS calculation from GAMESS-US...')
+  # Initialize variables
+  ci = []
+  ci_flag = False
+  prttol = False
+  init_state = False
+  rhfspin = 0
+  min_c = -1
+  
+  if isinstance(select_state,int): select_state = [select_state]
+  with open(filename) as fileobject:
+    for line in fileobject:
+      thisline = line.split()             # The current line split into segments
+      #--- Check the file for keywords ---
+      # Initialize Hartree-Fock ground state
+      if 'NUMBER OF ELECTRONS' in line:
+        nel = int(thisline[-1])
+      elif 'SPIN MULTIPLICITY' in line:
+        rhfspin = int(thisline[-1])
+      elif ' FINAL RHF ENERGY IS' in line and (select_state is None or 0 in select_state):
+          ci.append(CIinfo(method='cis'))
+          ci[-1].info   = []
+          ci[-1].coeffs = []
+          ci[-1].occ    = []
+          ci[-1].occ.append([0,0])
+          ci[-1].coeffs.append(1.0)
+          ci[-1].info = {'state': '0',
+                         'energy': float(thisline[4]),
+                         'fileinfo': filename,
+                         'read_threshold': threshold,
+                         'spin': multiplicity[rhfspin],
+                         'nel': nel}
+      # Printing parameter
+      elif ' PRINTING CIS COEFFICIENTS LARGER THAN' in line:
+        min_c = float(thisline[-1])
+      # Initialize new excited state
+      elif ' EXCITED STATE ' in line and 'ENERGY=' and 'SPACE SYM' in line:
+        if select_state is None or int(thisline[2]) in select_state:
+          init_state = True
+          cis_skip = 6
+          ci.append(CIinfo(method='cis'))
+          ci[-1].info   = []
+          ci[-1].coeffs = []
+          ci[-1].occ    = []
+          ci[-1].info = {'state': thisline[2],
+                         'energy': float(thisline[4]),
+                         'fileinfo': filename,
+                         'read_threshold': threshold,
+                         'spin': multiplicity[int(2*float(thisline[7])+1)],
+                         'nel': nel}
+      if init_state == True:
+        if not cis_skip:
+          if '----------------------------------------------' in line:
+            init_state = False
+          else:
+            if abs(float(thisline[2])) > threshold:
+              ci[-1].occ.append(thisline[:2])
+              ci[-1].coeffs.append(thisline[2])
+        elif cis_skip:
+          cis_skip -= 1
+          
+  #--- Calculating norm of CI states
+  display('\nIn total, %d states have been read.' % len(ci)) 
+  display('Norm of the states:')
+  for i in range(len(ci)):
+    j = numpy.array(ci[i].coeffs,dtype=float)
+    norm = numpy.sum(j**2)
+    ci[i].coeffs = j
+    # Write Norm to log-file
+    display('\tState %s:\tNorm = %0.8f (%d Coefficients)' % (ci[i].info['state'],norm, len(ci[i].coeffs)))
+    # Transform to numpy arrays
+    ci[i].occ = numpy.array([s for s in ci[i].occ],dtype=numpy.intc)-1
+  display('')
+  if min_c > threshold:
+    display('\nInfo:'+
+       '\n\tSmallest coefficient (|c|=%f) is larger than the read threshold (%f).' 
+       %(min_c,threshold) + 
+       '\n\tUse `PRTTOL=0.0` in the `$CIS` input card to print ' +
+       'all CI coefficients.\n')
   
   return ci
 
+def tmol_tddft(filename,nmoocc=None,nforbs=0,select_state=None,threshold=0.0,
+               bortho=False,**kwargs):
+  '''Reads Turbomole TD-DFT output (``sing_a`` file). 
+  
+  Hint: Only implemented for singlet TD-DFT computations in C_1 symmetry, the
+  output data file of which is usually called ``sing_a``.
+  
+  **Parameters:**
+  
+    filename : str
+      Specifies the filename for the input file.
+    nmoocc : int
+      Specifies the number of non-frozen occupied orbitals.
+    nforbs : int,optional
+      Specifies the number of frozen orbitals.
+    select_state : None or list of int, optional
+      If not None, specifies the states to be read (0 corresponds to the ground 
+      state), else read all electronic states. 
+    threshold : float, optional
+      Specifies a read threshold for the TD-DFT coefficients.
+    bortho : bool
+      If True, an orthonormalization of  the TD-DFT coefficients is perfomed
+      with Gram-Schmidt.
+  
+  **Returns:**
+  
+    ci : list of CIinfo class instances
+      See :ref:`Central Variables` for details.
+  '''
+  
+  display('\nReading data of TD-DFT calculation from Turbomole...')
+  
+  nel = (nmoocc + nforbs) * 2
+  lumo = (nmoocc + nforbs)
+  states = []
+  if isinstance(select_state,int): select_state = [select_state]
+  with open(filename,'r') as f:
+    start = False
+    for i,line in enumerate(f):
+      if 'eigenvalue' in line:
+        start = True
+        l = line.split()
+        states.append({'eigenvalue': float(l[-1].replace('D','E')),
+                       'coeffs': []})
+      elif start:
+        for i in range((len(line)-1)/20):
+          states[-1]['coeffs'].append(float(line[i*20:(i+1)*20].replace('D','E')))
+  
+  for i in range(len(states)):
+    states[i]['coeffs'] = numpy.array(states[i]['coeffs']).reshape((2,nmoocc,-1))
+    states[i]['xia'] = 0.5 * (
+                        (states[i]['coeffs'][0] + states[i]['coeffs'][1])
+                        )
+    states[i]['yia'] = 0.5 * (
+                        (states[i]['coeffs'][0] - states[i]['coeffs'][1])
+                        )
+    del states[i]['coeffs']
 
+  coeffs = numpy.zeros((len(states)+1,numpy.prod(states[1]['xia'].shape)+1))
+  for i in range(len(states)):
+    coeffs[i+1][1:] = states[i]['xia'].reshape((-1,))
+  coeffs[0,0] = 1.0
+  
+  # Set up configurations
+  ci = []
+  for i in range(len(states)+1):
+    if select_state is None or i in select_state:
+      ci.append(CIinfo(method='tddft'))
+      ci[-1].coeffs = coeffs[i]
+      ci[-1].occ    = []
+      ci[-1].info = {'state': str(i),
+                     'energy': 0.0 if i==0 else numpy.abs(states[i+1]['eigenvalue']),
+                     'fileinfo': filename,
+                     'read_threshold': threshold,
+                     'spin': 'Unknown',
+                     'nel': nel}
+      if not i:
+        ci[-1].occ.append([-1,-1])
+        for jj in range(states[i]['xia'].shape[0]):
+          for kk in range(states[i]['xia'].shape[1]):
+            ci[-1].occ.append([0,0])
+      else:
+        ci[-1].occ.append([0,0])
+        for jj in range(states[i]['xia'].shape[0]):
+          for kk in range(states[i]['xia'].shape[1]):
+            ci[-1].occ.append([jj+nforbs,kk+lumo])
+      ci[-1].occ = numpy.array(ci[-1].occ,dtype=numpy.intc)
 
-def molpro_mcscf(filename,select_run=0,threshold=0.0):
+  # Gram-Schmidt
+  display('Orthonormalizing the TD-DFT coefficients with Gram-Schmidt...\n')
+  ci = orthonorm(ci)
+
+  if bortho:
+    for c in ci:
+      c.apply_threshold(threshold,keep_length=True)
+    ci = orthonorm(ci)
+  else:
+    for c in ci:
+      c.apply_threshold(threshold,keep_length=False)
+  
+  for c in ci:
+      c.apply_threshold(0.0,keep_length=False)
+    
+  #--- Calculating norm of CI states
+  display('\nIn total, %d states have been read.' % len(ci)) 
+  display('Norm of the states:')
+  for i in ci:
+    display(str(i))
+  
+  return ci
+turbomole_tddft = tmol_tddft
+
+def molpro_mcscf(filename,select_run=0,threshold=0.0,**kwargs):
   '''Reads MOLPRO MCSCF output. 
   
   **Parameters:**
@@ -321,9 +511,12 @@ def molpro_mcscf(filename,select_run=0,threshold=0.0):
   
   **Returns:**
   
-    ci : (list of) list of CIinfo class instances 
+    ci : list of CIinfo class instances 
       See :ref:`Central Variables` for details.
+  
+  ..#ATTENTION: Changed return value to list of CI classes
   '''
+  display('\nReading data of MCSCF calculation from MOLPRO...')
   method = 'mcscf'
   available = {'mcscf': 'MULTI'}
   single_run_selected = isinstance(select_run,int)
@@ -334,14 +527,15 @@ def molpro_mcscf(filename,select_run=0,threshold=0.0):
       if '1PROGRAM * %s' % available[method] in line:
         count += 1
   
-  display('\nReading data of MCSCF calculation from MOLPRO...')
   if count == 0:
     display('The input file %s does not contain any %s calculations!\n' % (filename,method) + 
             'It does not contain the keyword:\n\t1PROGRAM * %s' % available[method])
     raise IOError('Not a valid input file')
   else:
     display('The input file %s contains %d %s calculation(s).' % (filename,count,method) )
-    if isinstance(select_run,int) and 0 <= select_run < count:
+    if select_run is None:
+      select_run = numpy.arange(count)   
+    elif isinstance(select_run,int) and 0 <= select_run < count:
       display('\tYour selection (counting from zero): %d' % select_run )
       select_run = [select_run]
       ci = [[]]
@@ -350,14 +544,14 @@ def molpro_mcscf(filename,select_run=0,threshold=0.0):
       for i in select_run:
         ci.append([])
         if not isinstance(i,int):
-          raise IOError('Not a valid selection')
-      display('\tYour selection (counting from zero): %s' % 
-              ', '.join(['%d' % i for i in select_run]) )
+          raise IOError(str(i) + ' is not a valid selection for select_run')
     else: 
-      raise IOError('Not a valid selection')
-  
-  
+      raise IOError(str(select_run) + ' is a not valid selection for select_run')    
   select_run = numpy.array(select_run)
+  
+  display('\tYour selection (counting from zero): %s' % 
+          ', '.join(map(str,select_run)))
+  
   general_information = {'fileinfo': filename,
                          'read_threshold': threshold}
   
@@ -487,10 +681,13 @@ def molpro_mcscf(filename,select_run=0,threshold=0.0):
        '\n\tUse `gthresh, printci=0.0` in the MOLPRO input file to print ' +
        'all CI coefficients.\n')
   
-  if single_run_selected and len(ci) == 1:
-    ci = ci[0]
+  #if single_run_selected and len(ci) == 1:
+    #ci = ci[0]
+  ci_new = []
+  for i in ci:
+    ci_new.extend(i)
   
-  return ci
+  return ci_new
 
 def molpro_mo_order_ci(occ_info,mo_spec,irreps=None,nIRREP=None,order_sym=False):
   '''Orders the molecular orbitals according to the occupation information 
@@ -544,114 +741,27 @@ def molpro_mo_order_ci(occ_info,mo_spec,irreps=None,nIRREP=None,order_sym=False)
     external.extend(mo_sym[i][b:])
   return closed,active,external
 
-def turbomole_tddft(filename,nmoocc,nforbs=0,select_state=None,threshold=0.0,bortho=False):
-  '''Reads Turbomole TD-DFT output (``sing_a`` file). 
-  
-  Hint: Only implemented for singlet TD-DFT computations in C_1 symmetry, the
-  output data file of which is usually called ``sing_a``.
+def orthonorm(ci):
+  '''Orthonomalize CI coefficients after Grahm-Schmidt 
   
   **Parameters:**
   
-    filename : str
-      Specifies the filename for the input file.
-    nmoocc : int
-      Specifies the number of non-frozen occupied orbitals.
-    nforbs : int,optional
-      Specifies the number of frozen orbitals.
-      If not None, returns exclusively 'alpha' or 'beta' molecular orbitals.
-    select_state : None or list of int, optional
-      If not None, specifies the states to be read (0 corresponds to the ground 
-      state), else read all electronic states. 
-    threshold : float, optional
-      Specifies a read threshold for the TD-DFT coefficients.
-    bortho : bool
-      If True, an orthonormalization of  the TD-DFT coefficients is perfomed
-      with Gram-Schmidt.
+    ci: 
   
   **Returns:**
   
-    ci : list of CIinfo class instances
-      See :ref:`Central Variables` for details.
+    ci: 
+      Contains the orthonormalized CI coefficients for each Slater-determinant
   '''
-  
-  display('\nReading data of TD-DFT calculation from Turbomole...')
-  
-  nel = (nmoocc + nforbs) * 2
-  lumo = (nmoocc + nforbs)
-  states = []
-  with open(filename,'r') as f:
-    start = False
-    for i,line in enumerate(f):
-      if 'eigenvalue' in line:
-        start = True
-        l = line.split()
-        states.append({'eigenvalue': float(l[-1].replace('D','E')),
-                       'coeffs': []})
-      elif start:
-        for i in range((len(line)-1)/20):
-          states[-1]['coeffs'].append(float(line[i*20:(i+1)*20].replace('D','E')))
-  
-  for i in range(len(states)):
-    states[i]['coeffs'] = numpy.array(states[i]['coeffs']).reshape((2,nmoocc,-1))
-    states[i]['xia'] = 0.5 * (
-                        (states[i]['coeffs'][0] + states[i]['coeffs'][1])
-                        )
-    states[i]['yia'] = 0.5 * (
-                        (states[i]['coeffs'][0] - states[i]['coeffs'][1])
-                        )
-    del states[i]['coeffs']
-
-  coeffs = numpy.zeros((len(states)+1,numpy.prod(states[1]['xia'].shape)+1))
-  for i in range(len(states)):
-    coeffs[i+1][1:] = states[i]['xia'].reshape((-1,))
-  coeffs[0,0] = 1.0
-  
-  # Set up configurations
-  ci = []
-  for i in range(len(states)+1):
-    if select_state is None or i in select_state:
-      ci.append(CIinfo(method='tddft'))
-      ci[-1].coeffs = coeffs[i]
-      ci[-1].occ    = []
-      ci[-1].info = {'state': str(i),
-                     'energy': 0.0 if i==0 else numpy.abs(states[i+1]['eigenvalue']),
-                     'fileinfo': filename,
-                     'read_threshold': threshold,
-                     'spin': 'Unknown',
-                     'nel': nel}
-      if not i:
-        ci[-1].occ.append([-1,-1])
-        for jj in range(states[i]['xia'].shape[0]):
-          for kk in range(states[i]['xia'].shape[1]):
-            ci[-1].occ.append([0,0])
-      else:
-        ci[-1].occ.append([0,0])
-        for jj in range(states[i]['xia'].shape[0]):
-          for kk in range(states[i]['xia'].shape[1]):
-            ci[-1].occ.append([jj+nforbs,kk+lumo])
-      ci[-1].occ = numpy.array(ci[-1].occ,dtype=numpy.intc)
-
-  # Gram-Schmidt
-  display('Orthonormalizing the TD-DFT coefficients with Gram-Schmidt...\n')
-  ci = orthonorm(ci)
-
-  if bortho:
-    for c in ci:
-      c.apply_threshold(threshold,keep_length=True)
-    ci = orthonorm(ci)
-  else:
-    for c in ci:
-      c.apply_threshold(threshold,keep_length=False)
-  
-  for c in ci:
-      c.apply_threshold(0.0,keep_length=False)
-    
-  #--- Calculating norm of CI states
-  display('\nIn total, %d states have been read.' % len(ci)) 
-  display('Norm of the states:')
-  for i in ci:
-    display(str(i))
-  
+  # Grahm-Schmidt orthonormalization
+  display('Orthonormalization of CI-coefficients with Gram-Schmidt...\n')
+  for ii in range(len(ci)):
+    scal = numpy.dot(ci[ii].coeffs,ci[ii].coeffs)
+    ci[ii].coeffs /= numpy.sqrt(scal)
+    for jj in range(ii+1,len(ci)):
+      scal = numpy.dot(ci[ii].coeffs,ci[jj].coeffs)
+      ci[jj].coeffs -= ci[ii].coeffs*scal
+      
   return ci
 
 point_groups = {'c1': 1, 'cs': 2, 'c2': 2, 'ci': 2, 

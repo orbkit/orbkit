@@ -70,7 +70,9 @@ def main_read(filename,itype='molden',all_mo=False,spin=None,cclib_parser=None,
             'orbkit.dump': load}
   
   display('Loading %s file...' % itype)
-  
+  if itype not in reader.keys():
+    display('Available reader (`itype`) are:\n  ' + ', '.join(reader.keys()))
+    raise NotImplementedError("itype='%s' not implemented!"%itype)
   # Return required data
   return reader[itype](filename, all_mo=all_mo, spin=spin, 
                        cclib_parser=cclib_parser,**kwargs)

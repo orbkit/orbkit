@@ -277,8 +277,8 @@ def get_mo_overlap_matrix(mo_a,mo_b,ao_overlap_matrix,numproc=1):
                      'i.e., shape_a[1] != shape_b[1]')
   
   numproc = min(len(global_args['mo_a']),max(1,numproc))
-  ij = numpy.linspace(0, len(global_args['mo_a']), 
-                      num=numproc+1, endpoint=True,  dtype=numpy.intc)
+  ij = numpy.array(numpy.linspace(0, len(global_args['mo_a']), 
+                      num=numproc+1, endpoint=True),  dtype=numpy.intc)
   ij = zip(ij[:-1],ij[1:])
   
   # Start the worker processes

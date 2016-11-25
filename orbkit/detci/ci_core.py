@@ -5,7 +5,38 @@ from .. import omp_functions
 import numpy
 
 def mu(cia,cib,qc,zero,sing,omr,omv):
-  '''Computes the analytic transition dipole moments in length and velocity gauge.
+  '''Computes the analytic transition dipole moments in length and velocity gauge
+  using analytical integrals.
+  
+  **Parameters:**
+  
+    cia : CIinfo class instance 
+      See :ref:`Central Variables` for details.
+    cib : CIinfo class instance 
+      See :ref:`Central Variables` for details.
+    qc : class QCinfo
+      See :ref:`Central Variables` for details.
+    zero : list of two lists
+      Identical Slater-determinants. 
+      | First member: Prefactor (occupation * CI coefficient)
+      | Second member: Indices of occupied orbitals
+    sing : list of two lists
+      Effective single excitation.
+      |  First member: Product of CI coefficients
+      |  Second member: Indices of the two molecular orbitals 
+    omr : numpy.ndarray, shape=(3,NMO,NMO)
+      Contains the molecular orbital dipole expectation value matrix.
+    omv : numpy.ndarray, shape=(3,NMO,NMO)
+      Contains the molecular orbital derivative expectation value matrix.
+  
+  **Returns:**
+  
+    mur : numpy.ndarray, shape=(3,)
+      Contains the dipole moment in length gauge.
+    muv : numpy.ndarray, shape=(3,)
+      Contains the dipole moment in velocity gauge.
+    mur_v : numpy.ndarray, shape=(3,)
+      Contains the dipole moment in length gauge converted from muv.
   '''
   mur,muv = cy_ci.get_mu(zero,sing,omr,omv) 
 
@@ -26,6 +57,25 @@ def mu(cia,cib,qc,zero,sing,omr,omv):
 
 def enum(zero,sing,moom):
   '''Computes the norm of the wavefunction using analytical integrals.
+  
+  **Parameters:**
+  
+    zero : list of two lists
+      Identical Slater-determinants. 
+      | First member: Prefactor (occupation * CI coefficient)
+      | Second member: Indices of occupied orbitals
+    sing : list of two lists
+      Effective single excitation.
+      |  First member: Product of CI coefficients
+      |  Second member: Indices of the two molecular orbitals 
+    moom : numpy.ndarray, shape=(NMO,NMO)
+      Contains the molecular orbital overlap matrix.
+  
+  **Returns:**
+  
+    enum : float
+      Contains the number of electrons.
+
   '''
   return cy_ci.get_enum(zero,sing,moom)
 
@@ -38,6 +88,29 @@ def slice_rho(ij):
 
 def rho(zero,sing,molist,slice_length=1e4,numproc=1):
   '''Computes the electron (transition) density on a grid.
+  
+  **Parameters:**
+  
+    zero : list of two lists
+      Identical Slater-determinants. 
+      | First member: Prefactor (occupation * CI coefficient)
+      | Second member: Indices of occupied orbitals
+    sing : list of two lists
+      Effective single excitation.
+      |  First member: Product of CI coefficients
+      |  Second member: Indices of the two molecular orbitals 
+    molist : numpy.ndarray, shape=(NMO,N)
+      Contains the NMO=len(qc.mo_spec) molecular orbitals on a grid (N points).
+    slice_length : int, optional
+      Specifies the number of points per subprocess.
+    numproc : int, optional
+      Specifies the number of subprocesses for multiprocessing.
+  
+  **Returns:**
+  
+    rho : numpy.ndarray, shape=(N,)
+      Contains the density on a grid.
+
   '''
   global multici
   multici = {'zero': zero, 'sing': sing, 'molist':molist}
@@ -60,7 +133,36 @@ def slice_jab(ij):
 
 
 def jab(zero,sing,molist,molistdrv,slice_length=1e4,numproc=1):
-  '''Computes the electronic (transition) flux density on a grid.
+  r'''Computes the electronic (transition) flux density on a grid.
+
+  .. math::
+  
+    j_{a,b} = \frac{c_{\rm sing}}{2} * (\psi_a \nabla \psi_b - \psi_b \nabla \psi_a)
+    
+  **Parameters:**
+  
+    zero : list of two lists
+      Identical Slater-determinants. 
+      | First member: Prefactor (occupation * CI coefficient)
+      | Second member: Indices of occupied orbitals
+    sing : list of two lists
+      Effective single excitation.
+      |  First member: Product of CI coefficients
+      |  Second member: Indices of the two molecular orbitals 
+    molist : numpy.ndarray, shape=(NMO,N)
+      Contains the NMO=len(qc.mo_spec) molecular orbitals on a grid (N points).
+    molistdrv : numpy.ndarray, shape=(3,NMO,N)
+      Contains the three (x,y,z) derivatives of the molecular orbitals on a grid.
+    slice_length : int, optional
+      Specifies the number of points per subprocess.
+    numproc : int, optional
+      Specifies the number of subprocesses for multiprocessing.
+  
+  **Returns:**
+  
+    rho : numpy.ndarray, shape=(3,N)
+      Contains the electronic (transition) flux density on a grid.
+
   '''  
   global multici
   multici = {'zero': zero, 'sing': sing, 'molist':molist, 'molistdrv':molistdrv}
@@ -76,13 +178,44 @@ def jab(zero,sing,molist,molistdrv,slice_length=1e4,numproc=1):
 
   return data
 
-def slice_a_nabla_b(ij):  
-  
+def slice_a_nabla_b(ij): 
+  '''Computes the \psi_a \nabla \psi_b on a grid for a single slice.
+  '''    
   return cy_ci.get_a_nabla_b(ij[0],ij[1],multici['zero'],multici['sing'],multici['molist'],multici['molistdrv'])
 
 
 def a_nabla_b(zero,sing,molist,molistdrv,slice_length=1e4,numproc=1):
+  r'''Computes the following quantity (`a_nabla_b`) on a grid:
+
+  .. math::
   
+    \psi_a \nabla \psi_b
+    
+  **Parameters:**
+  
+    zero : list of two lists
+      Identical Slater-determinants. 
+      | First member: Prefactor (occupation * CI coefficient)
+      | Second member: Indices of occupied orbitals
+    sing : list of two lists
+      Effective single excitation.
+      |  First member: Product of CI coefficients
+      |  Second member: Indices of the two molecular orbitals 
+    molist : numpy.ndarray, shape=(NMO,N)
+      Contains the NMO=len(qc.mo_spec) molecular orbitals on a grid (N points).
+    molistdrv : numpy.ndarray, shape=(3,NMO,N)
+      Contains the three (x,y,z) derivatives of the molecular orbitals on a grid.
+    slice_length : int, optional
+      Specifies the number of points per subprocess.
+    numproc : int, optional
+      Specifies the number of subprocesses for multiprocessing.
+  
+  **Returns:**
+  
+    a_nabla_b : numpy.ndarray, shape=(3,N)
+      Contains the data on a grid.
+
+  '''  
   global multici
   multici = {'zero': zero, 'sing': sing, 'molist':molist, 'molistdrv':molistdrv}
     

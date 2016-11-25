@@ -57,6 +57,20 @@ class QCinfo:
                            'energy'       : None}
     self.dipole_moments = None
   
+  def copy(self):
+    from copy import deepcopy
+    qcinfo = deepcopy(self)
+    return qcinfo
+  
+  def format_geo(self):
+    '''Converts geo_info and geo_spec to a universal format.
+    '''
+    for i in self.geo_info:
+      i[0] = get_atom_symbol(i[0])
+      i[2] = float(i[-1])
+    self.geo_info = numpy.array(self.geo_info)
+    self.geo_spec = numpy.array(self.geo_spec,dtype=float)
+  
   def sort_mo_sym(self):
     '''Sorts mo_spec by symmetry.
     '''
@@ -72,6 +86,12 @@ class QCinfo:
   
   def get_mo_energies(self):
     return numpy.array([i['energy'] for i in self.mo_spec])
+  
+  def get_mo_occ(self):
+    return numpy.array([i['occ_num'] for i in self.mo_spec],dtype=numpy.intc)
+  
+  def get_nmoocc(self):
+    return sum(self.get_mo_occ())
   
   def get_com(self,nuc_list=None):
     '''Computes the center of mass.
@@ -115,15 +135,6 @@ class QCinfo:
     if not is_vector:
       grid.vector2grid(*grid.N_)
     return self.bc
-  
-  def format_geo(self):
-    '''Converts geo_info and geo_spec to a universal format.
-    '''
-    for i in self.geo_info:
-      i[0] = get_atom_symbol(i[0])
-      i[2] = float(i[-1])
-    self.geo_info = numpy.array(self.geo_info)
-    self.geo_spec = numpy.array(self.geo_spec,dtype=float)
   
   def select_spin(self,restricted,spin=None):
     '''For an unrestricted calculation, the name of the MO
@@ -229,10 +240,11 @@ class CIinfo:
   The CI related features are in ongoing development.
   '''
   def __init__(self,method='ci'):
+    self.method = method
+    self.info   = None
     self.coeffs = []
     self.occ    = []
-    self.info   = None
-    self.method = method
+    self.moocc  = None
 
   def __str__(self):
     string = '%s' % self.method.upper()
@@ -253,6 +265,13 @@ class CIinfo:
     return sum(self.coeffs**2)
   def renormalize(self):
     self.coeffs /= self.get_norm()
+  def apply_threshold(self,threshold,keep_length=False):    
+    i = numpy.abs(self.coeffs) > threshold
+    if keep_length:
+      self.coeffs[numpy.invert(i)] = 0.0
+    else:
+      self.coeffs = self.coeffs[i]
+      self.occ = self.occ[i]
   def copy(self):
     ciinfo = self.__class__(method=self.method)
     if self.coeffs != []:
@@ -261,16 +280,18 @@ class CIinfo:
       ciinfo.occ = numpy.copy(self.occ)
     if self.info is not None:
       ciinfo.info = self.info.copy()    
+    if self.moocc is not None:
+      ciinfo.moocc = self.moocc.copy()    
     return ciinfo
   def todict(self):
     return self.__dict__
-  def apply_threshold(self,threshold,keep_length=False):    
-    i = numpy.abs(self.coeffs) > threshold
-    if keep_length:
-      self.coeffs[numpy.invert(i)] = 0.0
-    else:
-      self.coeffs = self.coeffs[i]
-      self.occ = self.occ[i]
+  def get_moocc(self):
+    if self.moocc is None:
+      raise ValueError('ci.set_moocc(qc) has to be called first! (ci.moocc is not initialized)')
+    return self.moocc
+  def set_moocc(self,moocc):
+    assert (moocc.dtype == numpy.intc), 'moocc has to be numpy.intc'
+    self.moocc = moocc
   def hdf5_save(self,fid='out.h5',group='/ci:0',mode='w'):
     from orbkit.output import hdf5_open,hdf5_append
     from copy import copy
