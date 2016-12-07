@@ -213,11 +213,9 @@ def get_mo_overlap(mo_a,mo_b,ao_overlap_matrix):
   **Parameters:**
   
   mo_a : numpy.ndarray, shape = (NAO,)
-     Contains the molecular orbital coefficients of the `Bra` orbital.
-  
+     Contains the molecular orbital coefficients of the `Bra` orbital.  
   mo_b : numpy.ndarray, shape = (NAO,)
-     Contains the molecular orbital coefficients of the `Ket` orbital.
-  
+     Contains the molecular orbital coefficients of the `Ket` orbital.  
   ao_overlap_matrix : numpy.ndarray, shape = (NAO,NAO)
     Contains the overlap matrix of the basis set.
   
@@ -255,12 +253,12 @@ def get_mo_overlap_matrix(mo_a,mo_b,ao_overlap_matrix,numproc=1):
   
   mo_a : numpy.ndarray with shape = (NMO,NAO) or mo_spec (cf. :ref:`Central Variables`)
      Contains the molecular orbital coefficients of all `Bra` orbitals.
-  
   mo_b : numpy.ndarray with shape = (NMO,NAO) or mo_spec (cf. :ref:`Central Variables`)
      Contains the molecular orbital coefficients of all `Ket` orbitals.
-  
   ao_overlap_matrix : numpy.ndarray, shape = (NAO,NAO)
     Contains the overlap matrix of the basis set.
+  numproc : int
+    Specifies number of subprocesses for multiprocessing.
   
   **Returns:**
   
@@ -302,6 +300,33 @@ def get_mo_overlap_matrix(mo_a,mo_b,ao_overlap_matrix,numproc=1):
   
   #cy_overlap.mooverlapmatrix(moom,mo_a,mo_b,ao_overlap_matrix,0,len(moom))
   return mo_overlap_matrix
+
+def get_moom_atoms(atoms,qc,mo_a,mo_b,ao_overlap_matrix,numproc=1):
+  '''Computes the molecular orbital overlap matrix for selected atoms.
+    
+  **Parameters:**
+  
+  atoms : int or list of int
+    Contains the indices of the selected atoms.
+  mo_a : numpy.ndarray with shape = (NMO,NAO) or mo_spec (cf. :ref:`Central Variables`)
+     Contains the molecular orbital coefficients of all `Bra` orbitals.  
+  mo_b : numpy.ndarray with shape = (NMO,NAO) or mo_spec (cf. :ref:`Central Variables`)
+     Contains the molecular orbital coefficients of all `Ket` orbitals.  
+  ao_overlap_matrix : numpy.ndarray, shape = (NAO,NAO)
+    Contains the overlap matrix of the basis set.
+  numproc : int
+    Specifies number of subprocesses for multiprocessing.
+  
+  **Returns:**
+  
+  mo_overlap_matrix : numpy.ndarray, shape = (NMO,NMO)
+    Contains the overlap matrix between the two sets of input molecular orbitals.
+  '''
+  indices = get_lc(atoms,get_atom2mo(qc))
+  ao_overlap_matrix = numpy.ascontiguousarray(ao_overlap_matrix[:,indices])
+  return get_mo_overlap_matrix(numpy.ascontiguousarray(mo_a),
+                               numpy.ascontiguousarray(mo_b[:,indices]),
+                               ao_overlap_matrix,numproc=numproc)
 
 def get_dipole_moment(qc,component=['x','y','z']):
   '''Computes the dipole moment analytically.
@@ -418,7 +443,7 @@ def get_nuclear_dipole_moment(qc,component='x'):
   return nuclear_dipole_moment
   
 def get_atom2mo(qc):
-  '''Assigns atoms to molecular orbital coefficients.
+  '''Assigns atom indices to molecular orbital coefficients.
   
   **Parameters:**
   
@@ -427,7 +452,7 @@ def get_atom2mo(qc):
   
   **Returns:**
   
-  atom2mo : numpy.ndarray, shape = (NAO)
+  atom2mo : numpy.ndarray, shape = (NAO,)
     Contains indices of atoms assigned to the molecular orbital coefficients.
   '''
   atom2mo = []
@@ -443,25 +468,33 @@ def get_atom2mo(qc):
   
   return numpy.array(atom2mo,dtype=int)
   
-def get_lc(indices,atom2mo):
-  '''Converts the input variable to an :literal:`mo_coeff` numpy.ndarray.
+def get_lc(atoms,atom2mo):
+  '''Returns indices of molecular orbital coefficients corresponding 
+  to the selected atoms.
   
   **Parameters:**
   
-  mo : list, numpy.ndarray, or mo_spec (cf. :ref:`Central Variables`)
-    Contains the molecular orbital coefficients of all orbitals.
-  name : string, optional
-    Contains a string describing the input variable. 
+  atoms : int or list of int
+    Contains the indices of the selected atoms.
+  atom2mo : numpy.ndarray, shape = (NAO,)
+    Contains indices of atoms assigned to the molecular orbital coefficients.
+    >> atom2mo = get_atom2mo(qc)
   
   **Returns:**
   
-  mo : numpy.ndarray, shape = (NMO,NAO)
-    Contains the molecular orbital coefficients of all orbitals.
+  lc : numpy.ndarray, shape = (NAO_atom,)
+    Contains the NAO_atom indices molecular orbital coefficients corresponding 
+    to the selected atoms.
+  
+  **Example:**
+  
+    >> atom2mo = get_atom2mo(qc)
+    >> get_lc([0,3],atom2mo)
   '''
-  if isinstance(indices,int):
-    indices = [indices]
+  if isinstance(atoms,int):
+    atoms = [atoms]
   lc = numpy.zeros(len(atom2mo),dtype=bool)
-  for i in indices:
+  for i in atoms:
     lc = numpy.logical_or(atom2mo==i,lc)
 
   return numpy.nonzero(lc)[0]
@@ -483,3 +516,13 @@ def print2D(x,format='%+.2f ',start='\t',end=''):
     for j in range(shape[1]):
       s += format % x[i,j]
     print(s + end)
+
+def pmat(matrix,vmax=lambda x: numpy.max(numpy.abs(x))):
+  import matplotlib.pyplot as plt
+  plt.figure()
+  if matrix.dtype == complex:
+    print('plotting real part of matrix')
+    matrix = matrix.real
+  vm = vmax(numpy.abs(matrix))
+  plt.imshow(matrix,interpolation=None,vmin=-vm,vmax=vm,cmap='seismic_r')
+  plt.colorbar()
