@@ -496,6 +496,73 @@ def tmol_tddft(filename,nmoocc=None,nforbs=0,select_state=None,threshold=0.0,
   return ci
 turbomole_tddft = tmol_tddft
 
+def tmol_escf(filename,ene_unit='nm'):
+  '''Reads Turbomole TD-DFT output (``escf`` file). 
+  
+  **Parameters:**
+  
+    filename : str
+      Specifies the filename for the input file.
+    ene_unit : str
+      Specifies in which units the excitation energies are read out.
+      [nm,E_h,eV,cm-1]
+  
+  **Returns:**
+  
+    ex_ene,osc_str : Excitation energies and oscillator strength for excited states
+    from Turbomole TD-DFT output. 
+  '''
+
+  fid    = open(filename,'r')      # Open the file
+  flines = fid.readlines()         # Read the WHOLE file into RAM
+  fid.close()                      # Close the file
+  
+  # Is this really a escf file? 
+  if not '                                e s c f\n' in flines:
+    display('The input file %s is no valid escf file!\n\nIt does'  % filename+
+          ' not contain the keyword: e s c f\n')
+    raise IOError('Not a valid input file')
+  
+  # Initialize variables
+  osc_str = []
+  ex_ene = []
+  ncount = 0
+  sec_flag = None
+  
+  # Select the excitation energy
+  if ene_unit == 'nm':
+    ene_str = 'Excitation energy / nm:'
+  elif ene_unit == 'E_h':
+    ene_str = 'Excitation energy:'
+  elif ene_unit == 'eV':
+    ene_str = 'Excitation energy / eV:'
+  elif ene_unit == 'cm-1':
+    ene_str = 'Excitation energy / cm^(-1):'
+  else: 
+    display('The units selection for the excitation energies is not valid.' +
+            'The excitation energies are read out in units of Hartree.\n')
+    ene_str = 'Excitation energy:'
+
+  for il in range(len(flines)):
+    line = flines[il]            # The current line as string
+    thisline = line.split()      # The current line split into segments
+    # Check the file for keywords 
+    if ene_str in line:
+      ex_ene.append(float(thisline[-1]))
+    elif 'Oscillator strength:' in line:
+      sec_flag = 'osc'
+      count = 1
+    else:
+      if sec_flag == 'osc':
+        if count == 0:
+          osc_str.append(float(thisline[-1]))
+          ncount += 1
+          sec_flag = None
+        else:
+          count -= 1
+
+  return numpy.array(ex_ene),numpy.array(osc_str)
+
 def molpro_mcscf(filename,select_run=0,threshold=0.0,**kwargs):
   '''Reads MOLPRO MCSCF output. 
   
