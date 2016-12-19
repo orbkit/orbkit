@@ -385,7 +385,7 @@ def rho_compute(qc,calc_mo=False,drv=None,laplacian=False,
     :math:`\nabla^2 \rho = \nabla^2_x \rho + \nabla^2_y \rho + \nabla^2_z \rho`.
   '''  
   slice_length = slice_length if not vector else vector
-  if slice_length <= 0:
+  if slice_length == 0:
     return rho_compute_no_slice(qc,calc_mo=calc_mo,drv=drv,
                                 laplacian=laplacian,**kwargs)
   if laplacian:
@@ -428,6 +428,7 @@ def rho_compute(qc,calc_mo=False,drv=None,laplacian=False,
   
   # Define the slice length
   npts = len(grid.x)
+  if slice_length < 0: slice_length = numpy.ceil(npts/float(numproc))+1
   sNum = int(numpy.floor(npts/slice_length)+1)
   
   # The number of worker processes is capped to the number of 

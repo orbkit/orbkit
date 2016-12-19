@@ -96,12 +96,30 @@ def get_rho(int i,int j,
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
+def get_rho_full(np.ndarray[double, ndim=2, mode="c"] ReS not None,
+                 np.ndarray[double, ndim=2, mode="c"] chi_n not None):
+  cdef int nbasis = ReS.shape[0]
+  cdef int npts = chi_n.shape[1]
+  cdef np.ndarray[double, ndim=1, mode="c"] rho = np.zeros(npts,dtype=np.float64)
+  cdef int r,n,m
+  cdef double tmp 
+  for r in prange(npts, nogil=True): 
+    tmp = 0.0
+    for n in range(nbasis):
+      tmp = tmp +ReS[n,n] * chi_n[n,r] * chi_n[n,r] 
+      for m in range(n):
+        tmp = tmp + 2. * ReS[n,m] * chi_n[n,r] * chi_n[m,r] 
+    rho[r] = tmp 
+  return rho
+
+  
+@cython.boundscheck(False)
+@cython.wraparound(False)
 def get_jab(int i,int j, 
         list zero,
         list sing,
         np.ndarray[double, ndim=2, mode="c"] molist not None,
         np.ndarray[double, ndim=3, mode="c"] molistdrv not None):
-
   # Initialize the variables
   cdef int slen = abs(j-i)
   cdef np.ndarray[double, ndim=2, mode="c"] jab = np.zeros(([3,slen]),dtype=np.float64)
@@ -121,6 +139,26 @@ def get_jab(int i,int j,
                   - molist[stb,(x+i)]*molistdrv[d,sta,(x+i)]))
 
   return jab
+
+@cython.boundscheck(False)
+@cython.wraparound(False)
+def get_jab_full(np.ndarray[double, ndim=2, mode="c"] ImS not None,
+                 np.ndarray[double, ndim=2, mode="c"] chi_n not None,
+                 np.ndarray[double, ndim=3, mode="c"] nabla_chi_n not None,
+                 double mu):
+  cdef int nbasis = ImS.shape[0]
+  cdef int npts = chi_n.shape[1]
+  cdef np.ndarray[double, ndim=2, mode="c"] j = np.zeros([nabla_chi_n.shape[0],npts],dtype=np.float64)
+  cdef int c,r,n,m
+  cdef double f = 1./mu,tmp
+  for c in range(nabla_chi_n.shape[0]):
+    for r in prange(npts, nogil=True):     
+      tmp = 0.0
+      for n in range(nbasis):
+        for m in range(n):
+          tmp = tmp +f * ImS[n,m] * (chi_n[n,r] * nabla_chi_n[c,m,r] - chi_n[m,r] * nabla_chi_n[c,n,r])
+      j[c,r] = tmp
+  return j
 
 @cython.boundscheck(False)
 @cython.wraparound(False)

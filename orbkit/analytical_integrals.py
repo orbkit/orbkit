@@ -292,6 +292,7 @@ def get_mo_overlap_matrix(mo_a,mo_b,ao_overlap_matrix,numproc=1):
   for l,[m,n] in enumerate(ij):
     #--- Call function to compute one-electron density
     mo_overlap_matrix[m:n,:] = it.next() if numproc > 1 else get_slice(ij[l])
+    print('%d of %d' % (l+1,len(ij)) )
   
   #--- Close the worker processes
   if numproc > 1:  
@@ -468,7 +469,7 @@ def get_atom2mo(qc):
   
   return numpy.array(atom2mo,dtype=int)
   
-def get_lc(atoms,atom2mo):
+def get_lc(atoms,atom2mo,strict=False):
   '''Returns indices of molecular orbital coefficients corresponding 
   to the selected atoms.
   
@@ -493,11 +494,18 @@ def get_lc(atoms,atom2mo):
   '''
   if isinstance(atoms,int):
     atoms = [atoms]
-  lc = numpy.zeros(len(atom2mo),dtype=bool)
-  for i in atoms:
-    lc = numpy.logical_or(atom2mo==i,lc)
+  if not strict:
+    lc = numpy.zeros(len(atom2mo),dtype=bool)
+    for i in atoms:
+      lc = numpy.logical_or(atom2mo==i,lc)
 
-  return numpy.nonzero(lc)[0]
+    return numpy.nonzero(lc)[0]
+  else:
+    lc = []
+    for i in atoms:
+      for k,j in enumerate(atom2mo):
+        if i==j: lc.append(k)
+    return numpy.array(lc,dtype=numpy.intc)
 
 def print2D(x,format='%+.2f ',start='\t',end=''):
   '''Prints a 2D matrix.
