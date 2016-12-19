@@ -1,4 +1,5 @@
 import cython
+from cython.parallel import prange
  
 # import both numpy and the Cython declarations for numpy
 import numpy as np

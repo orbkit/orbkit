@@ -34,6 +34,8 @@ setup(
                     ),
                    Extension("orbkit.detci.cy_ci",
                     sources=["orbkit/detci/cy_ci.pyx"],
+                    extra_compile_args=['-fopenmp'],
+                    extra_link_args=['-fopenmp'],
                     include_dirs=[numpy.get_include()],
                     ),
                    ],
