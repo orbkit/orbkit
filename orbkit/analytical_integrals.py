@@ -292,7 +292,6 @@ def get_mo_overlap_matrix(mo_a,mo_b,ao_overlap_matrix,numproc=1):
   for l,[m,n] in enumerate(ij):
     #--- Call function to compute one-electron density
     mo_overlap_matrix[m:n,:] = it.next() if numproc > 1 else get_slice(ij[l])
-    print('%d of %d' % (l+1,len(ij)) )
   
   #--- Close the worker processes
   if numproc > 1:  
@@ -323,7 +322,7 @@ def get_moom_atoms(atoms,qc,mo_a,mo_b,ao_overlap_matrix,numproc=1):
   mo_overlap_matrix : numpy.ndarray, shape = (NMO,NMO)
     Contains the overlap matrix between the two sets of input molecular orbitals.
   '''
-  indices = get_lc(atoms,get_atom2mo(qc))
+  indices = get_lc(atoms,get_atom2mo(qc),strict=True)
   ao_overlap_matrix = numpy.ascontiguousarray(ao_overlap_matrix[:,indices])
   return get_mo_overlap_matrix(numpy.ascontiguousarray(mo_a),
                                numpy.ascontiguousarray(mo_b[:,indices]),
@@ -531,6 +530,6 @@ def pmat(matrix,vmax=lambda x: numpy.max(numpy.abs(x))):
   if matrix.dtype == complex:
     print('plotting real part of matrix')
     matrix = matrix.real
-  vm = vmax(numpy.abs(matrix))
+  vm = vmax(numpy.abs(matrix)) if callable(vmax) else vmax
   plt.imshow(matrix,interpolation=None,vmin=-vm,vmax=vm,cmap='seismic_r')
   plt.colorbar()
