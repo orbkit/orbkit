@@ -125,7 +125,9 @@ def psi4_detci(filename,select_run=None,threshold=0.0,**kwargs):
     raise IOError('Not a valid input file')
   else:
     display('The input file %s contains %d DETCI calculation(s)' % (filename,count))
-    display('with %s root(s)%s.'%(', '.join(map(str,numci)),
+    string = ', '.join(map(str,numci)).rsplit(', ',1)
+    string = ' and '.join(string) if len(string[0].split(',')) < 2 else ', and '.join(string)
+    display('with %s root(s)%s.'%(string,
                                ', respectively' if len(numci)>1 else ''))
     
     if select_run is None:

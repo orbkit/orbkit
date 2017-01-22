@@ -53,13 +53,13 @@ def get_mu(list zero,
       sta = zero[1][iz][jz]
       citmp = zero[0][iz][jz]
       for d in range(3):
-        mur[d] += citmp*omr[d,sta,sta]
+        mur[d] -= citmp*omr[d,sta,sta]
   for ks in range(ns):
     sta = sing[1][ks][0]
     stb = sing[1][ks][1]
     citmp = sing[0][ks]
     for d in range(3):
-      mur[d] += citmp*omr[d,sta,stb]
+      mur[d] -= citmp*omr[d,sta,stb]
       muv[d] += 0.5*citmp*(omv[d,sta,stb]-omv[d,stb,sta])
 
   return mur,muv
@@ -121,6 +121,9 @@ def get_jab(int i,int j,
         list sing,
         np.ndarray[double, ndim=2, mode="c"] molist not None,
         np.ndarray[double, ndim=3, mode="c"] molistdrv not None):
+  r'''Computes the imaginary part of the electronic flux density
+  j_ab = -hbar/2me \sum_k ci[a_k,b_k] ( psi(a_k) \nabla psi(b_k) - psi(b_k) \nabla psi(a_k) )
+  '''
   # Initialize the variables
   cdef int slen = abs(j-i)
   cdef np.ndarray[double, ndim=2, mode="c"] jab = np.zeros(([3,slen]),dtype=np.float64)
@@ -136,7 +139,7 @@ def get_jab(int i,int j,
     citmp = sing[0][ks]
     for d in range(3):
       for x in range(slen):
-        jab[d,x] += 0.5*(citmp*(molist[sta,(x+i)]*molistdrv[d,stb,(x+i)] 
+        jab[d,x] -= 0.5*(citmp*(molist[sta,(x+i)]*molistdrv[d,stb,(x+i)] 
                   - molist[stb,(x+i)]*molistdrv[d,sta,(x+i)]))
 
   return jab

@@ -1,6 +1,7 @@
 from . import cy_ci
 from ..analytical_integrals import get_nuclear_dipole_moment
 from ..display import display
+from ..core import require
 from .. import omp_functions
 import numpy
 
@@ -8,6 +9,10 @@ def mu(cia,cib,qc,zero,sing,omr,omv):
   '''Computes the analytic transition dipole moments in length and velocity gauge
   using analytical integrals.
   
+  mu_r = <psi_a|-er|psi_b>
+  mu_v = <psi_a|-e\hat{j}|psi_b> 
+  mur_v = (i hbar)/(E_b-E_a) mu_v
+
   **Parameters:**
   
     cia : CIinfo class instance 
@@ -34,25 +39,22 @@ def mu(cia,cib,qc,zero,sing,omr,omv):
     mur : numpy.ndarray, shape=(3,)
       Contains the dipole moment in length gauge.
     muv : numpy.ndarray, shape=(3,)
-      Contains the dipole moment in velocity gauge.
+      Contains the imaginary part of the dipole moment in velocity gauge. (There is no real part!)
     mur_v : numpy.ndarray, shape=(3,)
       Contains the dipole moment in length gauge converted from muv.
   '''
   mur,muv = cy_ci.get_mu(zero,sing,omr,omv) 
 
-  for component in range(3):
-    if cia == cib:
-      mur[component] = -mur[component] + get_nuclear_dipole_moment(qc,component=component)
-    else:
-      mur[component] = -mur[component]
+  if cia == cib:
+    for component in range(3):
+      mur[component] = mur[component] + get_nuclear_dipole_moment(qc,component=component)
   
-  muv *= -1.0
   delta_v = float(cib.info['energy'])-float(cia.info['energy'])
   mur_v = numpy.zeros((3,))
   if delta_v != 0.0:
-    mur_v = muv/delta_v
+    mur_v = -muv/delta_v
   
-  return mur, muv, mur_v
+  return numpy.array([mur, muv, mur_v])
 
 
 def enum(zero,sing,moom):
@@ -85,7 +87,6 @@ def slice_rho(ij):
   '''
   return cy_ci.get_rho(ij[0],ij[1],multici['zero'],multici['sing'],multici['molist'])
 
-
 def rho(zero,sing,molist,slice_length=1e4,numproc=1):
   '''Computes the electron (transition) density on a grid.
   
@@ -100,7 +101,7 @@ def rho(zero,sing,molist,slice_length=1e4,numproc=1):
       |  First member: Product of CI coefficients
       |  Second member: Indices of the two molecular orbitals 
     molist : numpy.ndarray, shape=(NMO,N)
-      Contains the NMO=len(qc.mo_spec) molecular orbitals on a grid (N points).
+      Contains the NMO=len(qc.mo_spec) molecular orbitals on a grid.
     slice_length : int, optional
       Specifies the number of points per subprocess.
     numproc : int, optional
@@ -113,6 +114,12 @@ def rho(zero,sing,molist,slice_length=1e4,numproc=1):
 
   '''
   global multici
+  # Reshape the input array if required
+  molist = require(molist,dtype='f')
+  shape = molist.shape
+  molist.shape = (shape[0],-1)
+  
+  # Set the global array
   multici = {'zero': zero, 'sing': sing, 'molist':molist}
   
   slice_length = min(molist.shape[1],slice_length)
@@ -124,7 +131,9 @@ def rho(zero,sing,molist,slice_length=1e4,numproc=1):
   for k,(i,j) in enumerate(ij):
     data[i:j] = return_val[k]
   
-  return data
+  # Restore the original shape
+  molist.shape = shape
+  return data.reshape(shape[1:],order='C')
 
 def slice_jab(ij):   
   '''Computes the electronic (transition) flux density on a grid for a single slice.
@@ -133,12 +142,13 @@ def slice_jab(ij):
 
 
 def jab(zero,sing,molist,molistdrv,slice_length=1e4,numproc=1):
-  r'''Computes the electronic (transition) flux density on a grid.
+  r'''Computes the imaginary part of the electronic transition flux density on a grid.
 
   .. math::
   
-    j_{a,b} = \frac{c_{\rm sing}}{2} * (\psi_a \nabla \psi_b - \psi_b \nabla \psi_a)
-    
+    j_{a,b} = -(i hbar)/(2me) * (\psi_a \nabla \psi_b - \psi_b \nabla \psi_a)    
+            = 0 + i Im( j_{a,b} )
+  
   **Parameters:**
   
     zero : list of two lists
@@ -161,10 +171,22 @@ def jab(zero,sing,molist,molistdrv,slice_length=1e4,numproc=1):
   **Returns:**
   
     rho : numpy.ndarray, shape=(3,N)
-      Contains the electronic (transition) flux density on a grid.
-
+      Contains the imaginary part of the electronic (transition) flux density on a grid.
+  
+  .. note:: 
+    
+    Since the electronic eigenfunctions are real-valued the corresponding 
+    electronic transition flux density is purely imaginary. 
   '''  
   global multici
+  # Reshape the input array if required
+  molist = require(molist,dtype='f')
+  molistdrv = require(molistdrv,dtype='f')
+  shape = molist.shape
+  molist.shape = (shape[0],-1)
+  molistdrv.shape = (3,shape[0],-1)
+  
+  # Set the global array
   multici = {'zero': zero, 'sing': sing, 'molist':molist, 'molistdrv':molistdrv}
     
   slice_length = min(molist.shape[1],slice_length)
@@ -176,7 +198,10 @@ def jab(zero,sing,molist,molistdrv,slice_length=1e4,numproc=1):
   for k,(i,j) in enumerate(ij):
     data[:,i:j] = return_val[k]
 
-  return data
+  # Restore the original shape
+  molist.shape = shape
+  molistdrv.shape = (3,) + shape
+  return data.reshape((3,) + shape[1:],order='C')
 
 def slice_a_nabla_b(ij): 
   '''Computes the \psi_a \nabla \psi_b on a grid for a single slice.
@@ -217,6 +242,14 @@ def a_nabla_b(zero,sing,molist,molistdrv,slice_length=1e4,numproc=1):
 
   '''  
   global multici
+  # Reshape the input array if required
+  molist = require(molist,dtype='f')
+  molistdrv = require(molistdrv,dtype='f')
+  shape = molist.shape
+  molist.shape = (shape[0],-1)
+  molistdrv.shape = (3,shape[0],-1)
+  
+  # Set the global array
   multici = {'zero': zero, 'sing': sing, 'molist':molist, 'molistdrv':molistdrv}
     
   slice_length = min(molist.shape[1],slice_length)
@@ -228,4 +261,7 @@ def a_nabla_b(zero,sing,molist,molistdrv,slice_length=1e4,numproc=1):
   for k,(i,j) in enumerate(ij):
     data[:,i:j] = return_val[k]
 
-  return data
+  # Restore the original shape
+  molist.shape = shape
+  molistdrv.shape = (3,) + shape
+  return data.reshape((3,) + shape[1:],order='C')

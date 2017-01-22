@@ -1,12 +1,13 @@
 from . import cy_occ_check
 from .. import omp_functions
+from ..display import display
 import numpy
 
 def slice_occ(ij):
   '''Compares a slice of occupation patterns.
   '''
   identical_states = multici['cia'] == multici['cib']
-  if any([multici['cia'].method == i for i in ['mcscf','detci','fci']]):
+  if any([multici['cia'].method == i for i in ['mcscf','detci','fci','ci']]):
     zero,sing = cy_occ_check.mcscf_ab(ij[0],ij[1],
                                       multici['cia'].coeffs,multici['cia'].occ,
                                       multici['cib'].coeffs,multici['cib'].occ,
@@ -58,7 +59,7 @@ def compare(cia,cib,moocc=None,numproc=1):
   if moocc is None:
     moocc = cia.moocc
     assert moocc is not None, '`moocc` is not given'
-    assert moocc == cib.moocc, '`cia.moocc` has to be the same as `cib.moocc`'
+    assert numpy.array_equal(moocc,cib.moocc), '`cia.moocc` has to be the same as `cib.moocc`'
   
   multici = {'cia': cia, 'cib': cib, 'moocc': moocc}
   
@@ -67,7 +68,8 @@ def compare(cia,cib,moocc=None,numproc=1):
                    dtype=numpy.intc) # backward compatibility
   ij = zip(ij[:-1],ij[1:])
   
-  return_value = omp_functions.run(slice_occ,x=ij,numproc=numproc,display=lambda x: None)
+  display('\nComparing the occupation patterns \nof the determinants of the two states...')
+  return_value = omp_functions.run(slice_occ,x=ij,numproc=numproc,display=display)
   
   zero = [[],[]] 
   sing = [[],[]]
