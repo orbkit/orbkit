@@ -322,6 +322,8 @@ def get_moom_atoms(atoms,qc,mo_a,mo_b,ao_overlap_matrix,numproc=1):
   mo_overlap_matrix : numpy.ndarray, shape = (NMO,NMO)
     Contains the overlap matrix between the two sets of input molecular orbitals.
   '''
+  mo_a = create_mo_coeff(mo_a,name='mo_a')
+  mo_b = create_mo_coeff(mo_b,name='mo_b')
   indices = get_lc(atoms,get_atom2mo(qc),strict=True)
   ao_overlap_matrix = numpy.ascontiguousarray(ao_overlap_matrix[:,indices])
   return get_mo_overlap_matrix(numpy.ascontiguousarray(mo_a),
@@ -457,13 +459,16 @@ def get_atom2mo(qc):
   '''
   atom2mo = []
   a2mo_type = []
-  b = 0
+  b = 0  
   for sel_ao in range(len(qc.ao_spec)):
     a = qc.ao_spec[sel_ao]['atom']
-    l = exp[lquant[qc.ao_spec[sel_ao]['type']]]
-    for i in l:
+    if 'exp_list' in qc.ao_spec[sel_ao].keys():
+      l = len(qc.ao_spec[sel_ao]['exp_list'])
+    else:
+      l = l_deg(l=qc.ao_spec[sel_ao]['type'].lower(),
+              cartesian_basis=(qc.ao_spherical is None or qc.ao_spherical == []))
+    for i in range(l):
       atom2mo.append(a)
-      a2mo_type.append([a,qc.ao_spec[sel_ao]['type'],l])
       b += 1
   
   return numpy.array(atom2mo,dtype=int)

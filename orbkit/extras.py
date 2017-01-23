@@ -493,7 +493,7 @@ def gross_atomic_density(atom,qc,
   
   display('\tCalculating ao_list & mo_list')
   if ao_list is None:
-    ao_list = core.ao_creator(qc.geo_spec,qc.ao_spec,drv=drv)
+    ao_list = core.ao_creator(qc.geo_spec,qc.ao_spec,ao_spherical=qc.ao_spherical,drv=drv)
   if mo_list is None:
     mo_list = core.mo_creator(ao_list,qc.mo_spec)
   
