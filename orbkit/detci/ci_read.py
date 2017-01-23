@@ -85,7 +85,7 @@ def main_ci_read(qc,filename,itype='psi4_detci',threshold=0.0,
   for i in ci:
     i.set_moocc(moocc)
   
-  return ci
+  return qc,ci
 
 def psi4_detci(filename,select_run=None,threshold=0.0,**kwargs):
   '''Reads PSI4 DETCI output. 
