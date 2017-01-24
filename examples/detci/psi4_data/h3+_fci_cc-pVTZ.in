@@ -1,0 +1,44 @@
+#! H3+ FCI Energy
+#! Change IOFF_MAX for aug-cc-pv6Z
+
+molecule {
+  1 1
+  H     0.000000000000   0.952627944163     0.000000000000    
+  H     0.825000000000  -0.476313972081     0.000000000000    
+  H    -0.825000000000  -0.476313972081     0.000000000000    
+units bohr
+symmetry c2v
+no_reorient
+}
+
+set {
+    basis            cc-pVTZ
+    reference        rhf
+    print_mos        true
+    print_basis      true
+    molden_write     true
+    puream           true
+}
+
+set {
+    num_roots       1
+    dipmom          true
+    tdm             true
+    tdm_print       true
+    num_dets_print  -1          # Print All Determinants
+}
+
+
+set num_dets_print -1
+set {
+    reference_sym   0
+    num_roots       2
+}
+thisenergy = prop('fci', properties=['DIPOLE', 'TRANSITION_DIPOLE'])
+
+set {
+    reference_sym   2
+    num_roots       1
+}
+thisenergy = prop('fci', properties=['DIPOLE', 'TRANSITION_DIPOLE'])
+

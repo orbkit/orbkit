@@ -1,13 +1,13 @@
 .. _`High-Level Interface`:
 
-orbkit's High-Level Interface
+ORBKIT's High-Level Interface
 =============================
 
-This chapter should serve as an overview of how to use orbkit's high-level 
+This chapter should serve as an overview of how to use ORBKIT's high-level 
 interface within your Python programs. For clarity, it is structured 
 equivalently to :ref:`terminal_interface`.
 
-.. The following examples show exemplary how to use orbkit within your Python 
+.. The following examples show exemplary how to use ORBKIT within your Python 
    programs. These and more examples can be found in the :literal:`orbkit/examples` 
    folder. 
 
@@ -19,7 +19,7 @@ equivalently to :ref:`terminal_interface`.
 General Aspects
 ---------------
 
-To access the main features of orbkit, you have to import it using::
+To access the main features of ORBKIT, you have to import it using::
 
   import orbkit as ok
 
@@ -32,7 +32,7 @@ Within this chapter we will discuss the most important options.
 For an overview of all available options, please refer to the chapter 
 :ref:`options`.
 
-Finally, you have to run orbkit with::
+Finally, you have to run ORBKIT with::
 
   data = ok.run_orbkit()
 
@@ -72,7 +72,7 @@ The available file types are **'molden'** (default), **'aomix'** (AOMix file),
 **'gaussian.fchk'** (GAUSSIAN formatted checkpoint file),
 **'wfn'** and **'wfx'** files. 
 
-Concerning orbkit's output, you can choose between several following options:
+Concerning ORBKIT's output, you can choose between several following options:
 
   - **'h5'** (HDF5 file)
   - **'cb'** (Gaussian cube file)
@@ -86,7 +86,7 @@ Several output types can be considered at once::
 
   ok.options.otype = ['h5','vmd']
 
-orbkit assumes the input file, if not otherwise stated, e.g.::
+ORBKIT assumes the input file, if not otherwise stated, e.g.::
 
   ok.options.outputname = 'h2o' # output file (base) name
 
@@ -104,9 +104,9 @@ For more information on the different output types, refer to
 Grid Related Options
 --------------------
 
-Although the default setting for a grid in orbkit is a regular grid, i.e., 
+Although the default setting for a grid in ORBKIT is a regular grid, i.e., 
 :math:`N_{\sf data points} = N_{\sf x} \times N_{\sf y} \times N_{\sf z}`,
-orbkit carries out all computations on a a vector grid, i.e.,
+ORBKIT carries out all computations on a a vector grid, i.e.,
 :math:`N_{\sf data points} = N_{\sf x} = N_{\sf y} = N_{\sf z}`.
 Thus for the regular case, the grid and all output data is converted 
 automatically back and forth within the computational procedures.
@@ -128,13 +128,13 @@ subprocess, can be set by::
     ok.options.no_slice = True
     
 
-There are several ways to specify the grid in orbkit (in a.u.):
+There are several ways to specify the grid in ORBKIT (in a.u.):
   
 **Adjusting the grid to the geometry**::
 
   ok.options.adjust_grid = [5, 0.1]
   
-Here, orbkit creates a grid with a grid spacing of 0.1 a\ :sub:`0` and the size
+Here, ORBKIT creates a grid with a grid spacing of 0.1 a\ :sub:`0` and the size
 of the molecule plus 5 a\ :sub:`0` in each direction.
 
 **Reading the grid parameters from a file**::
@@ -173,7 +173,7 @@ Here, x, y and z have to be one-dimensional ``numpy.array`` of type ``float``
 
 .. attention::
   
-  The last line is **mandatory**, i.e., we have to tell orbkit, that there is no 
+  The last line is **mandatory**, i.e., we have to tell ORBKIT, that there is no 
   need to initialize the grid.
 
 .. hint ::
@@ -184,7 +184,7 @@ Here, x, y and z have to be one-dimensional ``numpy.array`` of type ``float``
   
   If you have initialized a **vector grid** manually, do not forget to  
   also set the variable ``grid.is_vector = True``. You can use this 
-  standard variable as input parameter in other orbkit functions.
+  standard variable as input parameter in other ORBKIT functions.
 
 
 .. _`mo high-level`:
@@ -192,7 +192,7 @@ Here, x, y and z have to be one-dimensional ``numpy.array`` of type ``float``
 Molecular Orbital Selection
 ---------------------------
 
-orbkit is capable of calculating a selected set of molecular orbitals::
+ORBKIT is capable of calculating a selected set of molecular orbitals::
 
   ok.options.calc_mo = ['3.1','1.1','2.3']
 
@@ -215,7 +215,7 @@ and of calculating the density with a selected set of molecular orbitals::
 Derivative Calculation
 ----------------------
 
-orbkit can compute analytical spatial derivatives with respect to :math:`x`,
+ORBKIT can compute analytical spatial derivatives with respect to :math:`x`,
 :math:`y`, and :math:`z` for the atomic and molecular orbitals, as well
 as for the electron density::
 

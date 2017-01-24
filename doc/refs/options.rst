@@ -1,12 +1,11 @@
-
 .. _`Options`:
 
 Options
 =======
 
-Whenever orbkit's main function (:mod:`orbkit.main.run_orbkit`) is used within a Python 
-program, all actions are controlled via the orbkit module :mod:`orbkit.options`.
-This module also controls the parser, which is executed when orbkit is called
+Whenever ORBKIT's main function (:mod:`orbkit.main.run_orbkit`) is used within a Python 
+program, all actions are controlled via the ORBKIT module :mod:`orbkit.options`.
+This module also controls the parser, which is executed when ORBKIT is called
 via the Terminal.
 
 To reset all options, simply reload the module or call :mod:`orbkit.main.init`::

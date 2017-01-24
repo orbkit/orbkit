@@ -2,10 +2,10 @@ General Aspects
 ===============
 
 This section lists all available input formats from the several quantum chemistry programs and the 
-requirements for their proper processing with orbkit.
+requirements for their proper processing with ORBKIT.
 Alongside to the available program output files, there is an `interface to cclib`_.
 This platform can extract the data from additional computational chemistry packages.
-At the end of this section, all existing quantities, features and output formats of orbkit are introduced.
+At the end of this section, all existing quantities, features and output formats of ORBKIT are introduced.
 
 .. note:: 
 
@@ -47,7 +47,7 @@ Molden File Format
 
   * Starts with :literal:`[Molden Format]`
   * Contains the sections :literal:`[Atoms]`, :literal:`[GTO]`, :literal:`[MO]`
-  * If more than one :literal:`[Molden Format]` keyword is present, orbkit 
+  * If more than one :literal:`[Molden Format]` keyword is present, ORBKIT 
     provides an interactive selection.
   * Contains `Cartesian Harmonic Gaussian`_ basis set by default
   * For `Real-Valued (Pure) Spherical Harmonic`_ basis set the following keywords are present: 
@@ -78,7 +78,7 @@ AOMix File Format
   * Very similar to the molden file format
   * Starts with :literal:`[AOMix Format]`
   * Contains the sections :literal:`[Atoms]`, :literal:`[GTO]`, :literal:`[MO]`
-  * If more than one :literal:`[AOMix Format]` keyword is present, orbkit 
+  * If more than one :literal:`[AOMix Format]` keyword is present, ORBKIT 
     provides an interactive selection.
   * Contains `Cartesian Harmonic Gaussian`_ basis set by default
   * How to create AOMix files:
@@ -99,7 +99,7 @@ GAUSSIAN .log File
   * `Real-Valued (Pure) Spherical Harmonic`_ basis set is chosen by default
   * You may switch manually to `Cartesian Harmonic Gaussian`_ basis set using :literal:`6D 10F`
   * If more than one *"linked"* file/geometry/atomic orbitals/molecular orbitals 
-    section is present in the .log file, orbkit provides an interactive selection.
+    section is present in the .log file, ORBKIT provides an interactive selection.
 
 .. _`GAUSSIAN Formatted Checkpoint File`:
 
@@ -153,27 +153,27 @@ Interface to cclib Library
 
 The cclib_ library is an open source Python package which allows for the parsing and interpreting data of quantum chemistry packages.
 It is well checked for multiple versions of different programs.
-The interface for cclib_ that we have implemented converts data extracted with cclib into the data structure of orbkit.
+The interface for cclib_ that we have implemented converts data extracted with cclib into the data structure of ORBKIT.
 A tutorial for the usage of this interface is given in :doc:`./adtutorials/cclib`.
 
 .. hint: 
 
   The cclib interface is only tested for a few example. If anything does not properly work, please contact us.
   
-Capabilities of orbkit
+Capabilities of ORBKIT
 ----------------------
 
-orbkit is designed with a modular structure. This allows to use it not only 
+ORBKIT is designed with a modular structure. This allows to use it not only 
 as a standalone version but also to combine its individual  modules or functions 
 in user-written Python programs. Each module consists of different functions 
 accomplishing specific tasks. 
-Thus, there are three ways to use orbkit:
+Thus, there are three ways to use ORBKIT:
 
 1. As a standalone program via the Terminal (:doc:`./gridbased/terminal`)
 
-2. With a Python script setting options and calling the main function of orbkit (:doc:`./gridbased/highlevel`) 
+2. With a Python script setting options and calling the main function of ORBKIT (:doc:`./gridbased/highlevel`) 
 
-3. With a user-written Python program using the built-in functions of orbkit (:doc:`./gridbased/lowlevel`)
+3. With a user-written Python program using the built-in functions of ORBKIT (:doc:`./gridbased/lowlevel`)
 
 Detailed tutorials for the three variants are given in the respective sections. 
 All grid-based quantities and most of the options can be applied in each of these variants.
@@ -271,14 +271,14 @@ Notes on Gaussian Basis Sets
 
 In modern quantum chemistry for finite systems, there are two widely used basis set types:
 Cartesian harmonic Gaussian basis sets and real-valued (pure) spherical harmonic Gaussian basis sets.
-While orbkit internally uses the former type, it is able to handle the latter using a transformation.
+While ORBKIT internally uses the former type, it is able to handle the latter using a transformation.
 
 .. _`Cartesian Harmonic Gaussian`:
 
 Cartesian Harmonic Gaussian Basis Sets
 ......................................
 
-Internally, orbkit works with Cartesian Harmonic Gaussian basis sets. Unless 
+Internally, ORBKIT works with Cartesian Harmonic Gaussian basis sets. Unless 
 otherwise stated (cf. :ref:`Central Variables <qc.ao_spec>` for details), it 
 assumes the standard Molden basis function order for the exponents 
 :math:`(l_x,l_y,l_z)`:
@@ -306,7 +306,7 @@ assumes the standard Molden basis function order for the exponents
 
   Unless the exponents are not defined explicitly using "exp_list" in 
   ``qc.ao_spec`` (cf. :ref:`Central Variables <qc.ao_spec>` for details), 
-  orbkit is restricted to s, p, d, f, and g atomic orbitals (Molden file 
+  ORBKIT is restricted to s, p, d, f, and g atomic orbitals (Molden file 
   limitation).
 
 .. _`Real-Valued (Pure) Spherical Harmonic`:
@@ -314,7 +314,7 @@ assumes the standard Molden basis function order for the exponents
 Real-Valued (Pure) Spherical Harmonic Gaussian basis sets
 .........................................................
 
-orbkit supports Spherical Harmonic Gaussian basis sets currently up to g atomic orbitals. 
+ORBKIT supports Spherical Harmonic Gaussian basis sets currently up to g atomic orbitals. 
 After computing the Cartesian Gaussian basis set,
 it converts the atomic orbitals to a Spherical Harmonic Gaussian basis. 
 The conversion procedure is adapted from

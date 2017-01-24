@@ -12,7 +12,7 @@ called in the terminal by using the command:
 
 .. note::
 
-  orbkit creates a logfile (:literal:`.oklog`) containing all information printed
+  ORBKIT creates a logfile (:literal:`.oklog`) containing all information printed
   during the calculation.
 
 
@@ -33,8 +33,8 @@ console:
 
     $ orbkit -i INPUT 
 
-The only option required by orbkit is the definition of the input file with 
-:literal:`-i INPUT`. Unless otherwise stated, orbkit assumes a Molden input file
+The only option required by ORBKIT is the definition of the input file with 
+:literal:`-i INPUT`. Unless otherwise stated, ORBKIT assumes a Molden input file
 (:literal:`--itype=molden`) and an HDF5 file as output type (:literal:`--otype=h5`). 
 As output name (:literal:`-o OUTPUTNAME`) it assumes 
 the base name of :literal:`INPUT`. The file extension of the output is 
@@ -48,7 +48,7 @@ The available input file types (``--itype=ITYPE``) are **molden** (default),
 
 You can choose between standard Gaussian_ cube files (:literal:`--otype=cb`), 
 HDF5_ files (:literal:`--otype=h5`), or ZIBAmira_ Mesh files (:literal:`--otype=am`).
-Additionally, orbkit can directly create ready to use VMD_ scripts 
+Additionally, ORBKIT can directly create ready to use VMD_ scripts 
 (:literal:`--otype=vmd`) and ZIBAmira_ (:literal:`--otype=hx`) networks for the 
 easy depiction in VMD_ and ZIBAmira_, respectively. 
 While a VMD_ script is a plain text script based on Gaussian_ cube files, the  
@@ -75,13 +75,13 @@ the user can easily load and read the HDF5_ files.
 The last available plain text data format are the ZIBAmira_ Mesh files. Those 
 can be directly opened in ZIBAmira_.
 
-If you want to simply visualize the data created by orbkit, you can also use 
+If you want to simply visualize the data created by ORBKIT, you can also use 
 a simple Mayavi_ interface (:literal:`--otype=mayavi`). Here, no data will be
 saved to disc, if no other output type is specified.
 
 .. hint::
 
-  If you want to use orbkit for visualization, you may want to read the 
+  If you want to use ORBKIT for visualization, you may want to read the 
   :doc:`../quick`.
 
 .. _grid:
@@ -89,14 +89,14 @@ saved to disc, if no other output type is specified.
 Grid Related Options
 --------------------
 
-There are two ways to specify the grid when calling orbkit via the Terminal. 
+There are two ways to specify the grid when calling ORBKIT via the Terminal. 
 On the one hand, you can adapt the grid to the molecular geometry: 
 
 .. code-block:: bash
 
         $ orbkit -i INPUT --adjust_grid=D X
 
-Here, orbkit creates a grid with a grid spacing of ``X`` a\ :sub:`0` and the size
+Here, ORBKIT creates a grid with a grid spacing of ``X`` a\ :sub:`0` and the size
 of the molecule plus ``D`` a\ :sub:`0` in each direction.
 
 On the other hand, you can modify the grid via an external plain text file 
@@ -120,11 +120,11 @@ data points (**vector grid**):
 
 .. note:: A :literal:`#` at the beginning of a line implicates a comment line.
 
-orbkit performs all computations internally on a **vector grid**. 
+ORBKIT performs all computations internally on a **vector grid**. 
 For this purpose it converts a **regular grid** beforehand to a **vector grid**.
 After the computation the original grid is recreated.
 
-By default, orbkit the 1-dimensional **vector grids** into 1-dimensional slices of equal length. 
+By default, ORBKIT the 1-dimensional **vector grids** into 1-dimensional slices of equal length. 
 The atomic orbitals, the molecular orbitals, and the density are calculated for 
 each slice separately. At the end of the calculation, the data
 is reassembled and stored in an output file. 
@@ -136,7 +136,7 @@ The length of the 1-dimensional slices can be set with
 
     $ orbkit -i INPUT --slice_length=1e4
 
-In the default setting, orbkit performs the density calculation by starting 
+In the default setting, ORBKIT performs the density calculation by starting 
 only one subprocess. The number of subprocesses, which are distributed over 
 the existing CPUs, can be modified with the subsequent command:
 
@@ -149,7 +149,7 @@ the existing CPUs, can be modified with the subsequent command:
 Molecular Orbital Selection
 ---------------------------
 
-orbkit is capable of calculating a selected set of molecular orbitals. This set
+ORBKIT is capable of calculating a selected set of molecular orbitals. This set
 can be specified either **inline** or by using an **external file**.
 
 You can use the **MOLPRO-like nomenclature**, e.g., ``3.1`` for the third orbital 
@@ -197,7 +197,7 @@ The computation and storage of all molecular orbitals can be called by
 
     $ orbkit -i INPUT --calc_mo=all_mo
 
-One special capability of orbkit is the computation of the density with a selected 
+One special capability of ORBKIT is the computation of the density with a selected 
 set of molecular orbitals. 
 
 .. code-block:: bash
@@ -211,7 +211,7 @@ external file or each call of ``--mo_set`` corresponds to one density calculatio
 Derivative Calculation
 ----------------------
 
-orbkit can compute analytical spatial derivatives up to second order
+ORBKIT can compute analytical spatial derivatives up to second order
 with respect to :math:`x`, :math:`y`, or :math:`z` for the atomic and 
 molecular orbitals, as well as for the electron density. 
 For instance, a derivative of the density with 
@@ -266,7 +266,7 @@ On the one hand, the atom-projected electron density can be computed by
 
     $ orbkit -i INPUT --atom_projected_density=INDEX
 
-which is the integrand of the Mulliken charges, and on the other hand, orbkit 
+which is the integrand of the Mulliken charges, and on the other hand, ORBKIT 
 is capable of calculating the molecular orbital transition electronic flux density 
 (components :literal:`x`, :literal:`y`, and :literal:`z`) between the orbitals 
 :literal:`I` and :literal:`J`:

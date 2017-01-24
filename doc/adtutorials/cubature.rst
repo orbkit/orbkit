@@ -1,7 +1,7 @@
 Tutorial for the Integration with Cubature
 ==========================================
 
-This is an advanced tutorial which shows how to use orbkit together with the 
+This is an advanced tutorial which shows how to use ORBKIT together with the 
 Python interface to Cubature to determine the norm of the occupied 
 molecular orbitals of the water molecule in a user-defined volume.
 
@@ -11,7 +11,7 @@ molecular orbitals of the water molecule in a user-defined volume.
   - https://github.com/saullocastro/cubature (Python interface)
 
 For simplicity, we use the molden file ``h2o.molden`` as an example.
-This file can be found in ``$ORBKITPATH/examples``. Moreover, we assume that
+This file can be found in ``$ORBKITPATH/examples/basic_examples``. Moreover, we assume that
 you have followed the :ref:`installation-instructions` and that you have 
 installed the Python interface to cubature_. 
 
@@ -20,12 +20,12 @@ installed the Python interface to cubature_.
 .. hint::
   
   This tutorial explains a part of the example file 
-  ``$ORBKITPATH/examples/interface_to_cubature.py``.
+  ``$ORBKITPATH/examples/basic_examples/interface_to_cubature.py``.
 
 Initialization of the Program
 -----------------------------
 
-First, we have to import some modules and set some of orbkits options::
+First, we have to import some modules and set some of ORBKITs options::
   
   import numpy
   from cubature import cubature
@@ -50,10 +50,10 @@ Setting up a Function for Cubature
 ----------------------------------
 
 Cubature requires a function with a special structure. It provides a 1d array
-for the grid which we have bring into orbkit's shape. Then, we have to call 
-orbkit's main computational function ``orbkit.rho_compute`` with the respective
+for the grid which we have bring into ORBKIT's shape. Then, we have to call 
+ORBKIT's main computational function ``orbkit.rho_compute`` with the respective
 options, i.e., we compute the norm of all occupied molecular orbitals in this 
-example. Finally, we have to reshape orbkit's output::
+example. Finally, we have to reshape ORBKIT's output::
 
   def func(x_array,*args):
     '''Calls orbkit.
@@ -103,7 +103,7 @@ relative error of 1e-3 without considering the absolute error of the integral::
   abserr = 0    #: Absolute error: |error| < abserr (If zero, it will be ignored.)
   relerr = 1e-3 #: Relative error: |error| < relerr*|integral| (If zero, it will be ignored.)
 
-  # Call the cubature routine together with orbkit.
+  # Call the cubature routine together with ORBKIT.
   integral_mo,error_mo = cubature(ndim, func, xmin, xmax, 
 				  args=[], 
 				  adaptive='h', abserr=abserr, relerr=relerr, 

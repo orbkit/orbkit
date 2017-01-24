@@ -1,17 +1,17 @@
 .. _`Low-Level Interface`:
 
-orbkit's Low-Level Interface
+ORBKIT's Low-Level Interface
 ============================
 
 This section is addressed to more advanced users, who want to use the
-modules of orbkit in their own programs. 
+modules of ORBKIT in their own programs. 
 
 Please refer to the :ref:`Function Reference` to get information about 
 all modules and functions available.
 
 .. hint::
   
-  Complete examples of using orbkit's modules can be found in 
+  Complete examples of using ORBKIT's modules can be found in 
   :literal:`orbkit/examples`, e.g., 
   :file:`use_as_module.py` and :file:`calculate_derivatives.py`)
     
@@ -56,7 +56,7 @@ molecular orbitals of alpha or beta spin shall be read.
 Initializing the Grid
 ---------------------
 
-The ``orbkit.grid`` module organizes all grid related features of orbkit, 
+The ``orbkit.grid`` module organizes all grid related features of ORBKIT, 
 of which some will be discussed in this section.
 
 If you want to initialize a standard regular (vector) grid you have to
@@ -102,7 +102,7 @@ the molecular geometry is calling::
   
   grid.adjust_to_geo(qc,extend=5.0,step=0.1)
 
-Here, orbkit creates grid parameters (``grid.min_``, ``grid.max_``, ``grid.N_``) 
+Here, ORBKIT creates grid parameters (``grid.min_``, ``grid.max_``, ``grid.N_``) 
 with a grid spacing of 0.1 a\ :sub:`0` and the size of the molecule plus 
 5 a\ :sub:`0` in each direction. After calling this function you have to
 **initialize the grid** using ``grid.grid_init()``.
@@ -127,14 +127,14 @@ If you have set a regular grid, please be sure that you set the following variab
 
 .. attention::
   
-  The last line is **mandatory**, i.e., we have to tell orbkit, that there is no 
+  The last line is **mandatory**, i.e., we have to tell ORBKIT, that there is no 
   need to initialize the grid.
 
 .. hint::
   
   For your convenience, you may also set the variable ``grid.is_vector = True``,
   if you have initialized a **vector grid** manually. You can use this 
-  standard variable as input parameter in other orbkit functions.
+  standard variable as input parameter in other ORBKIT functions.
 
 Operations on the Grid
 ----------------------
@@ -190,7 +190,7 @@ with respect to :math:`x`, the second derivative with respect to :math:`z`, and 
 derivative :math:`xy`. 
 
 If the number of processes (``numproc``) is smaller or equal one, no subprocesses will be 
-started, i.e., orbkit uses only a single CPU. If you even want to omit the
+started, i.e., ORBKIT uses only a single CPU. If you even want to omit the
 slicing of the grid, you can use::
 
   data = core.rho_compute_no_slice(qc,calc_mo=False,drv=None,laplacian=False
@@ -232,7 +232,7 @@ Here, ``slice_length`` and ``numproc`` are read from the respective ``orbkit.opt
 Output Functions
 ----------------
 
-The output functionalities of orbkit are handled by the module ``orbkit.output``.
+The output functionalities of ORBKIT are handled by the module ``orbkit.output``.
 
 In this module, there are functions for every output type. These functions 
 are managed by::

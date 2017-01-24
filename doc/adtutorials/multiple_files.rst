@@ -7,20 +7,20 @@ Tutorial for Processing Multiple Input Files
 
 
 We assume that you have followed the :ref:`installation-instructions` and that
-you have navigated to the folder ``$ORBKITPATH/examples``. 
+you have navigated to the folder ``$ORBKITPATH/examples/basic_examples``. 
 Please note that the input files are compressed in .tar.gz file in the examples 
-folder (``$ORBKITPATH/examples/NaCl_molden_files.tar.gz``) and need to be 
+folder (``$ORBKITPATH/examples/basic_examples/NaCl_molden_files.tar.gz``) and need to be 
 decompressed before performing this tutorial.
 
 .. hint::
   
   This tutorial explains parts of the example file 
-  ``$ORBKITPATH/examples/use_for_ordering.py``. 
+  ``$ORBKITPATH/examples/basic_examples/use_for_ordering.py``. 
 
 How to Read a List of Files
 ---------------------------
 
-As a starting point, you have to import the orbkit module for processing 
+As a starting point, you have to import the ORBKIT module for processing 
 multiple files::
   
   from orbkit import multiple_files
@@ -75,7 +75,7 @@ These variables are named according to their analogue in the ``QCinfo`` class
 How to Order the Molecular Orbital Coefficients
 -----------------------------------------------
 
-orbkit provides different schemes to order molecular orbitals, of which the
+ORBKIT provides different schemes to order molecular orbitals, of which the
 best shall be presented here: the ordering using analytical integrals between
 neighboring molecular orbitals.
 
@@ -127,7 +127,7 @@ with simple contour plots::
   multiple_files.show_selected_mos(selected_mos,r0=r0,steps=steps,
 				   select_slice=select_slice,where=where)
 
-How to Perform a Standard orbkit Computation for One Molecular Structures
+How to Perform a Standard ORBKIT Computation for One Molecular Structures
 -------------------------------------------------------------------------
 
 You can cast the global variables of ``multiple_files`` automatically to a list 
@@ -135,7 +135,7 @@ of ``QCinfo`` classes (cf. :ref:`Central Variables`) by::
   
   QC = multiple_files.construct_qc()
 
-Now, you can access every data point separately and perform orbkit calculations,
+Now, you can access every data point separately and perform ORBKIT calculations,
 e.g.::
 
   import orbkit as ok

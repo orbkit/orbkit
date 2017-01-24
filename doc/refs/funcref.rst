@@ -4,7 +4,7 @@ Function Reference
 ==================
 
 The following section contains a detailed description of all modules present 
-in orbkit.
+in ORBKIT.
 
 orbkit.qcinfo
 --------------

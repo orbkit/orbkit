@@ -3,7 +3,7 @@
 Central Variables
 =================
 
-In orbkit, all central variables are extracted from quantum chemistry outputs
+In ORBKIT, all central variables are extracted from quantum chemistry outputs
 (cf. :mod:`orbkit.read`) and organized within the class 
 :mod:`orbkit.qcinfo.QCinfo`. The corresponding command reads::
 
@@ -108,4 +108,4 @@ computations and is organized as follows:
 
 Besides those central variables, the :mod:`orbkit.qcinfo.QCinfo` class possess 
 additional members which are not of importance for the computations done by
-orbkit.
+ORBKIT.

@@ -1,9 +1,9 @@
 .. _`Analytical Integrals`:
 
-Analytical Integrals with orbkit
+Analytical Integrals with ORBKIT
 ================================
 
-orbkit is able to perform analytical integrals between atomic and molecular 
+ORBKIT is able to perform analytical integrals between atomic and molecular 
 orbitals. This feature enables the user to compute different quantities, 
 like partial charges or dipole moments, analytically.
 
@@ -33,7 +33,7 @@ The atomic orbital overlap matrix can be computed using::
 where ``coord_a`` and ``coord_b`` are the coordinates (:ref:`geo_spec <qc.geo_spec>`) 
 of the atomic orbital set **a** and **b**, respectively.
 The variables :ref:`geo_spec <qc.geo_spec>`, :ref:`ao_spec <qc.ao_spec>` and 
-:ref:`ao_spherical <qc.ao_spherical>` are members of orbkit's :ref:`Central Variables`.
+:ref:`ao_spherical <qc.ao_spherical>` are members of ORBKIT's :ref:`Central Variables`.
 
 In order to apply operators to the atomic orbitals, it might be necessary to
 change the exponents :math:`(l_x,l_y,l_z)` of the Ket atomic orbitals. This can
@@ -144,5 +144,5 @@ this would look like::
 .. Partial Charges
    ---------------
 
-   orbkit is capable of computing partial charges analytically using Mulliken
+   ORBKIT is capable of computing partial charges analytically using Mulliken
    and Löwdin population analysis.

@@ -1,6 +1,6 @@
 # -*- coding: iso-8859-1 -*-
 #
-# orbkit documentation build configuration file, created by
+# ORBKIT documentation build configuration file, created by
 # sphinx-quickstart on Fri Mar  7 13:28:43 2014.
 #
 # This file is execfile()d with the current directory set to its containing dir.
@@ -37,8 +37,8 @@ source_encoding = 'iso-8859-1'
 master_doc = 'index'
 
 # General information about the project.
-project = u'orbkit'
-copyright = u'2016, Gunter Hermann, Vincent Pohl, and Axel Schild'
+project = u'ORBKIT'
+copyright = u'2017, Gunter Hermann, Vincent Pohl, and Axel Schild'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -186,7 +186,7 @@ htmlhelp_basename = 'orbkitdoc'
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('toctree', 'orbkit.tex', u'orbkit Documentation',
+  ('toctree', 'orbkit.tex', u'ORBKIT Documentation',
    u'Gunter Hermann, Vincent Pohl, and Axel Schild', 'manual'),
 ]
 

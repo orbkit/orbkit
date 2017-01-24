@@ -40,7 +40,6 @@ examples/basic_examples/Plots/
 !*.molden
 !orbkit_command.txt
 
-# Under developement
 orbkit/development
 doc/_*
 

@@ -2,7 +2,7 @@ Advanced Tutorials
 ==================
 
 Within this chapter, we present step-by-step tutorials for different practical 
-applications of orbkit.
+applications of ORBKIT.
 
 **Table of Contents:**
 

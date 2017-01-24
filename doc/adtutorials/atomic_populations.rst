@@ -2,13 +2,13 @@ Tutorial for Atomic Population and Charge Analysis
 ==================================================
 
 This short tutorial shows, how to perform a Mulliken and Löwdin population
-analysis with orbkit analytically, and how to write the output to an ``xyz`` or
+analysis with ORBKIT analytically, and how to write the output to an ``xyz`` or
 a ``PDB`` file.
 
 Computation of the Atomic Populations and Charges
 -------------------------------------------------
 
-First, we have to import some modules and set some of orbkits options::
+First, we have to import some modules and set some of ORBKITs options::
 
   from orbkit import read, atomic_populations
 
@@ -41,7 +41,7 @@ population analysis and has following members:
 Creation of an Output File
 --------------------------
 
-orbkit provides two possible output file formats for the population analysis: 
+ORBKIT provides two possible output file formats for the population analysis: 
 the ``PDB`` and the ``xyz`` file format::
 
   from orbkit.output import pdb_creator,xyz_creator

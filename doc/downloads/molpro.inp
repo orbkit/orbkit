@@ -13,5 +13,4 @@ basis=cc-pVTZ 				! Select basis set
 
 hf 					! Perform HF calculation
 
-
 put,molden,nh3.molden,NEW		! write a molden file

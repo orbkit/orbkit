@@ -3,20 +3,24 @@
 Quick Start Guide
 =================
 
-This chapter shows a simple example of how to use orbkit. Here, the calculation of 
-specific molecular orbitals and its quick visualization with VMD and Mayavi 
-are illustrated for water. 
+This chapter shows a simple example of how to use ORBKIT. Here, we compute four molecular orbitals (HOMO-1, HOMO, LUMO,
+and LUMO+1) of a water molecule and we demonstrate its quick visualization with VMD_ and Mayavi_. 
 The execution is demonstrated within the Terminal and within a Python shell.
+
+.. note ::
+
+  We assume that you have followed the :ref:`installation-instructions` and that
+  you have navigated to the folder ``$ORBKITPATH/examples/basic_examples``. For reasons of clarity, 
+  we write all output in a subfolder named ``vis``:
+
+  .. code-block:: bash
+
+      $ cd $ORBKITPATH/examples/basic_examples
+      $ mkdir vis
 
 .. contents:: Table of Contents:
   :local:
   :depth: 2
-
-
-
-For simplicity, we use the molden file ``h2o.molden`` as an example.
-This file can be found in ``$ORBKITPATH/examples``. Moreover, we assume that
-you have followed the instructions in :ref:`installation-instructions`. 
 
 Within the Terminal
 -------------------
@@ -24,55 +28,48 @@ Within the Terminal
 Using VMD
 .........
 
-The fastest and easiest way of depicting molecular orbitals or the electron 
+The fastest and easiest way of preparing good-looking depictions of molecular orbitals or the electron 
 density is by creating cube files and a VMD_ script. For non-commercial use,
 VMD is a free program.
 
-In this example, we compute and depict four orbitals (HOMO-1, HOMO, LUMO,
-and LUMO+1). For reasons of clarity, we write all output in a subfolder named 
-``vis``:
-
-.. code-block:: bash
-
-    $ cd $ORBKITPATH/examples
-    $ mkdir vis
-
-Now, let us run orbkit for a grid adapted to the molecular geometry 
+Now, let us run ORBKIT for a grid adapted to the molecular geometry 
 (see :ref:`grid` for details):
 
 .. code-block:: bash
 
     $ orbkit -i h2o.molden -o vis/h2o --otype=vmd --adjust_grid=5 0.5 --calc_mo=homo-1:lumo+2
 
-orbkit creates four cube files and a VMD script file ``vis/h2o_MO.vmd``.
+ORBKIT creates four cube files and a VMD script file ``vis/h2o_MO.vmd``.
 This can be displayed using VMD by calling
-
 
 .. code-block:: bash
 
     $ vmd -e vis/h2o_MO.vmd
 
+By default, ORBKIT uses absolute paths within the VMD script file.
+
+
 .. hint::
    
    The orbital numbering corresponds to the indices within the input file (counting from **one**!).
    When you select a range of orbitals using a colon ":", please note that we are using the syntax of the Python range function,
-   i.e., ``--calc_mo=START:STOP[:STEP]``, where ``STOP`` is **not** an element of the list. 
-
-.. note::
-
-   By default, orbkit uses absolute paths within the VMD script file.
+   i.e., ``--calc_mo=START:STOP[:STEP]``, where ``STOP`` is **not** an element of the list.
 
 Using Mayavi
 ............
 
 To get a rough overview over the shape of the quantities computed, you can use a 
-simple interface to Mayavi_. Although, no output file is created with that option,
+simple interface to Mayavi_. Although, **no** output file is created with that option,
 you can combine it with other output options, e.g., ``--otype=vmd``.
+
+Now, let us run ORBKIT for a grid adapted to the molecular geometry 
+(see :ref:`grid` for details):
 
 .. code-block:: bash
 
     $ orbkit -i h2o.molden --otype=mayavi --adjust_grid=5 0.5 --calc_mo=homo-1:lumo+2
 
+    
 When the computations are finished, the data will be depicted in an interactive window:
 
 .. image:: mayavi_window.png
@@ -85,11 +82,11 @@ Within a Python Shell
 
 All tasks mentioned above can be directly performed within a Python shell.
 This will be shown in the following, i.e., we will compute a set of molecular orbitals 
-on a grid adjusted to the molecular geometry, and for the depiction, we will create a 
+on a grid adjusted to the molecular geometry, and for the depiction, we will create both, a 
 VMD_ script and a Mayavi_ scene.
 
-Method One
-..........
+Using ORBKIT's High-Level Interface
+...................................
 
 First, import the required python modules:
 
@@ -107,14 +104,14 @@ Set the options
     >> options.adjust_grid = [5,0.1]
     >> options.calc_mo = 'homo-1:lumo+2'
 
-and run orbkit.
+and run ORBKIT.
 
 .. code-block:: python
 
     >> mo_list, mo_info = main.run_orbkit()
 
-Method Two
-..........
+Using ORBKIT's Low-Level Interface
+..................................
 
 This task can also be accomplish by using the respective functions directly.
 First, import the required python modules:

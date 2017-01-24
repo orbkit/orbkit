@@ -1,0 +1,26 @@
+***,H3+
+memory,1500,m
+
+gprint,basis,orbitals=50,civector 
+
+gthresh,printci=0.0
+
+bohr
+geometry={                
+  H     0.000000000000   0.952627944163     0.000000000000    
+  H     0.825000000000  -0.476313972081     0.000000000000    
+  H    -0.825000000000  -0.476313972081     0.000000000000    
+}
+
+basis=cc-pVDZ
+hf
+
+{casscf
+closed, 0,   0,   0,   0,  
+   occ, 2,   1,   0,   0,
+wf,2,1,0;state,2;
+wf,2,2,0;state,1;
+orbital,2140.2,print=50,ci;
+}
+
+put,molden,h3+_vdz_casscf.molden,NEW;orb,2140.2
