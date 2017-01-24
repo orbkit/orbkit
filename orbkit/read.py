@@ -878,13 +878,12 @@ def read_gaussian_fchk(filename, all_mo=False, spin=None, **kwargs):
   at_num = 0
   
   ao_num = 0 
+  ao_sp_coeffs = {}
   switch = 0
   qc = QCinfo()
   qc.geo_info = [[],[],[]]
   if not cartesian_basis:
     qc.ao_spherical = []
-  # Set a counter for the AOs 
-  basis_count = 0
   
   # Go through the file line by line 
   for il in range(len(flines)):
@@ -957,8 +956,8 @@ def read_gaussian_fchk(filename, all_mo=False, spin=None, **kwargs):
       if 'P(S=P)' not in line:
         sec_flag = 'ao_coeffs'  
       else:
-        sec_flag = 'ao_coeffs_sp'  
-        ao_coeffs_sp = {0: []}
+        sec_flag = 'ao_sp_coeffs'  
+        ao_sp_coeffs = {0: []}
       ao_num = int(thisline[-1])
       count = 0
       switch = 1
@@ -972,7 +971,7 @@ def read_gaussian_fchk(filename, all_mo=False, spin=None, **kwargs):
     elif 'Orbital Energies' in line:
       sec_flag = 'mo_eorb'
       mo_num = int(thisline[-1])      
-      mo_i0[thisline[0].lower()] = len(qc.mo_spec)#index
+      mo_i0[thisline[0].lower()] = len(qc.mo_spec)
       if restricted:
         if el_num[0] == el_num[1]:
           i = el_num[0]
@@ -984,7 +983,7 @@ def read_gaussian_fchk(filename, all_mo=False, spin=None, **kwargs):
         i = el_num[0 if 'Alpha' in line else 1]
         occ = 1      
       for ii in range(mo_num):
-        qc.mo_spec.append({'coeffs': numpy.zeros(basis_count),
+        qc.mo_spec.append({'coeffs': numpy.zeros(basis_number),
                         'energy': 0.0,
                         'occ_num': float(occ if ii < i else 0),
                         'sym': '%i.1' % (ii+1),
@@ -1016,12 +1015,9 @@ def read_gaussian_fchk(filename, all_mo=False, spin=None, **kwargs):
       elif sec_flag == 'ao_info':
         for ii in thisline:
           ii = int(ii)
-          if index is 'type':
-            add = '-' if ii < 0 else ''              
+          if index is 'type':         
             ii = orbit[abs(ii)]
             l = lquant[ii]
-            ii = add+ii
-            basis_count += l_deg(l,cartesian_basis=cartesian_basis)
             if not cartesian_basis:
               for m in (range(0,l+1) if l != 1 else [1,0]):
                 qc.ao_spherical.append([count,(l,m)])
@@ -1043,14 +1039,14 @@ def read_gaussian_fchk(filename, all_mo=False, spin=None, **kwargs):
             count = 0
         if not ao_num:
           sec_flag = None
-      elif sec_flag == 'ao_coeffs_sp':
+      elif sec_flag == 'ao_sp_coeffs':
         for ii in thisline:
-          ao_coeffs_sp[index].append(float(ii))
+          ao_sp_coeffs[index].append(float(ii))
           count += 1
           ao_num -= 1
           if count == qc.ao_spec[index]['pnum']:
             index += 1
-            ao_coeffs_sp[index] = []
+            ao_sp_coeffs[index] = []
             count = 0
         if not ao_num:
           sec_flag = None
@@ -1058,31 +1054,32 @@ def read_gaussian_fchk(filename, all_mo=False, spin=None, **kwargs):
         for ii in thisline:
           qc.mo_spec[count]['energy'] = float(ii)
           count += 1
-          if index != 0 and not count % basis_count:
+          if index != 0 and not count % basis_number:
             sec_flag = None
       elif sec_flag == 'mo_coeffs':
         for ii in thisline:    
           qc.mo_spec[mo_i0[what]+index]['coeffs'][count] = float(ii)
           count += 1
-          if count == basis_count:
+          if count == basis_number:
             count = 0
             index += 1
-          if index != 0 and not index % basis_count:
+          if index != 0 and not index % basis_number:
             sec_flag = None
   
   # Look for SP atomic orbitals
-  ao_new = []
-  for i,ao in enumerate(qc.ao_spec):
-    if ao['type'].startswith('-'):
-      ao_new.append(copy.deepcopy(ao))
-      ao_new[-1]['type'] = 's'
-      ao_new.append(ao)
-      ao_new[-1]['type'] = 'p'
-      ao_new[-1]['coeffs'][:,1] = numpy.array(ao_coeffs_sp[i])
-    else:
-      ao_new.append(ao)
-  qc.ao_spec = ao_new   
-  
+  if ao_sp_coeffs:
+    ao_new = []
+    for i,ao in enumerate(qc.ao_spec):
+      if ao['type'] == 'p' and sum(numpy.abs(ao_sp_coeffs[i])) > 0:
+        ao_new.append(copy.deepcopy(ao))
+        ao_new[-1]['type'] = 's'
+        ao_new.append(ao)
+        ao_new[-1]['type'] = 'p'
+        ao_new[-1]['coeffs'][:,1] = numpy.array(ao_sp_coeffs[i])        
+      else:
+        ao_new.append(ao)
+    qc.ao_spec = ao_new   
+    
   # Are all MOs requested for the calculation? 
   if not all_mo:
     for i in range(len(qc.mo_spec))[::-1]:
