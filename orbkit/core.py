@@ -342,8 +342,7 @@ def rho_compute(qc,calc_mo=False,drv=None,laplacian=False,
     If True, the computation of  the molecular orbitals requested is only
     carried out.
   slice_length : int, optional
-    If not None, performs the computations on a vector grid, i.e., 
-    with x, y, and z as vectors.
+    Specifies the number of points per subprocess.
   drv : string or list of strings {None,'x','y', 'z', 'xx', 'xy', ...}, optional
     If not None, computes the analytical derivative of the requested 
     quantities with respect to DRV.

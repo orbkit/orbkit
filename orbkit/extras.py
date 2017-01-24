@@ -34,7 +34,8 @@ from orbkit import core,grid,output,options
 from orbkit.display import display
 from orbkit.read import mo_select
 
-def calc_mo(qc, fid_mo_list, drv=None, otype=None, ofid=None):
+def calc_mo(qc, fid_mo_list, drv=None, otype=None, ofid=None,
+            numproc=None, slice_length=None):
   '''Calculates and saves the selected molecular orbitals or the derivatives thereof.
 
   **Parameters:**
@@ -45,14 +46,20 @@ def calc_mo(qc, fid_mo_list, drv=None, otype=None, ofid=None):
       Specifies the filename of the molecular orbitals list or list of molecular
       orbital labels (cf. :mod:`orbkit.read.mo_select` for details). 
       If fid_mo_list is 'all_mo', creates a list containing all molecular orbitals.
+    drv : int or string, {None, 'x', 'y', 'z', 0, 1, 2}, optional
+      If not None, a derivative calculation of the atomic orbitals 
+      is requested.
     otype : str or list of str, optional
       Specifies output file type. See :data:`otypes` for details.
     ofid : str, optional
       Specifies output file name. If None, the filename will be based on
       :mod:`orbkit.options.outputname`.
-    drv : int or string, {None, 'x', 'y', 'z', 0, 1, 2}, optional
-      If not None, a derivative calculation of the atomic orbitals 
-      is requested.
+    numproc : int, optional
+      Specifies number of subprocesses for multiprocessing. 
+      If None, uses the value from :mod:`options.numproc`.
+    slice_length : int, optional
+      Specifies the number of points per subprocess.
+      If None, uses the value from :mod:`options.slice_length`.
     
   **Returns:**
     mo_list : numpy.ndarray, shape=((NMO,) + N)
@@ -70,12 +77,14 @@ def calc_mo(qc, fid_mo_list, drv=None, otype=None, ofid=None):
   qc_select = qc.todict()
   qc_select['mo_spec'] = mo_info['mo_spec']
   
+  slice_length = options.slice_length if slice_length is None else slice_length
+  numproc = options.numproc if numproc is None else numproc
   # Calculate the AOs and MOs 
   mo_list = core.rho_compute(qc_select,
                              calc_mo=True,
                              drv=drv,
-                             slice_length=options.slice_length,
-                             numproc=options.numproc)
+                             slice_length=slice_length,
+                             numproc=numproc)
   
   if otype is None:
     return mo_list, mo_info
@@ -127,8 +136,9 @@ def calc_mo(qc, fid_mo_list, drv=None, otype=None, ofid=None):
   
   return mo_list, mo_info
   
-def mo_set(qc, fid_mo_list, drv=None, laplacian=False,
-           otype=None, ofid=None, return_all=True):
+def mo_set(qc, fid_mo_list, drv=None, laplacian=None,
+           otype=None, ofid=None, return_all=True,
+           numproc=None, slice_length=None):
   '''Calculates and saves the density or the derivative thereof 
   using selected molecular orbitals.
   
@@ -149,6 +159,12 @@ def mo_set(qc, fid_mo_list, drv=None, laplacian=False,
       is requested.
     return_all : bool
       If False, no data will be returned.
+    numproc : int, optional
+      Specifies number of subprocesses for multiprocessing. 
+      If None, uses the value from :mod:`options.numproc`.
+    slice_length : int, optional
+      Specifies the number of points per subprocess.
+      If None, uses the value from :mod:`options.slice_length`.
   
   **Returns:**
     datasets : numpy.ndarray, shape=((NSET,) + N)
@@ -167,6 +183,11 @@ def mo_set(qc, fid_mo_list, drv=None, laplacian=False,
 
   mo_info = mo_select(qc.mo_spec, fid_mo_list, strict=False)
   qc_select = qc.todict()
+    
+  drv = options.drv if drv is None else drv
+  laplacian = options.laplacian if laplacian is None else laplacian
+  slice_length = options.slice_length if slice_length is None else slice_length
+  numproc = options.numproc if numproc is None else numproc
   
   if ofid is None:
     ofid = options.outputname
@@ -193,12 +214,12 @@ def mo_set(qc, fid_mo_list, drv=None, laplacian=False,
     data = core.rho_compute(qc_select,
                             drv=drv,
                             laplacian=laplacian,
-                            slice_length=options.slice_length,
-                            numproc=options.numproc)
+                            slice_length=slice_length,
+                            numproc=numproc)
     datasets.append(data)
     if drv is None:
       rho = data
-    elif options.laplacian:
+    elif laplacian:
       rho, delta_rho, laplacian_rho = data 
       delta_datasets.extend(delta_rho)
       delta_datasets.append(laplacian_rho)
@@ -222,13 +243,13 @@ def mo_set(qc, fid_mo_list, drv=None, laplacian=False,
         display('\n\t%s.h5 in the group "%s"' % (ofid,group))	
         output.HDF5_creator(rho,ofid,qc.geo_info,qc.geo_spec,data_id='rho',
                             mode='w',group=group,mo_spec=qc_select['mo_spec'])
-        if options.drv is not None:
-          for i,j in enumerate(options.drv):
+        if drv is not None:
+          for i,j in enumerate(drv):
             data_id = 'rho_d%s' % j
             output.HDF5_creator(delta_rho[i],ofid,qc.geo_info,qc.geo_spec,
                                 data_id=data_id,data_only=True,mode='a',
                                 group=group,mo_spec=qc_select['mo_spec'])
-          if options.laplacian:
+          if laplacian:
             data_id = 'rho_laplacian' 
             output.HDF5_creator(laplacian_rho,ofid,qc.geo_info,qc.geo_spec,
                                 data_id=data_id,data_only=True,mode='a',
@@ -240,15 +261,15 @@ def mo_set(qc, fid_mo_list, drv=None, laplacian=False,
       output.main_output(rho,qc.geo_info,qc.geo_spec,outputname=fid,
                          otype=otype,omit=['h5','vmd','mayavi'],
                          comments=comments)
-      if options.drv is not None:
-        for i,j in enumerate(options.drv):
+      if drv is not None:
+        for i,j in enumerate(drv):
           fid = '%s_%03d_d%s' % (ofid, i_file+1, j) 
           cube_files.append('%s.cb' % fid)
           comments = ('d%s_of_mo_set:' % j + ','.join(j_file))
           output.main_output(delta_rho[i],qc.geo_info,qc.geo_spec,outputname=fid,
                              otype=otype,omit=['h5','vmd','mayavi'],
                              comments=comments)  
-        if options.laplacian:
+        if laplacian:
           fid = '%s_%03d_laplacian' % (ofid, i_file+1) 
           cube_files.append('%s.cb' % fid)
           comments = ('laplacian_of_mo_set:' + ','.join(j_file))
@@ -273,7 +294,7 @@ def mo_set(qc, fid_mo_list, drv=None, laplacian=False,
       datalabels = []
       for i in mo_info['mo_in_file']:
         datalabels.extend(['d/d%s of %s' % (j,i) for j in drv])
-        if options.laplacian:
+        if laplacian:
           datalabels.append('laplacian of %s' % i)
       output.main_output(delta_datasets.reshape((-1,) + grid.get_shape()),
                          qc.geo_info,qc.geo_spec,otype='mayavi',datalabels=datalabels)
