@@ -20,9 +20,9 @@ For the theoretical background, details on the implementation, and the robustnes
 
   Vincent Pohl, Gunter Hermann, and Jean Christophe Tremblay,
   "An Open-Source Framework of Analyzing *N*-electron Dynamics: I. Multi-Determinantal Wave Functions", 
-  `arXiv:XXX.XXXXX`__ (2017).
+  `arXiv:1701.06885`__ (2017).
 
-__ http://arxiv.org/abs/XXX.XXXXX
+__ http://arxiv.org/abs/1701.06885
 
 Please cite this publication, if you use detCI\@ORBKIT in your work. 
 

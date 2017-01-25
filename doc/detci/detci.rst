@@ -22,9 +22,9 @@ __ https://github.com/orbkit/orbkit/tree/cython/examples/detci
 
   Vincent Pohl, Gunter Hermann, and Jean Christophe Tremblay,
   "An Open-Source Framework of Analyzing *N*-electron Dynamics: I. Multi-Determinantal Wave Functions", 
-  `arXiv:XXX.XXXXX`__ (2017).
+  `arXiv:1701.06885`__ (2017).
 
-__ http://arxiv.org/abs/XXX.XXXXX
+__ http://arxiv.org/abs/1701.06885
 
 detCI\@ORBKIT currently supports the following output file formats:
 
