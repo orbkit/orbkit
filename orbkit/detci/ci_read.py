@@ -590,25 +590,33 @@ def molpro_mcscf(filename,select_run=0,threshold=0.0,**kwargs):
   available = {'mcscf': 'MULTI'}
   single_run_selected = isinstance(select_run,int)
   count = 0
+  numci = []
   # Go through the file line by line 
   with open(filename) as fileobject:
     for line in fileobject:
       if '1PROGRAM * %s' % available[method] in line:
         count += 1
-  
+        numci.append(0)
+      if '!%s state' % method in line.lower() and 'energy' in line.lower():
+        numci[-1] += 1
+          
   if count == 0:
-    display('The input file %s does not contain any %s calculations!\n' % (filename,method) + 
-            'It does not contain the keyword:\n\t1PROGRAM * %s' % available[method])
+    display('The input file %s does not contain any DETCI calculations!\n' % (filename) + 
+            'It does not contain the keyword:\n\tD E T C I')
     raise IOError('Not a valid input file')
   else:
-    display('The input file %s contains %d %s calculation(s).' % (filename,count,method) )
+    display('The input file %s contains %d DETCI calculation(s)' % (filename,count))
+    string = ', '.join(map(str,numci)).rsplit(', ',1)
+    string = ' and '.join(string) if len(string[0].split(',')) < 2 else ', and '.join(string)
+    display('with %s root(s)%s.'%(string,
+                               ', respectively' if len(numci)>1 else ''))
+    
     if select_run is None:
       select_run = numpy.arange(count)   
-    elif isinstance(select_run,int) and 0 <= select_run < count:
-      display('\tYour selection (counting from zero): %d' % select_run )
+    if isinstance(select_run,int) and 0 <= select_run < count:
       select_run = [select_run]
       ci = [[]]
-    elif isinstance(select_run,list):
+    elif isinstance(select_run,(list,numpy.ndarray)):
       ci = []
       for i in select_run:
         ci.append([])
