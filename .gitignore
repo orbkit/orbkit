@@ -4,6 +4,7 @@
 *.lock
 *.DS_Store
 .*.swp
+*.nfs*
 
 *build/
 */.*

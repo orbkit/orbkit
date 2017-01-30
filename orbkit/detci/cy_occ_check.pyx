@@ -141,8 +141,12 @@ def mcscf_ab(int i,int j,
              np.ndarray[double, ndim=1, mode="c"] bcoeffs not None,
              np.ndarray[int, ndim=3, mode="c"] bocc not None,
              np.ndarray[int, ndim=1, mode="c"] moocc not None,
-             int identical_states):
-  
+             int identical_states,
+             int ab_sorting):
+  '''Sorting of alpha and beta strings:
+  if ab_sorting: Alternating alpha and beta orbitals (MOLPRO style of orbital sorting)
+  else:          First alpha than beta orbitals (PSI4 style of orbital sorting)
+  '''
   # Initialize the variables
   cdef double citmp = 0.0
   cdef int ia,ib,im,occ,itmp,jtmp,nflips
@@ -197,9 +201,14 @@ def mcscf_ab(int i,int j,
               elif alpha == 1: ap = im
             itmp = min(am,ap)
             jtmp = max(am,ap)
-            nflips = aocc[ia,itmp,1]
-            for im in range(itmp+1,jtmp):
-              nflips += aocc[ia,im,0] + aocc[ia,im,1]
+            if ab_sorting:
+              nflips = aocc[ia,itmp,1]
+              for im in range(itmp+1,jtmp):
+                nflips += aocc[ia,im,0] + aocc[ia,im,1]
+            else:
+              nflips = 0
+              for im in range(itmp+1,jtmp):
+                nflips += aocc[ia,im,0]
             sc.append(f*pow(-1.0,nflips)*acoeffs[ia]*bcoeffs[ib])
             sm.append([ap+nmoocc, am+nmoocc])
             warning = min(min(am,ap),warning)
@@ -213,9 +222,14 @@ def mcscf_ab(int i,int j,
               elif beta == 1: ap = im
             itmp = min(am,ap)
             jtmp = max(am,ap)
-            nflips = aocc[ia,jtmp,0]
-            for im in range(itmp+1,jtmp):
-              nflips += aocc[ia,im,0] + aocc[ia,im,1]
+            if ab_sorting:
+              nflips = aocc[ia,jtmp,0]
+              for im in range(itmp+1,jtmp):
+                nflips += aocc[ia,im,0] + aocc[ia,im,1]
+            else:
+              nflips = 0
+              for im in range(itmp+1,jtmp):
+                nflips += aocc[ia,im,1]
             sc.append(f*pow(-1.0,nflips)*acoeffs[ia]*bcoeffs[ib])
             sm.append([ap+nmoocc, am+nmoocc])
             warning = min(min(am,ap),warning)

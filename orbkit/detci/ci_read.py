@@ -252,9 +252,7 @@ def psi4_detci(filename,select_run=None,threshold=0.0,**kwargs):
               break
             min_c = min(min_c,abs(float(thisline[1])))
             if abs(float(thisline[1])) > threshold:
-              #INFO: beta alpha has to have the opposite sign of alpha beta
-              f = -1. if int(thisline[2]) > int(thisline[3]) else 1.
-              ci[index_run][-1].coeffs.append(f * float(thisline[1]))
+              ci[index_run][-1].coeffs.append(float(thisline[1]))
               ci[index_run][-1].occ.append(numpy.zeros((numpy.sum(occ_info['active']),2),
                                             dtype=numpy.intc))
               for j in thisline[4:]:
