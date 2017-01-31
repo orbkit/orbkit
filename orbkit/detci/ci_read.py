@@ -423,6 +423,8 @@ def tmol_tddft(filename,nmoocc=None,nforbs=0,select_state=None,threshold=0.0,
   with open(filename,'r') as f:
     start = False
     for i,line in enumerate(f):
+      if '$tensor space dimension' in line:
+        tspace = int(line.split()[-1])
       if 'eigenvalue' in line:
         start = True
         l = line.split()
@@ -433,13 +435,18 @@ def tmol_tddft(filename,nmoocc=None,nforbs=0,select_state=None,threshold=0.0,
           states[-1]['coeffs'].append(float(line[i*20:(i+1)*20].replace('D','E')))
   
   for i in range(len(states)):
-    states[i]['coeffs'] = numpy.array(states[i]['coeffs']).reshape((2,nmoocc,-1))
-    states[i]['xia'] = 0.5 * (
-                        (states[i]['coeffs'][0] + states[i]['coeffs'][1])
-                        )
-    states[i]['yia'] = 0.5 * (
-                        (states[i]['coeffs'][0] - states[i]['coeffs'][1])
-                        )
+    if len(states[i]['coeffs']) == tspace*2:
+      states[i]['coeffs'] = numpy.array(states[i]['coeffs']).reshape((2,nmoocc,-1))
+      states[i]['xia'] = 0.5 * (
+                          (states[i]['coeffs'][0] + states[i]['coeffs'][1])
+                          )
+      #states[i]['yia'] = 0.5 * (
+                          #(states[i]['coeffs'][0] - states[i]['coeffs'][1])
+                          #)
+    elif len(states[i]['coeffs']) == tspace:
+      states[i]['xia'] = numpy.array(states[i]['coeffs']).reshape((nmoocc,-1))
+    else:
+      raise IOError('Shape of coefficient matrix does not match with tensor space.')
     del states[i]['coeffs']
 
   coeffs = numpy.zeros((len(states)+1,numpy.prod(states[1]['xia'].shape)+1))

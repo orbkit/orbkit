@@ -97,21 +97,28 @@ def get_rho(int i,int j,
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def get_rho_full(np.ndarray[double, ndim=2, mode="c"] ReS not None,
-                 np.ndarray[double, ndim=2, mode="c"] chi_n not None):
-  cdef int nbasis = ReS.shape[0]
-  cdef int npts = chi_n.shape[1]
-  cdef np.ndarray[double, ndim=1, mode="c"] rho = np.zeros(npts,dtype=np.float64)
-  cdef int r,n,m
+def get_rho_full(np.ndarray[double, ndim=3, mode="c"] ReS not None,
+                 np.ndarray[double, ndim=2, mode="c"] rho not None):
+  cdef int nt = ReS.shape[0]
+  cdef int npts = rho.shape[1]
+  cdef int nstate = ReS.shape[1]
+  cdef np.ndarray[double, ndim=2, mode="c"] tdrho = np.zeros([nt,npts],dtype=np.float64)
+  cdef int t,r,m,n,count
   cdef double tmp 
-  for r in prange(npts, nogil=True): 
-    tmp = 0.0
-    for n in range(nbasis):
-      tmp = tmp +ReS[n,n] * chi_n[n,r] * chi_n[n,r] 
-      for m in range(n):
-        tmp = tmp + 2. * ReS[n,m] * chi_n[n,r] * chi_n[m,r] 
-    rho[r] = tmp 
-  return rho
+  for r in prange(npts, nogil=True):
+    for t in range(nt):
+      tmp = 0.0
+      count = 0
+      for m in range(nstate):
+        for n in range(m,nstate):
+          if (m == n):
+            tmp = tmp + ReS[t,m,m] * rho[count,r]
+          else:
+            tmp = tmp + 2.0 * ReS[t,m,n] * rho[count,r]
+          count = count + 1
+      tdrho[t,r] = tmp
+
+  return tdrho
 
   
 @cython.boundscheck(False)
