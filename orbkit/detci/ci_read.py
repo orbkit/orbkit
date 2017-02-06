@@ -3,6 +3,9 @@ import numpy
 from copy import copy
 from ..qcinfo import QCinfo,CIinfo
 
+# Conversion factors
+eV = 27.211384
+
 def main_ci_read(qc,filename,itype='psi4_detci',threshold=0.0,
                  select=None,nforbs=0,bortho=False,
                  **kwargs):
@@ -384,6 +387,98 @@ def gamess_cis(filename,select_state=None,threshold=0.0,**kwargs):
   
   return ci
 
+def gamess_tddft(filename,select_state=None,threshold=0.0,**kwargs):
+  '''Reads GAMESS-US CIS output. 
+  
+  **Parameters:**
+  
+    filename : str
+      Specifies the filename for the input file.
+    select_state : None or list of int, optional
+      If not None, specifies the states to be read (0 corresponds to the ground 
+      state), else read all electronic states.
+    threshold : float, optional
+      Specifies a read threshold for the CI coefficients.
+  
+  **Returns:**
+  
+    ci : list of CIinfo class instances
+      See :ref:`Central Variables` for details.
+  '''
+  display('\nReading data of TDDFT calculation from GAMESS-US...')
+  # Initialize variables
+  ci = []
+  ci_flag = False
+  prttol = False
+  init_state = False
+  rhfspin = 0
+  spin = 'Unknown'
+  
+  if isinstance(select_state,int): select_state = [select_state]
+  with open(filename) as fileobject:
+    for line in fileobject:
+      thisline = line.split()             # The current line split into segments
+      #--- Check the file for keywords ---
+      # Initialize Hartree-Fock ground state
+      if 'NUMBER OF ELECTRONS' in line:
+        nel = int(thisline[-1])
+      elif 'SPIN MULTIPLICITY' in line:
+        rhfspin = int(thisline[-1])
+      elif 'SINGLET EXCITATIONS' in line:
+        spin = 'Singlet'
+      elif ' FINAL RHF ENERGY IS' in line and (select_state is None or 0 in select_state):
+          ci.append(CIinfo(method='cis'))
+          ci[-1].info   = []
+          ci[-1].coeffs = []
+          ci[-1].occ    = []
+          ci[-1].occ.append([0,0])
+          ci[-1].coeffs.append(1.0)
+          ci[-1].info = {'state': '0',
+                         'energy': float(thisline[4]),
+                         'fileinfo': filename,
+                         'read_threshold': threshold,
+                         'spin': spin,
+                         'nel': nel}
+      # Initialize new excited state
+      elif 'STATE #' in line and 'ENERGY =' in line:
+        if select_state is None or int(thisline[2]) in select_state:
+          init_state = True
+          tddft_skip = 8
+          ci.append(CIinfo(method='cis'))
+          ci[-1].info   = []
+          ci[-1].coeffs = []
+          ci[-1].occ    = []
+          ci[-1].info = {'state': thisline[2],
+                         'energy': float(thisline[-2])/eV,
+                         'fileinfo': filename,
+                         'read_threshold': threshold,
+                         'spin': 'Unknown',
+                         'nel': nel}
+      if init_state == True:
+        if not tddft_skip:
+          if line == '\n':
+            init_state = False
+          else:
+            if abs(float(thisline[2])) > threshold:
+              ci[-1].occ.append(thisline[:2])
+              ci[-1].coeffs.append(thisline[2])
+        elif tddft_skip:
+          tddft_skip -= 1
+          
+  #--- Calculating norm of CI states
+  display('\nIn total, %d states have been read.' % len(ci)) 
+  display('Norm of the states:')
+  for i in range(len(ci)):
+    j = numpy.array(ci[i].coeffs,dtype=float)
+    norm = numpy.sum(j**2)
+    ci[i].coeffs = j
+    # Write Norm to log-file
+    display('\tState %s:\tNorm = %0.8f (%d Coefficients)' % (ci[i].info['state'],norm, len(ci[i].coeffs)))
+    # Transform to numpy arrays
+    ci[i].occ = numpy.array([s for s in ci[i].occ],dtype=numpy.intc)-1
+  
+  return ci
+
 def tmol_tddft(filename,nmoocc=None,nforbs=0,select_state=None,threshold=0.0,
                bortho=False,**kwargs):
   '''Reads Turbomole TD-DFT output (``sing_a`` file). 
@@ -462,20 +557,17 @@ def tmol_tddft(filename,nmoocc=None,nforbs=0,select_state=None,threshold=0.0,
       ci[-1].coeffs = coeffs[i]
       ci[-1].occ    = []
       ci[-1].info = {'state': str(i),
-                     'energy': 0.0 if i==0 else numpy.abs(states[i+1]['eigenvalue']),
+                     'energy': 0.0 if i==0 else numpy.abs(states[i-1]['eigenvalue']),
                      'fileinfo': filename,
                      'read_threshold': threshold,
                      'spin': 'Unknown',
                      'nel': nel}
       if not i:
         ci[-1].occ.append([-1,-1])
-        for jj in range(states[i]['xia'].shape[0]):
-          for kk in range(states[i]['xia'].shape[1]):
-            ci[-1].occ.append([0,0])
       else:
         ci[-1].occ.append([0,0])
-        for jj in range(states[i]['xia'].shape[0]):
-          for kk in range(states[i]['xia'].shape[1]):
+        for jj in range(states[i-1]['xia'].shape[0]):
+          for kk in range(states[i-1]['xia'].shape[1]):
             ci[-1].occ.append([jj+nforbs,kk+lumo])
       ci[-1].occ = numpy.array(ci[-1].occ,dtype=numpy.intc)
 

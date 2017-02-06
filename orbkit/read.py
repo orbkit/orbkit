@@ -1412,7 +1412,7 @@ def read_gaussian_log(filename,all_mo=False,spin=None,orientation='standard',
                                                                 coeffs[1+i_ao]]
             ao_num += 1
         if sec_flag == 'mo_sym':
-          if 'The electronic state is' in line:
+          if 'electronic state' in line:
             sec_flag = None
           else:
             info = line[18:].replace('(','').replace(')','').split()
