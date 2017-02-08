@@ -779,7 +779,7 @@ def meshgrid2(*arrs):
   
   return tuple(ans[::-1])
 
-def view_with_mayavi(x,y,z,data,geo_spec=None,datalabels=None,
+def view_with_mayavi(x,y,z,data,is_vectorfield=False,geo_spec=None,datalabels=None,
                      iso_min=1e-4,iso_val=0.01,iso_max=10.0):
   ''' Creates an interactive mayavi dialog showing isosurface plots of the input
   data. 
@@ -821,12 +821,8 @@ def view_with_mayavi(x,y,z,data,geo_spec=None,datalabels=None,
   
   if data.ndim == 3:
     data = data[numpy.newaxis]
-  #else:
-    #try:
-      #data = data.reshape((-1,) + tuple(grid.N_))
-    #except ValueError:
-  #if data.ndim != 4:
-    #raise ValueError('`data` has to be a ``numpy.array`` with four dimensions')
+  elif is_vectorfield and data.ndim == 4:
+    data = data[numpy.newaxis]
   if datalabels is not None and len(datalabels) != len(data):
     raise ValueError('`datalabels` has to be a list of strings with the same' +
                      'length as `data`.')
@@ -849,30 +845,31 @@ def view_with_mayavi(x,y,z,data,geo_spec=None,datalabels=None,
       next_button = Button('Next')
       
       scene = Instance(MlabSceneModel, ())
-      
       plot_atoms = Instance(PipelineBase)
       plot0 = Instance(PipelineBase)
       
       # When the scene is activated, or when the parameters are changed, we
       # update the plot.
       @on_trait_change('select,iso_value,show_atoms,opacity,label,scene.activated')
-      def update_plot(self):
-        #if self.select < len(data)-1:
-          #self.select += 1
-        
-        if self.plot0 is None:          
-          src = mlab.pipeline.scalar_field(X,Y,Z,data[self.select])
-          self.plot0 = self.scene.mlab.pipeline.iso_surface(
-                      src, contours= [-self.iso_value,self.iso_value], 
-                      opacity=self.opacity,colormap='blue-red',
-                      vmin=-1e-8,vmax=1e-8)
-          lut = self.plot0.module_manager.scalar_lut_manager.lut.table.to_array()
-          self.plot0.module_manager.scalar_lut_manager.lut.table = lut[::-1]
-          self.plot0.contour.scene.background = (1,1,1)
+      def update_plot(self):        
+        if self.plot0 is None:    
+          if not is_vectorfield:
+            src = mlab.pipeline.scalar_field(X,Y,Z,data[self.select])
+            self.plot0 = self.scene.mlab.pipeline.iso_surface(
+                        src, contours= [-self.iso_value,self.iso_value], 
+                        opacity=self.opacity,colormap='blue-red',
+                        vmin=-1e-8,vmax=1e-8)
+          else:
+            self.plot0 = self.scene.mlab.quiver3d(X,Y,Z,*data[self.select],vmin=iso_min,vmax=iso_max) 
+          self.plot0.scene.background = (1,1,1)
         elif self.select != self.last_select:
-          self.plot0.mlab_source.set(scalars=data[self.select])
-        self.plot0.contour.contours = [-self.iso_value,self.iso_value]
-        self.plot0.actor.property.opacity = self.opacity
+          if not is_vectorfield:
+            self.plot0.mlab_source.set(scalars=data[self.select])
+          else:
+            self.plot0.mlab_source.set(vectors=data[self.select].reshape((3,-1)).T)
+        if not is_vectorfield:
+          self.plot0.contour.contours = [-self.iso_value,self.iso_value]
+          self.plot0.actor.property.opacity = self.opacity          
         self.last_select = deepcopy(self.select)
         if datalabels is not None:
           self.label = datalabels[self.select]
