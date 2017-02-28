@@ -118,12 +118,12 @@ b = 1 # First Excited State
 Uncomment the following lines to compute the electron density, electron number, 
 and permanent dipole moments of the ground and first excited state
 '''
-# zero,sing = occ_check.compare(ci[a],ci[a],moocc,numproc=numproc)
+# zero,sing = detci.occ_check.compare(ci[a],ci[a],numproc=numproc)
 # en_0 = detci.ci_core.enum(zero,sing,moom)
 # mu_0 = detci.ci_core.mu(ci[a],ci[a],qc,zero,sing,omr,omv)
 # rho_0 = detci.ci_core.rho(zero,sing,molist,slice_length=slice_length,numproc=numproc)
 # print('\tNorm of state %s: %f' % (ci[a].info['state'],en_0))
-# zero,sing = occ_check.compare(ci[b],ci[b],moocc,numproc=numproc)
+# zero,sing = detci.occ_check.compare(ci[b],ci[b],numproc=numproc)
 # en_1 = detci.ci_core.enum(zero,sing,moom)
 # mu_0 = detci.ci_core.mu(ci[b],ci[b],qc,zero,sing,omr,omv)
 # rho_1 = detci.ci_core.rho(zero,sing,molist,slice_length=slice_length,numproc=numproc)

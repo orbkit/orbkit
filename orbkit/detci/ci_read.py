@@ -127,10 +127,10 @@ def psi4_detci(filename,select_run=None,threshold=0.0,**kwargs):
             'It does not contain the keyword:\n\tD E T C I')
     raise IOError('Not a valid input file')
   else:
-    display('The input file %s contains %d DETCI calculation(s)' % (filename,count))
     string = ', '.join(map(str,numci)).rsplit(', ',1)
     string = ' and '.join(string) if len(string[0].split(',')) < 2 else ', and '.join(string)
-    display('with %s root(s)%s.'%(string,
+    display('The input file %s contains' % (filename))
+    display('%d DETCI calculation(s) with %s root(s)%s.'%(count, string,
                                ', respectively' if len(numci)>1 else ''))
     
     if select_run is None:
@@ -699,13 +699,13 @@ def molpro_mcscf(filename,select_run=0,threshold=0.0,**kwargs):
           
   if count == 0:
     display('The input file %s does not contain any DETCI calculations!\n' % (filename) + 
-            'It does not contain the keyword:\n\tD E T C I')
+            'It does not contain the keyword:\n\t1PROGRAM * MULTI')
     raise IOError('Not a valid input file')
   else:
-    display('The input file %s contains %d DETCI calculation(s)' % (filename,count))
     string = ', '.join(map(str,numci)).rsplit(', ',1)
     string = ' and '.join(string) if len(string[0].split(',')) < 2 else ', and '.join(string)
-    display('with %s root(s)%s.'%(string,
+    display('The input file %s contains' % (filename))
+    display('%d MCSCF calculation(s) with %s root(s)%s.'%(count,string,
                                ', respectively' if len(numci)>1 else ''))
     
     if select_run is None:
