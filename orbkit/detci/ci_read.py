@@ -320,7 +320,7 @@ def gamess_cis(filename,select_state=None,threshold=0.0,**kwargs):
       thisline = line.split()             # The current line split into segments
       #--- Check the file for keywords ---
       # Initialize Hartree-Fock ground state
-      if 'NUMBER OF ELECTRONS' in line:
+      if 'NUMBER OF ELECTRONS' in line and "=" in line:
         nel = int(thisline[-1])
       elif 'SPIN MULTIPLICITY' in line:
         rhfspin = int(thisline[-1])

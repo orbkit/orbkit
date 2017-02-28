@@ -109,8 +109,8 @@ def get_rho_full(np.ndarray[double, ndim=3, mode="c"] ReS not None,
     for t in range(nt):
       tmp = 0.0
       count = 0
-      for m in range(nstate):
-        for n in range(m,nstate):
+      for n in range(nstate):
+        for m in range(n,nstate):
           if (m == n):
             tmp = tmp + ReS[t,m,m] * rho[count,r]
           else:
@@ -119,6 +119,35 @@ def get_rho_full(np.ndarray[double, ndim=3, mode="c"] ReS not None,
       tdrho[t,r] = tmp
 
   return tdrho
+  
+@cython.boundscheck(False)
+@cython.wraparound(False)
+def get_j_full(np.ndarray[double, ndim=3, mode="c"] ImS not None,
+                 np.ndarray[double, ndim=3, mode="c"] j not None):
+  cdef int nt = ImS.shape[0]
+  cdef int npts = j.shape[2]
+  cdef int nstate = ImS.shape[1]
+  cdef np.ndarray[double, ndim=3, mode="c"] tdj = np.zeros([nt,3,npts],dtype=np.float64)
+  cdef int t,r,m,n,count
+  cdef double tmpx,tmpy,tmpz 
+  for r in prange(npts, nogil=True):
+    for t in range(nt):
+      tmpx = 0.0
+      tmpy = 0.0
+      tmpz = 0.0
+      count = 0
+      for n in range(nstate):
+        for m in range(n,nstate):
+          if (m != n):
+            tmpx = tmpx - (2.0 * ImS[t,n,m] * j[count,0,r])
+            tmpy = tmpy - (2.0 * ImS[t,n,m] * j[count,1,r])
+            tmpz = tmpz - (2.0 * ImS[t,n,m] * j[count,2,r])
+          count = count + 1
+      tdj[t,0,r] = tmpx
+      tdj[t,1,r] = tmpy
+      tdj[t,2,r] = tmpz
+
+  return tdj
 
   
 @cython.boundscheck(False)
