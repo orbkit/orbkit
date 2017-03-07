@@ -329,10 +329,10 @@ def read_molden(filename, all_mo=False, spin=None, i_md=-1, interactive=True,
                   a = search(r'\d+', info[1]).group()
                   if a == info[1]:
                     info[1] = '%s.1' % a
-                  elif info[1].endswith(a):
-                    raise AttributeError
+                  elif info[1].startswith(a):
+                    info[1] = info[1].replace(a, '%s.' % a,1)
                   else:
-                    info[1] = info[1].replace(a, '%s.' % a)
+                    raise AttributeError
                 except AttributeError:
                   if info[1] not in sym.keys(): sym[info[1]] = 1
                   else: sym[info[1]] += 1
