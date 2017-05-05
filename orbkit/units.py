@@ -17,7 +17,7 @@ _u = 1.660539040*1e-27 #kg
 #Derived units                                                          
 _a0 = 4*np.pi*_e0*_hbar**2 / (_me*_e**2) #Bohr radius                   
 _aa = 1e-10 #Angstrom                                                   
-_ha = _hbar**2 / (_me*_a0**2)                                           
+_ha = _hbar**2 / (_me*_a0**2) #Hartree                                      
                                                                         
 #Conversion factors                                                     
 a02aa = _aa / _a0                                                       
