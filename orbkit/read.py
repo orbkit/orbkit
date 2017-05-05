@@ -29,6 +29,7 @@ import numpy
 from orbkit.core import l_deg, lquant, orbit, exp, exp_wfn,create_mo_coeff
 from orbkit.display import display
 from orbkit.qcinfo import QCinfo, get_atom_symbol, load
+from orbkit.units import debye2ea0
 
 def main_read(filename,itype='molden',all_mo=False,spin=None,cclib_parser=None,
               **kwargs):
@@ -236,13 +237,7 @@ def read_molden(filename, all_mo=False, spin=None, i_md=-1, interactive=True,
         # The section containing information about 
         # the molecular geometry begins 
         sec_flag = 'geo_info'
-        if 'Angs' in line:
-          # The length are given in Angstroem 
-          # and have to be converted to Bohr radii --
-          aa_to_au = 1/0.52917720859
-        else:
-          # The length are given in Bohr radii 
-          aa_to_au = 1.0
+        is_angstrom = 'Angs' in line
       elif '[gto]' in line.lower():
         # The section containing information about 
         # the atomic orbitals begins 
@@ -264,7 +259,7 @@ def read_molden(filename, all_mo=False, spin=None, i_md=-1, interactive=True,
         if sec_flag == 'geo_info' and thisline != []:
           # Geometry section 
           qc.geo_info.append(thisline[0:3])
-          qc.geo_spec.append([float(ii)*aa_to_au for ii in thisline[3:]])
+          qc.geo_spec.append([float(ii) for ii in thisline[3:]])
         if sec_flag == 'ao_info':
           # Atomic orbital section 
           def check_int(i):
@@ -393,7 +388,7 @@ def read_molden(filename, all_mo=False, spin=None, i_md=-1, interactive=True,
       qc.mo_spec[i]['sym'] = '%d.%s' % (i+1,sym)
   
   # Convert geo_info and geo_spec to numpy.ndarrays
-  qc.format_geo()
+  qc.format_geo(is_angstrom=is_angstrom)
   
   # Check the normalization
   from orbkit.analytical_integrals import get_ao_overlap,get_lxlylz
@@ -476,13 +471,7 @@ def read_gamess(filename, all_mo=False, spin=None, read_properties=False,
       # the molecular geometry begins 
       sec_flag = 'geo_info'
       atom_count = 0  # Counter for Atoms
-      if '(BOHR)' in line:
-        # The length are given in Bohr radii
-        aa_to_au = 1.0
-      else:
-        # The length are given in Angstroem 
-        # and have to be converted to Bohr radii
-        aa_to_au = 1/0.52917720859
+      is_angstrom = not '(BOHR)' in line
         
     elif 'ATOMIC BASIS SET' in line:
       # The section containing information about 
@@ -575,7 +564,7 @@ def read_gamess(filename, all_mo=False, spin=None, read_properties=False,
             sec_flag = None
           else:
             qc.geo_info.append([thisline[0],atom_count+1,thisline[1]])
-            qc.geo_spec.append([float(ii)*aa_to_au for ii in thisline[2:]])
+            qc.geo_spec.append([float(ii) for ii in thisline[2:]])
             atom_count += 1
         elif geo_skip:
           geo_skip -= 1
@@ -688,7 +677,7 @@ def read_gamess(filename, all_mo=False, spin=None, read_properties=False,
         if 'GROUND STATE (SCF) DIPOLE=' in line:
           # ground state dipole is in debye...convert to atomic units
           for ii in range(3):
-            qc.dipole_moments[0][0][ii] = float(thisline[ii+4])*0.393430307
+            qc.dipole_moments[0][0][ii] = float(thisline[ii+4])*debye2ea0
         if 'EXPECTATION VALUE DIPOLE MOMENT FOR EXCITED STATE' in line:
           state = (int(line.replace('STATE', 'STATE ').split()[7]))
           dm_flag = 'state_info'
@@ -818,7 +807,7 @@ def read_gamess(filename, all_mo=False, spin=None, read_properties=False,
         del qc.mo_spec[i]
     
   # Convert geo_info and geo_spec to numpy.ndarrays
-  qc.format_geo()
+  qc.format_geo(is_angstrom=is_angstrom)
 
   return qc
   # read_gamess 
@@ -1111,7 +1100,7 @@ def read_gaussian_fchk(filename, all_mo=False, spin=None, **kwargs):
   
   qc.geo_info = numpy.array(qc.geo_info).T
   # Convert geo_info and geo_spec to numpy.ndarrays
-  qc.format_geo()
+  qc.format_geo(is_angstrom=False)
   
   return qc
   # read_gaussian_fchk 
@@ -1274,8 +1263,6 @@ def read_gaussian_log(filename,all_mo=False,spin=None,orientation='standard',
       raise IOError('`spin=%s` is not a valid option' % spin)
     else:
       display('Reading only molecular orbitals of spin %s.' % spin)
-  
-  aa_to_au = 1/0.52917720859  # conversion factor for Angstroem to bohr radii
 
   # Set a counter for the AOs 
   basis_count = 0
@@ -1372,7 +1359,7 @@ def read_gaussian_log(filename,all_mo=False,spin=None,orientation='standard',
         if sec_flag == 'geo_info':
           if not skip:
             qc.geo_info.append([thisline[1],thisline[0],thisline[1]])
-            qc.geo_spec.append([aa_to_au*float(ij) for ij in thisline[3:]])
+            qc.geo_spec.append([float(ij) for ij in thisline[3:]])
             if '-----------' in flines[il+1]:
               sec_flag = None
           else:
@@ -1485,7 +1472,7 @@ def read_gaussian_log(filename,all_mo=False,spin=None,orientation='standard',
           del qc.mo_spec[i]
   
   # Convert geo_info and geo_spec to numpy.ndarrays
-  qc.format_geo()
+  qc.format_geo(is_angstrom=True)
   return qc
   # read_gaussian_log 
 
@@ -1639,13 +1626,7 @@ def read_aomix(filename, all_mo=False, spin=None, i_md=-1, interactive=True,
         # The section containing information about 
         # the molecular geometry begins 
         sec_flag = 'geo_info'
-        if 'Angs' in line:
-          # The length are given in Angstroem 
-          # and have to be converted to Bohr radii --
-          aa_to_au = 1/0.52917720859
-        else:
-          # The length are given in Bohr radii 
-          aa_to_au = 1.0
+        is_angstrom = 'Angs' in line
       elif '[gto]' in line.lower():
         # The section containing information about 
         # the atomic orbitals begins 
@@ -1665,7 +1646,7 @@ def read_aomix(filename, all_mo=False, spin=None, i_md=-1, interactive=True,
         if sec_flag == 'geo_info':
           # Geometry section 
           qc.geo_info.append(thisline[0:3])
-          qc.geo_spec.append([float(ii)*aa_to_au for ii in thisline[3:]])
+          qc.geo_spec.append([float(ii) for ii in thisline[3:]])
         if sec_flag == 'ao_info':
           # Atomic orbital section 
           def check_int(i):
@@ -1790,7 +1771,7 @@ def read_aomix(filename, all_mo=False, spin=None, i_md=-1, interactive=True,
   qc.select_spin(restricted[i_md],spin=spin)
   
   # Convert geo_info and geo_spec to numpy.ndarrays
-  qc.format_geo()
+  qc.format_geo(is_angstrom=is_angstrom)
   
   if is_tmol_cart and created_by_tmol:
     display('\nFound a Cartesian basis set in the AOMix file.')
@@ -1953,7 +1934,7 @@ def read_wfx(filename, all_mo=False, spin=None, **kwargs):
   for i in qc.geo_info:
     i[0] = ''.join([k for k in i[0] if not k.isdigit()])
   # Convert geo_info and geo_spec to numpy.ndarrays
-  qc.format_geo()
+  qc.format_geo(is_angstrom=False)
   return qc
       
   
@@ -2046,7 +2027,7 @@ def read_wfn(filename, all_mo=False, spin=None, **kwargs):
   for i in qc.geo_info:
     i[0] = ''.join([k for k in i[0] if not k.isdigit()])
   # Convert geo_info and geo_spec to numpy.ndarrays
-  qc.format_geo()
+  qc.format_geo(is_angstrom=False)
   
   return qc
 
@@ -2103,18 +2084,18 @@ def convert_cclib(ccData, all_mo=False, spin=None):
     qc (class QCinfo) with attributes geo_spec, geo_info, ao_spec, mo_spec, etot :
           See :ref:`Central Variables` for details.
   '''
-  aa_to_au = 1/0.52917720859
+
   # Initialize the variables 
   qc = QCinfo()
   
   # Converting all information concerning atoms and geometry
-  qc.geo_spec = ccData.atomcoords[0] * aa_to_au
+  qc.geo_spec = ccData.atomcoords[0]
   for ii in range(ccData.natom):
     symbol = get_atom_symbol(atom=ccData.atomnos[ii])
     qc.geo_info.append([symbol,str(ii+1),str(ccData.atomnos[ii])])
   
   # Convert geo_info and geo_spec to numpy.ndarrays
-  qc.format_geo()
+  qc.format_geo(is_angstrom=True)
   
   # Converting all information about atomic basis set
 

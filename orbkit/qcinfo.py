@@ -25,9 +25,8 @@ License along with orbkit.  If not, see <http://www.gnu.org/licenses/>.
 #from scipy.constants import value as physical_constants
 import numpy
 from os import path
+from orbkit.units import u2me, aa2au
 
-
-u_to_me = 1822.88839 # Contains the mass conversion factor to atomic units
 nist_mass = None
 # Standard atomic masses as "Linearized ASCII Output", see http://physics.nist.gov
 nist_file = path.join(path.dirname(path.realpath(__file__)),
@@ -62,14 +61,20 @@ class QCinfo:
     qcinfo = deepcopy(self)
     return qcinfo
   
-  def format_geo(self):
+  def format_geo(self, is_angstrom=False):
     '''Converts geo_info and geo_spec to a universal format.
+    **Parameters:**
+    
+    is_angstrom : bool, optional
+      If True, input is assumed to be in Angstrom and positions are converted to Bohr radii.
     '''
     for i in self.geo_info:
       i[0] = get_atom_symbol(i[0])
       i[2] = float(i[-1])
     self.geo_info = numpy.array(self.geo_info)
     self.geo_spec = numpy.array(self.geo_spec,dtype=float)
+    if is_angstrom:
+      self.geo_spec *= aa2au
   
   def sort_mo_sym(self):
     '''Sorts mo_spec by symmetry.
@@ -358,9 +363,9 @@ def standard_mass(atom):
     read_nist()  
   try:
     atom = int(atom) - 1
-    return nist_mass[atom][1] * u_to_me
+    return nist_mass[atom][1] * u2me
   except ValueError:
-    return dict(nist_mass)[atom.title()] * u_to_me
+    return dict(nist_mass)[atom.title()] * u2me
     
 def get_atom_symbol(atom):
   '''Returns the atomic symbol of a given atom.
