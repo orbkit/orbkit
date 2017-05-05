@@ -2,9 +2,7 @@ from ..display import display
 import numpy
 from copy import copy
 from ..qcinfo import QCinfo,CIinfo
-
-# Conversion factors
-eV = 27.211384
+from orbkit.units import ev2ha
 
 def main_ci_read(qc,filename,itype='psi4_detci',threshold=0.0,
                  select=None,nforbs=0,bortho=False,
@@ -449,7 +447,7 @@ def gamess_tddft(filename,select_state=None,threshold=0.0,**kwargs):
           ci[-1].coeffs = []
           ci[-1].occ    = []
           ci[-1].info = {'state': thisline[2],
-                         'energy': float(thisline[-2])/eV,
+                         'energy': float(thisline[-2])*ev2ha,
                          'fileinfo': filename,
                          'read_threshold': threshold,
                          'spin': 'Unknown',
