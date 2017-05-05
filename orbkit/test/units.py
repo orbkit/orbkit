@@ -8,11 +8,14 @@ from orbkit.test.tools import equal
 ref_ha2ev = 27.211386
 ref_a02aa = 0.529177210
 ref_debye2ae = 0.393456
+ref_u2me = 1822.888486192
 
 equal(ha2ev*ev2ha, 1)
 equal(a02aa*aa2a0, 1)
 equal(debye2ae*ae2debye, 1)
+equal(u2me*me2u, 1)
 
 equal(ha2ev, ref_ha2ev)
 equal(a02aa, ref_a02aa)
 equal(debye2ae, ref_debye2ae)
+equal(u2me, ref_u2me)
