@@ -61,7 +61,7 @@ def find_filetype(fname, ignore_molden=False):
 
   molden_regex = re.compile(r"\[[ ]{,}Molden[ ]+Format[ ]{,}\]")
   gamess_regex = re.compile(r"GAMESS") #This might be too weak - Can someone who knows Gamess please check?
-  gaussian_regex = re.compile(r"r"Copyright[,\s\(\)c0-9]+Gaussian\s{,},\s+Inc.")
+  gaussian_regex = re.compile(r"Copyright[,\s\(\)c0-9]+Gaussian\s{,},\s+Inc.")
   aomix_regex = re.compile(r"\[[ ]{,}AOMix[ ]+Format[ ]{,}\]")
   
   regexes = {'molden': molden_regex, 'gamess': gamess_regex, 'gaussian_log': gaussian_regex, 'aomix': aomix_regex}
