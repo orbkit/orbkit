@@ -30,7 +30,7 @@ import numpy
 from scipy import integrate
 
 # Import orbkit modules
-from orbkit import core,grid,output,options
+from orbkit import core,grid, output, options
 from orbkit.display import display
 from orbkit.read import mo_select
 
