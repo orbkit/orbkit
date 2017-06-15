@@ -44,7 +44,8 @@ available = [
   'quiet','no_log','no_output','no_slice','interactive', 'test'
   ]
 
-itypes = ['molden',
+itypes = [None,
+          'molden',
           'aomix',
           'gamess', 
           'gaussian.log', 
@@ -103,7 +104,7 @@ def init_parser():
                       help="input file")
   group.add_option("-e", "--itype", dest="itype",
                       default='molden', type="choice",choices=itypes,
-                      help="input type: '" + "', '".join(itypes) + 
+                      help="input type: '" + "', '".join(str(itypes)) + 
                       "' [default: '%default']")
   group.add_option("--cclib_parser",dest="cclib_parser",
                       type="string",
@@ -484,7 +485,7 @@ def check_grid_output_compatibilty(error=raise_error):
 
 #--- Input/Output Options ---
 filename        = ''            #: Specifies input file name. (str)
-itype           = 'molden'      #: Specifies input file type. See :data:`itypes` for details. (str) 
+itype           = None          #: Specifies input file type. See :data:`itypes` for details. (str) 
 cclib_parser    = None          #: If itype is 'cclib', specifies the cclib.parser. (str)
 outputname      = None          #: Specifies output file (base) name. (str)
 otype           = 'h5'          #: Specifies output file type. See :data:`otypes` for details. (str or list of str or None)

@@ -1,8 +1,10 @@
+import re
+import numpy
+
 from orbkit.read.tools import spin_check
 from orbkit.qcinfo import QCinfo
 from orbkit.core import l_deg, lquant
 from orbkit.display import display
-import numpy
 
 def read_aomix(filename, all_mo=False, spin=None, i_md=-1, interactive=True,
                created_by_tmol=True, **kwargs):
@@ -30,6 +32,8 @@ def read_aomix(filename, all_mo=False, spin=None, i_md=-1, interactive=True,
         See :ref:`Central Variables` for details.
   '''
   
+  aomix_regex = re.compile(r"\[[ ]{,}[Aa][Oo][Mm]ix[ ]+[Ff]ormat[ ]{,}\]")
+
   fid    = open(filename,'r')      # Open the file
   flines = fid.readlines()         # Read the WHOLE file into RAM
   fid.close()                      # Close the file
@@ -66,7 +70,7 @@ def read_aomix(filename, all_mo=False, spin=None, i_md=-1, interactive=True,
     line = flines[il]            # The current line as string
     
     # Check the file for keywords 
-    if '[AOMix Format]' in line:
+    if aomix_regex.search(line):
       count += 1
       has_alpha.append(False)
       has_beta.append(False)
