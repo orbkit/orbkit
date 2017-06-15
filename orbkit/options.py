@@ -41,7 +41,7 @@ available = [
   'numproc','mo_set','calc_ao','all_mo','calc_mo','spin','drv','laplacian',
   'slice_length','is_vector','grid_file','adjust_grid','center_grid','random_grid',
   'z_reduced_density','gross_atomic_density','mo_tefd',
-  'quiet','no_log','no_output','no_slice','interactive'
+  'quiet','no_log','no_output','no_slice','interactive', 'test'
   ]
 
 itypes = ['molden',
@@ -86,7 +86,8 @@ def init_parser():
   #optparse.Option.STORE_ACTIONS += ('call_back',)
   usage = 'Usage: %prog [options] -i INPUT'
   parser = optparse.OptionParser(usage=usage,description=lgpl_short) 
-  
+
+
   parser.add_option("-l", dest="show_lgpl",
                       default=False,action="store_true", 
                       help="show license information and exit")
@@ -228,6 +229,11 @@ def init_parser():
   parser.add_option_group(group)
 
   (kwargs, args) = parser.parse_args()
+
+  if len(args) == 1 and args[0] == 'test':
+    from orbkit.test import test
+    test()
+
   # Print the licence, if requested
   if kwargs.show_lgpl:
     print(lgpl.replace('\nThis file is part of orbkit.\n',''))

@@ -1,17 +1,12 @@
+from orbkit.read.tools import spin_check
 from orbkit.qcinfo import QCinfo
+from orbkit.core import l_deg, lquant
 from orbkit.display import display
 import numpy
-import re
-from orbkit.core import l_deg, lquant
-from orbkit.read.tools import get_ao_spherical
 
-'''
-New Molden interface
-'''
-
-def read_molden(filename, all_mo=False, spin=None, i_md=-1, interactive=True,
-                **kwargs):
-  '''Reads all information desired from a molden file.
+def read_aomix(filename, all_mo=False, spin=None, i_md=-1, interactive=True,
+               created_by_tmol=True, **kwargs):
+  '''Reads all information desired from a aomix file.
   
   **Parameters:**
   
@@ -22,27 +17,34 @@ def read_molden(filename, all_mo=False, spin=None, i_md=-1, interactive=True,
     spin : {None, 'alpha', or 'beta'}, optional
       If not None, returns exclusively 'alpha' or 'beta' molecular orbitals.
     i_md : int, default=-1
-      Selects the `[Molden Format]` section of the output file.
+      Selects the `[AOMix Format]` section of the output file.
     interactive : bool
       If True, the user is asked to select the different sets.
+    created_by_tmol : bool
+      If True and if Cartesian basis set is found, the molecular orbital 
+      coefficients will be converted.
   
   **Returns:**
   
     qc (class QCinfo) with attributes geo_spec, geo_info, ao_spec, mo_spec, etot :
         See :ref:`Central Variables` for details.
   '''
-
-  molden_regex = re.compile(r"\[[ ]{,}[Mm]olden[ ]+[Ff]ormat[ ]{,}\]")
-
-  with open(filename, 'r') as fd:
-    flines = fd.readlines()
+  
+  fid    = open(filename,'r')      # Open the file
+  flines = fid.readlines()         # Read the WHOLE file into RAM
+  fid.close()                      # Close the file
+  
+  # Is this really a aomix file? 
+  if not '[AOMix Format]\n' in flines:
+    raise IOError('The input file %s is no valid aomix file!\n\nIt does'  % filename+
+          ' not contain the keyword: [AOMix Format]\n')
   
   def check_sel(count,i,interactive=False):
     if count == 0:
       raise IndexError
     elif count == 1:
       return 0
-    message = '\tPlease give an integer from 0 to {0}: '.format(count-1)
+    message = '\tPlease give an integer from 0 to %d: ' % (count-1)
     
     try:
       if interactive:
@@ -58,32 +60,17 @@ def read_molden(filename, all_mo=False, spin=None, i_md=-1, interactive=True,
   has_alpha = []
   has_beta = []
   restricted = []
-  cartesian_basis = []
-  mixed_warning = []
-  by_orca = []
   count = 0
   # Go through the file line by line 
   for il in range(len(flines)):
     line = flines[il]            # The current line as string
-    # Check the file for keywords
-    if molden_regex.search(line):
+    
+    # Check the file for keywords 
+    if '[AOMix Format]' in line:
       count += 1
       has_alpha.append(False)
       has_beta.append(False)
       restricted.append(False)
-      cartesian_basis.append(True)
-      mixed_warning.append(False)
-      by_orca.append(False)
-    if 'orca' in line.lower():
-      by_orca[-1] = True
-    if '[5d]' in line.lower() or '[5d7f]' in line.lower():
-      cartesian_basis[-1] = False
-    if '[5d10f]'  in line.lower():
-      mixed_warning[-1] = '5D, 10F'
-      cartesian_basis[-1] = False
-    if '[7f]'  in line.lower():
-      mixed_warning[-1] = '6D, 7F'
-      cartesian_basis[-1] = True
     if 'Spin' in line and 'alpha' in line.lower():
       has_alpha[-1] = True
     if 'Spin' in line and 'beta' in line.lower():
@@ -92,35 +79,19 @@ def read_molden(filename, all_mo=False, spin=None, i_md=-1, interactive=True,
       restricted[-1] = restricted[-1] or (float(line.split('=')[1]) > 1.+1e-4)
   
   if count == 0:
-    raise IOError('The input file %s is no valid molden file!\n\nIt does' % filename +
-            ' not contain the keyword: [Molden Format]\n')
+    raise IOError('The input file %s is no valid aomix file!\n\nIt does' % filename +
+            ' not contain the keyword: [AOMix Format]\n')
   else:
     if count > 1:
-      display('\nContent of the molden file:')
-      display('\tFound %d [Molden Format] keywords, i.e., ' % count + 
-              'this file contains %d molden files.' % count)
+      display('\nContent of the aomix file:')
+      display('\tFound %d [AOMix Format] keywords, i.e., ' % count + 
+              'this file contains %d aomix files.' % count)
     i_md = check_sel(count,i_md,interactive=interactive)
-  
-  if spin is not None:
-    if restricted[i_md]:
-      raise IOError('The keyword `spin` is only supported for unrestricted calculations.')    
-    if spin != 'alpha' and spin != 'beta':
-      raise IOError('`spin=%s` is not a valid option' % spin)
-    elif spin == 'alpha' and has_alpha[i_md]:
-      display('Reading only molecular orbitals of spin alpha.')
-    elif spin == 'beta' and has_beta[i_md]:
-      display('Reading only molecular orbitals of spin beta.')
-    elif (not has_alpha[i_md]) and (not has_beta[i_md]):
-      raise IOError(
-           'Molecular orbitals in `molden` file do not contain `Spin=` keyword')
-    elif ((spin == 'alpha' and not has_alpha[i_md]) or 
-          (spin == 'beta' and not has_beta[i_md])):
-      raise IOError('You requested `%s` orbitals, but None of them are present.'
-                    % spin)
+    
+  spin_check(spin,restricted[i_md],has_alpha[i_md],has_beta[i_md])
   
   # Set a counter for the AOs 
   basis_count = 0
-  sym = {}
 
   # Declare synonyms for molden keywords 
   synonyms = {'Sym': 'sym',
@@ -130,8 +101,8 @@ def read_molden(filename, all_mo=False, spin=None, i_md=-1, interactive=True,
              }
   MO_keys = synonyms.keys()
   
+  exp_list = []
   count = 0
-  max_l = 0
   start_reading = False
   # Go through the file line by line 
   for il in range(len(flines)):
@@ -139,7 +110,7 @@ def read_molden(filename, all_mo=False, spin=None, i_md=-1, interactive=True,
     thisline = line.split()        # The current line split into segments
     
     # Check the file for keywords 
-    if '[molden format]' in line.lower():
+    if '[aomix format]' in line.lower():
       # A new file begins 
       # Initialize the variables 
       if i_md == count:
@@ -151,22 +122,16 @@ def read_molden(filename, all_mo=False, spin=None, i_md=-1, interactive=True,
       count += 1
       continue
     if start_reading:
-      if '_ENERGY=' in line:
+      if '[SCF Energy / Hartree]' in line:
         try:
-          qc.etot = float(thisline[1])
+          qc.etot = float(flines[il+1].split()[0])
         except IndexError:
           pass
       elif '[atoms]' in line.lower():
         # The section containing information about 
         # the molecular geometry begins 
         sec_flag = 'geo_info'
-        if 'Angs' in line:
-          # The length are given in Angstroem 
-          # and have to be converted to Bohr radii --
-          aa_to_au = 1/0.52917720859
-        else:
-          # The length are given in Bohr radii 
-          aa_to_au = 1.0
+        angstrom = 'Angs' in line
       elif '[gto]' in line.lower():
         # The section containing information about 
         # the atomic orbitals begins 
@@ -180,14 +145,13 @@ def read_molden(filename, all_mo=False, spin=None, i_md=-1, interactive=True,
       elif '[sto]' in line.lower():
         # The orbkit does not support Slater type orbitals 
         raise IOError('orbkit does not work for STOs!\nEXIT\n')
-      elif '[' in line:
-        sec_flag = None
       else:
         # Check if we are in a specific section 
-        if sec_flag == 'geo_info' and thisline != []:
+        if sec_flag == 'geo_info':
           # Geometry section 
           qc.geo_info.append(thisline[0:3])
-          qc.geo_spec.append([float(ii)*aa_to_au for ii in thisline[3:]])
+          qc.geo_spec.append([float(ii) for ii in thisline[3:
+              ]])
         if sec_flag == 'ao_info':
           # Atomic orbital section 
           def check_int(i):
@@ -214,11 +178,10 @@ def read_molden(filename, all_mo=False, spin=None, i_md=-1, interactive=True,
             # Calculate the degeneracy of this AO and increase basis_count 
             for i_ao in ao_type:
               # Calculate the degeneracy of this AO and increase basis_count 
-              basis_count += l_deg(lquant[i_ao],cartesian_basis=cartesian_basis[i_md])
-              max_l = max(max_l,lquant[i_ao])
+              basis_count += l_deg(lquant[i_ao])
               qc.ao_spec.append({'atom': at_num,
                               'type': i_ao,
-                              'pnum': -pnum if by_orca[i_md] else pnum,
+                              'pnum': pnum,
                               'coeffs': numpy.zeros((pnum, 2))
                               })
           else:
@@ -241,25 +204,18 @@ def read_molden(filename, all_mo=False, spin=None, i_md=-1, interactive=True,
             # Append information to dict of this MO 
             info = line.replace('\n','').replace(' ','')
             info = info.split('=')
-            if info[0] in MO_keys: 
+            if info[0] in MO_keys:               
               if info[0] == 'Spin':
                 info[1] = info[1].lower()
               elif info[0] != 'Sym':
                 info[1] = float(info[1])
               elif not '.' in info[1]:
                 from re import search
-                try:
-                  a = search(r'\d+', info[1]).group()
-                  if a == info[1]:
-                    info[1] = '%s.1' % a
-                  elif info[1].startswith(a):
-                    info[1] = info[1].replace(a, '%s.' % a,1)
-                  else:
-                    raise AttributeError
-                except AttributeError:
-                  if info[1] not in sym.keys(): sym[info[1]] = 1
-                  else: sym[info[1]] += 1
-                  info[1] = '%d.%s' % (sym[info[1]],info[1]) 
+                a = search(r'\d+', info[1]).group()
+                if a == info[1]:
+                  info[1] = '%s.1' % a
+                else:
+                  info[1] = info[1].replace(a, '%s.' % a, 1)
               qc.mo_spec[-1][synonyms[info[0]]] = info[1]
           else:
             if ('[' or ']') in line:
@@ -271,71 +227,79 @@ def read_molden(filename, all_mo=False, spin=None, i_md=-1, interactive=True,
               index = int(thisline[0])-1
               try: 
                 # Try to convert coefficient to float 
-                qc.mo_spec[-1]['coeffs'][index] = float(thisline[1])
+                qc.mo_spec[-1]['coeffs'][index] = float(thisline[-1])
+                if len(qc.mo_spec) == 1:
+                  exp_list.append(thisline[-2])
               except ValueError:
                 # If it cannot be converted print error message 
                 raise ValueError('Error in coefficient %d of MO %s!' % (index, 
-                      qc.mo_spec[-1]['sym']) + '\nSetting this coefficient to zero...')
+                qc.mo_spec[-1]['sym']) + '\nSetting this coefficient to zero...')
+
+  # Check usage of same atomic basis sets
+  for ii in range(len(exp_list)):
+    s = exp_list[ii]
+    exp = [0,0,0]
+    c_last = None
+    for jj in s[1:]:
+      try:
+        c = int(jj)
+        exp[c_last] += (c-1)
+      except ValueError:
+        for kk,ll in enumerate('xyz'):
+          if jj == ll:
+            exp[kk] += 1
+            c_last = kk
+    exp_list[ii] = exp
+
+  count = 0
+  for i,j in enumerate(qc.ao_spec):    
+    l = l_deg(lquant[j['type']])
+    j['exp_list'] = []
+    for i in range(l):
+      j['exp_list'].append((exp_list[count][0],
+                      exp_list[count][1],
+                      exp_list[count][2]))
+      count += 1
+    j['exp_list'] = numpy.array(j['exp_list'],dtype=numpy.int64)
   
-  # Spherical basis?
-  if not cartesian_basis[i_md]:    
-    qc.ao_spherical = get_ao_spherical(qc.ao_spec,p=[1,0])
-  if max_l > 2 and mixed_warning[i_md]:
-    raise IOError('The input file %s contains ' % filename +
-                  'mixed spherical and Cartesian function (%s).' %  mixed_warning[i_md] + 
-                  'ORBKIT does not support these basis functions yet. '+
-                   'Pleas contact us, if you need this feature!')    
+  # For Cartesian basis sets in Turbomole, the molecular orbital coefficients 
+  # have to be converted.
+  is_tmol_cart = not (len(qc.mo_spec) % len(qc.mo_spec[0]['coeffs'])) 
+  
   # Are all MOs requested for the calculation? 
   if not all_mo:
     for i in range(len(qc.mo_spec))[::-1]:
       if qc.mo_spec[i]['occ_num'] < 0.0000001:
-        del qc.mo_spec[i]
+        del qc.mo_spec[i] 
   
-  # Only molecular orbitals of one spin requested?
-  if spin is not None:
-    for i in range(len(qc.mo_spec))[::-1]:
-      if qc.mo_spec[i]['spin'] != spin:
-        del qc.mo_spec[i]
-
-  if restricted[i_md]:
-    # Closed shell calculation
-    for mo in qc.mo_spec:
-      del mo['spin']
-  else:
-    # Rename MOs according to spin
-    for mo in qc.mo_spec:
-      mo['sym'] += '_%s' % mo['spin'][0]
-  
-  # Orca uses for all molecular orbitals the same name 
-  sym = [i['sym'] for i in qc.mo_spec]
-  if sym[1:] == sym[:-1]:
-    sym = sym[0].split('.')[-1]
-    for i in range(len(qc.mo_spec)):
-      qc.mo_spec[i]['sym'] = '%d.%s' % (i+1,sym)
+  # Modify qc.mo_spec to support spin
+  qc.select_spin(restricted[i_md],spin=spin)
   
   # Convert geo_info and geo_spec to numpy.ndarrays
-  qc.format_geo()
+  qc.format_geo(is_angstrom=False)
   
-  # Check the normalization
-  from orbkit.analytical_integrals import get_ao_overlap,get_lxlylz
-  norm = numpy.diagonal(get_ao_overlap(qc.geo_spec,qc.geo_spec,qc.ao_spec))
-  
-  if sum(numpy.abs(norm-1.)) > 1e-8:
-    display('The atomic orbitals are not normalized correctly, renormalizing...\n')
-    if not by_orca[i_md]: 
-      j = 0
-      for i in range(len(qc.ao_spec)):
-        qc.ao_spec[i]['coeffs'][:,1] /= numpy.sqrt(norm[j])
-        for n in range(l_deg(lquant[qc.ao_spec[i]['type']],cartesian_basis=True)):
-          j += 1
-    else:
-      qc.ao_spec[0]['N'] = 1/numpy.sqrt(norm[:,numpy.newaxis])
-  
-    if cartesian_basis[i_md]:
-      from orbkit.cy_overlap import ommited_cca_norm
-      cca = ommited_cca_norm(get_lxlylz(qc.ao_spec))
-      for mo in qc.mo_spec:
-        mo['coeffs'] *= cca
+  if is_tmol_cart and created_by_tmol:
+    display('\nFound a Cartesian basis set in the AOMix file.')
+    display('We assume that this file has been created by Turbomole.')
+    display('Applying a conversion to the molecular orbital coefficients, ')
+    display('in order to get normalized orbitals.')
+    
+    # Convert MO coefficients
+    from orbkit.analytical_integrals import create_mo_coeff, get_lxlylz
+    def dfact(n):
+      if n <= 0:
+        return 1
+      else:
+        return n * dfact(n-2)
+
+    mo = create_mo_coeff(qc.mo_spec)
+    for i,j in enumerate(get_lxlylz(qc.ao_spec)):
+      norm = (dfact(2*j[0] - 1) * dfact(2*j[1] - 1) * dfact(2*j[2] - 1))
+      j = sum(j)
+      if j >1: 
+        mo[:,i] *= numpy.sqrt(norm)   
+    for ii in range(len(qc.mo_spec)):
+      qc.mo_spec[ii]['coeffs'] = mo[ii]
   
   return qc
-  
+  # read_aomix

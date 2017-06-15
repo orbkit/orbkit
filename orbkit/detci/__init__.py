@@ -1,2 +1,3 @@
 from ..qcinfo import CIinfo
-from . import ci_read,occ_check,ci_core
+from .ci_read.high_level import main_ci_read
+from . import occ_check,ci_core

@@ -25,14 +25,8 @@ License along with orbkit.  If not, see <http://www.gnu.org/licenses/>.
 #from scipy.constants import value as physical_constants
 import numpy
 from os import path
-from orbkit.units import u2me, aa2au
-
-nist_mass = None
-# Standard atomic masses as "Linearized ASCII Output", see http://physics.nist.gov
-nist_file = path.join(path.dirname(path.realpath(__file__)),
-                      'supporting_data/Atomic_Weights_NIST.html')
-# see http://physics.nist.gov/cgi-bin/Compositions/stand_alone.pl?ele=&all=all&ascii=ascii2&isotype=some
-
+from orbkit.units import u2me, aa2a0
+from orbkit.read.tools import get_atom_symbol, standard_mass
 
 class QCinfo:
   '''Class managing all information from the from the output 
@@ -74,7 +68,7 @@ class QCinfo:
     self.geo_info = numpy.array(self.geo_info)
     self.geo_spec = numpy.array(self.geo_spec,dtype=float)
     if is_angstrom:
-      self.geo_spec *= aa2au
+      self.geo_spec *= aa2a0
   
   def sort_mo_sym(self):
     '''Sorts mo_spec by symmetry.
@@ -314,87 +308,3 @@ class CIinfo:
           self.__dict__[key] = hdf5_file['%s' % group].attrs[key]
       self.__dict__['info'] = dict(self.__dict__['info'])
 
-def read_nist():
-  '''Reads and converts the atomic masses from the "Linearized ASCII Output", 
-  see http://physics.nist.gov.
-  '''
-  global nist_mass
-  
-  f = open(nist_file,'r')
-  flines = f.readlines()
-  f.close()
-  
-  nist_mass = []
-  index = None
-  new = True
-  
-  def rm_brackets(text,rm=['(',')','[',']']):
-    for i in rm:
-      text = text.replace(i,'')
-    return text
-  
-  for line in flines:
-    thisline = line.split()
-    if 'Atomic Number =' in line:
-      i = int(thisline[-1]) - 1
-      new = (i != index)
-      if new:
-        nist_mass.append(['',0])
-      index = i
-    elif 'Atomic Symbol =' in line and new:
-      nist_mass[index][0] = thisline[-1]
-    elif 'Standard Atomic Weight =' in line and new:
-      nist_mass[index][1] = float(rm_brackets(thisline[-1]))
-
-def standard_mass(atom):
-  '''Returns the standard atomic mass of a given atom.
-    
-  **Parameters:**
-  
-  atom : int or str
-    Contains the name or atomic number of the atom.
-  
-  **Returns:**
-  
-  mass : float
-    Contains the atomic mass in atomic units.
-  '''
-  if nist_mass is None:
-    read_nist()  
-  try:
-    atom = int(atom) - 1
-    return nist_mass[atom][1] * u2me
-  except ValueError:
-    return dict(nist_mass)[atom.title()] * u2me
-    
-def get_atom_symbol(atom):
-  '''Returns the atomic symbol of a given atom.
-    
-  **Parameters:**
-  
-  atom : int or str
-    Contains the atomic number of the atom.
-  
-  **Returns:**
-  
-  symbol : str
-    Contains the atomic symbol.
-  '''
-  if nist_mass is None:
-    read_nist()  
-  try:
-    atom = int(atom) - 1
-    return nist_mass[atom][0]
-  except ValueError:    
-    return atom.upper()
-
-def dump(data,fid):
-  import cPickle
-  with open(fid, "wb") as output:
-    cPickle.dump(data,output,cPickle.HIGHEST_PROTOCOL)
-
-def load(fid,**kwargs):
-  import cPickle
-  with open(fid, "rb") as input:       
-    data = cPickle.load(input)
-  return data

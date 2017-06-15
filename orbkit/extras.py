@@ -32,7 +32,7 @@ from scipy import integrate
 # Import orbkit modules
 from orbkit import core,grid, output, options
 from orbkit.display import display
-from orbkit.read import mo_select
+from orbkit.read.tools import mo_select
 
 def calc_mo(qc, fid_mo_list, drv=None, otype=None, ofid=None,
             numproc=None, slice_length=None):
