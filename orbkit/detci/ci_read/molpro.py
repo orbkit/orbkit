@@ -3,16 +3,18 @@ from copy import copy
 
 from orbkit.display import display
 from orbkit.qcinfo import CIinfo
+from orbkit.read.tools import descriptor_from_file
 
 from .tools import point_groups
 
-def molpro_mcscf(filename,select_run=0,threshold=0.0,**kwargs):
+def molpro_mcscf(fname,select_run=0,threshold=0.0,**kwargs):
   '''Reads MOLPRO MCSCF output. 
   
   **Parameters:**
   
-    filename : str
+    fname: str, file descriptor
       Specifies the filename for the input file.
+      fname can also be used with a file descriptor instad of a filename.
     select_run : (list of) int
       Specifies the MCSCF calculation (1PROGRAM * MULTI) to be read. 
       For the selected MCSCF calculation, all electronic states will be read.
@@ -33,14 +35,20 @@ def molpro_mcscf(filename,select_run=0,threshold=0.0,**kwargs):
   single_run_selected = isinstance(select_run,int)
   count = 0
   numci = []
+
+  if isinstance(fname, str):
+    filename = fname
+    fname = descriptor_from_file(filename, index=0)
+  else:
+    filename = fname.name
+
   # Go through the file line by line 
-  with open(filename) as fileobject:
-    for line in fileobject:
-      if '1PROGRAM * %s' % available[method] in line:
-        count += 1
-        numci.append(0)
-      if '!%s state' % method in line.lower() and 'energy' in line.lower():
-        numci[-1] += 1
+  for line in fname:
+    if '1PROGRAM * %s' % available[method] in line:
+      count += 1
+      numci.append(0)
+    if '!%s state' % method in line.lower() and 'energy' in line.lower():
+      numci[-1] += 1
           
   if count == 0:
     display('The input file %s does not contain any DETCI calculations!\n' % (filename) + 

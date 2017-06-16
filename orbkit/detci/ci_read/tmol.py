@@ -3,10 +3,11 @@ from copy import copy
 
 from orbkit.display import display
 from orbkit.qcinfo import CIinfo
+from orbkit.read.tools import descriptor_from_file
 
 from .tools import orthonorm
 
-def tmol_tddft(filename,nmoocc=None,nforbs=0,select_state=None,threshold=0.0,
+def tmol_tddft(fname,nmoocc=None,nforbs=0,select_state=None,threshold=0.0,
                bortho=False,**kwargs):
   '''Reads Turbomole TD-DFT output (``sing_a`` file). 
   
@@ -15,8 +16,9 @@ def tmol_tddft(filename,nmoocc=None,nforbs=0,select_state=None,threshold=0.0,
   
   **Parameters:**
   
-    filename : str
+    fname: str, file descriptor
       Specifies the filename for the input file.
+      fname can also be used with a file descriptor instad of a filename.
     nmoocc : int
       Specifies the number of non-frozen occupied orbitals.
     nforbs : int,optional
@@ -41,19 +43,25 @@ def tmol_tddft(filename,nmoocc=None,nforbs=0,select_state=None,threshold=0.0,
   lumo = (nmoocc + nforbs)
   states = []
   if isinstance(select_state,int): select_state = [select_state]
-  with open(filename,'r') as f:
-    start = False
-    for i,line in enumerate(f):
-      if '$tensor space dimension' in line:
-        tspace = int(line.split()[-1])
-      if 'eigenvalue' in line:
-        start = True
-        l = line.split()
-        states.append({'eigenvalue': float(l[-1].replace('D','E')),
-                       'coeffs': []})
-      elif start:
-        for i in range((len(line)-1)/20):
-          states[-1]['coeffs'].append(float(line[i*20:(i+1)*20].replace('D','E')))
+
+  if isinstance(fname, str):
+    filename = fname
+    fname = descriptor_from_file(filename, index=0)
+  else:
+    filename = fname.name
+
+  start = False
+  for i,line in enumerate(fname):
+    if '$tensor space dimension' in line:
+      tspace = int(line.split()[-1])
+    if 'eigenvalue' in line:
+      start = True
+      l = line.split()
+      states.append({'eigenvalue': float(l[-1].replace('D','E')),
+                     'coeffs': []})
+    elif start:
+      for i in range((len(line)-1)/20):
+        states[-1]['coeffs'].append(float(line[i*20:(i+1)*20].replace('D','E')))
   
   for i in range(len(states)):
     if len(states[i]['coeffs']) == tspace*2:

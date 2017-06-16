@@ -11,7 +11,7 @@ from .tmol import tmol_escf, tmol_tddft
 from .gamess import gamess_cis, gamess_tddft
 from .molpro import molpro_mcscf
 
-def main_ci_read(qc,filename,itype='psi4_detci',threshold=0.0,
+def main_ci_read(qc,finame,itype='psi4_detci',threshold=0.0,
                  select=None,nforbs=0,bortho=False,
                  **kwargs):
   '''Reads determinant CI calculation. 
@@ -30,9 +30,10 @@ def main_ci_read(qc,filename,itype='psi4_detci',threshold=0.0,
   
     qc : class QCinfo
       See :ref:`Central Variables` for details.
-    filename : str
+    fname: str, file descriptor
       Specifies the filename for the input file.
-    itype : str, choices={'psi4_detci', 'gamess_cis', 'tmol_tddft', 'molpro_mcscf'}
+      fname can also be used with a file descriptor instad of a filename.
+    itype : str, choices={'tar', 'psi4_detci', 'gamess_cis', 'tmol_tddft', 'molpro_mcscf'}
       Specifies the type of the input file.
     threshold : float, optional
       Specifies a read threshold for the CI coefficients.
@@ -54,6 +55,12 @@ def main_ci_read(qc,filename,itype='psi4_detci',threshold=0.0,
     ci : list of CIinfo class instances 
       See :ref:`Central Variables` for details.
   '''
+
+  if isinstance(fname, str):
+    filename = fname
+  else:
+    filename = fname.name
+
   display('Opened \n\t%s\n' % filename)  
   assert isinstance(qc,QCinfo), '`qc` has to be an instance of the QCinfo class'
   
@@ -70,7 +77,7 @@ def main_ci_read(qc,filename,itype='psi4_detci',threshold=0.0,
   
   kwargs['nmoocc'] = qc.get_nmoocc()
   
-  ci = reader[itype](filename,select_state=select,threshold=threshold, 
+  ci = reader[itype](fname,select_state=select,threshold=threshold, 
                      select_run=select,                 # PSI4/MOLPRO specific
                      nforbs=nforbs,bortho=bortho,       # TURBOMOLE specific
                      **kwargs)

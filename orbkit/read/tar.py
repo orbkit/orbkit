@@ -9,7 +9,7 @@ from orbkit.read.high_level import find_itype
 def is_tar_file(infile):
   itype = ''
   if '.' in infile:
-      if 'tar' not in  infile.split('.')[-2:]:
+      if 'tar' not in infile.split('.')[-2:]:
         return None
       else:
         return True

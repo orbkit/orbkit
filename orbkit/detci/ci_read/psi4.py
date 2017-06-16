@@ -3,16 +3,18 @@ import numpy
 
 from orbkit.display import display
 from orbkit.qcinfo import CIinfo
+from orbkit.read.tools import descriptor_from_file
 
 from .tools import point_groups, multiplicity
 
-def psi4_detci(filename,select_run=None,threshold=0.0,**kwargs):
+def psi4_detci(fname,select_run=None,threshold=0.0,**kwargs):
   '''Reads PSI4 DETCI output. 
   
   **Parameters:**
   
-    filename : str
+    fname: str, file descriptor
       Specifies the filename for the input file.
+      fname can also be used with a file descriptor instad of a filename.
     select_run : (list of) int
       Specifies the DETCI calculation (D E T C I) to be read. 
       For the selected DETCI calculation, all electronic states will be read.
@@ -31,13 +33,19 @@ def psi4_detci(filename,select_run=None,threshold=0.0,**kwargs):
   count = 0
   numci = []
   # Go through the file line by line 
-  with open(filename) as fileobject:
-    for line in fileobject:
-      if 'D E T C I' in line:
-        count += 1
-        numci.append(0)
-      if '* ROOT' in line:
-        numci[-1] += 1
+
+  if isinstance(fname, str):
+    filename = fname
+    fname = descriptor_from_file(filename, index=0)
+  else:
+    filename = fname.name
+
+  for line in fname:
+    if 'D E T C I' in line:
+      count += 1
+      numci.append(0)
+    if '* ROOT' in line:
+      numci[-1] += 1
   
   if count == 0:
     display('The input file %s does not contain any DETCI calculations!\n' % (filename) + 
