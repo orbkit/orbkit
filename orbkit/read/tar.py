@@ -6,7 +6,7 @@ import tarfile
 
 from orbkit.read.high_level import find_itype
 
-def get_tar_type(infile):
+def is_tar_file(infile):
   itype = ''
   if '.' in infile:
       if 'tar' not in  infile.split('.')[-2:]:

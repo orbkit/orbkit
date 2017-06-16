@@ -32,7 +32,7 @@ from time import time
 from orbkit.display import display,init_display
 from orbkit.analytical_integrals import get_ao_overlap, get_mo_overlap_matrix
 
-from .tar import get_tar_type, get_all_files_from_tar
+from .tar import is_tar_file, get_all_files_from_tar
 from . import main_read
 
 geo_spec_all  = [] #: Contains all molecular geometries, i.e., :literal:`geo_spec`. (See :ref:`Central Variables` for details.)
@@ -80,7 +80,7 @@ def read(fid_list,itype=None,all_mo=True,nosym=False,**kwargs):
 
   #Check if fname poits to a tar archive and
   #read all files from archive if that is the case 
-  if get_tar_type(fid_list):
+  if is_tar_file(fid_list):
     fid_list, itypes = get_all_files_from_tar(fid_list)
 
   n_r = len(fid_list)

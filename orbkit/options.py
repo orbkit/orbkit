@@ -44,7 +44,7 @@ available = [
   'quiet','no_log','no_output','no_slice','interactive', 'test'
   ]
 
-itypes = [None,
+itypes = ['auto',
           'molden',
           'aomix',
           'gamess', 
@@ -103,8 +103,8 @@ def init_parser():
                       default='', type="string",nargs=1,
                       help="input file")
   group.add_option("-e", "--itype", dest="itype",
-                      default='molden', type="choice",choices=itypes,
-                      help="input type: '" + "', '".join(str(itypes)) + 
+                      default='auto', type="choice",choices=itypes,
+                      help="input type: '" + "', '".join(itypes) + 
                       "' [default: '%default']")
   group.add_option("--cclib_parser",dest="cclib_parser",
                       type="string",
@@ -231,19 +231,11 @@ def init_parser():
 
   (kwargs, args) = parser.parse_args()
 
-  if len(args) == 1 and args[0] == 'test':
-    from orbkit.test import test
-    test()
-
   # Print the licence, if requested
   if kwargs.show_lgpl:
     print(lgpl.replace('\nThis file is part of orbkit.\n',''))
     sys.exit(0)
   
-  # Print help if no input file has been set
-  if kwargs.filename == '':
-    parser.print_help()
-    sys.exit(1)
   if kwargs.otype is None:
     kwargs.otype = ['h5']
   for i,j in vars(kwargs).items():
@@ -251,9 +243,14 @@ def init_parser():
   
   # Check the options for compatibility and correctness
   check_options(error=parser.error,
-                        interactive=interactive,
-                        info=False)
+                interactive=interactive,
+                info=False,
+                check_io=(not len(args)))
   
+  if len(args) and args[0] == 'test':
+    from orbkit.test import test
+    test()
+
   return
   # init_parser 
 
@@ -289,6 +286,7 @@ def check_options(error=raise_error,display=print_message,
   #--- Input/Output Options ---#
   if check_io:
     # Look for the input file
+
     setattr(thismodule,'filename',check_if_exists(filename, 
                           what='filename for the input file', 
                           interactive=interactive,
@@ -301,6 +299,8 @@ def check_options(error=raise_error,display=print_message,
     if itype == 'cclib' and cclib_parser is None:
       error('The input type cclib requires the specification of parser, ' + 
             'e.g., --cclib_parser=Gaussian')
+    if itype == 'auto':
+      itype = None
     
     fid_base = os.path.splitext(filename)[0]
     

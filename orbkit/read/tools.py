@@ -18,9 +18,9 @@ nist_file = path.join(path.dirname(path.realpath(__file__)),
 # see http://physics.nist.gov/cgi-bin/Compositions/stand_alone.pl?ele=&all=all&ascii=ascii2&isotype=some
 
 def descriptor_from_file(filename, index=0):
-  from .tar import get_tar_type, get_file_from_tar
+  from .tar import is_tar_file, get_file_from_tar
 
-  if get_tar_type(filename):
+  if is_tar_file(filename):
     fname, _ = get_file_from_tar(filename, index=index)
   else:
     fname = open(filename, 'r')
