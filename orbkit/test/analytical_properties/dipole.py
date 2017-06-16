@@ -11,10 +11,14 @@ filepath = os.path.join(folder, 'h2o_rhf_sph.molden')
 qc = read.main_read(filepath, all_mo=True)
 dip = get_dipole_moment(qc,component=['x','y','z'])
 
-equal(dip, [0.00000000e+00,  -1.01130147e-16,   8.17259184e-01])
+ref_dip = [0.00000000e+00,  -1.01130147e-16,   8.17259184e-01]
+equal(dip, ref_dip)
+
+qc.geo_spec += numpy.array([1,1,0])
+dip = get_dipole_moment(qc,component=['x','y','z'])
+equal(dip, ref_dip)
 
 #Slightly move one atom and calculate dipoles again
 qc.geo_spec[1] += numpy.array([1,1,0])
 dip = get_dipole_moment(qc,component=['x','y','z'])
-
-equal(dip, [-0.21150947, -0.66894653,  1.09887067])
+equal(dip, [0.25214432, -0.20529275,  1.09887067])
