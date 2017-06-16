@@ -2,17 +2,40 @@
 Some tools needed by Orbkit functions
 '''
 
-from orbkit.display import display
 from os import path
 import numpy
+
+from orbkit.display import display
 from orbkit.tools import lquant
 from orbkit.units import u2me
+from orbkit import options
+from orbkit import analytical_integrals
 
 nist_mass = None
 # Standard atomic masses as "Linearized ASCII Output", see http://physics.nist.gov
 nist_file = path.join(path.dirname(path.realpath(__file__)),
                       '../supporting_data/Atomic_Weights_NIST.html')
 # see http://physics.nist.gov/cgi-bin/Compositions/stand_alone.pl?ele=&all=all&ascii=ascii2&isotype=some
+
+def descriptor_from_file(filename, index=0):
+  from .tar import get_tar_type, get_file_from_tar
+
+  if get_tar_type(filename):
+    fname, _ = get_file_from_tar(filename, index=index)
+  else:
+    fname = open(filename, 'r')
+  return fname
+
+def check_mo_norm(qc):
+  geo_spec = qc.geo_spec
+  ao_spec = qc.ao_spec
+  ao_spherical = qc.ao_spherical
+
+  aoom = analytical_integrals.get_ao_overlap(geo_spec, geo_spec, ao_spec, ao_spherical)
+  moom = analytical_integrals.get_mo_overlap_matrix(mo_spec, mo_spec, aoom, numproc=options.numproc)
+
+  deviation = numpy.linalg.norm(moom - numpy.eye(len(moom)))
+  return deviation
 
 def basissize(types, cart_spher):
   assert cart_spher in ['cartesian', 'pure'], 'Must specify eigther cartesian or pure spherical harmonics'

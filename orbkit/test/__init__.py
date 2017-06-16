@@ -11,7 +11,9 @@ import sys
 import shutil
 
 tests = ['units',
+         'analytical_properties/analytical_integral_norm',
          'read/find_filetype',
+         'read/read_multiple_input_files',
          'read/specific_readers',
          'detci/read/detci_readers']
 

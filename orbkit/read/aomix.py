@@ -6,14 +6,17 @@ from orbkit.qcinfo import QCinfo
 from orbkit.core import l_deg, lquant
 from orbkit.display import display
 
-def read_aomix(filename, all_mo=False, spin=None, i_md=-1, interactive=True,
+from .tools import descriptor_from_file
+
+def read_aomix(fname, all_mo=False, spin=None, i_md=-1, interactive=True,
                created_by_tmol=True, **kwargs):
   '''Reads all information desired from a aomix file.
   
   **Parameters:**
   
-    filename : str
-      Specifies the filename for the input file.
+  fname: str, file descriptor
+    Specifies the filename for the input file.
+    fname can also be used with a file descriptor instad of a filename.
     all_mo : bool, optional
       If True, all molecular orbitals are returned.
     spin : {None, 'alpha', or 'beta'}, optional
@@ -34,9 +37,16 @@ def read_aomix(filename, all_mo=False, spin=None, i_md=-1, interactive=True,
   
   aomix_regex = re.compile(r"\[[ ]{,}[Aa][Oo][Mm]ix[ ]+[Ff]ormat[ ]{,}\]")
 
-  fid    = open(filename,'r')      # Open the file
-  flines = fid.readlines()         # Read the WHOLE file into RAM
-  fid.close()                      # Close the file
+
+  if isinstance(fname, str):
+    filename = fname
+    fname = descriptor_from_file(filename, index=0)
+  else:
+    filename = fname.name
+
+  flines = fname.readlines()       # Read the WHOLE file into RAM
+  if isinstance(fname, str):
+    fname.close()                    # Leave existing file descriptors alive
   
   # Is this really a aomix file? 
   if not '[AOMix Format]\n' in flines:

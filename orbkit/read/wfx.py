@@ -1,15 +1,19 @@
+import numpy
+
 from orbkit.read.tools import spin_check
 from orbkit.qcinfo import QCinfo
 from orbkit.core import exp_wfn
-import numpy
 
-def read_wfx(filename, all_mo=False, spin=None, **kwargs):
+from .tools import descriptor_from_file
+
+def read_wfx(fname, all_mo=False, spin=None, **kwargs):
   '''Reads all information desired from a wfn file.
   
   **Parameters:**
   
-    filename : str
+    fname: str, file descriptor
       Specifies the filename for the input file.
+      fname can also be used with a file descriptor instad of a filename.
     all_mo : bool, optional
       If True, all molecular orbitals are returned.
     spin : {None, 'alpha', or 'beta'}, optional
@@ -28,9 +32,15 @@ def read_wfx(filename, all_mo=False, spin=None, **kwargs):
     exp_list.extend(j)
   exp_list = numpy.array(exp_list,dtype=numpy.int64)
   
-  fid    = open(filename,'r')      # Open the file
-  flines = fid.readlines()         # Read the WHOLE file into RAM
-  fid.close()                      # Close the file
+  if isinstance(fname, str):
+    filename = fname
+    fname = descriptor_from_file(filename, index=0)
+  else:
+    filename = fname.name
+
+  flines = fname.readlines()       # Read the WHOLE file into RAM
+  if isinstance(fname, str):
+    fname.close()                    # Leave existing file descriptors alive
   
   is_valid = False
   for il in range(len(flines)):

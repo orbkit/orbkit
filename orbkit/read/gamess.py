@@ -1,11 +1,14 @@
-def read_gamess(filename, all_mo=False, spin=None, read_properties=False,
+from .tools import descriptor_from_file
+
+def read_gamess(fname, all_mo=False, spin=None, read_properties=False,
                 **kwargs):
   '''Reads all information desired from a Gamess-US output file.
   
   **Parameters:**
   
-    filename : str
-      Specifies the filename for the input file.
+  fname: str, file descriptor
+    Specifies the filename for the input file.
+    fname can also be used with a file descriptor instad of a filename.
     all_mo :   bool, optional
       If True, all molecular orbitals are returned.
   
@@ -15,9 +18,15 @@ def read_gamess(filename, all_mo=False, spin=None, read_properties=False,
         See :ref:`Central Variables` for details.
   '''
   
-  fid    = open(filename,'r')      # Open the file
-  flines = fid.readlines()         # Read the WHOLE file into RAM
-  fid.close()                      # Close the filename
+  if isinstance(fname, str):
+    filename = fname
+    fname = descriptor_from_file(filename, index=0)
+  else:
+    filename = fname.name
+
+  flines = fname.readlines()       # Read the WHOLE file into RAM
+  if isinstance(fname, str):
+    fname.close()                    # Leave existing file descriptors alive
   
   # Initialize the variables 
   qc = QCinfo()

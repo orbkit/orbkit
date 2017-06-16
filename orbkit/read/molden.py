@@ -1,22 +1,26 @@
-from orbkit.qcinfo import QCinfo
-from orbkit.display import display
 import numpy
 import re
+
+from orbkit.qcinfo import QCinfo
+from orbkit.display import display
 from orbkit.core import l_deg, lquant
 from orbkit.read.tools import get_ao_spherical
+
+from .tools import descriptor_from_file
 
 '''
 New Molden interface
 '''
 
-def read_molden(filename, all_mo=False, spin=None, i_md=-1, interactive=True,
+def read_molden(fname, all_mo=False, spin=None, i_md=-1, interactive=True,
                 **kwargs):
   '''Reads all information desired from a molden file.
   
   **Parameters:**
   
-    filename : str
+    fname: str, file descriptor
       Specifies the filename for the input file.
+      fname can also be used with a file descriptor instad of a filename.
     all_mo : bool, optional
       If True, all molecular orbitals are returned.
     spin : {None, 'alpha', or 'beta'}, optional
@@ -34,8 +38,15 @@ def read_molden(filename, all_mo=False, spin=None, i_md=-1, interactive=True,
 
   molden_regex = re.compile(r"\[[ ]{,}[Mm]olden[ ]+[Ff]ormat[ ]{,}\]")
 
-  with open(filename, 'r') as fd:
-    flines = fd.readlines()
+  if isinstance(fname, str):
+    filename = fname
+    fname = descriptor_from_file(filename, index=0)
+  else:
+    filename = fname.name
+
+  flines = fname.readlines()       # Read the WHOLE file into RAM
+  if isinstance(fname, str):
+    fname.close()                    # Leave existing file descriptors alive
   
   def check_sel(count,i,interactive=False):
     if count == 0:

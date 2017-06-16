@@ -22,16 +22,18 @@ Example for the Execution::
                                       # options.outputname here.)
 
   # Start reading and ordering routine.
-  order_using_analytical_overlap(fid_list,itype='molden')
+  order_using_analytical_overlap(fid_list)
 '''
 
 from copy import deepcopy
 import numpy
 from time import time
 
-from orbkit.read import main_read
 from orbkit.display import display,init_display
 from orbkit.analytical_integrals import get_ao_overlap, get_mo_overlap_matrix
+
+from .tar import get_tar_type, get_all_files_from_tar
+from . import main_read
 
 geo_spec_all  = [] #: Contains all molecular geometries, i.e., :literal:`geo_spec`. (See :ref:`Central Variables` for details.)
 geo_info      = [] #: See :ref:`Central Variables` for details.
@@ -48,14 +50,14 @@ mo_coeff_tck  = []
 mo_energy_tck = []
 mo_occ_tck    = []
 
-def read(fid_list,itype='molden',all_mo=True,nosym=False,**kwargs):
+def read(fid_list,itype=None,all_mo=True,nosym=False,**kwargs):
   '''Reads a list of input files.
   
   **Parameters:**
   
     fid_list : list of str
       List of input file names.
-    itype : str, choices={'molden', 'gamess', 'gaussian.log', 'gaussian.fchk'}
+    itype : str, choices={None, 'tar', 'molden', 'gamess', 'gaussian.log', 'gaussian.fchk'}
         Specifies the type of the input files.
   
   **Global Variables:**
@@ -75,10 +77,16 @@ def read(fid_list,itype='molden',all_mo=True,nosym=False,**kwargs):
   
   sym_list = {}
   n_ao = {}
+
+  #Check if fname poits to a tar archive and
+  #read all files from archive if that is the case 
+  if get_tar_type(fid_list):
+    fid_list, itypes = get_all_files_from_tar(fid_list)
+
   n_r = len(fid_list)
   
-  for i,filename in enumerate(fid_list):
-    qc = main_read(filename, itype=itype, all_mo=all_mo,**kwargs)
+  for i,fname in enumerate(fid_list):
+    qc = main_read(fname, itype=itypes[i], all_mo=all_mo, **kwargs)
     # Geo Section
     if i > 0 and (geo_old != qc.geo_info).sum():
       raise IOError('qc.geo_info has changed!')
@@ -175,7 +183,7 @@ def get_extrapolation(r1,r2,mo_coeff,deg=1,grid1d=None):
         epol[i,j] = numpy.poly1d(z)(grid1d[r2])
   return epol
 
-def order_using_analytical_overlap(fid_list,itype='molden',deg=0,numproc=1,
+def order_using_analytical_overlap(fid_list,itype=None,deg=0,numproc=1,
                                    **kwargs):
   '''Performs an ordering routine using analytical overlap integrals between 
   molecular orbitals. Set fid_list to None to omit the reading of input files.
@@ -188,7 +196,7 @@ def order_using_analytical_overlap(fid_list,itype='molden',deg=0,numproc=1,
   
   fid_list : list of str or None
     If not None, it contains the list of input file names.
-  itype : str, choices={'molden', 'gamess', 'gaussian.log', 'gaussian.fchk'}
+  itype : str, choices={None, 'tar', 'molden', 'gamess', 'gaussian.log', 'gaussian.fchk'}
     Specifies the type of the input files.
   deg : int, optional
     If greater than zero, specifies the degree of the extrapolation polynomial
@@ -298,7 +306,7 @@ def order_using_analytical_overlap(fid_list,itype='molden',deg=0,numproc=1,
   
   return index_list, mo_overlap
 
-def order_using_extrapolation(fid_list,itype='molden',deg=1,
+def order_using_extrapolation(fid_list,itype=None,deg=1,
                               use_mo_values=False,matrix=None,**kwargs):
   '''Performs an ordering routine using extrapolation of quantities related to 
   the molecular orbitals. Set fid_list to None to omit the reading of input 
@@ -312,7 +320,7 @@ def order_using_extrapolation(fid_list,itype='molden',deg=1,
   
   fid_list : list of str or None
     If not None, it contains the list of input file names.
-  itype : str, choices={'molden', 'gamess', 'gaussian.log', 'gaussian.fchk'}
+  itype : str, choices={None, 'tar', 'molden', 'gamess', 'gaussian.log', 'gaussian.fchk'}
     Specifies the type of the input files.
   deg : int
     Specifies the degree of the extrapolation polynomial.
