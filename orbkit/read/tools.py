@@ -17,11 +17,11 @@ nist_file = path.join(path.dirname(path.realpath(__file__)),
                       '../supporting_data/Atomic_Weights_NIST.html')
 # see http://physics.nist.gov/cgi-bin/Compositions/stand_alone.pl?ele=&all=all&ascii=ascii2&isotype=some
 
-def descriptor_from_file(filename, index=0):
+def descriptor_from_file(filename, index=0, ci_descriptor=False):
   from .tar import is_tar_file, get_file_from_tar
 
   if is_tar_file(filename):
-    fname, _ = get_file_from_tar(filename, index=index)
+    fname, _ = get_file_from_tar(filename, index=index, ci_descriptor=ci_descriptor)
   else:
     fname = open(filename, 'r')
   return fname

@@ -99,7 +99,7 @@ def find_itype(fname):
     - Gaussian log
     - AOMix
   '''
-  
+
   #Don't like this was_str stuff... but I don't know what to do
   if isinstance(fname, str):
     filename = fname
@@ -108,32 +108,26 @@ def find_itype(fname):
   else:
     filename = fname.name
     was_str = False
-
+  
   extensions = ['fchk', 'wfx', 'wfn']
   if filename.split('.')[-1].lower() in extensions:
     return filename.split('.')[-1]
-
+  
   molden_regex = re.compile(r"\[[ ]{,}[Mm]olden[ ]+[Ff]ormat[ ]{,}\]")
   gamess_regex = re.compile(r"[Gg][Aa][Mm][Ee][Ss][Ss]") #This might be too weak - Can someone who knows Gamess please check?
   gaussian_regex = re.compile(r"[Cc]opyright[,\s\(\)c0-9]+[Gg]aussian\s{,},\s+Inc.")
   aomix_regex = re.compile(r"\[[ ]{,}[Aa][Oo][Mm]ix[ ]+[Ff]ormat[ ]{,}\]")
   
   regexes = {'molden': molden_regex, 'gamess': gamess_regex, 'gaussian_log': gaussian_regex, 'aomix': aomix_regex}
-
+  
   itypes = ['molden', 'gamess', 'gaussian_log', 'aomix']  
-
+  
   text = fname.read()
   for regname in itypes:
     if regexes[regname].search(text):
       return regname
-
+  
   if was_str:
     fname.close()
-
+  
   raise NotImplementedError('File format not reccognized or reader not implemented!')
-
-
-
-
-
-

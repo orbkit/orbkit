@@ -39,7 +39,7 @@ def gamess_tddft(fname,select_state=None,threshold=0.0,**kwargs):
 
   if isinstance(fname, str):
     filename = fname
-    fname = descriptor_from_file(filename, index=0)
+    fname = descriptor_from_file(filename, index=0, ci_descriptor=True)
   else:
     filename = fname.name
 

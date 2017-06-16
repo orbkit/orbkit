@@ -38,7 +38,7 @@ def molpro_mcscf(fname,select_run=0,threshold=0.0,**kwargs):
 
   if isinstance(fname, str):
     filename = fname
-    fname = descriptor_from_file(filename, index=0)
+    fname = descriptor_from_file(filename, index=0, ci_descriptor=True)
   else:
     filename = fname.name
 
