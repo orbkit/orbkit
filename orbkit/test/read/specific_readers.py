@@ -21,13 +21,14 @@ options.quiet = True
 #If and when we make the drop Python 2.6 support we can use OrderedDicts
 #and iterate directly over files - in the meantime this keeps te order of tests
 #constant
-filetypes = ['wfn', 'molden', 'wfx', 'aomix', 'fchk', 'gaussian_log']
+filetypes = ['wfn', 'molden', 'wfx', 'aomix', 'fchk', 'gaussian_log', 'tar.gz']
 
 files = {'fchk': 'h2o_rhf_cart.fchk',
          'gaussian_log': 'h2o_rhf_cart.inp.log',
          'molden': 'h2o_rhf_sph.molden',
          'aomix': 'aomix.in',
          'wfx': '1.wfx',
+         'tar.gz': 'NaCl_molden_files.tar.gz',
          'wfn': 'water_gamess-us.wfn'}
 
 readers = {'fchk': read_gaussian_fchk,
@@ -35,6 +36,7 @@ readers = {'fchk': read_gaussian_fchk,
            'molden': read_molden,
            'aomix': read_aomix,
            'wfx': read_wfx,
+           'tar.gz': read_molden,
            'wfn': read_wfn}
 
 refeigen = {'fchk': numpy.array([-2.05704730E+01, -1.27755361E+00, -6.41980010E-01, -5.33424332E-01]),
@@ -42,6 +44,7 @@ refeigen = {'fchk': numpy.array([-2.05704730E+01, -1.27755361E+00, -6.41980010E-
             'molden': numpy.array([-20.5692, -1.2772, -0.6416, -0.5331]),
             'aomix': numpy.array([-20.57047,  -1.27755,  -0.64198,  -0.53342]),
             'wfx': numpy.array([-2.06529440471407E+01, -1.17607391494576E+00, -5.09563645324521E-01, -4.41339273759071E-01]),
+            'tar.gz': numpy.array([-104.9469, -40.5349, -10.6711, -8.1357]),
             'wfn': numpy.array([-20.56804075, -1.27715750, -0.64186203, -0.53341030])}
 
 refexp = {'fchk': numpy.array([1.30100000E+01, 1.22000000E-01, 7.27000000E-01, 1.17200000E+04]),
@@ -49,12 +52,14 @@ refexp = {'fchk': numpy.array([1.30100000E+01, 1.22000000E-01, 7.27000000E-01, 1
           'molden': numpy.array([0.1301000000E+02, 0.1301000000E+02, 0.7270000000E+00, 0.1301000000E+02]),
           'aomix': numpy.array([0.13010000000000E+02,  0.12200000000000E+0,  0.72700000000000E+00,  0.11720000000000E+05]),
           'wfx': numpy.array([2.26617677850000E+03, 3.40870101910000E+02, 7.73631351670000E+01, 2.14796449400000E+01]),
+          'tar.gz': numpy.array([0.4230000000E+06, 0.4230000000E+06, 0.4230000000E+06, 0.4230000000E+06]),
           'wfn': numpy.array([1.1720000E+04, 1.7590000E+03, 4.0080000E+02, 1.1370000E+02])}
 
 refcontrac = {'fchk': numpy.array([3.34987264E-02, 1.00000000E+00, 1.00000000E+00, 7.11864434E-04]),
               'gaussian_log': numpy.array([0.3349872639E-01, 0.1000000000E+01, 0.1000000000E+01, 0.7118644339E-03]),
               'molden': numpy.array([0.1968498999E-01, 0.0000000000E+00, 0.1000000000E+01, 0.1968498999E-01]),
               'aomix': numpy.array([0.33498726389998E-01,  0.10000000000000E+01,  0.10000000000000E+01,  0.70964594651845E-03]),
+              'tar.gz': numpy.array([0.1806182306E-04, -0.4406529065E-05, 0.6630189916E-06, 0.0000000000E+00]),
               'wfx': numpy.array([1, 1, 1, 1]),
               'wfn': numpy.array([1, 1, 1, 1])}
 
