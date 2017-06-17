@@ -3,6 +3,7 @@ Tar interface for ORBKIT readers
 '''
 
 import tarfile
+import numpy
 
 from .tools import find_itype
 
@@ -16,7 +17,7 @@ def is_tar_file(infile):
   else:
     return None
 
-def get_all_files_from_tar(infile):
+def get_all_files_from_tar(infile, sort=False):
   files = []
   itypes = []
 
@@ -28,6 +29,14 @@ def get_all_files_from_tar(infile):
       one_file = fd.extractfile(tarinfo)
       itypes.append(itype)
       files.append(one_file)
+  files = numpy.array(files)
+  itypes = numpy.array(itypes)
+  if sort:
+    filenames = numpy.array([f.name for f in files], dtype=str)
+    si = numpy.argsort(filenames)
+    files = files[si]
+    itypes = itypes[si]
+    del filenames, si
   return files, itypes
 
 #The ci_descriptor attribute is a hack which becomes
@@ -41,7 +50,7 @@ def get_file_from_tar(infile, index=0, ci_descriptor=False):
   for tarinfo in fd:
     if tarinfo.isreg() and i == index:
       one_file = fd.extractfile(tarinfo)
-      itype = ci_descriptor
+      itype = None
       if not ci_descriptor:
         itype = find_itype(one_file)
       one_file = fd.extractfile(tarinfo)

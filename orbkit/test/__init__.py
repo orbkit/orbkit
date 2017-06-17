@@ -15,6 +15,7 @@ tests = ['units',
          'read/read_multiple_input_files',
          'read/specific_readers',
          'detci/read/detci_readers',
+         'qcinfo/new_qcinfo_save_function',
          'analytical_properties/analytical_integral_norm',
          'analytical_properties/dipole',
          'grid_based/rho_compute']
@@ -71,8 +72,3 @@ def test():
   clean(testdir)
 
   sys.exit(len(results.errors + results.failures))
-
-
-
-
-

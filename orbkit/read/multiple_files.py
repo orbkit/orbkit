@@ -50,7 +50,7 @@ mo_coeff_tck  = []
 mo_energy_tck = []
 mo_occ_tck    = []
 
-def read(fid_list,itype=None,all_mo=True,nosym=False,**kwargs):
+def read(fid_list,itype=None,all_mo=True,nosym=False, sort=True, **kwargs):
   '''Reads a list of input files.
   
   **Parameters:**
@@ -58,7 +58,9 @@ def read(fid_list,itype=None,all_mo=True,nosym=False,**kwargs):
     fid_list : list of str
       List of input file names.
     itype : str, choices={None, 'tar', 'molden', 'gamess', 'gaussian.log', 'gaussian.fchk'}
-        Specifies the type of the input files.
+      Specifies the type of the input files.
+    sort: bool
+      Sort input files by name.  
   
   **Global Variables:**
   
@@ -81,7 +83,7 @@ def read(fid_list,itype=None,all_mo=True,nosym=False,**kwargs):
   #Check if fname poits to a tar archive and
   #read all files from archive if that is the case 
   if is_tar_file(fid_list):
-    fid_list, itypes = get_all_files_from_tar(fid_list)
+    fid_list, itypes = get_all_files_from_tar(fid_list, sort=sort)
 
   n_r = len(fid_list)
   
@@ -98,9 +100,9 @@ def read(fid_list,itype=None,all_mo=True,nosym=False,**kwargs):
         numpy.alltrue([numpy.allclose(ao_old[j]['coeffs'],qc.ao_spec[j]['coeffs'])
                       for j in range(len(ao_old))]
                       )):
-      raise IOError('qc.ao_spec has changed!')
+        raise IOError('qc.ao_spec has changed!')
     else:
-      ao_old = deepcopy(qc.ao_spec)
+        ao_old = deepcopy(qc.ao_spec)
     # MO Section
     sym = {}    
     MO_Spec.append(qc.mo_spec)
@@ -113,7 +115,6 @@ def read(fid_list,itype=None,all_mo=True,nosym=False,**kwargs):
         sym[key[1]] = 0
         n_ao[key[1]] = len(qc.mo_spec[0]['coeffs'])
       sym[key[1]] += 1
-    
     for k,it in sym.items():
       if k in sym_list:
         sym_list[k] = max(sym_list[k],it)
@@ -125,14 +126,14 @@ def read(fid_list,itype=None,all_mo=True,nosym=False,**kwargs):
   ao_spec = qc.ao_spec
   ao_spherical = qc.ao_spherical
   # Presorting of the MOs according to their symmetry
-  
+ 
   sym = []
   for k,it in sym_list.items():
     sym.append((k,len(sym)))
     mo_coeff_all.append(numpy.zeros((n_r,it,n_ao[k])))
     mo_energy_all.append(numpy.zeros((n_r,it)))
     mo_occ_all.append(numpy.zeros((n_r,it)))
-  
+ 
   sym = dict(sym)
   
   for i,spec in enumerate(MO_Spec):
@@ -144,6 +145,8 @@ def read(fid_list,itype=None,all_mo=True,nosym=False,**kwargs):
       mo_coeff_all[sym[k]][i,index,:] = mo['coeffs']
       mo_energy_all[sym[k]][i,index] = mo['energy']
       mo_occ_all[sym[k]][i,index] = mo['occ_num']
+
+  return
 
 def get_extrapolation(r1,r2,mo_coeff,deg=1,grid1d=None):
   '''Extrapolates the molecular orbital coefficients :literal:`mo_coeff` 
@@ -233,7 +236,6 @@ def order_using_analytical_overlap(fid_list,itype=None,deg=0,numproc=1,
   
   mo_overlap = [[] for i in sym.keys()]
   index_list = [[] for i in sym.keys()]
-
   for s in sym.values():
     shape = numpy.shape(mo_coeff_all[s])
     index_list[s] = numpy.ones((shape[0],shape[1]),dtype=int)
@@ -244,14 +246,13 @@ def order_using_analytical_overlap(fid_list,itype=None,deg=0,numproc=1,
   for rr in iterate:
     r1 = rr-1
     r2 = rr
-    
+
     if (deg is None) or (deg > 0 and r1 >= deg):
       ao_overlap = get_ao_overlap(geo_spec_all[r2],geo_spec_all[r2],ao_spec,
                                   ao_spherical=ao_spherical)
     else:
       ao_overlap = get_ao_overlap(geo_spec_all[r1],geo_spec_all[r2],ao_spec,
                                   ao_spherical=ao_spherical)
-    
     cs = 0
     for s in sym.values():
       mo_coeff = mo_coeff_all[s]

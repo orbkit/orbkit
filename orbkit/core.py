@@ -27,8 +27,7 @@ License along with orbkit.  If not, see <http://www.gnu.org/licenses/>.
 import time
 import numpy
 
-from orbkit.tools import *
-
+from .tools import *
 from multiprocessing import Pool
 
 # Import orbkit modules

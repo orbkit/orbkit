@@ -30,10 +30,11 @@ License along with orbkit.  If not, see <http://www.gnu.org/licenses/>.
 import numpy
 from multiprocessing import Pool
 
-from orbkit import cy_overlap
-from orbkit.core import exp,lquant,get_lxlylz,get_cart2sph,l_deg
-from orbkit.core import create_mo_coeff,validate_drv,require
-from orbkit.omp_functions import slicer
+from . import cy_overlap
+from .tools import get_lxlylz
+from .core import exp,lquant, get_cart2sph,l_deg
+from .core import create_mo_coeff, validate_drv,require
+from .omp_functions import slicer
 
 def get_ao_overlap(coord_a,coord_b,ao_spec,ao_spherical=None,lxlylz_b=None,
                    drv=None):

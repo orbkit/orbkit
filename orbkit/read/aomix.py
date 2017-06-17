@@ -1,12 +1,12 @@
 import re
 import numpy
 
-from orbkit.read.tools import spin_check
+from orbkit.tools import get_lxlylz
 from orbkit.qcinfo import QCinfo
 from orbkit.core import l_deg, lquant
 from orbkit.display import display
 
-from .tools import descriptor_from_file
+from .tools import descriptor_from_file, spin_check
 
 def read_aomix(fname, all_mo=False, spin=None, i_md=-1, interactive=True,
                created_by_tmol=True, **kwargs):
@@ -299,7 +299,7 @@ def read_aomix(fname, all_mo=False, spin=None, i_md=-1, interactive=True,
     display('in order to get normalized orbitals.')
     
     # Convert MO coefficients
-    from orbkit.analytical_integrals import create_mo_coeff, get_lxlylz
+    from orbkit.analytical_integrals import create_mo_coeff
     def dfact(n):
       if n <= 0:
         return 1
@@ -314,6 +314,6 @@ def read_aomix(fname, all_mo=False, spin=None, i_md=-1, interactive=True,
         mo[:,i] *= numpy.sqrt(norm)   
     for ii in range(len(qc.mo_spec)):
       qc.mo_spec[ii]['coeffs'] = mo[ii]
-  
+ 
   return qc
   # read_aomix

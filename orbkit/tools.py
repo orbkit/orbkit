@@ -134,18 +134,34 @@ def get_cart2sph(l,m):
   '''
   return cart2sph[l][l+m]
 
+def validate_drv(drv):
+  if drv is None or drv == 'None' or drv == '': return 0
+  elif drv == 'x': return 1
+  elif drv == 'y': return 2
+  elif drv == 'z': return 3
+  elif drv == 'xx' or drv == 'x2': return 4
+  elif drv == 'yy' or drv == 'y2': return 5
+  elif drv == 'zz' or drv == 'z2': return 6
+  elif drv == 'xy' or drv == 'yx': return 7
+  elif drv == 'xz' or drv == 'zx': return 8
+  elif drv == 'yz' or drv == 'zy': return 9
+  elif not (isinstance(drv,int) and 0 <= drv <= 9):
+    raise ValueError("The selection `drv=%s` is not valid!"  % drv)
+  else:
+    return drv
+
 def get_lxlylz(ao_spec,get_assign=False,bincount=False,get_label=False):
   '''Extracts the exponents lx, ly, lz for the Cartesian Gaussians.
-  
+
   **Parameters:**
-  
-  ao_spec : 
+
+  ao_spec :
     See :ref:`Central Variables` in the manual for details.
   get_assign : bool, optional
     Specifies, if the index of the atomic orbital shall be returned as well.
-  
+
   **Returns:**
-  
+
   lxlylz : numpy.ndarray, dtype=numpy.intc, shape = (NAO,3)
     Contains the expontents lx, ly, lz for the Cartesian Gaussians.
   assign : list of int, optional
@@ -168,24 +184,8 @@ def get_lxlylz(ao_spec,get_assign=False,bincount=False,get_label=False):
     if bincount:
       assign = numpy.bincount(assign)
     return (lxlylz,assign)
-  
-  return lxlylz
 
-def validate_drv(drv):
-  if drv is None or drv == 'None' or drv == '': return 0
-  elif drv == 'x': return 1
-  elif drv == 'y': return 2
-  elif drv == 'z': return 3
-  elif drv == 'xx' or drv == 'x2': return 4
-  elif drv == 'yy' or drv == 'y2': return 5
-  elif drv == 'zz' or drv == 'z2': return 6
-  elif drv == 'xy' or drv == 'yx': return 7
-  elif drv == 'xz' or drv == 'zx': return 8
-  elif drv == 'yz' or drv == 'zy': return 9
-  elif not (isinstance(drv,int) and 0 <= drv <= 9):
-    raise ValueError("The selection `drv=%s` is not valid!"  % drv)
-  else:
-    return drv
+  return lxlylz
 
 def each_ao_is_normalized(ao_spec):
   is_normalized = []

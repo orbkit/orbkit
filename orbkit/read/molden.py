@@ -328,7 +328,7 @@ def read_molden(fname, all_mo=False, spin=None, i_md=-1, interactive=True,
   qc.format_geo()
   
   # Check the normalization
-  from orbkit.analytical_integrals import get_ao_overlap,get_lxlylz
+  from orbkit.analytical_integrals import get_ao_overlap
   norm = numpy.diagonal(get_ao_overlap(qc.geo_spec,qc.geo_spec,qc.ao_spec))
   
   if sum(numpy.abs(norm-1.)) > 1e-8:
@@ -344,7 +344,7 @@ def read_molden(fname, all_mo=False, spin=None, i_md=-1, interactive=True,
   
     if cartesian_basis[i_md]:
       from orbkit.cy_overlap import ommited_cca_norm
-      cca = ommited_cca_norm(get_lxlylz(qc.ao_spec))
+      cca = ommited_cca_norm(qc.ao_lxlylz)
       for mo in qc.mo_spec:
         mo['coeffs'] *= cca
   
