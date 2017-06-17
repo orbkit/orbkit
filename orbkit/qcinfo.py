@@ -207,10 +207,12 @@ class QCinfo:
                   i for i in self.mo_spec]
   
   def get_mo_energies(self):
-    return copy(self.mo_eig)
+    numpy.array([i['energy'] for i in self.mo_spec])
+    return copy(mo_eig)
   
   def get_mo_occ(self):
-    return copy(self.mo_occ)
+    mo_occ = numpy.array([i['occ_num'] for i in self.mo_spec],dtype=numpy.intc)
+    return copy(mo_occ)
   
   def get_nmoocc(self):
     return sum(self.get_mo_occ())
