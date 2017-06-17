@@ -21,6 +21,11 @@ def read_with_cclib(filename, cclib_parser=None, all_mo=False, spin=None,
         See :ref:`Central Variables` for details.
   '''
   
+  #Maybe we actually don't need this
+  #Can someone check if cclib can handle
+  #file descriptors?
+  assert isinstance(filename, str)
+
   if not isinstance(cclib_parser,str):
     raise IOError('cclib requires the specification of parser, e.g., ' + 
                   'cclib_parser="Gaussian".')

@@ -14,12 +14,11 @@ from orbkit.read.wfn import read_wfn
 from orbkit.read.cclib import read_with_cclib
 from orbkit.display import display
 
-from .tools import descriptor_from_file, check_mo_norm
+from .tools import find_itype, descriptor_from_file, check_mo_norm
 
 readers = {'fchk': read_gaussian_fchk, 'wfx': read_wfx, 'wfn': read_wfn, 
            'cclib': read_with_cclib, 'molden': read_molden, 'gamess': read_gaussian_log, 
            'aomix': read_aomix}
-
 
 def main_read(fname, all_mo=False, spin=None, itype=None, check_norm=False, **kwargs):
   '''
@@ -68,66 +67,3 @@ def main_read(fname, all_mo=False, spin=None, itype=None, check_norm=False, **kw
       raise ValueError('Bad molecular orbital norm: {0:%4e}'.format(deviation))
 
   return qc
-  
-
-def find_itype(fname):
-  '''
-  This function is used by the high-level read
-  to determine what reader to use.
-  Filetypes are determined either by extension or
-  by looking for magic strings within the files.
-  
-  **Parameters:**
-  
-  fname: str, file descriptor
-    Specifies the filename for the input file.
-    fname can also be used with a file descriptor instad of a filename.
-    
-  **Returns:**
-  
-  filetype, str
-    Filetype for the file specified by fname
-  
-  filetypes determied from file extension:
-    - .fchk
-    - .wfx
-    - .wfn
-    
-  filetypes determined from magic strings:
-    - Molden
-    - Gamess US
-    - Gaussian log
-    - AOMix
-  '''
-
-  #Don't like this was_str stuff... but I don't know what to do
-  if isinstance(fname, str):
-    filename = fname
-    fname = descriptor_from_file(filename, index=0)
-    was_str = True
-  else:
-    filename = fname.name
-    was_str = False
-  
-  extensions = ['fchk', 'wfx', 'wfn']
-  if filename.split('.')[-1].lower() in extensions:
-    return filename.split('.')[-1]
-  
-  molden_regex = re.compile(r"\[[ ]{,}[Mm]olden[ ]+[Ff]ormat[ ]{,}\]")
-  gamess_regex = re.compile(r"[Gg][Aa][Mm][Ee][Ss][Ss]") #This might be too weak - Can someone who knows Gamess please check?
-  gaussian_regex = re.compile(r"[Cc]opyright[,\s\(\)c0-9]+[Gg]aussian\s{,},\s+Inc.")
-  aomix_regex = re.compile(r"\[[ ]{,}[Aa][Oo][Mm]ix[ ]+[Ff]ormat[ ]{,}\]")
-  
-  regexes = {'molden': molden_regex, 'gamess': gamess_regex, 'gaussian_log': gaussian_regex, 'aomix': aomix_regex}
-  
-  itypes = ['molden', 'gamess', 'gaussian_log', 'aomix']  
-  
-  text = fname.read()
-  for regname in itypes:
-    if regexes[regname].search(text):
-      return regname
-  
-  if was_str:
-    fname.close()
-  
-  raise NotImplementedError('File format not reccognized or reader not implemented!')

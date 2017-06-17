@@ -17,11 +17,7 @@ folder = os.path.join(tests_home, 'outputs_for_testing')
 options.quiet = True
 
 #Gamess Reader is not tested at this point
-
-#If and when we make the drop Python 2.6 support we can use OrderedDicts
-#and iterate directly over files - in the meantime this keeps te order of tests
-#constant
-filetypes = ['wfn', 'molden', 'wfx', 'aomix', 'fchk', 'gaussian_log', 'tar.gz']
+#We need to test cclib as well
 
 files = {'fchk': 'h2o_rhf_cart.fchk',
          'gaussian_log': 'h2o_rhf_cart.inp.log',
@@ -66,7 +62,7 @@ refcontrac = {'fchk': numpy.array([3.34987264E-02, 1.00000000E+00, 1.00000000E+0
 #I'm not shure that .fchk files are read correctly. Seems good but I
 #don't really know... Can somemone please check?
 
-for j, fname in enumerate(filetypes):
+for fname in files:
   qcinfo = readers[fname](os.path.join(folder, files[fname]))
   e_list = numpy.zeros(4, dtype=float)
   coeffs_list = numpy.zeros(4, dtype=float)

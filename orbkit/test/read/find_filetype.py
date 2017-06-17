@@ -1,4 +1,4 @@
-from orbkit.read.high_level import find_itype
+from orbkit.read.tools import find_itype
 import os, inspect
 
 tests_home = os.path.dirname(inspect.getfile(inspect.currentframe()))

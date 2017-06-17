@@ -17,7 +17,7 @@ qc = read.main_read(filepath, all_mo=True)
 grid.adjust_to_geo(qc, extend=2.0, step=1.5)
 grid.grid_init(is_vector=False)
 
-
+drv = [None,'x','y','z','xx','xy','xz','yy','yz','zz']
 data = []
 for i in range(2):
   if i: grid.grid2vector()
@@ -26,8 +26,8 @@ for i in range(2):
       rho_compute(qc,numproc=options.numproc),
       rho_compute(qc,laplacian=True,slice_length=0)[-1],
       rho_compute(qc,laplacian=True,numproc=options.numproc)[-1],
-      rho_compute(qc,calc_mo=True,drv=[None,'x','y','z','xx','xy','xz','yy','yz','zz'],slice_length=0),
-      rho_compute(qc,calc_mo=True,drv=[None,'x','y','z','xx','xy','xz','yy','yz','zz'],numproc=options.numproc)
+      rho_compute(qc,calc_mo=True,drv=drv,slice_length=0),
+      rho_compute(qc,calc_mo=True,drv=drv,numproc=options.numproc)
       ])
 
 data[1] = [grid.mv2g(d=i) for i in data[1]]

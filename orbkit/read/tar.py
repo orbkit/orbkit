@@ -4,7 +4,7 @@ Tar interface for ORBKIT readers
 
 import tarfile
 
-from orbkit.read.high_level import find_itype
+from .tools import find_itype
 
 def is_tar_file(infile):
   itype = ''
