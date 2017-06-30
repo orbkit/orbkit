@@ -1,4 +1,4 @@
-from orbkit.read.tools import get_ao_spherical
+from orbkit.read.tools import set_ao_spherical
 
 def read_with_cclib(filename, cclib_parser=None, all_mo=False, spin=None, 
                     **kwargs):
@@ -92,7 +92,7 @@ def convert_cclib(ccData, all_mo=False, spin=None):
         cartesian_basis = False
 
     if not cartesian_basis:
-        qc.ao_spherical = []
+        qc.ao_spec.spherical = True
     
     count = 0
     for i,ao in enumerate(qc.ao_spec):
@@ -113,7 +113,7 @@ def convert_cclib(ccData, all_mo=False, spin=None):
             m = p - 1
           else:
             m = int(m[-1])
-          qc.ao_spherical.append([i,(lquant[ao['type']],m)])
+          qc.ao_spec[i]['ao_spherical'].append((lquant[ao['type']],m))
         count += 1
   
   # Converting all information about molecular orbitals
@@ -185,11 +185,11 @@ def convert_cclib(ccData, all_mo=False, spin=None):
     
     c = create_mo_coeff(qc.mo_spec,'').shape[-1]
     if c != c_cart and c == c_sph: # Spherical basis
-      qc.ao_spherical = get_ao_spherical(qc.ao_spec,p=[0,1])
+      set_ao_spherical(qc.ao_spec,p=[0,1])
     elif c != c_cart:
       display('Warning: The basis set type does not match with pure spherical ' +
               'or pure Cartesian basis!') 
-      display('Please specify qc.mo_spec["exp_list"] and/or qc.ao_spherical by your self.')
+      display('Please specify qc.mo_spec["exp_list"] and/or qc.mo_spec["ao_spherical"] by your self.')
   
   # Are all MOs requested for the calculation? 
   if not all_mo:

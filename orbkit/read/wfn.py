@@ -1,5 +1,5 @@
 from orbkit.qcinfo import QCinfo
-from orbkit.core import exp_wfn
+from orbkit.tools import *
 import numpy
 
 from .tools import descriptor_from_file

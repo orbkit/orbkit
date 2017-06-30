@@ -23,7 +23,7 @@ def mulliken(qc):
   '''
   # Calculate AO-overlap matrix
   
-  S = get_ao_overlap(qc.geo_spec,qc.geo_spec,qc.ao_spec,ao_spherical=qc.ao_spherical)
+  S = get_ao_overlap(qc.geo_spec,qc.geo_spec,qc.ao_spec)
 
   # Get MO-coefficients
   mo = create_mo_coeff(qc.mo_spec)
@@ -72,7 +72,7 @@ def lowdin(qc):
       
   '''
   # Calculate AO-overlap matrix
-  S = get_ao_overlap(qc.geo_spec,qc.geo_spec,qc.ao_spec,ao_spherical=qc.ao_spherical)
+  S = get_ao_overlap(qc.geo_spec,qc.geo_spec,qc.ao_spec)
 
   # Get MO-coefficients
   mo = create_mo_coeff(qc.mo_spec)

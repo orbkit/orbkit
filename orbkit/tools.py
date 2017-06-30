@@ -43,7 +43,7 @@ exp.append([(3,0,0), (0,3,0), (0,0,3),
             (1,2,0), (2,1,0), (2,0,1),
             (1,0,2), (0,1,2), (0,2,1),
             (1,1,1)])                   # f orbitals
-    
+      
 exp.append([(4,0,0), (0,4,0), (0,0,4),
             (3,1,0), (3,0,1), (1,3,0),
             (0,3,1), (1,0,3), (0,1,3),
@@ -59,6 +59,7 @@ exp_wfn.append([(3,0,0), (0,3,0), (0,0,3),
                 (1,1,1)])                   # f orbitals     
 
 exp_wfn.append(exp[4]) # g orbitals     
+
 
 '''                                                                             
 Transformation Between Cartesian and (Real) Pure Spherical Harmonic Gaussians   
@@ -150,43 +151,6 @@ def validate_drv(drv):
   else:
     return drv
 
-def get_lxlylz(ao_spec,get_assign=False,bincount=False,get_label=False):
-  '''Extracts the exponents lx, ly, lz for the Cartesian Gaussians.
-
-  **Parameters:**
-
-  ao_spec :
-    See :ref:`Central Variables` in the manual for details.
-  get_assign : bool, optional
-    Specifies, if the index of the atomic orbital shall be returned as well.
-
-  **Returns:**
-
-  lxlylz : numpy.ndarray, dtype=numpy.intc, shape = (NAO,3)
-    Contains the expontents lx, ly, lz for the Cartesian Gaussians.
-  assign : list of int, optional
-    Contains the index of the atomic orbital in ao_spec.
-  '''
-  lxlylz = []
-  assign = []
-  for sel_ao in range(len(ao_spec)):
-    if 'exp_list' in ao_spec[sel_ao].keys():
-      l = ao_spec[sel_ao]['exp_list']
-    else:
-      l = exp[lquant[ao_spec[sel_ao]['type']]]
-    lxlylz.extend(l)
-    assign.extend([sel_ao]*len(l))
-  lxlylz = numpy.array(lxlylz,dtype=numpy.intc,order='C')
-  assign = numpy.array(assign,dtype=numpy.intc,order='C')
-  if get_label:
-    return 1000*assign + (lxlylz * numpy.array([100,10,1])).sum(axis=1,dtype=numpy.intc)
-  elif get_assign:
-    if bincount:
-      assign = numpy.bincount(assign)
-    return (lxlylz,assign)
-
-  return lxlylz
-
 def each_ao_is_normalized(ao_spec):
   is_normalized = []
   for sel_ao in range(len(ao_spec)):
@@ -242,7 +206,9 @@ def create_mo_coeff(mo,name='mo'):
 def is_mo_spec(mo):
   '''Checks if :literal:`mo` is of :literal:`mo_spec` type. 
   (See :ref:`Central Variables` for details.)'''
-  if not isinstance(mo,list):
+  #Avoids circular inports:
+  from orbkit.orbitals import MOClass
+  if not isinstance(mo, MOClass):
     return False
   return_val = True
   for i in mo:

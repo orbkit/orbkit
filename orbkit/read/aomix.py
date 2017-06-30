@@ -1,7 +1,6 @@
 import re
 import numpy
 
-from orbkit.tools import get_lxlylz
 from orbkit.qcinfo import QCinfo
 from orbkit.core import l_deg, lquant
 from orbkit.display import display
@@ -307,7 +306,7 @@ def read_aomix(fname, all_mo=False, spin=None, i_md=-1, interactive=True,
         return n * dfact(n-2)
 
     mo = create_mo_coeff(qc.mo_spec)
-    for i,j in enumerate(get_lxlylz(qc.ao_spec)):
+    for i,j in enumerate(qc.ao_spec.get_lxlylz()):
       norm = (dfact(2*j[0] - 1) * dfact(2*j[1] - 1) * dfact(2*j[2] - 1))
       j = sum(j)
       if j >1: 

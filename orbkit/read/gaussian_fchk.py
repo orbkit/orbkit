@@ -73,8 +73,9 @@ def read_gaussian_fchk(fname, all_mo=False, spin=None, **kwargs):
   switch = 0
   qc = QCinfo()
   qc.geo_info = [[],[],[]]
+
   if not cartesian_basis:
-    qc.ao_spherical = []
+    qc.ao_spec.spherical = True
   
   # Go through the file line by line 
   for il in range(len(flines)):
@@ -211,9 +212,10 @@ def read_gaussian_fchk(fname, all_mo=False, spin=None, **kwargs):
             l = lquant[ii]
             if not cartesian_basis:
               for m in (range(0,l+1) if l != 1 else [1,0]):
-                qc.ao_spherical.append([count,(l,m)])
+                #Used to be append so last one should be fine
+                qc.ao_spec[index]['ao_spherical'].append((l,m))
                 if m != 0:
-                  qc.ao_spherical.append([count,(l,-m)])
+                  qc.ao_spec[index]['ao_spherical'].append((l,-m))
           elif index is 'atom':
             ii -= 1
           qc.ao_spec[count][index] = ii

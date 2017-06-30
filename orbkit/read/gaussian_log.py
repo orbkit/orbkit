@@ -35,7 +35,7 @@ def read_gaussian_log(fname,all_mo=False,spin=None,orientation='standard',
   
   **Returns:**
   
-    qc (class QCinfo) with attributes geo_spec, geo_info, ao_spec, ao_spherical, mo_spec, etot :
+    qc (class QCinfo) with attributes geo_spec, geo_info, ao_spec, mo_spec, etot :
         See :ref:`Central Variables` for details.
 
 .. [#first] Attention: The MOs in the output are only valid for the standard orientation!
@@ -219,7 +219,7 @@ def read_gaussian_log(fname,all_mo=False,spin=None,orientation='standard',
         if i_ao == c_ao:
           qc.ao_spec = []
           if not cartesian_basis:
-            qc.ao_spherical = []
+            qc.ao_spec.spherical = True
           sec_flag = 'ao_info'
         c_ao += 1
         basis_count = 0
@@ -354,7 +354,7 @@ def read_gaussian_log(fname,all_mo=False,spin=None,orientation='standard',
                 m = 0
               else:
                 m = int(m)
-              qc.ao_spherical.append([i,(l,m)])
+              qc.ao_spec[j]['ao_spherical'].append((l,m))
             for i,j in enumerate(index):
               qc.mo_spec[j]['coeffs'][int(info[0])-1] = float(coeffs[i])
             if int(info[0]) == basis_count:

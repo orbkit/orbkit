@@ -34,7 +34,7 @@ from multiprocessing import Pool
 from orbkit import grid,cy_grid,cy_core
 from orbkit.display import display
 
-def ao_creator(geo_spec,ao_spec,ao_spherical=None,drv=None,
+def ao_creator(geo_spec,ao_spec,drv=None,
                x=None,y=None,z=None,is_vector=None):
   '''Calculates all contracted atomic orbitals or its
   derivatives with respect to a specific variable (e.g. drv = 'x' or drv = 0).
@@ -84,7 +84,7 @@ def ao_creator(geo_spec,ao_spec,ao_spherical=None,drv=None,
   z = require(z, dtype='f') 
   
   geo_spec = require(geo_spec, dtype='f')
-  lxlylz,assign = get_lxlylz(ao_spec,get_assign=True,bincount=True)
+  lxlylz,assign = ao_spec.get_lxlylz(get_assign=True,bincount=True)
   ao_coeffs,pnum_list,atom_indices = prepare_ao_calc(ao_spec)
   
   is_normalized = each_ao_is_normalized(ao_spec)
@@ -97,8 +97,8 @@ def ao_creator(geo_spec,ao_spec,ao_spherical=None,drv=None,
   if 'N' in ao_spec[0]:
     # Renormalize atomic orbital
     ao_list *= ao_spec[0]['N']
-  if not (ao_spherical is None or ao_spherical == []):
-    ao_list = cartesian2spherical(ao_list,ao_spec,ao_spherical)
+  if ao_spec.spherical:
+    ao_list = cartesian2spherical(ao_list,ao_spec)
   
   if not was_vector: return ao_list.reshape((len(ao_list),) + N,order='C')
   return ao_list
@@ -131,7 +131,7 @@ def mo_creator(ao_list,mo_spec):
   return mo_list
 
 
-def cartesian2spherical(ao_list,ao_spec,ao_spherical):
+def cartesian2spherical(ao_list,ao_spec):
   '''Transforms the atomic orbitals from a Cartesian Gaussian basis to a 
   (real) pure spherical harmonic Gaussian basis set.
   
@@ -142,8 +142,6 @@ def cartesian2spherical(ao_list,ao_spec,ao_spherical):
   
   ao_list : numpy.ndarray, shape=((NAO,) + N)
     Contains the NAO atomic orbitals on a grid.  
-  ao_spec,ao_spherical :
-    See :ref:`Central Variables` in the manual for details.
   
   **Returns:**
   
@@ -168,18 +166,16 @@ def cartesian2spherical(ao_list,ao_spec,ao_spherical):
   
   #return ao_list_sph
   
-  
-  
-  lxlylz,assign = get_lxlylz(ao_spec,get_assign=True)
+  lxlylz,assign = ao_spec.get_lxlylz(get_assign=True)
 
   l = [[] for i in ao_spec]
   for i,j in enumerate(assign):
     l[j].append(i) 
   
   shape = list(ao_list.shape)
-  shape[0] = len(ao_spherical)
+  shape[0] = len(ao_spec)
   ao_list_sph = numpy.zeros(shape)
-  for i0,(j0,k0) in enumerate(ao_spherical):
+  for i0, (j0,k0) in enumerate(ao_spec.get_old_ao_spherical()):
     sph0 = get_cart2sph(*k0)
     for c0 in range(len(sph0[0])):
       for i,j in enumerate(l[j0]):
@@ -241,7 +237,6 @@ def slice_rho(xx):
     # All desired information is stored in the Global variable Spec 
     geo_spec = Spec['geo_spec']
     ao_spec = Spec['ao_spec']
-    ao_spherical = Spec['ao_spherical']
     mo_spec = Spec['mo_spec']
     drv = Spec['Derivative']
     calc_mo = Spec['calc_mo']
@@ -256,12 +251,12 @@ def slice_rho(xx):
       delta_mo_list = []
       for ii_d in drv:
         # Calculate the derivatives of the AOs and MOs for this slice 
-        delta_ao_list = ao_creator(geo_spec,ao_spec,ao_spherical=ao_spherical,drv=ii_d,
+        delta_ao_list = ao_creator(geo_spec,ao_spec,drv=ii_d,
                     x=x,y=y,z=z,is_vector=True)
         delta_mo_list.append(mo_creator(delta_ao_list,mo_spec))
       return numpy.array(delta_mo_list)
     # Calculate the MOs and AOs for this slice 
-    ao_list = ao_creator(geo_spec,ao_spec,ao_spherical=ao_spherical,x=x,y=y,z=z,is_vector=True)
+    ao_list = ao_creator(geo_spec,ao_spec,x=x,y=y,z=z,is_vector=True)
     mo_list = mo_creator(ao_list,mo_spec)
     
     if calc_mo:
@@ -286,16 +281,16 @@ def slice_rho(xx):
       delta_rho = numpy.zeros((len(drv),) + N)
       for i,ii_d in enumerate(drv):
         # Calculate the derivatives of the AOs and MOs for this slice 
-        delta_ao_list = ao_creator(geo_spec,ao_spec,ao_spherical=ao_spherical,drv=ii_d,
+        delta_ao_list = ao_creator(geo_spec,ao_spec,drv=ii_d,
                                    x=x,y=y,z=z,is_vector=True)
         delta_mo_list = mo_creator(delta_ao_list,mo_spec)        
         if len(ii_d) == 2:
-          ao_0 = ao_creator(geo_spec,ao_spec,ao_spherical=ao_spherical,drv=ii_d[0],
+          ao_0 = ao_creator(geo_spec,ao_spec,drv=ii_d[0],
                                   x=x,y=y,z=z)
           if '2' in ii_d or ii_d[0] == ii_d[1]:          
             delta2_mo_list = numpy.array(mo_creator(ao_0,mo_spec))**2
           else:
-            ao_1 = ao_creator(geo_spec,ao_spec,ao_spherical=ao_spherical,drv=ii_d[1],
+            ao_1 = ao_creator(geo_spec,ao_spec,drv=ii_d[1],
                                   x=x,y=y,z=z,is_vector=True)
             delta2_mo_list = (numpy.array(mo_creator(ao_0,mo_spec)) *
                               numpy.array(mo_creator(ao_1,mo_spec)))
@@ -408,6 +403,7 @@ def rho_compute(qc,calc_mo=False,drv=None,laplacian=False,
     Spec = qc
   else:
     Spec = qc.todict()
+
   Spec['calc_mo'] = calc_mo
   Spec['Derivative'] = drv
   mo_num = len(Spec['mo_spec'])
@@ -444,9 +440,11 @@ def rho_compute(qc,calc_mo=False,drv=None,laplacian=False,
   else:
     display("The calculation will be carried out with %d subprocesses." 
             % numproc)
+  #This is only a check on the first element - might be too weak bu then again
+  #There should never be a case when only one element is None anyway
   display("\nThere are %d contracted %s AOs and %d MOs to be calculated." %
           (len(Spec['mo_spec'][0]['coeffs']),
-           'Cartesian' if not Spec['ao_spherical'] else 'spherical', 
+           'Cartesian' if not Spec['ao_spec'].spherical else 'spherical', 
            mo_num))
   
   # Initialize some additional user information 
@@ -699,14 +697,6 @@ def rho_compute_no_slice(qc,calc_mo=False,drv=None,
       raise ValueError("Dimensions of x-, y-, and z- coordinate differ!")
     N = (len(x),)
   
-  if not isinstance(qc,dict):
-    qc = qc.todict()
-  
-  geo_spec = qc['geo_spec']
-  ao_spec = qc['ao_spec']
-  ao_spherical = qc['ao_spherical']
-  mo_spec = qc['mo_spec']
-    
   if laplacian:
     if not (drv is None or drv == ['xx','yy','zz'] or drv == ['x2','y2','z2']):
       display('Note: You have set the option `laplacian` and specified values\n' +
@@ -716,10 +706,9 @@ def rho_compute_no_slice(qc,calc_mo=False,drv=None,
   
   display('\nStarting the calculation without slicing the grid...')
   display("\nThere are %d contracted %s AOs and %d MOs to be calculated." %
-          (len(mo_spec[0]['coeffs']),
-           'Cartesian' if not ao_spherical else 'spherical', 
-           len(mo_spec)))
-  
+          (len(qc.mo_spec[0]['coeffs']),
+           'Cartesian' if not qc.ao_spec.spherical else 'spherical', 
+           len(qc.mo_spec)))
   
   if drv is not None:
     try:
@@ -733,10 +722,10 @@ def rho_compute_no_slice(qc,calc_mo=False,drv=None,
     for i,ii_d in enumerate(drv):
       display('\t...with respect to %s' % ii_d)
       # Calculate the derivatives of the AOs and MOs
-      delta_ao_list[i] = ao_creator(geo_spec,ao_spec,ao_spherical=ao_spherical,
+      delta_ao_list[i] = ao_creator(qc.geo_spec,qc.ao_spec,
                                       drv=ii_d,
                                       is_vector=True,x=x,y=y,z=z)
-      delta_mo_list[i] =  mo_creator(delta_ao_list[i],mo_spec)                     
+      delta_mo_list[i] =  mo_creator(delta_ao_list[i],qc.mo_spec)                     
     delta_ao_list = convert(delta_ao_list,was_vector,N)
     delta_mo_list = convert(delta_mo_list,was_vector,N)
     if calc_mo:  
@@ -747,32 +736,32 @@ def rho_compute_no_slice(qc,calc_mo=False,drv=None,
     for i,ii_d in enumerate(drv):
       if len(ii_d) == 2:
         display('\t...with respect to %s' % ii_d[0])
-        ao_0 = ao_creator(geo_spec,ao_spec,ao_spherical=ao_spherical,
+        ao_0 = ao_creator(qc.geo_spec,qc.ao_spec,
                           drv=ii_d[0],
                           is_vector=True,x=x,y=y,z=z)
         if '2' in ii_d or ii_d == 'xx'  or ii_d == 'yy' or ii_d == 'zz':
-          delta2_mo_list[i] = mo_creator(ao_0,mo_spec)**2
+          delta2_mo_list[i] = mo_creator(ao_0,qc.mo_spec)**2
         else: 
           display('\t...with respect to %s' % ii_d[1])
-          ao_1 = ao_creator(geo_spec,ao_spec,ao_spherical=ao_spherical,
+          ao_1 = ao_creator(qc.geo_spec,qc.ao_spec,
                             drv=ii_d[1],
                             is_vector=True,x=x,y=y,z=z)
-          delta2_mo_list[i] = (mo_creator(ao_0,mo_spec) *
-                               mo_creator(ao_1,mo_spec))    
+          delta2_mo_list[i] = (mo_creator(ao_0,qc.mo_spec) *
+                               mo_creator(ao_1,qc.mo_spec))    
         delta2_mo_list[i] = convert(delta2_mo_list[i],was_vector,N)
   
   display('\nCalculating the atomic and molecular orbitals...')
   # Calculate the AOs and MOs 
-  ao_list = ao_creator(geo_spec,ao_spec,ao_spherical=ao_spherical,
+  ao_list = ao_creator(qc.geo_spec,qc.ao_spec,
                        is_vector=True,x=x,y=y,z=z)
-  mo_list = convert(mo_creator(ao_list,mo_spec),was_vector,N)
+  mo_list = convert(mo_creator(ao_list,qc.mo_spec),was_vector,N)
   ao_list = convert(ao_list,was_vector,N)
   if not was_vector:
     # Print the norm of the MOs 
     display("\nNorm of the MOs:")
     for ii_mo in range(len(mo_list)): 
       display("\t%(m).6f\tMO %(n)s" 
-       % {'m':numpy.sum(mo_list[ii_mo]**2)*d3r, 'n':mo_spec[ii_mo]['sym']})
+       % {'m':numpy.sum(mo_list[ii_mo]**2)*d3r, 'n':qc.mo_spec[ii_mo]['sym']})
   
   if calc_mo:
     return ((ao_list, mo_list) if return_components 
@@ -783,7 +772,7 @@ def rho_compute_no_slice(qc,calc_mo=False,drv=None,
   
   display('\nCalculating the density...') 
   for ii_mo in range(len(mo_list)): 
-    rho += numpy.square(numpy.abs(mo_list[ii_mo])) * mo_spec[ii_mo]['occ_num']
+    rho += numpy.square(numpy.abs(mo_list[ii_mo])) * qc.mo_spec[ii_mo]['occ_num']
   
   if not was_vector:
     # Print the number of electrons 
@@ -800,10 +789,10 @@ def rho_compute_no_slice(qc,calc_mo=False,drv=None,
     display('\t...with respect to %s' % ii_d)
     # Calculate the derivative of the density
     for ii_mo in range(len(mo_list)): 
-      delta_rho[i] += (mo_spec[ii_mo]['occ_num'] * 
+      delta_rho[i] += (qc.mo_spec[ii_mo]['occ_num'] * 
             2 * delta_mo_list[i,ii_mo]*mo_list[ii_mo])
       if len(ii_d) == 2:
-        delta_rho[i] += mo_spec[ii_mo]['occ_num'] * 2 * delta2_mo_list[i][ii_mo]
+        delta_rho[i] += qc.mo_spec[ii_mo]['occ_num'] * 2 * delta2_mo_list[i][ii_mo]
   
   delta = (delta_rho,delta_rho.sum(axis=0)) if laplacian else (delta_rho,)
   

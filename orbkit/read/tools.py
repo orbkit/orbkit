@@ -7,7 +7,7 @@ import re
 import numpy
 
 from orbkit.display import display
-from orbkit.tools import lquant
+from orbkit.tools import *
 from orbkit.units import u2me
 from orbkit import options
 from orbkit import analytical_integrals
@@ -30,9 +30,8 @@ def descriptor_from_file(filename, index=0, ci_descriptor=False):
 def check_mo_norm(qc):
   geo_spec = qc.geo_spec
   ao_spec = qc.ao_spec
-  ao_spherical = qc.ao_spherical
 
-  aoom = analytical_integrals.get_ao_overlap(geo_spec, geo_spec, ao_spec, ao_spherical)
+  aoom = analytical_integrals.get_ao_overlap(geo_spec, geo_spec, ao_spec)
   moom = analytical_integrals.get_mo_overlap_matrix(mo_spec, mo_spec, aoom, numproc=options.numproc)
 
   deviation = numpy.linalg.norm(moom - numpy.eye(len(moom)))
@@ -143,19 +142,19 @@ def get_atom_symbol(atom):
   except ValueError:    
     return atom.upper()
 
-def get_ao_spherical(ao_spec,p=[1,0]):
-  ao_spherical = []
+def set_ao_spherical(ao_spec,p=[1,0]):
+  ao_spec.spherical = True
   for i,ao in enumerate(ao_spec):
     ii = ao['type']
     l = lquant[ii]
     for m in (range(0,l+1) if l != 1 else p):
-      ao_spherical.append([i,(l,m)])
+      ao_spec[i]['ao_spherical'].append((l,m))
       if m != 0:
-        ao_spherical.append([i,(l,-m)])
-    #for m in (range(1,l+1) if l != 1 else p):
-      #if m != 0:
-        #ao_spherical.append([i,(l,-m)])
-  return ao_spherical
+        ao_spec[i]['ao_spherical'].append((l,-m))
+#    for m in (range(1,l+1) if l != 1 else p):
+#      if m != 0:
+#        ao_spherical.append([i,(l,-m)])
+  return
 
 def mo_select(mo_spec, fid_mo_list, strict=False):
   '''Selects molecular orbitals from an external file or a list of molecular 

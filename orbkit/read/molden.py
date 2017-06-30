@@ -4,7 +4,7 @@ import re
 from orbkit.qcinfo import QCinfo
 from orbkit.display import display
 from orbkit.core import l_deg, lquant
-from orbkit.read.tools import get_ao_spherical
+from orbkit.read.tools import set_ao_spherical
 
 from .tools import descriptor_from_file
 
@@ -289,8 +289,8 @@ def read_molden(fname, all_mo=False, spin=None, i_md=-1, interactive=True,
                       qc.mo_spec[-1]['sym']) + '\nSetting this coefficient to zero...')
   
   # Spherical basis?
-  if not cartesian_basis[i_md]:    
-    qc.ao_spherical = get_ao_spherical(qc.ao_spec,p=[1,0])
+  if not cartesian_basis[i_md]:
+    set_ao_spherical(qc.ao_spec,p=[1,0])
   if max_l > 2 and mixed_warning[i_md]:
     raise IOError('The input file %s contains ' % filename +
                   'mixed spherical and Cartesian function (%s).' %  mixed_warning[i_md] + 
@@ -344,7 +344,7 @@ def read_molden(fname, all_mo=False, spin=None, i_md=-1, interactive=True,
   
     if cartesian_basis[i_md]:
       from orbkit.cy_overlap import ommited_cca_norm
-      cca = ommited_cca_norm(qc.ao_lxlylz)
+      cca = ommited_cca_norm(qc.ao_spec.get_lxlylz())
       for mo in qc.mo_spec:
         mo['coeffs'] *= cca
   

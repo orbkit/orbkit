@@ -29,8 +29,8 @@ from copy import copy
 
 from orbkit.display import display
 from .units import u2me, aa2a0
-from .tools import get_lxlylz
 from orbkit.read.tools import get_atom_symbol, standard_mass
+from .orbitals import AOClass, MOClass
 
 class QCinfo:
   '''Class managing all information from the from the output 
@@ -41,9 +41,6 @@ class QCinfo:
   def __init__(self, filename=None):
     self.geo_info = []
     self.geo_spec = []
-    self.ao_spec  = []
-    self.ao_spherical = None
-    self.mo_spec  = []
     self.etot     = 0.
     self.com      = 'Center of mass can be calculated with self.get_com().'
     self.coc      = 'Center of charge can be calculated with self.get_coc().'
@@ -54,36 +51,56 @@ class QCinfo:
                            'energy'       : None}
     self.dipole_moments = None
 
+    data = None
     if filename:
-      self.read(filename)
+      data = self.read(filename)
+      self.geo_spec = data['geo_spec']
+      self.geo_info = data['geo_info']
+
+    #Old formats for compatability
+    self.ao_spec = AOClass(data)
+    self.mo_spec = MOClass(data)
+
+  def __eq__(self, other):
+    if not isinstance(other, QCinfo):
+      raise TypeError('Comaring of QCinfo to non QCinfo object not defined')
+    same = [self.comp_geo_info(other.geo_info),
+    numpy.allclose(self.geo_spec, other.geo_spec),
+    self.ao_spec == other.ao_spec,
+    self.mo_spec == other.mo_spec]
+    return all(same)
+
+  def comp_geo_info(self, geo2):
+    same = True
+    for atom1, atom2 in zip(self.geo_info, geo2):
+      if not len(atom1) == len(atom2):
+        raise ValueError('Atom object are of different length!')
+      for i in range(len(self.geo_info)):
+        if atom1[i] != atom2[i]:
+          same = False
+    return same
 
   def save(self, filename=None):
-    import hashlib, time
-    ao_lxlylz, cont2atoms, pg_expcont, cont2prim, mo_occ, mo_eig, mo_sym, mo_coeff = self.old2new_formats()
+    import time
     date = time.strftime("%d/%m/%Y") 
     time = time.strftime("%H:%M:%S")
     date_time = date + time
-    fingerprint = hashlib.md5(filename + date_time).hexdigest()
+
     if not filename:
       filename = 'default_output'
     if '.npz' not in filename:
       filename += '.npz'
 
+    data = self.ao_spec.todict()
+    data.update(self.mo_spec.todict())
+
     numpy.savez_compressed(filename,
-                           fingerprint=fingerprint,
                            date=date,
                            time=time,
-                           cont2atoms=cont2atoms,
-                           cont2prim=cont2prim,
-                           pg_expcont=pg_expcont,
-                           ao_lxlylz=ao_lxlylz,
                            geo_spec=self.geo_spec,
                            geo_info=self.geo_info,
-                           ao_spherical=self.ao_spherical,
-                           mo_occ=mo_occ,
-                           mo_eig=mo_eig,
-                           mo_sym=mo_sym,
-                           mo_coeff=mo_coeff)
+                           **data)
+
     return
 
   def read(self, filename):
@@ -93,52 +110,11 @@ class QCinfo:
       fname = open(filename, 'r')
 
     data = numpy.load(fname)
-    cont2atoms = data['cont2atoms']
-    cont2prim = data['cont2prim']
-    pg_expcont = data['pg_expcont']
-    ao_lxlylz = data['ao_lxlylz']
-    mo_occ = data['mo_occ']
-    mo_eig =  data['mo_eig']
-    mo_sym = data['mo_sym']
-    mo_coeff = data['mo_coeff']
-    self.geo_spec = data['geo_spec']
-    self.geo_info = data['geo_info']
-    self.ao_spherical = None
 
-    if data['ao_spherical']:
-      ao_spherical = list(map(tuple, numpy.reshape(data['ao_spherical'], (2, -1))))
-
-    self.new2old_formats(ao_lxlylz, cont2atoms, pg_expcont, cont2prim, mo_occ, mo_eig, mo_sym, mo_coeff)
     display('Loaded QCInfo class from file {0}'.format(filename))
     display('File was created on {0} at {1}'.format(data['date'], data['time']))
 
-    return
-
-  def new2old_formats(self, ao_lxlylz, cont2atoms, pg_expcont, cont2prim, mo_occ, mo_eig, mo_sym, mo_coeff):
-    self.ao_spec = [{'atom': None,
-                       'coeffs': None,
-                       'pnum': None,
-                       'exp_list': None}
-                        for i in range(len(cont2prim))]
-
-    for ic in range(len(cont2prim)):
-      self.ao_spec[ic]['atom'] = cont2atoms[ic]
-      self.ao_spec[ic]['coeffs'] = pg_expcont[cont2prim[ic]]
-      self.ao_spec[ic]['pnum'] = len(cont2prim[ic])
-      self.ao_spec[ic]['exp_list'] = list(map(tuple, numpy.reshape(ao_lxlylz[ic] , (3, -1))))
-
-    self.mo_spec = [{'coeffs': None,
-                     'energy': None,
-                     'occ_num': None,
-                     'sym': None}
-                     for i in range(len(mo_occ))]
-
-    for imo in range(len(mo_occ)):
-      self.mo_spec[imo]['coeffs'] = mo_coeff[imo]
-      self.mo_spec[imo]['energy'] = mo_eig[imo]
-      self.mo_spec[imo]['sym'] = mo_sym[imo]
-      self.mo_spec[imo]['occ_num'] = mo_occ[imo]
-    return
+    return data
 
   def copy(self):
     from copy import deepcopy
@@ -163,55 +139,18 @@ class QCinfo:
   def sort_mo_sym(self):
     '''Sorts mo_spec by symmetry.
     '''
-    keys = []
-    for i_mo in self.mo_spec:
-      keys.append(i_mo['sym'].split('.'))
-    keys = numpy.array(keys,dtype=int)
-    self.mo_spec = list(numpy.array(self.mo_spec)[numpy.lexsort(keys.T)])
-
-  def old2new_formats(self):
-    ao_lxlylz = get_lxlylz(self.ao_spec)
-
-    cont2atoms = numpy.zeros(len(self.ao_spec), dtype=numpy.intc)
-    pg_expcont = []
-    for ic, contracted in enumerate(self.ao_spec):
-      cont2atoms[ic] = contracted['atom']
-      for prim in contracted['coeffs']:
-        pg_expcont.append(prim)
-
-    pg_expcont = numpy.array(pg_expcont, dtype=numpy.float64)
-
-    cont2prim = numpy.zeros((len(self.ao_spec), len(pg_expcont)), dtype=bool)
-    i_prim = 0
-    for i_cont, contracted in enumerate(self.ao_spec):
-      max_i = i_prim + len(contracted['coeffs'])
-      cont2prim[i_cont, i_prim:max_i] = True
-      i_prim += len(contracted['coeffs'])
-
-    mo_occ = numpy.zeros(len(self.mo_spec), dtype=numpy.float64)
-    mo_eig = numpy.zeros(len(self.mo_spec), dtype=numpy.float64)
-    mo_sym = []
-    mo_coeff = numpy.zeros((len(self.mo_spec), len(self.mo_spec[0]['coeffs'])), dtype=numpy.float64)
-
-    for i_mo, mo in enumerate(self.mo_spec):
-      mo_occ[i_mo] = mo['occ_num']
-      mo_eig[i_mo] = mo['energy']
-      mo_sym.append(mo['sym'])
-      for i_cont, coeff in enumerate(mo['coeffs']):
-        mo_coeff[i_mo,i_cont] = coeff
-    mo_sym = numpy.array(mo_sym)
-    return ao_lxlylz, cont2atoms, pg_expcont, cont2prim, mo_occ, mo_eig, mo_sym, mo_coeff 
+    self.mo_spec.sort()
 
   def get_mo_labels(self):
     return ['MO %(sym)s, Occ=%(occ_num).2f, E=%(energy)+.4f E_h' % 
                   i for i in self.mo_spec]
   
   def get_mo_energies(self):
-    numpy.array([i['energy'] for i in self.mo_spec])
+    mo_eig = numpy.array([i['energy'] for i in self.mo_spec], dtype=numpy.float64)
     return copy(mo_eig)
   
   def get_mo_occ(self):
-    mo_occ = numpy.array([i['occ_num'] for i in self.mo_spec],dtype=numpy.intc)
+    mo_occ = numpy.array([i['occ_num'] for i in self.mo_spec], dtype=numpy.intc)
     return copy(mo_occ)
   
   def get_nmoocc(self):
@@ -299,7 +238,10 @@ class QCinfo:
             'ao_spherical',
             'mo_spec']
     for key in keys:
-      dct[key] = getattr(self,key)
+      if key != 'ao_spherical':
+        dct[key] = getattr(self,key)
+      else:
+        dct['ao_spherical'] = self.ao_spec.get_old_ao_spherical()
     return dct
   
   def get_ase_atoms(self,bbox=None,**kwargs):

@@ -38,7 +38,6 @@ from . import main_read
 geo_spec_all  = [] #: Contains all molecular geometries, i.e., :literal:`geo_spec`. (See :ref:`Central Variables` for details.)
 geo_info      = [] #: See :ref:`Central Variables` for details.
 ao_spec       = [] #: See :ref:`Central Variables` for details.
-ao_spherical  = [] #: See :ref:`Central Variables` for details.
 mo_coeff_all  = [] #: Contains all molecular orbital coefficients. List of numpy.ndarray
 mo_energy_all = [] #: Contains all molecular orbital energies. List of numpy.ndarray
 mo_occ_all    = [] #: Contains all molecular orbital occupations. List of numpy.ndarray
@@ -64,9 +63,9 @@ def read(fid_list,itype=None,all_mo=True,nosym=False, sort=True, **kwargs):
   
   **Global Variables:**
   
-  geo_spec_all, geo_info, ao_spec, ao_spherical, mo_coeff_all, mo_energy_all, mo_occ_all, sym
+  geo_spec_all, geo_info, ao_spec, mo_coeff_all, mo_energy_all, mo_occ_all, sym
   '''
-  global geo_spec_all, geo_info, ao_spec, ao_spherical, mo_coeff_all, mo_energy_all, mo_occ_all, sym
+  global geo_spec_all, geo_info, ao_spec, mo_coeff_all, mo_energy_all, mo_occ_all, sym
   
   geo_spec_all = []
   MO_Spec = []
@@ -124,7 +123,6 @@ def read(fid_list,itype=None,all_mo=True,nosym=False, sort=True, **kwargs):
   geo_spec_all = numpy.array(geo_spec_all)
   geo_info = qc.geo_info
   ao_spec = qc.ao_spec
-  ao_spherical = qc.ao_spherical
   # Presorting of the MOs according to their symmetry
  
   sym = []
@@ -218,9 +216,9 @@ def order_using_analytical_overlap(fid_list,itype=None,deg=0,numproc=1,
   
   **Global Variables:**
   
-  geo_spec_all, geo_info, ao_spec, ao_spherical, mo_coeff_all, mo_energy_all, mo_occ_all, sym, index_list
+  geo_spec_all, geo_info, ao_spec, mo_coeff_all, mo_energy_all, mo_occ_all, sym, index_list
   '''
-  global geo_spec_all, geo_info, ao_spec, ao_spherical, mo_coeff_all, mo_energy_all, mo_occ_all, sym, index_list
+  global geo_spec_all, geo_info, ao_spec, mo_coeff_all, mo_energy_all, mo_occ_all, sym, index_list
   
   if fid_list is not None:
     read(fid_list,itype=itype,**kwargs)
@@ -248,11 +246,9 @@ def order_using_analytical_overlap(fid_list,itype=None,deg=0,numproc=1,
     r2 = rr
 
     if (deg is None) or (deg > 0 and r1 >= deg):
-      ao_overlap = get_ao_overlap(geo_spec_all[r2],geo_spec_all[r2],ao_spec,
-                                  ao_spherical=ao_spherical)
+      ao_overlap = get_ao_overlap(geo_spec_all[r2],geo_spec_all[r2],ao_spec)
     else:
-      ao_overlap = get_ao_overlap(geo_spec_all[r1],geo_spec_all[r2],ao_spec,
-                                  ao_spherical=ao_spherical)
+      ao_overlap = get_ao_overlap(geo_spec_all[r1],geo_spec_all[r2],ao_spec)
     cs = 0
     for s in sym.values():
       mo_coeff = mo_coeff_all[s]
@@ -347,9 +343,9 @@ def order_using_extrapolation(fid_list,itype=None,deg=1,
   
   **Global Variables:**
   
-  geo_spec_all, geo_info, ao_spec, ao_spherical, mo_coeff_all, mo_energy_all, mo_occ_all, sym, index_list
+  geo_spec_all, geo_info, ao_spec, mo_coeff_all, mo_energy_all, mo_occ_all, sym, index_list
   '''
-  global geo_spec_all, geo_info, ao_spec, ao_spherical, mo_coeff_all, mo_energy_all, mo_occ_all, sym, index_list
+  global geo_spec_all, geo_info, ao_spec, mo_coeff_all, mo_energy_all, mo_occ_all, sym, index_list
   
   # Read all input files
   if fid_list is not None:
@@ -382,7 +378,6 @@ def order_using_extrapolation(fid_list,itype=None,deg=1,
     if use_mo_values:
       display('\tComputing molecular orbitals at the nuclear positions')
       matrix = compute_mo_list(geo_spec_all,ao_spec,matrix,
-                               ao_spherical=ao_spherical,
                                iter_drv=[None, 'x', 'y', 'z'])
     
     
@@ -609,7 +604,6 @@ def order_pm(x,y,backward=True,mu=1e-1,use_factor=False):
 def save_hdf5(fid,variables=['geo_info',
                              'geo_spec_all',
                              'ao_spec',
-                             'ao_spherical',
                              'mo_coeff_all', 
                              'mo_energy_all', 
                              'mo_occ_all', 
@@ -645,7 +639,6 @@ def save_hdf5(fid,variables=['geo_info',
 def read_hdf5(fid,variables=['geo_info',
                              'geo_spec_all',
                              'ao_spec',
-                             'ao_spherical',
                              'mo_coeff_all', 
                              'mo_energy_all', 
                              'mo_occ_all', 
@@ -690,7 +683,6 @@ def construct_qc():
     QC[rr].geo_spec = geo_spec_all[rr]
     QC[rr].geo_info = geo_info
     QC[rr].ao_spec = ao_spec
-    QC[rr].ao_spherical = ao_spherical
     QC[rr].mo_spec = []
     for s,ii_s in sym.items():
       for i,coeffs in enumerate(mo_coeff_all[ii_s][rr]):
@@ -701,7 +693,7 @@ def construct_qc():
   
   return QC
 
-def compute_mo_list(geo_spec_all,ao_spec,mo_matrix,ao_spherical=None,
+def compute_mo_list(geo_spec_all,ao_spec,mo_matrix,
                     iter_drv=[None, 'x', 'y', 'z']):
   '''Computes the values of the molecular orbitals and, if requested, their 
   derivatives at the nuclear positions for a complete 
@@ -718,7 +710,7 @@ def compute_mo_list(geo_spec_all,ao_spec,mo_matrix,ao_spherical=None,
     z = geo_spec[:,2]
     N = len(x)
     for i,drv in enumerate(iter_drv):
-      ao_list = ao_creator(geo_spec,ao_spec,ao_spherical=ao_spherical,
+      ao_list = ao_creator(geo_spec,ao_spec,
                            exp_list=False,
                            is_vector=True,
                            drv=drv,
@@ -908,7 +900,7 @@ def show_selected_mos(selected_mos,r0=0,steps=1,select_slice='xz',where=0.0,
     i,j = mo_sel.split('.')
     mo = []
     for rr in r:
-      ao_list = ao_creator(geo_spec_all[rr],ao_spec,ao_spherical=ao_spherical)
+      ao_list = ao_creator(geo_spec_all[rr],ao_spec)
       mo.append(mo_creator(ao_list,mo_coeff_all[sym[j]][rr,int(i)-1,numpy.newaxis])[0].reshape(tuple(npts)))
     
     f, pics = contour_mult_mo(xyz[k[0]],xyz[k[1]],mo,

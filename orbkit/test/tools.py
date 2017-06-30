@@ -3,6 +3,8 @@ Helper functions for systematic testing of Orbkit
 '''
 
 import numpy
+from orbkit import QCinfo
+from orbkit.orbitals import AOClass, MOClass
 
 def equal(a, b, tol=1e-5):
   if isinstance(a, list):
@@ -13,5 +15,11 @@ def equal(a, b, tol=1e-5):
     assert abs(a-b) <= tol
   elif isinstance(a, numpy.ndarray) and isinstance(b, numpy.ndarray):
     assert numpy.allclose(a, b, rtol=tol*1e2, atol=tol)
+  elif isinstance(a, QCinfo) and isinstance(b, QCinfo):
+    assert a == b
+  elif isinstance(a, AOClass) and isinstance(b, AOClass):
+    assert a == b
+  elif isinstance(a, MOClass) and isinstance(b, MOClass):
+    assert a == b
   else:
-    raise TypeError('Unsupported variable type - must be float, int, or np.adarray')
+    raise TypeError('Unsupported variable type - must be float, int, np.adarray, QCinfo, AOClass, and MOClass')

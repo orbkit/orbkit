@@ -14,7 +14,7 @@ folder = os.path.join(tests_home, '../read/outputs_for_testing')
 filepath = os.path.join(folder, 'h2o_rhf_sph.molden')
 qc = read.main_read(filepath, all_mo=True)
 
-ao_overlap_matrix = ai.get_ao_overlap(qc.geo_spec,qc.geo_spec,qc.ao_spec,ao_spherical=qc.ao_spherical)
+ao_overlap_matrix = ai.get_ao_overlap(qc.geo_spec,qc.geo_spec,qc.ao_spec)
 
 moom = ai.get_mo_overlap_matrix(qc.mo_spec,qc.mo_spec,ao_overlap_matrix,numproc=options.numproc)
 
