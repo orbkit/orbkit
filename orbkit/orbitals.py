@@ -405,10 +405,13 @@ class MOClass(UserList):
     array = item
     self.new2old()
   def set_mo_coeff(self, item):
+    require(item, dtype=numpy.float64)
     self.set_template(self.mo_coeff, item)
   def set_mo_eig(self, item):
+    require(item, dtype=numpy.float64)
     self.set_template(self.mo_eig, item)
   def set_mo_sym(self, item):
+    require(item, dtype=str)
     self.set_template(self.mo_sym, item)
 
   def get_mo_coeff(self):
