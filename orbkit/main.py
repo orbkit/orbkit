@@ -34,7 +34,7 @@ lgpl_short = '''This is ORBKIT.
 import time
 
 # Import orbkit modules
-from orbkit import core, grid, extras, read, output
+from orbkit import core, grid, extras, output, read
 from orbkit import options
 import orbkit.display as display_module
 from orbkit.display import display,good_bye_message

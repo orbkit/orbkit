@@ -30,9 +30,9 @@ import numpy
 from scipy import integrate
 
 # Import orbkit modules
-from orbkit import core,grid,output,options
+from orbkit import core,grid, output, options
 from orbkit.display import display
-from orbkit.read import mo_select
+from orbkit.read.tools import mo_select
 
 def calc_mo(qc, fid_mo_list, drv=None, otype=None, ofid=None,
             numproc=None, slice_length=None):
@@ -514,7 +514,7 @@ def gross_atomic_density(atom,qc,
   
   display('\tCalculating ao_list & mo_list')
   if ao_list is None:
-    ao_list = core.ao_creator(qc.geo_spec,qc.ao_spec,ao_spherical=qc.ao_spherical,drv=drv)
+    ao_list = core.ao_creator(qc.geo_spec,qc.ao_spec,drv=drv)
   if mo_list is None:
     mo_list = core.mo_creator(ao_list,qc.mo_spec)
   

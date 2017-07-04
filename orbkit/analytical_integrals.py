@@ -30,12 +30,12 @@ License along with orbkit.  If not, see <http://www.gnu.org/licenses/>.
 import numpy
 from multiprocessing import Pool
 
-from orbkit import cy_overlap
-from orbkit.core import exp,lquant,get_lxlylz,get_cart2sph,l_deg
-from orbkit.core import create_mo_coeff,validate_drv,require
-from orbkit.omp_functions import slicer
+from . import cy_overlap
+from .tools import *
+from .omp_functions import slicer
+from .orbitals import AOClass
 
-def get_ao_overlap(coord_a,coord_b,ao_spec,ao_spherical=None,lxlylz_b=None,
+def get_ao_overlap(coord_a, coord_b, ao_spec, lxlylz_b=None,
                    drv=None):
   '''Computes the overlap matrix of a basis set, where `Bra` basis set
   corresponds to the geometry :literal:`coord_a` and `Ket` basis set corresponds 
@@ -57,9 +57,6 @@ def get_ao_overlap(coord_a,coord_b,ao_spec,ao_spherical=None,lxlylz_b=None,
     See :ref:`Central Variables` in the manual for details.  
   ao_spec : 
     See :ref:`Central Variables` in the manual for details.   
-  ao_spherical : optional
-    Specifies if the input is given in a spherical harmonic Gaussian basis set.
-    See :ref:`Central Variables` in the manual for details.
   lxlylz_b : numpy.ndarray, dtype=numpy.int64, shape = (NAO,3), optional
     Contains the expontents lx, ly, lz for the primitive Cartesian Gaussians of
     the `Ket` basis set. 
@@ -69,15 +66,17 @@ def get_ao_overlap(coord_a,coord_b,ao_spec,ao_spherical=None,lxlylz_b=None,
   ao_overlap_matrix : numpy.ndarray, shape = (NAO,NAO)
     Contains the overlap matrix.
   '''
+  if not isinstance(ao_spec, AOClass):
+    raise TypeError('ao_spec must be an instance of the AOClass')
+
   if isinstance(drv, list):
     aoom = []
     for ii_d in drv:
       aoom.append(get_ao_overlap(coord_a,coord_b,ao_spec,
-                                 ao_spherical=ao_spherical,
                                  lxlylz_b=lxlylz_b,
                                  drv=ii_d))
     return aoom
-  lxlylz_a = get_lxlylz(ao_spec)
+  lxlylz_a = ao_spec.get_lxlylz()
 
   if lxlylz_b is None:
     lxlylz_b =  numpy.array(lxlylz_a,copy=True)
@@ -99,52 +98,36 @@ def get_ao_overlap(coord_a,coord_b,ao_spec,ao_spherical=None,lxlylz_b=None,
   
   ra = numpy.zeros((0,3))
   rb = numpy.array(ra, copy=True)
+  for cont in ao_spec:
+    ra = numpy.append(ra,coord_a[cont['atom']][numpy.newaxis,:],axis=0)
+    rb = numpy.append(rb,coord_b[cont['atom']][numpy.newaxis,:],axis=0)
 
-  coeff = numpy.zeros((0,2))
 
-  index = []
-  b = 0
-  is_normalized = []
-  for sel_ao in range(len(ao_spec)):
-    if 'exp_list' in ao_spec[sel_ao].keys():
-      l = ao_spec[sel_ao]['exp_list']
-    else:
-      l = exp[lquant[ao_spec[sel_ao]['type']]]
-    is_normalized.append((ao_spec[sel_ao]['pnum'] < 0))
-    ra = numpy.append(ra,coord_a[ao_spec[sel_ao]['atom']][numpy.newaxis,:],axis=0)
-    rb = numpy.append(rb,coord_b[ao_spec[sel_ao]['atom']][numpy.newaxis,:],axis=0)
-    
-    for i in l:
-      coeff = numpy.append(coeff,ao_spec[sel_ao]['coeffs'],axis=0)
-      for j in ao_spec[sel_ao]['coeffs']:
-        index.append([sel_ao,b])
-      b += 1
-  
-  if all(is_normalized) != any(is_normalized):
-    raise ValueError('Either all or none of the atomic orbitals have to be normalized!')
-  is_normalized = all(is_normalized)
-  
+  coeff = ao_spec.get_lmpao()
+  index = ao_spec.get_lmprim2cont(return_l=True)
+
   ra = require(ra,dtype='f')
   rb = require(rb,dtype='f')
-  lxlylz_a = require(lxlylz_a,dtype='i')
+
+  #lxlylz_a comes from an AOClass instance so its type is checked there
+  #lxlylz_b might come from anywhere so we neet to make sure it has the right type
   lxlylz_b = require(lxlylz_b,dtype='i')
-  coeff = require(coeff,dtype='f')
-  index = require(index,dtype='i')
+
   ao_overlap_matrix = cy_overlap.aooverlap(ra,rb,
                                            lxlylz_a,lxlylz_b,
                                            coeff,index,
-                                           drv,int(is_normalized))
+                                           drv,int(ao_spec.normalized))
   if 'N' in ao_spec[0]:
     for i in range(len(ao_overlap_matrix)):
       ao_overlap_matrix[i,:] *= ao_spec[0]['N'][i]*ao_spec[0]['N'][:,0]
   
-  if not (ao_spherical is None or ao_spherical == []):
+  if ao_spec.spherical:
     # Convert the overlap matrix to the real-valued spherical harmonic basis.
-    ao_overlap_matrix = cartesian2spherical_aoom(ao_overlap_matrix,ao_spec,ao_spherical)
+    ao_overlap_matrix = cartesian2spherical_aoom(ao_overlap_matrix,ao_spec)
   
   return ao_overlap_matrix
 
-def cartesian2spherical_aoom(ao_overlap_matrix,ao_spec,ao_spherical):
+def cartesian2spherical_aoom(ao_overlap_matrix,ao_spec):
   '''Transforms the atomic orbitals overlap matrix from a Cartesian Gaussian 
   basis set to a (real) pure spherical harmonic Gaussian basis set.
   
@@ -155,7 +138,7 @@ def cartesian2spherical_aoom(ao_overlap_matrix,ao_spec,ao_spherical):
   
   ao_overlap_matrix : numpy.ndarray, shape = (NAO,NAO)
     Contains the overlap matrix of the Cartesian basis set. 
-  ao_spec,ao_spherical :
+  ao_spec :
     See :ref:`Central Variables` in the manual for details.
   
   **Returns:**
@@ -170,7 +153,7 @@ def cartesian2spherical_aoom(ao_overlap_matrix,ao_spec,ao_spherical):
   '''
   
   # Get the exponents of the Cartesian basis functions
-  exp_list,assign = get_lxlylz(ao_spec,get_assign=True)
+  exp_list,assign = ao_spec.get_lxlylz(get_assign=True)
   
   if ao_overlap_matrix.shape != (len(exp_list),len(exp_list)):
     raise IOError('No contraction is currently not supported for a '+ 
@@ -183,7 +166,7 @@ def cartesian2spherical_aoom(ao_overlap_matrix,ao_spec,ao_spherical):
   
   indices = []
   c = 0
-  for i0,(j0,k0) in enumerate(ao_spherical):
+  for i0, (j0,k0) in enumerate(ao_spec.get_old_ao_spherical()):
     sph0 = get_cart2sph(*k0)    
     for c0 in range(len(sph0[0])):
       for i,j in enumerate(l[j0]):
@@ -192,12 +175,12 @@ def cartesian2spherical_aoom(ao_overlap_matrix,ao_spec,ao_spherical):
       c += 1
   
   c = 0
-  aoom_sph = numpy.zeros((len(ao_spherical),len(ao_spherical)))
-  for i0,(j0,k0) in enumerate(ao_spherical):
+  aoom_sph = numpy.zeros((len(ao_spec),len(ao_spec)))
+  for i0, (j0,k0) in enumerate(ao_spec.get_old_ao_spherical()):
     sph0 = get_cart2sph(*k0)    
     for c0 in range(len(sph0[0])):
       d = 0 
-      for i1,(j1,k1) in enumerate(ao_spherical):
+      for i1, (j1,k1) in enumerate(ao_spec.get_old_ao_spherical()):
         sph1 = get_cart2sph(*k1)
         for c1 in range(len(sph1[0])):
           aoom_sph[i0,i1] += (sph0[1][c0]*sph0[2] * sph1[1][c1]*sph1[2]
@@ -394,15 +377,14 @@ def get_ao_dipole_matrix(qc,component='x'):
 
   # Get the the exponents lx, ly, lz for the primitive Cartesian Gaussians of
   # the `Ket` basis set, and increase lz by one.
-  lxlylz_b = get_lxlylz(qc.ao_spec)
+  lxlylz_b = qc.ao_spec.get_lxlylz()
   lxlylz_b[:,component] += 1
 
   ao_part_1 = get_ao_overlap(qc.geo_spec,qc.geo_spec,qc.ao_spec,
-                             lxlylz_b=lxlylz_b,ao_spherical=qc.ao_spherical)
+                             lxlylz_b=lxlylz_b)
 
   # Compute the second part of the expectation value:
-  ao_part_2 = get_ao_overlap(qc.geo_spec,qc.geo_spec,qc.ao_spec,
-                             ao_spherical=qc.ao_spherical) 
+  ao_part_2 = get_ao_overlap(qc.geo_spec,qc.geo_spec,qc.ao_spec) 
 
   i = 0
   for sel_ao in range(len(qc.ao_spec)):
@@ -410,7 +392,10 @@ def get_ao_dipole_matrix(qc,component='x'):
       l = len(qc.ao_spec[sel_ao]['exp_list'])
     else:
       l = l_deg(l=qc.ao_spec[sel_ao]['type'].lower(),
-              cartesian_basis=(qc.ao_spherical is None or qc.ao_spherical == []))
+              cartesian_basis=qc.ao_spec[0]['ao_spherical'] is None)
+              #Only check first element - is this too weak?
+              #I guess if one is None and the others are not then we have some more
+              #serious problems anyway...
     for ll in range(l):
       ao_part_2[:,i] *= qc.geo_spec[qc.ao_spec[sel_ao]['atom'],component]
       i += 1
@@ -466,7 +451,10 @@ def get_atom2mo(qc):
       l = len(qc.ao_spec[sel_ao]['exp_list'])
     else:
       l = l_deg(l=qc.ao_spec[sel_ao]['type'].lower(),
-              cartesian_basis=(qc.ao_spherical is None or qc.ao_spherical == []))
+              cartesian_basis=qc.ao_spec[0]['ao_spherical'] is None)
+              #Only check first element - is this too weak?
+              #I guess if one is None and the others are not then we have some more
+              #serious problems anyway...
     for i in range(l):
       atom2mo.append(a)
       b += 1

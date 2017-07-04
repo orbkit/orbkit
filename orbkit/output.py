@@ -30,6 +30,7 @@ import h5py
 # Import orbkit modules
 from orbkit import grid, options
 from orbkit.display import display
+from orbkit.units import a02aa
 
 def main_output(data,geo_info,geo_spec,outputname='new',otype='h5',
                 drv=None,omit=[],**kwargs):
@@ -938,9 +939,6 @@ def pdb_creator(geo_info,geo_spec,filename='new',charges=None,comments='',
     If True, conversion of molecular coordinates from Bohr radii to Angstrom.
   '''
   
-  # Conversion factor form Angstrom in Bohr radii
-  aa_to_au = 1/0.52917720859 if angstrom else 1.
-  
   # Check for charges
   if charges is None:
     charges = numpy.zeros(len(geo_spec))
@@ -962,7 +960,9 @@ def pdb_creator(geo_info,geo_spec,filename='new',charges=None,comments='',
     string += '%s' % (geo_info[il][0])
     while len(string) < 17:
       string += ' '
-    xyz = geo_spec[il]/aa_to_au
+    xyz = geo_spec[il]
+    if angstrom:
+      xyz *= a02aa
     string += '             %s %s %s        ' % (('%.9f' % xyz[0])[:7],
                                                  ('%.9f' % xyz[1])[:7],
                                                  ('%.9f' % xyz[2])[:7])
@@ -994,9 +994,6 @@ def xyz_creator(geo_info,geo_spec,filename='new',mode='w',charges=None,comments=
     If True, conversion of molecular coordinates from Bohr radii to Angstrom.
   '''
   
-  # Conversion factor form Angstrom in Bohr radii
-  aa_to_au = 1/0.52917720859 if angstrom else 1.
-  
   # Open an empty file 
   fid = open('%s.xyz' % filename,mode)
   
@@ -1008,7 +1005,10 @@ def xyz_creator(geo_info,geo_spec,filename='new',mode='w',charges=None,comments=
   for il in range(len(geo_spec)):
     string += '%-2s' % geo_info[il][0]
     for i in range(3):
-      string += ' %22.15f'  % (geo_spec[il][i]/aa_to_au)
+      xyz = geo_spec[il]
+      if angstrom:
+        xyz *= a02aa
+      string += ' %22.15f'  % (xyz[i])
     if charges is not None:
       string += ' %22.15f'  % charges[il]
     string += '\n'

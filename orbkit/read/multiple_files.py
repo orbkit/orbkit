@@ -22,21 +22,22 @@ Example for the Execution::
                                       # options.outputname here.)
 
   # Start reading and ordering routine.
-  order_using_analytical_overlap(fid_list,itype='molden')
+  order_using_analytical_overlap(fid_list)
 '''
 
 from copy import deepcopy
 import numpy
 from time import time
 
-from orbkit.read import main_read
 from orbkit.display import display,init_display
 from orbkit.analytical_integrals import get_ao_overlap, get_mo_overlap_matrix
+
+from .tar import is_tar_file, get_all_files_from_tar
+from . import main_read
 
 geo_spec_all  = [] #: Contains all molecular geometries, i.e., :literal:`geo_spec`. (See :ref:`Central Variables` for details.)
 geo_info      = [] #: See :ref:`Central Variables` for details.
 ao_spec       = [] #: See :ref:`Central Variables` for details.
-ao_spherical  = [] #: See :ref:`Central Variables` for details.
 mo_coeff_all  = [] #: Contains all molecular orbital coefficients. List of numpy.ndarray
 mo_energy_all = [] #: Contains all molecular orbital energies. List of numpy.ndarray
 mo_occ_all    = [] #: Contains all molecular orbital occupations. List of numpy.ndarray
@@ -48,21 +49,23 @@ mo_coeff_tck  = []
 mo_energy_tck = []
 mo_occ_tck    = []
 
-def read(fid_list,itype='molden',all_mo=True,nosym=False,**kwargs):
+def read(fid_list,itype=None,all_mo=True,nosym=False, sort=True, **kwargs):
   '''Reads a list of input files.
   
   **Parameters:**
   
     fid_list : list of str
       List of input file names.
-    itype : str, choices={'molden', 'gamess', 'gaussian.log', 'gaussian.fchk'}
-        Specifies the type of the input files.
+    itype : str, choices={None, 'tar', 'molden', 'gamess', 'gaussian.log', 'gaussian.fchk'}
+      Specifies the type of the input files.
+    sort: bool
+      Sort input files by name.  
   
   **Global Variables:**
   
-  geo_spec_all, geo_info, ao_spec, ao_spherical, mo_coeff_all, mo_energy_all, mo_occ_all, sym
+  geo_spec_all, geo_info, ao_spec, mo_coeff_all, mo_energy_all, mo_occ_all, sym
   '''
-  global geo_spec_all, geo_info, ao_spec, ao_spherical, mo_coeff_all, mo_energy_all, mo_occ_all, sym
+  global geo_spec_all, geo_info, ao_spec, mo_coeff_all, mo_energy_all, mo_occ_all, sym
   
   geo_spec_all = []
   MO_Spec = []
@@ -75,10 +78,16 @@ def read(fid_list,itype='molden',all_mo=True,nosym=False,**kwargs):
   
   sym_list = {}
   n_ao = {}
+
+  #Check if fname poits to a tar archive and
+  #read all files from archive if that is the case 
+  if is_tar_file(fid_list):
+    fid_list, itypes = get_all_files_from_tar(fid_list, sort=sort)
+
   n_r = len(fid_list)
   
-  for i,filename in enumerate(fid_list):
-    qc = main_read(filename, itype=itype, all_mo=all_mo,**kwargs)
+  for i,fname in enumerate(fid_list):
+    qc = main_read(fname, itype=itypes[i], all_mo=all_mo, **kwargs)
     # Geo Section
     if i > 0 and (geo_old != qc.geo_info).sum():
       raise IOError('qc.geo_info has changed!')
@@ -90,9 +99,9 @@ def read(fid_list,itype='molden',all_mo=True,nosym=False,**kwargs):
         numpy.alltrue([numpy.allclose(ao_old[j]['coeffs'],qc.ao_spec[j]['coeffs'])
                       for j in range(len(ao_old))]
                       )):
-      raise IOError('qc.ao_spec has changed!')
+        raise IOError('qc.ao_spec has changed!')
     else:
-      ao_old = deepcopy(qc.ao_spec)
+        ao_old = deepcopy(qc.ao_spec)
     # MO Section
     sym = {}    
     MO_Spec.append(qc.mo_spec)
@@ -105,7 +114,6 @@ def read(fid_list,itype='molden',all_mo=True,nosym=False,**kwargs):
         sym[key[1]] = 0
         n_ao[key[1]] = len(qc.mo_spec[0]['coeffs'])
       sym[key[1]] += 1
-    
     for k,it in sym.items():
       if k in sym_list:
         sym_list[k] = max(sym_list[k],it)
@@ -115,16 +123,15 @@ def read(fid_list,itype='molden',all_mo=True,nosym=False,**kwargs):
   geo_spec_all = numpy.array(geo_spec_all)
   geo_info = qc.geo_info
   ao_spec = qc.ao_spec
-  ao_spherical = qc.ao_spherical
   # Presorting of the MOs according to their symmetry
-  
+ 
   sym = []
   for k,it in sym_list.items():
     sym.append((k,len(sym)))
     mo_coeff_all.append(numpy.zeros((n_r,it,n_ao[k])))
     mo_energy_all.append(numpy.zeros((n_r,it)))
     mo_occ_all.append(numpy.zeros((n_r,it)))
-  
+ 
   sym = dict(sym)
   
   for i,spec in enumerate(MO_Spec):
@@ -136,6 +143,8 @@ def read(fid_list,itype='molden',all_mo=True,nosym=False,**kwargs):
       mo_coeff_all[sym[k]][i,index,:] = mo['coeffs']
       mo_energy_all[sym[k]][i,index] = mo['energy']
       mo_occ_all[sym[k]][i,index] = mo['occ_num']
+
+  return
 
 def get_extrapolation(r1,r2,mo_coeff,deg=1,grid1d=None):
   '''Extrapolates the molecular orbital coefficients :literal:`mo_coeff` 
@@ -175,7 +184,7 @@ def get_extrapolation(r1,r2,mo_coeff,deg=1,grid1d=None):
         epol[i,j] = numpy.poly1d(z)(grid1d[r2])
   return epol
 
-def order_using_analytical_overlap(fid_list,itype='molden',deg=0,numproc=1,
+def order_using_analytical_overlap(fid_list,itype=None,deg=0,numproc=1,
                                    **kwargs):
   '''Performs an ordering routine using analytical overlap integrals between 
   molecular orbitals. Set fid_list to None to omit the reading of input files.
@@ -188,7 +197,7 @@ def order_using_analytical_overlap(fid_list,itype='molden',deg=0,numproc=1,
   
   fid_list : list of str or None
     If not None, it contains the list of input file names.
-  itype : str, choices={'molden', 'gamess', 'gaussian.log', 'gaussian.fchk'}
+  itype : str, choices={None, 'tar', 'molden', 'gamess', 'gaussian.log', 'gaussian.fchk'}
     Specifies the type of the input files.
   deg : int, optional
     If greater than zero, specifies the degree of the extrapolation polynomial
@@ -207,9 +216,9 @@ def order_using_analytical_overlap(fid_list,itype='molden',deg=0,numproc=1,
   
   **Global Variables:**
   
-  geo_spec_all, geo_info, ao_spec, ao_spherical, mo_coeff_all, mo_energy_all, mo_occ_all, sym, index_list
+  geo_spec_all, geo_info, ao_spec, mo_coeff_all, mo_energy_all, mo_occ_all, sym, index_list
   '''
-  global geo_spec_all, geo_info, ao_spec, ao_spherical, mo_coeff_all, mo_energy_all, mo_occ_all, sym, index_list
+  global geo_spec_all, geo_info, ao_spec, mo_coeff_all, mo_energy_all, mo_occ_all, sym, index_list
   
   if fid_list is not None:
     read(fid_list,itype=itype,**kwargs)
@@ -225,7 +234,6 @@ def order_using_analytical_overlap(fid_list,itype='molden',deg=0,numproc=1,
   
   mo_overlap = [[] for i in sym.keys()]
   index_list = [[] for i in sym.keys()]
-
   for s in sym.values():
     shape = numpy.shape(mo_coeff_all[s])
     index_list[s] = numpy.ones((shape[0],shape[1]),dtype=int)
@@ -236,14 +244,11 @@ def order_using_analytical_overlap(fid_list,itype='molden',deg=0,numproc=1,
   for rr in iterate:
     r1 = rr-1
     r2 = rr
-    
+
     if (deg is None) or (deg > 0 and r1 >= deg):
-      ao_overlap = get_ao_overlap(geo_spec_all[r2],geo_spec_all[r2],ao_spec,
-                                  ao_spherical=ao_spherical)
+      ao_overlap = get_ao_overlap(geo_spec_all[r2],geo_spec_all[r2],ao_spec)
     else:
-      ao_overlap = get_ao_overlap(geo_spec_all[r1],geo_spec_all[r2],ao_spec,
-                                  ao_spherical=ao_spherical)
-    
+      ao_overlap = get_ao_overlap(geo_spec_all[r1],geo_spec_all[r2],ao_spec)
     cs = 0
     for s in sym.values():
       mo_coeff = mo_coeff_all[s]
@@ -298,7 +303,7 @@ def order_using_analytical_overlap(fid_list,itype='molden',deg=0,numproc=1,
   
   return index_list, mo_overlap
 
-def order_using_extrapolation(fid_list,itype='molden',deg=1,
+def order_using_extrapolation(fid_list,itype=None,deg=1,
                               use_mo_values=False,matrix=None,**kwargs):
   '''Performs an ordering routine using extrapolation of quantities related to 
   the molecular orbitals. Set fid_list to None to omit the reading of input 
@@ -312,7 +317,7 @@ def order_using_extrapolation(fid_list,itype='molden',deg=1,
   
   fid_list : list of str or None
     If not None, it contains the list of input file names.
-  itype : str, choices={'molden', 'gamess', 'gaussian.log', 'gaussian.fchk'}
+  itype : str, choices={None, 'tar', 'molden', 'gamess', 'gaussian.log', 'gaussian.fchk'}
     Specifies the type of the input files.
   deg : int
     Specifies the degree of the extrapolation polynomial.
@@ -338,9 +343,9 @@ def order_using_extrapolation(fid_list,itype='molden',deg=1,
   
   **Global Variables:**
   
-  geo_spec_all, geo_info, ao_spec, ao_spherical, mo_coeff_all, mo_energy_all, mo_occ_all, sym, index_list
+  geo_spec_all, geo_info, ao_spec, mo_coeff_all, mo_energy_all, mo_occ_all, sym, index_list
   '''
-  global geo_spec_all, geo_info, ao_spec, ao_spherical, mo_coeff_all, mo_energy_all, mo_occ_all, sym, index_list
+  global geo_spec_all, geo_info, ao_spec, mo_coeff_all, mo_energy_all, mo_occ_all, sym, index_list
   
   # Read all input files
   if fid_list is not None:
@@ -373,7 +378,6 @@ def order_using_extrapolation(fid_list,itype='molden',deg=1,
     if use_mo_values:
       display('\tComputing molecular orbitals at the nuclear positions')
       matrix = compute_mo_list(geo_spec_all,ao_spec,matrix,
-                               ao_spherical=ao_spherical,
                                iter_drv=[None, 'x', 'y', 'z'])
     
     
@@ -600,7 +604,6 @@ def order_pm(x,y,backward=True,mu=1e-1,use_factor=False):
 def save_hdf5(fid,variables=['geo_info',
                              'geo_spec_all',
                              'ao_spec',
-                             'ao_spherical',
                              'mo_coeff_all', 
                              'mo_energy_all', 
                              'mo_occ_all', 
@@ -636,7 +639,6 @@ def save_hdf5(fid,variables=['geo_info',
 def read_hdf5(fid,variables=['geo_info',
                              'geo_spec_all',
                              'ao_spec',
-                             'ao_spherical',
                              'mo_coeff_all', 
                              'mo_energy_all', 
                              'mo_occ_all', 
@@ -681,7 +683,6 @@ def construct_qc():
     QC[rr].geo_spec = geo_spec_all[rr]
     QC[rr].geo_info = geo_info
     QC[rr].ao_spec = ao_spec
-    QC[rr].ao_spherical = ao_spherical
     QC[rr].mo_spec = []
     for s,ii_s in sym.items():
       for i,coeffs in enumerate(mo_coeff_all[ii_s][rr]):
@@ -692,7 +693,7 @@ def construct_qc():
   
   return QC
 
-def compute_mo_list(geo_spec_all,ao_spec,mo_matrix,ao_spherical=None,
+def compute_mo_list(geo_spec_all,ao_spec,mo_matrix,
                     iter_drv=[None, 'x', 'y', 'z']):
   '''Computes the values of the molecular orbitals and, if requested, their 
   derivatives at the nuclear positions for a complete 
@@ -709,7 +710,7 @@ def compute_mo_list(geo_spec_all,ao_spec,mo_matrix,ao_spherical=None,
     z = geo_spec[:,2]
     N = len(x)
     for i,drv in enumerate(iter_drv):
-      ao_list = ao_creator(geo_spec,ao_spec,ao_spherical=ao_spherical,
+      ao_list = ao_creator(geo_spec,ao_spec,
                            exp_list=False,
                            is_vector=True,
                            drv=drv,
@@ -899,7 +900,7 @@ def show_selected_mos(selected_mos,r0=0,steps=1,select_slice='xz',where=0.0,
     i,j = mo_sel.split('.')
     mo = []
     for rr in r:
-      ao_list = ao_creator(geo_spec_all[rr],ao_spec,ao_spherical=ao_spherical)
+      ao_list = ao_creator(geo_spec_all[rr],ao_spec)
       mo.append(mo_creator(ao_list,mo_coeff_all[sym[j]][rr,int(i)-1,numpy.newaxis])[0].reshape(tuple(npts)))
     
     f, pics = contour_mult_mo(xyz[k[0]],xyz[k[1]],mo,

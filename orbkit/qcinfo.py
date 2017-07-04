@@ -25,15 +25,12 @@ License along with orbkit.  If not, see <http://www.gnu.org/licenses/>.
 #from scipy.constants import value as physical_constants
 import numpy
 from os import path
+from copy import copy
 
-
-u_to_me = 1822.88839 # Contains the mass conversion factor to atomic units
-nist_mass = None
-# Standard atomic masses as "Linearized ASCII Output", see http://physics.nist.gov
-nist_file = path.join(path.dirname(path.realpath(__file__)),
-                      'supporting_data/Atomic_Weights_NIST.html')
-# see http://physics.nist.gov/cgi-bin/Compositions/stand_alone.pl?ele=&all=all&ascii=ascii2&isotype=some
-
+from orbkit.display import display
+from .units import u2me, aa2a0
+from orbkit.read.tools import get_atom_symbol, standard_mass
+from .orbitals import AOClass, MOClass
 
 class QCinfo:
   '''Class managing all information from the from the output 
@@ -41,12 +38,9 @@ class QCinfo:
   
   See :ref:`Central Variables` in the manual for details.
   '''
-  def __init__(self):
+  def __init__(self, filename=None):
     self.geo_info = []
     self.geo_spec = []
-    self.ao_spec  = []
-    self.ao_spherical = None
-    self.mo_spec  = []
     self.etot     = 0.
     self.com      = 'Center of mass can be calculated with self.get_com().'
     self.coc      = 'Center of charge can be calculated with self.get_coc().'
@@ -56,39 +50,108 @@ class QCinfo:
     self.states         = {'multiplicity' : None,
                            'energy'       : None}
     self.dipole_moments = None
-  
+
+    data = None
+    if filename:
+      data = self.read(filename)
+      self.geo_spec = data['geo_spec']
+      self.geo_info = data['geo_info']
+
+    #Old formats for compatability
+    self.ao_spec = AOClass(data)
+    self.mo_spec = MOClass(data)
+
+  def __eq__(self, other):
+    if not isinstance(other, QCinfo):
+      raise TypeError('Comaring of QCinfo to non QCinfo object not defined')
+    same = [self.comp_geo_info(other.geo_info),
+    numpy.allclose(self.geo_spec, other.geo_spec),
+    self.ao_spec == other.ao_spec,
+    self.mo_spec == other.mo_spec]
+    return all(same)
+
+  def comp_geo_info(self, geo2):
+    same = True
+    for atom1, atom2 in zip(self.geo_info, geo2):
+      if not len(atom1) == len(atom2):
+        raise ValueError('Atom object are of different length!')
+      for i in range(len(self.geo_info)):
+        if atom1[i] != atom2[i]:
+          same = False
+    return same
+
+  def save(self, filename=None):
+    import time
+    date = time.strftime("%d/%m/%Y") 
+    time = time.strftime("%H:%M:%S")
+    date_time = date + time
+
+    if not filename:
+      filename = 'default_output'
+    if '.npz' not in filename:
+      filename += '.npz'
+
+    data = self.ao_spec.todict()
+    data.update(self.mo_spec.todict())
+
+    numpy.savez_compressed(filename,
+                           date=date,
+                           time=time,
+                           geo_spec=self.geo_spec,
+                           geo_info=self.geo_info,
+                           **data)
+
+    return
+
+  def read(self, filename):
+    if isinstance(filename, str):
+      if '.npz' not in filename:
+        filename += '.npz'
+      fname = open(filename, 'r')
+
+    data = numpy.load(fname)
+
+    display('Loaded QCInfo class from file {0}'.format(filename))
+    display('File was created on {0} at {1}'.format(data['date'], data['time']))
+
+    return data
+
   def copy(self):
     from copy import deepcopy
     qcinfo = deepcopy(self)
     return qcinfo
   
-  def format_geo(self):
+  def format_geo(self, is_angstrom=False):
     '''Converts geo_info and geo_spec to a universal format.
+    **Parameters:**
+    
+    is_angstrom : bool, optional
+      If True, input is assumed to be in Angstrom and positions are converted to Bohr radii.
     '''
     for i in self.geo_info:
       i[0] = get_atom_symbol(i[0])
       i[2] = float(i[-1])
     self.geo_info = numpy.array(self.geo_info)
     self.geo_spec = numpy.array(self.geo_spec,dtype=float)
+    if is_angstrom:
+      self.geo_spec *= aa2a0
   
   def sort_mo_sym(self):
     '''Sorts mo_spec by symmetry.
     '''
-    keys = []
-    for i_mo in self.mo_spec:
-      keys.append(i_mo['sym'].split('.'))
-    keys = numpy.array(keys,dtype=int)
-    self.mo_spec = list(numpy.array(self.mo_spec)[numpy.lexsort(keys.T)])
-  
+    self.mo_spec.sort()
+
   def get_mo_labels(self):
     return ['MO %(sym)s, Occ=%(occ_num).2f, E=%(energy)+.4f E_h' % 
                   i for i in self.mo_spec]
   
   def get_mo_energies(self):
-    return numpy.array([i['energy'] for i in self.mo_spec])
+    mo_eig = numpy.array([i['energy'] for i in self.mo_spec], dtype=numpy.float64)
+    return copy(mo_eig)
   
   def get_mo_occ(self):
-    return numpy.array([i['occ_num'] for i in self.mo_spec],dtype=numpy.intc)
+    mo_occ = numpy.array([i['occ_num'] for i in self.mo_spec], dtype=numpy.intc)
+    return copy(mo_occ)
   
   def get_nmoocc(self):
     return sum(self.get_mo_occ())
@@ -175,7 +238,10 @@ class QCinfo:
             'ao_spherical',
             'mo_spec']
     for key in keys:
-      dct[key] = getattr(self,key)
+      if key != 'ao_spherical':
+        dct[key] = getattr(self,key)
+      else:
+        dct['ao_spherical'] = self.ao_spec.get_old_ao_spherical()
     return dct
   
   def get_ase_atoms(self,bbox=None,**kwargs):
@@ -309,87 +375,3 @@ class CIinfo:
           self.__dict__[key] = hdf5_file['%s' % group].attrs[key]
       self.__dict__['info'] = dict(self.__dict__['info'])
 
-def read_nist():
-  '''Reads and converts the atomic masses from the "Linearized ASCII Output", 
-  see http://physics.nist.gov.
-  '''
-  global nist_mass
-  
-  f = open(nist_file,'r')
-  flines = f.readlines()
-  f.close()
-  
-  nist_mass = []
-  index = None
-  new = True
-  
-  def rm_brackets(text,rm=['(',')','[',']']):
-    for i in rm:
-      text = text.replace(i,'')
-    return text
-  
-  for line in flines:
-    thisline = line.split()
-    if 'Atomic Number =' in line:
-      i = int(thisline[-1]) - 1
-      new = (i != index)
-      if new:
-        nist_mass.append(['',0])
-      index = i
-    elif 'Atomic Symbol =' in line and new:
-      nist_mass[index][0] = thisline[-1]
-    elif 'Standard Atomic Weight =' in line and new:
-      nist_mass[index][1] = float(rm_brackets(thisline[-1]))
-
-def standard_mass(atom):
-  '''Returns the standard atomic mass of a given atom.
-    
-  **Parameters:**
-  
-  atom : int or str
-    Contains the name or atomic number of the atom.
-  
-  **Returns:**
-  
-  mass : float
-    Contains the atomic mass in atomic units.
-  '''
-  if nist_mass is None:
-    read_nist()  
-  try:
-    atom = int(atom) - 1
-    return nist_mass[atom][1] * u_to_me
-  except ValueError:
-    return dict(nist_mass)[atom.title()] * u_to_me
-    
-def get_atom_symbol(atom):
-  '''Returns the atomic symbol of a given atom.
-    
-  **Parameters:**
-  
-  atom : int or str
-    Contains the atomic number of the atom.
-  
-  **Returns:**
-  
-  symbol : str
-    Contains the atomic symbol.
-  '''
-  if nist_mass is None:
-    read_nist()  
-  try:
-    atom = int(atom) - 1
-    return nist_mass[atom][0]
-  except ValueError:    
-    return atom.upper()
-
-def dump(data,fid):
-  import cPickle
-  with open(fid, "wb") as output:
-    cPickle.dump(data,output,cPickle.HIGHEST_PROTOCOL)
-
-def load(fid,**kwargs):
-  import cPickle
-  with open(fid, "rb") as input:       
-    data = cPickle.load(input)
-  return data
