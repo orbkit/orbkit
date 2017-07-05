@@ -32,7 +32,6 @@ from scipy import integrate
 # Import orbkit modules
 from orbkit import core,grid, output, options
 from orbkit.display import display
-from orbkit.read.tools import mo_select
 
 def calc_mo(qc, fid_mo_list, drv=None, otype=None, ofid=None,
             numproc=None, slice_length=None):
@@ -64,18 +63,10 @@ def calc_mo(qc, fid_mo_list, drv=None, otype=None, ofid=None,
   **Returns:**
     mo_list : numpy.ndarray, shape=((NMO,) + N)
       Contains the NMO=len(qc.mo_spec) molecular orbitals on a grid.
-    mo_info : dict 
-      Contains information of the selected molecular orbitals and has following Members:
-        :mo: - List of molecular orbital labels.
-        :mo_ii: - List of molecular orbital indices.
-        :mo_spec: - Selected elements of mo_spec. See :ref:`Central Variables` for details.
-        :mo_in_file: - List of molecular orbital labels within the fid_mo_list file.
-        :sym_select: - If True, symmetry labels have been used. 
-      
   '''
-  mo_info = mo_select(qc.mo_spec, fid_mo_list, strict=True)
+
   qc_select = qc.todict()
-  qc_select['mo_spec'] = mo_info['mo_spec']
+  qc_select['mo_spec'] = qc.mo_spec.select(fid_mo_list, strict=True)
   
   slice_length = options.slice_length if slice_length is None else slice_length
   numproc = options.numproc if numproc is None else numproc
@@ -87,7 +78,7 @@ def calc_mo(qc, fid_mo_list, drv=None, otype=None, ofid=None,
                              numproc=numproc)
   
   if otype is None:
-    return mo_list, mo_info
+    return mo_list
   
   if ofid is None:
     ofid = '%s_MO' % (options.outputname)
@@ -100,8 +91,8 @@ def calc_mo(qc, fid_mo_list, drv=None, otype=None, ofid=None,
     # Create Output     
     cube_files = []
     for i,j in enumerate(qc_select['mo_spec']):
-      outputname = '%s_%s' % (ofid,mo_info['mo'][i])
-      comments = ('%s,Occ=%.1f,E=%+.4f' % (mo_info['mo'][i],
+      outputname = '%s_%s' % (ofid, qc_select['mo_spec'].sel_mo[i]) #was mo
+      comments = ('%s,Occ=%.1f,E=%+.4f' % (qc_select['mo_spec'].sel_mo[i], #was mo
                                            j['occ_num'],
                                            j['energy']))
       index = numpy.index_exp[:,i] if drv is not None else i
@@ -134,7 +125,7 @@ def calc_mo(qc, fid_mo_list, drv=None, otype=None, ofid=None,
     output.main_output(data,qc.geo_info,qc.geo_spec,
                        otype='mayavi',datalabels=datalabels)
   
-  return mo_list, mo_info
+  return mo_list
   
 def mo_set(qc, fid_mo_list, drv=None, laplacian=None,
            otype=None, ofid=None, return_all=True,
@@ -172,17 +163,10 @@ def mo_set(qc, fid_mo_list, drv=None, laplacian=None,
     delta_datasets : numpy.ndarray, shape=((NSET,NDRV) + N)
       Contains the NDRV NSET molecular orbital set on a grid. This is only 
       present if derivatives are requested.
-    mo_info : dict 
-      Contains information of the selected molecular orbitals and has following Members:
-        :mo: - List of molecular orbital labels.
-        :mo_ii: - List of molecular orbital indices.
-        :mo_spec: - Selected elements of mo_spec. See :ref:`Central Variables` for details.
-        :mo_in_file: - List of molecular orbital labels within the fid_mo_list file.
-        :sym_select: - If True, symmetry labels have been used. 
   '''
 
-  mo_info = mo_select(qc.mo_spec, fid_mo_list, strict=False)
-  qc_select = qc.todict()
+  mo_info = qc.mo_spec.mo_select(fid_mo_list, strict=False)
+  qc_select.mo_spec = mo_info
     
   drv = options.drv if drv is None else drv
   laplacian = options.laplacian if laplacian is None else laplacian
@@ -197,19 +181,19 @@ def mo_set(qc, fid_mo_list, drv=None, laplacian=None,
   datasets = []
   delta_datasets = []
   cube_files = []
-  for i_file,j_file in enumerate(mo_info['mo_in_file']):
+  for i_file,j_file in enumerate(mo_info.sel_mo):
     display('Starting with the %d. element of the molecular orbital list (%s)...\n\t' % 
                 (i_file+1,fid_mo_list) + str(j_file) + 
                 '\n\t(Only regarding existing and occupied mos.)\n')
     
-    qc_select['mo_spec'] = []
-    for i_mo,j_mo in enumerate(mo_info['mo']):
-      if j_mo in j_file:
-        if mo_info['sym_select']: 
-          ii_mo = numpy.argwhere(mo_info['mo_ii'] == j_mo)
-        else: 
-          ii_mo = i_mo
-        qc_select['mo_spec'].append(mo_info['mo_spec'][int(ii_mo)])
+#    qc_select['mo_spec'] = []
+#    for i_mo,j_mo in enumerate(mo_info['mo_ii']): #was mo
+#      if j_mo in j_file:
+#        if mo_info['sym_select']: 
+#          ii_mo = numpy.argwhere(mo_info['mo_ii'] == j_mo)
+#        else: 
+#          ii_mo = i_mo
+#        qc_select['mo_spec'].append(mo_info['mo_spec'][int(ii_mo)])
     
     data = core.rho_compute(qc_select,
                             drv=drv,
@@ -286,19 +270,19 @@ def mo_set(qc, fid_mo_list, drv=None, laplacian=None,
   if drv is None:
     if 'mayavi' in otype:
       output.main_output(datasets,qc.geo_info,qc.geo_spec,
-                       otype='mayavi',datalabels=mo_info['mo_in_file'])
-    return datasets, mo_info
+                       otype='mayavi',datalabels=mo_info.sel_mo)
+    return datasets#, mo_info
   else:
     delta_datasets = numpy.array(delta_datasets)
     if 'mayavi' in otype:
       datalabels = []
-      for i in mo_info['mo_in_file']:
+      for i in mo_info.sel_mo:
         datalabels.extend(['d/d%s of %s' % (j,i) for j in drv])
         if laplacian:
           datalabels.append('laplacian of %s' % i)
       output.main_output(delta_datasets.reshape((-1,) + grid.get_shape()),
                          qc.geo_info,qc.geo_spec,otype='mayavi',datalabels=datalabels)
-    return datasets, delta_datasets, mo_info
+    return datasets, delta_datasets#, mo_info
   # mo_set 
 
 def calc_ao(qc, drv=None, otype=None, ofid=None):  

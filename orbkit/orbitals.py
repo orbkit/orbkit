@@ -1,14 +1,15 @@
 import numpy
+from os import path
 try:
   from UserList import UserList
 except ImportError:
   from collections import UserList
 
 from .tools import *
+from .display import display
 
 class AOClass(UserList):
-  '''
-  AO base class which contains all information on atomic orbitals.
+  '''AO base class which contains all information on atomic orbitals.
   Two types of dataformats are available:
 
   1. Numpy-style data:
@@ -31,7 +32,7 @@ class AOClass(UserList):
 
     See :ref:`Central Variables` in the manual for details.
   '''
-  def __init__(self, restart=None, seq = []):
+  def __init__(self, seq = [], restart=None):
     UserList.__init__(self, seq)
     self.up2date = False
     self.spherical = False
@@ -119,6 +120,9 @@ class AOClass(UserList):
                 'ao_spherical': None}
     return template
   def new2old(self):
+    '''Transforms Numpy-style data to lists of dictionary style data
+      for compatability.
+    '''
     if self.cont2atoms is not None:
       ao_spec = []
       ispher = 0
@@ -138,27 +142,62 @@ class AOClass(UserList):
       self.data = ao_spec
 
   def set_template(self, array, item):
+    '''Template for updating Numpy-style data.
+    '''
     if not numpy.allclose(array, item):
       raise ValueError('Old and new arrays need to be of the same size!')
     array = item
     self.new2old()
   def set_contspher(self, item):
+    '''Set function for numpy array version of ao_spherical.
+
+       **Parameters:**
+
+        contspher: numpy.ndarray, dtype=numpy.intc
+    '''
     require(item, dtype=numpy.intc)
     self.set_template(self.contspher, item)
   def set_cont2atoms(self, item):
+    '''Set mapping between contracted GTO's and atoms.
+
+       **Parameters:**
+
+        cont2atoms: numpy.ndarray, dtype=numpy.intc, shape = (NAO)
+    '''
     require(item, dtype=numpy.intc)
     self.set_template(self.cont2atoms, item)
   def set_prim2cont(self, item):
+    '''Set mapping between primitive and contracted GTO's.
+
+       **Parameters:**
+
+        prim2cont: numpy.ndarray, dtype=numpy.intc, shape = (NPAO)
+    '''
     require(item, dtype=numpy.intc)
     self.set_template(self.prim2cont, item)
   def set_lxlylz(self, item):
+    '''Set function for the exponents lx, ly, lz for the Cartesian Gaussians.
+
+    **Parameters:**
+
+    lxlylz : numpy.ndarray, dtype=numpy.intc, shape = (NAO,3)
+      Contains the expontents lx, ly, lz for the Cartesian Gaussians.
+    '''
     require(item, dtype=numpy.intc)
     self.set_template(self.lxlylz, item)
   def set_pao(self, item):
+    '''Set exponents and contraction coefficients for primitive GTO's.
+
+       **Parameters:**
+
+        pao: numpy.ndarray, dtype=numpy.float64, shape = (NPAO, 2)
+    '''
     require(item, dtype=numpy.float64)
     self.set_template(self.pao, item)
 
   def is_normlized(self):
+    '''Check if orbitals in AOClass are normalized.
+    '''
     if not self.up2date:
       self.normalized = False
       conts_are_norm = []
@@ -173,6 +212,8 @@ class AOClass(UserList):
 #For now there are still a few calls to it
 #and I don't know how to solve those easily
   def get_old_ao_spherical(self):
+    '''Compatability funtction to allow access to old-style ao_spherical.
+    '''
     old_ao_spherical = []
     for cont in self.data:
       if cont['ao_spherical'] is not None:
@@ -180,6 +221,12 @@ class AOClass(UserList):
     return old_ao_spherical
 
   def get_contspher(self):
+    '''Get function for numpy array version of ao_spherical.
+
+       **Returns:**
+
+        contspher: numpy.ndarray, dtype=numpy.intc, shape = (NSPH)
+    '''
     if not self.up2date:
       self.contspher = []
       for cont in self.data:
@@ -189,12 +236,24 @@ class AOClass(UserList):
     self.contspher = numpy.array(self.contspher, dtype=numpy.intc)
     return self.contspher
   def get_cont2atoms(self):
+    '''Get mapping between contracted GTO's and atoms.
+
+       **Returns:**
+
+        cont2atoms: numpy.ndarray, dtype=numpy.intc, shape = (NAO)
+    '''
     if not self.up2date:
       self.cont2atoms = numpy.zeros(shape=(len(self.data)), dtype=numpy.intc)
       for ic, contracted in enumerate(self.data):
         self.cont2atoms[ic] = contracted['atom']
     return self.cont2atoms
   def get_pao(self):
+    '''Get exponents and contraction coefficients for primitive GTO's.
+
+       **Returns:**
+
+        pao: numpy.ndarray, dtype=numpy.float64, shape = (NPAO, 2)
+    '''
     if not self.up2date:
       self.pao = []
       for ic, contracted in enumerate(self.data):
@@ -209,6 +268,12 @@ class AOClass(UserList):
       l = exp[lquant[contracted['type']]]
     return l
   def get_lmpao(self):
+    '''Get exponents and contraction coefficients for each spherical harmonic basis function.
+
+       **Returns:**
+
+        lmpao: numpy.ndarray, dtype=numpy.float64, shape = (NSPH)
+    '''
     if not self.up2date:
       self.lmpao = []
       for ic, contracted in enumerate(self.data):
@@ -217,6 +282,12 @@ class AOClass(UserList):
     self.lmpao = numpy.array(self.lmpao, dtype=numpy.float64)
     return self.lmpao
   def get_prim2cont(self):
+    '''Get mapping between primitive and contracted GTO's.
+
+       **Returns:**
+
+        prim2cont: numpy.ndarray, dtype=numpy.intc, shape = (NPAO)
+    '''
     if not self.up2date:
       self.prim2cont = []
       for ic, contracted in enumerate(self.data):
@@ -228,6 +299,12 @@ class AOClass(UserList):
   #We do not set it as an attribute though as it might bocome very large e.g.
   #in the case of CI/TD-DFT calculations
   def get_cont2prim(self):
+    '''Get 2D-matrix mapping between primitive and contracted GTO's.
+
+       **Returns:**
+
+        cont2prim: numpy.ndarray, dtype=bool, shape = (NAO, NPAO)
+    '''
     if not self.up2date:
       self.get_prim2cont()
       self.get_cont2atoms()
@@ -238,6 +315,20 @@ class AOClass(UserList):
       cont2prim[ic, [numpy.argwhere(self.prim2cont == ic)]] = True
     return cont2prim
   def get_lmprim2cont(self, return_l=False):
+    '''Get mapping between spherical harmonic basis functions and contracted GTO's.
+
+      **Parameters:**
+     
+        return_l : bool, optional
+          Return also l-index of spherical harmonic basis functions.
+
+       **Returns:**
+
+        return_l = False:
+          lmprim2cont: numpy.ndarray, dtype=numpy.intc, shape = (NSPH)
+        return_l = True:
+          lmprim2cont: numpy.ndarray, dtype=numpy.intc, shape = (NSPH, NSPH)
+    '''
     if not self.up2date or return_l:
       self.lmprim2cont = []
       if return_l:
@@ -256,8 +347,7 @@ class AOClass(UserList):
     else:
       return self.lmprim2cont
   def get_lxlylz(self, get_assign=False, bincount=False, get_label=False):
-    '''
-    Extracts the exponents lx, ly, lz for the Cartesian Gaussians.
+    '''Extracts the exponents lx, ly, lz for the Cartesian Gaussians.
 
     **Parameters:**
 
@@ -296,19 +386,18 @@ class AOClass(UserList):
 
 
 class MOClass(UserList):
-  '''
-  MO base class which contains all information on atomic orbitals.
+  '''MO base class which contains all information on atomic orbitals.
   Two types of dataformats are available:
 
   1. Numpy-style data:
 
-      mo_coeff : numpy.ndarray, dtype=float64, shape = (NMO, NAO) 
+      coeff : numpy.ndarray, dtype=float64, shape = (NMO, NAO) 
         Molecular orbital coefficients.
-      mo_occ : numpy.ndarray, dtype=float64, shape = (NMO)
+      occ : numpy.ndarray, dtype=float64, shape = (NMO)
         Occupation numbers for molecular orbitals.
-      mo_eig : numpy.ndarray, dtype=float64, shape = (NMO)
+      eig : numpy.ndarray, dtype=float64, shape = (NMO)
         Eigenvalues for molecular orbitals.
-      mo_sym : numpy.ndarray, dtype=str, shape = (NMO)
+      sym : numpy.ndarray, dtype=str, shape = (NMO)
         MOLPRO-like symmetry label of molecular orbitals.
 
   2. Lists of dictionaries:
@@ -317,26 +406,29 @@ class MOClass(UserList):
 
     See :ref:`Central Variables` in the manual for details.
   '''
-  def __init__(self, restart=None, seq = []):
+  def __init__(self, seq = [], restart=None):
     UserList.__init__(self, seq)
     self.up2date = False
-    self.mo_coeff = None
-    self.mo_occ = None
-    self.mo_sym = None
-    self.mo_eig = None
+    self.coeff = None
+    self.occ = None
+    self.sym = None
+    self.eig = None
+    self.sel_mo = None
     if restart is not None:
       self.up2date = True
-      self.mo_coeff = restart['mo_coeff']
-      self.mo_occ = restart['mo_occ']
-      self.mo_sym = restart['mo_sym']
-      self.mo_eig = restart['mo_eig']
+      self.coeff = restart['coeff']
+      self.occ = restart['occ']
+      self.sym = restart['sym']
+      self.eig = restart['eig']
+      self.sel_mo = restart['selection']
       self.new2old()
   def todict(self):
     self.update()
-    data = {'mo_coeff': self.mo_coeff,
-            'mo_occ': self.mo_occ,
-            'mo_eig': self.mo_eig,
-            'mo_sym': self.mo_sym}
+    data = {'coeff': self.coeff,
+            'selection': self.sel_mo,
+            'occ': self.occ,
+            'eig': self.eig,
+            'sym': self.sym}
     return data
   def __getitem__(self, item):
     return UserList.__getitem__(self, item)
@@ -349,25 +441,50 @@ class MOClass(UserList):
       raise TypeError('Comaring of MOClass to non MOClass object not defined')
     if cases[0]:
       self.update()
-      same = [numpy.allclose(self.mo_coeff, other.mo_coeff),
-      numpy.allclose(self.mo_eig, other.mo_eig),
-      numpy.allclose(self.mo_occ, other.mo_occ),
-      self.compare_mo_sym(other.mo_sym)]
+      same = [numpy.allclose(self.coeff, other.coeff),
+      numpy.allclose(self.eig, other.eig),
+      numpy.allclose(self.occ, other.occ),
+      self.compare_sym(other.sym)]
       return all(same)
     else:
       if self.data is None or len(self.data) == 0:
         return True
       else:
         return False
-  def compare_mo_sym(self, sym2):
+  def compare_sym(self, sym2):
     same = True
-    for atom1, atom2 in zip(self.mo_sym, sym2):
+    for atom1, atom2 in zip(self.sym, sym2):
       if not len(atom1) == len(atom2):
-        raise ValueError('mo_sym object are of different length!')
-      for i in range(len(self.mo_sym)):
-        if self.mo_sym[i] != sym2[i]:
+        raise ValueError('sym object are of different length!')
+      for i in range(len(self.sym)):
+        if self.sym[i] != sym2[i]:
           same = False
     return same
+  def get_homo(self, tol=1e-5):
+    '''Returns index of highest occupied MO.
+    '''
+    return (self.get_occ() > tol).nonzero()[0][-1]
+  def get_lumo(self, tol=1e-5):
+    '''Returns index of lowest unoccupied MO.
+    '''
+    ilumo = (self.get_occ() > tol).nonzero()[0][-1]+1
+    if ilumo > len(self.data):
+      raise ValueError('No unoccupied orbitals present!')
+    else:
+      return ilumo
+  def get_lastbound(self):
+    '''Returns index of highest bound MO.
+    ''' 
+    imaxbound = (self.get_eig() <= 0.).nonzero()[0][-1]
+    if imaxbound > len(self.data):
+      raise ValueError('No unoccupied orbitals present!')
+    else:
+      return imaxbound
+  def sort_by_sym(self):
+    '''Sorts mo_spec by symmetry.
+    '''
+    self.data.sort()
+    self.update()
   def append(self, item):
     UserList.append(self, item)
     self.up2date = False
@@ -385,59 +502,324 @@ class MOClass(UserList):
     return template
   def new2old(self):
     self.data = []
-    for imo in range(len(self.mo_occ)):
+    for imo in range(len(self.occ)):
       self.data.append(self.mo_template())
-      self.data[-1]['coeffs'] = self.mo_coeff[imo]
-      self.data[-1]['energy'] = self.mo_eig[imo]
-      self.data[-1]['occ_num'] = self.mo_occ[imo]
-      self.data[-1]['sym'] = self.mo_sym[imo]
+      self.data[-1]['coeffs'] = self.coeff[imo]
+      self.data[-1]['energy'] = self.eig[imo]
+      self.data[-1]['occ_num'] = self.occ[imo]
+      self.data[-1]['sym'] = self.sym[imo]
     return
   def update(self):
-    self.get_mo_coeff()
-    self.get_mo_occ()
-    self.get_mo_eig()
-    self.get_mo_sym()
+    self.get_coeff()
+    self.get_occ()
+    self.get_eig()
+    self.get_sym()
     self.up2date = True
     return
   def set_template(self, array, item):
+    '''Template for updating Numpy-style data.
+    '''
     if not numpy.allclose(array, item):
       raise ValueError('Old and new arrays need to be of the same size!')
     array = item
     self.new2old()
-  def set_mo_coeff(self, item):
-    require(item, dtype=numpy.float64)
-    self.set_template(self.mo_coeff, item)
-  def set_mo_eig(self, item):
-    require(item, dtype=numpy.float64)
-    self.set_template(self.mo_eig, item)
-  def set_mo_sym(self, item):
-    require(item, dtype=str)
-    self.set_template(self.mo_sym, item)
+  def set_coeff(self, item):
+    '''Set function for numpy array version of molecular orbital symmetries.
 
-  def get_mo_coeff(self):
+       **Parameters:**
+
+        sym: numpy.ndarray, dtype=numpy.str, shape = (NMO)
+    '''
+    require(item, dtype=numpy.float64)
+    self.set_template(self.coeff, item)
+  def set_occ(self, item):
+    '''Set function for numpy array version of molecular orbital occupancies.
+
+       **Parameters:**
+
+        eig: numpy.ndarray, dtype=numpy.float64, shape = (NMO)
+    '''
+    require(item, dtype=numpy.float64)
+    self.set_template(self.occ, item)
+  def set_eig(self, item):
+    '''Set function for numpy array version of molecular orbital energies.
+
+       **Parameters:**
+
+        eig: numpy.ndarray, dtype=numpy.float64, shape = (NMO)
+    '''
+    require(item, dtype=numpy.float64)
+    self.set_template(self.eig, item)
+  def set_sym(self, item):
+    '''Set function for numpy array version of molecular orbital coefficients.
+
+       **Parameters:**
+
+        coeff: numpy.ndarray, dtype=numpy.float64, shape = (NMO, NAO)
+    '''
+    require(item, dtype=str)
+    self.set_template(self.sym, item)
+
+  def get_coeff(self):
+    '''Get function for numpy array version of molecular orbital coefficients.
+
+       **Returns:**
+
+        coeff: numpy.ndarray, dtype=numpy.float64, shape = (NMO, NAO)
+    '''
     if not self.up2date:
-      self.mo_coeff = numpy.zeros(shape=(len(self.data), len(self.data[0]['coeffs'])), dtype=numpy.float64)
+      self.coeff = numpy.zeros(shape=(len(self.data), len(self.data[0]['coeffs'])), dtype=numpy.float64)
       for imo, mo in enumerate(self.data):
-        self.mo_coeff[imo] = mo['coeffs']
-    return self.mo_coeff
-  def get_mo_eig(self):
+        self.coeff[imo] = mo['coeffs']
+    return self.coeff
+  def get_eig(self):
+    '''Get function for numpy array version of molecular orbital energies.
+
+       **Returns:**
+
+        eig: numpy.ndarray, dtype=numpy.float64, shape = (NMO)
+    '''
     if not self.up2date:
-      self.mo_eig = numpy.zeros(shape=(len(self.data)), dtype=numpy.float64)
+      self.eig = numpy.zeros(shape=(len(self.data)), dtype=numpy.float64)
       for imo, mo in enumerate(self.data):
-        self.mo_eig[imo] = mo['energy']
-    return self.mo_eig
-  def get_mo_occ(self):
+        self.eig[imo] = mo['energy']
+    return self.eig
+  def get_occ(self):
+    '''Get function for numpy array version of molecular orbital occupancies.
+
+       **Returns:**
+
+        occ: numpy.ndarray, dtype=numpy.float64, shape = (NMO)
+    '''
     if not self.up2date:
-      self.mo_occ = numpy.zeros(shape=(len(self.data)), dtype=numpy.float64)
+      self.occ = numpy.zeros(shape=(len(self.data)), dtype=numpy.float64)
       for imo, mo in enumerate(self.data):
-        self.mo_occ[imo] = mo['occ_num']
-    return self.mo_occ
-  def get_mo_sym(self):
+        self.occ[imo] = mo['occ_num']
+    return self.occ
+  def get_sym(self):
+    '''Get function for numpy array version of molecular orbital symmetries.
+
+       **Returns:**
+
+        sym: numpy.ndarray, dtype=numpy.str, shape = (NMO)
+    '''
     if not self.up2date:
-      self.mo_sym = numpy.zeros(shape=(len(self.data)), dtype=str)
+      self.sym = []
       for imo, mo in enumerate(self.data):
-        self.mo_sym[imo] = mo['sym']
-    return self.mo_sym
+        self.sym.append(mo['sym'])
+      self.sym = numpy.array(self.sym, dtype=str)
+    return self.sym
+
+  def select(self, fid_mo_list, strict=False):
+    '''Selects molecular orbitals from an external file or a list of molecular 
+       orbital labels.
+
+    **Parameters:**
+     
+      mo_spec :        
+        See :ref:`Central Variables` for details.
+      strict : bool, optional
+        If True, orbkit will follow strictly the fid_mo_list, i.e., the order of 
+        the molecular orbitals will be kept and multiple occurrences of items 
+        will evoke multiple calculations of the respective molecular orbitals. 
+      fid_mo_list : str, `'all_mo'`, or list
+        | If fid_mo_list is a str, specifies the filename of the molecular orbitals list.
+        | If fid_mo_list is 'all_mo', creates a list containing all molecular orbitals.
+        | If fid_mo_list is a list, provides a list (or a list of lists) of molecular 
+          orbital labels.
+
+    **Supported Formats:**
+    
+      Integer List (Counting from **ONE**!)::
+      
+        1       2       3
+        5       4
+        homo    lumo+2:lumo+4
+      
+      List with Symmetry Labels::
+      
+        1.1     2.1     1.3
+        1.1     4.1
+        4.1     2.3     2.1
+    
+    **Returns:**
+    
+      Dictionary with following Members:
+        :mo_ii: - List of molecular orbital indices.
+        :mo_spec: - Selected elements of mo_spec. See :ref:`Central Variables` for details.
+        :mo_in_file: - List of molecular orbital labels within the fid_mo_list file.
+        :sym_select: - If True, symmetry labels have been used. 
+    
+    ..attention:
+      
+      For **unrestricted** calculations, orbkit adds `_a` (alpha) or `_b` (beta) to
+      the symmetry labels, e.g., `1.1_a`. 
+      If you have specified the option `spin=alpha` or `spin=beta`, only the 
+      alpha or the beta orbitals are taken into account for the counting 
+      within the Integer List.
+    '''
+    import re
+    display('\nProcessing molecular orbital list...')
+    
+    mo_in_file = []
+    selected_mo = []
+    sym_select = False
+
+    def ordered_set(inlist):
+      outlist = []
+      for i in inlist:
+        if i not in outlist:
+          outlist.append(i)
+      return outlist
+
+    def eval_mp(i, r):
+      if r not in i:
+        return i
+      else:
+        tmp = i.split(r)
+        if r == '-':
+          i = int(tmp[0]) - int(tmp[1])
+        elif r == '+':
+          i = int(tmp[0]) + int(tmp[1])
+        else:
+          raise ArithmeticError('Unknown Operation in input string.')
+        return str(i)
+
+    def remove_empty(item):
+      out = []
+      for i in item:
+        if i:
+          out.append(i)
+      return out
+
+    def parse_nosym(item):
+      keys = {'homo': str(self.get_homo()), 
+              'lumo': str(self.get_lumo()),
+              'last_bound': str(self.get_lastbound()),
+              'lastbound': str(self.get_lastbound())}
+
+      for key in keys:
+        item = item.replace(key, keys[key])
+      doub_occur = item.count(':')
+      item = remove_empty(item.split(':'))
+      if len(item) > 1:
+        for i in range(len(item)):
+          for operation in ['-','+']:
+            item[i] = eval_mp(item[i], operation)
+      else:
+        for operation in ['-','+']:
+          item = eval_mp(item, operation)
+      if doub_occur > 0:
+        s = 1
+        if doub_occur == 1 and len(item) == 1: #Stuff like :b
+          a = 0
+          b = int(item[0])
+        elif doub_occur == 1 and len(item) == 2: #Stuff like a:b
+          a = int(item[0])
+          b = int(item[1])
+        elif doub_occur == 2 and len(item) == 3: #Stuff like a:b:s
+          a = int(item[0])
+          b = int(item[1])
+          s = int(item[2])
+        elif doub_occur == 2 and len(item) == 1: #Stuff like ::s
+          a = 0
+          b = len(self.data)
+          s = int(item[0])
+        else:
+          raise ValueError('Format not recognized')
+        if a < 0:
+          raise ValueError('Lower index or range out of bounds')
+        if b > len(self.data):
+          raise ValueError('Upper index or range out of bounds')
+        item = [k for k in range(a, b, s)]
+      else:
+        item = [int(k) for k in item]
+      return item
+
+    def parse_sym(item):
+      error = False
+      tmp = []
+      if any([operation in item for operation in ['+', '-', ':']]) \
+         or '.' not in item:
+         raise IOError('{0} is not a valid label according '.format(item) +
+                      'to the MOLPRO nomenclature, e.g., `5.1` or `5.A1`.' +
+                      '\n\tHint: You cannot mix integer numbering and MOLPRO\'s ' +
+                      'symmetry labels')
+      tmp.extend(list(numpy.argwhere(self.get_sym() == item)[0]))
+      return tmp
+
+    regsplit = re.compile(r"[\s,;]")
+
+    if isinstance(fid_mo_list,str) and fid_mo_list.lower() == 'all_mo':
+      mo_in_file_new = [[i for i in range(len(self.data))]]
+    else:
+      if isinstance(fid_mo_list,str) and not path.exists(fid_mo_list):
+        if ',' in fid_mo_list:
+          fid_mo_list = fid_mo_list.split(',')
+        else:
+          fid_mo_list = [fid_mo_list]
+      if isinstance(fid_mo_list, list):
+        for i in fid_mo_list:
+          if not isinstance(i, list):
+            i = re.sub(' +',' ', i)
+            i = regsplit.split(i) if isinstance(i,str) else [i]
+          mo_in_file.append(map(str,i))
+      else:
+        try:
+          fid=open(fid_mo_list,'r')
+          flines = fid.readlines()
+          fid.close()
+          for line in flines:
+            integer = line.replace(',',' ').split()
+            mo_in_file.append(integer)
+        except:
+          raise IOError('The selected mo-list (%(m)s) is not valid!' % 
+                        {'m': fid_mo_list} + '\ne.g.\n\t1\t3\n\t2\t7\t9\n')
+
+      # Print some information
+      for i,j in enumerate(mo_in_file):
+        display('\tLine %d: %s' % (i+1,', '.join(j)))
+      
+      # Check if the molecular orbitals are specified by symmetry 
+      # (e.g. 1.1 in MOLPRO nomenclature) or 
+      # by the number in the input file (e.g. 1)
+      mo_in_file_new = []
+      for sublist in mo_in_file:
+        tmp = []
+        for item in sublist:
+          if '.' not in item:
+            if isinstance(item, str):
+              tmp.extend(parse_nosym(item))
+            else:
+              tmp.extend(item)
+          else:
+            tmp.extend(parse_sym(item))
+        mo_in_file_new.append(tmp)
+
+    mo_in_file = mo_in_file_new
+
+    if not strict:
+      mo_in_file = [ordered_set(sublist) for sublist in mo_in_file]
+
+    self.sel_mo = mo_in_file
+    mo_ii = [item for sublist in mo_in_file for item in sublist]
+    mo_spec = MOClass([])
+    for index in mo_ii:
+      mo_spec.append(self.data[index])
+        
+    # Print some information
+    display('\nThe following orbitals will be considered...')
+    for i,j in enumerate(mo_in_file):
+      display('\tLine %d: %s' % (i+1,', '.join(str(j))))
+    
+    display('')
+    return mo_spec
+
+
+
+
+
+
 
 
 

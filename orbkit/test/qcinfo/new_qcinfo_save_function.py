@@ -15,7 +15,6 @@ filepath = os.path.join(tests_home, 'tmp_save.npz')
 qc_old.save(filepath)
 
 qc_new = QCinfo(filepath)
-
 equal(qc_old, qc_new)
 
 os.remove(filepath)

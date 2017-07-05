@@ -57,9 +57,8 @@ class QCinfo:
       self.geo_spec = data['geo_spec']
       self.geo_info = data['geo_info']
 
-    #Old formats for compatability
-    self.ao_spec = AOClass(data)
-    self.mo_spec = MOClass(data)
+    self.ao_spec = AOClass(restart=data)
+    self.mo_spec = MOClass(restart=data)
 
   def __eq__(self, other):
     if not isinstance(other, QCinfo):
@@ -100,7 +99,6 @@ class QCinfo:
                            geo_spec=self.geo_spec,
                            geo_info=self.geo_info,
                            **data)
-
     return
 
   def read(self, filename):
@@ -135,11 +133,6 @@ class QCinfo:
     self.geo_spec = numpy.array(self.geo_spec,dtype=float)
     if is_angstrom:
       self.geo_spec *= aa2a0
-  
-  def sort_mo_sym(self):
-    '''Sorts mo_spec by symmetry.
-    '''
-    self.mo_spec.sort()
 
   def get_mo_labels(self):
     return ['MO %(sym)s, Occ=%(occ_num).2f, E=%(energy)+.4f E_h' % 
@@ -149,12 +142,12 @@ class QCinfo:
     mo_eig = numpy.array([i['energy'] for i in self.mo_spec], dtype=numpy.float64)
     return copy(mo_eig)
   
-  def get_mo_occ(self):
+  def get_occ(self):
     mo_occ = numpy.array([i['occ_num'] for i in self.mo_spec], dtype=numpy.intc)
     return copy(mo_occ)
   
   def get_nmoocc(self):
-    return sum(self.get_mo_occ())
+    return sum(self.get_occ())
   
   def get_com(self,nuc_list=None):
     '''Computes the center of mass.

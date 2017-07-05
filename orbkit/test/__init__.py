@@ -20,11 +20,6 @@ tests = ['units',
          'analytical_properties/dipole',
          'grid_based/rho_compute']
 
-def clean(testdir):
-  if os.path.isdir(testdir):
-    shutil.rmtree(testdir)
-  return
-
 #This class is a modification of the ASE class of the same name
 class ScriptTestCase(unittest.TestCase):
     def __init__(self, filename):
@@ -63,12 +58,6 @@ def test():
   for test in tests:
     ts.addTest(ScriptTestCase(filename=os.path.abspath(tests_home + test)))
 
-  testdir = tests_home + 'test_tmp'
-  clean(testdir)
-  os.mkdir(testdir)
-  os.chdir(testdir)
-
   results = tsrun.run(ts)
-  clean(testdir)
 
   sys.exit(len(results.errors + results.failures))
