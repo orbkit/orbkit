@@ -413,19 +413,19 @@ class MOClass(UserList):
     self.occ = None
     self.sym = None
     self.eig = None
-    self.sel_mo = None
+    self.selected_mo = None
     if restart is not None:
       self.up2date = True
       self.coeff = restart['coeff']
       self.occ = restart['occ']
       self.sym = restart['sym']
       self.eig = restart['eig']
-      self.sel_mo = restart['selection']
+      self.selected_mo = restart['selection']
       self.new2old()
   def todict(self):
     self.update()
     data = {'coeff': self.coeff,
-            'selection': self.sel_mo,
+            'selection': self.selected_mo,
             'occ': self.occ,
             'eig': self.eig,
             'sym': self.sym}
@@ -801,11 +801,12 @@ class MOClass(UserList):
     if not strict:
       mo_in_file = [ordered_set(sublist) for sublist in mo_in_file]
 
-    self.sel_mo = mo_in_file
     mo_ii = [item for sublist in mo_in_file for item in sublist]
     mo_spec = MOClass([])
     for index in mo_ii:
       mo_spec.append(self.data[index])
+
+    mo_spec.selected_mo = mo_in_file
         
     # Print some information
     display('\nThe following orbitals will be considered...')

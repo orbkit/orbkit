@@ -291,7 +291,6 @@ def check_options(error=raise_error,display=print_message,
                           what='filename for the input file', 
                           interactive=interactive,
                           error=error))
-    
     # Check the input type for correctness
     if itype not in itypes:
       error('Invalid input file format (choose from "%s")\n' % 
@@ -299,8 +298,6 @@ def check_options(error=raise_error,display=print_message,
     if itype == 'cclib' and cclib_parser is None:
       error('The input type cclib requires the specification of parser, ' + 
             'e.g., --cclib_parser=Gaussian')
-    if itype == 'auto':
-      itype = None
     
     fid_base = os.path.splitext(filename)[0]
     
@@ -485,7 +482,7 @@ def check_grid_output_compatibilty(error=raise_error):
 
 #--- Input/Output Options ---
 filename        = ''            #: Specifies input file name. (str)
-itype           = None          #: Specifies input file type. See :data:`itypes` for details. (str) 
+itype           = 'auto'          #: Specifies input file type. See :data:`itypes` for details. (str) 
 cclib_parser    = None          #: If itype is 'cclib', specifies the cclib.parser. (str)
 outputname      = None          #: Specifies output file (base) name. (str)
 otype           = 'h5'          #: Specifies output file type. See :data:`otypes` for details. (str or list of str or None)
