@@ -16,7 +16,7 @@ from .qcinfo import QCinfo
 from .grid import grid_init,get_grid,set_grid
 from .main import run_orbkit,init
 from .output import main_output
-from .read import multiple_files
+from .read import multiple_files, main_read
 from .core import rho_compute,rho_compute_no_slice
 from .extras import calc_ao,calc_mo,mo_set,gross_atomic_density,\
                           mo_transition_flux_density

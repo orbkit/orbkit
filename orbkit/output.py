@@ -70,7 +70,7 @@ def main_output(data,geo_info,geo_spec,outputname='new',otype='h5',
   
   if otype is None or otype == []:
     return output_written 
-  
+
   # Convert the data to a regular grid, if possible
   output_not_possible = (grid.is_vector and not grid.is_regular)
   is_regular_vector = (grid.is_vector and grid.is_regular)
@@ -91,7 +91,7 @@ def main_output(data,geo_info,geo_spec,outputname='new',otype='h5',
     it = [(0,None)]
     data = [data]
   f = {'f': outputname}
-  
+
   for i,j in it:
     f['d'] = j
     d = data[i]
@@ -112,7 +112,7 @@ def main_output(data,geo_info,geo_spec,outputname='new',otype='h5',
       else: 
         # Create Amira network incl. Alphamap
         display('\nCreating ZIBAmira network file...')
-        hx_network_creator(data,(fid % f))
+        hx_network_creator(d,(fid % f))
         output_written.append('%s.hx' % (fid % f))
     if 'cb' in otype or 'vmd' in otype and not print_waring:
       if output_not_possible: print_waring = True
@@ -285,14 +285,16 @@ def hdf5_append(x,group,name='data'):
   
   **Parameters:**
   
-  s : numpy.ndarray, list, dict, int, float, str
-    Input data. Not supported: None
   group : h5py.File or h5py.Group
     The HDF5 file/group where the data will be appended.
   name : string, optional
     Specifies the group/dataset name in the HDF5 file/group. If empty,
     root directory of HDF5 file/group is chosen.  
   '''
+  from orbkit.orbitals import MOClass, AOClass
+
+  if isinstance(x, MOClass) or isinstance(x, AOClass):
+    x = x.todict()
   if isinstance(x,numpy.ndarray):
     if x.dtype.type is numpy.unicode_:
       x = numpy.asarray(x,dtype=numpy.string_)

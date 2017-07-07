@@ -20,7 +20,7 @@ readers = {'fchk': read_gaussian_fchk, 'wfx': read_wfx, 'wfn': read_wfn,
            'cclib': read_with_cclib, 'molden': read_molden, 'gamess': read_gaussian_log, 
            'aomix': read_aomix}
 
-def main_read(fname, all_mo=False, spin=None, itype=None, check_norm=False, **kwargs):
+def main_read(fname, all_mo=False, spin=None, itype='auto', check_norm=False, **kwargs):
   '''
   This is the high-lever interface for the
   orbkit reading routines.

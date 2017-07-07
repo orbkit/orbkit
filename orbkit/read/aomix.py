@@ -298,14 +298,13 @@ def read_aomix(fname, all_mo=False, spin=None, i_md=-1, interactive=True,
     display('in order to get normalized orbitals.')
     
     # Convert MO coefficients
-    from orbkit.analytical_integrals import create_mo_coeff
     def dfact(n):
       if n <= 0:
         return 1
       else:
         return n * dfact(n-2)
 
-    mo = create_mo_coeff(qc.mo_spec)
+    mo = qc.mo_spec.get_coeff()
     for i,j in enumerate(qc.ao_spec.get_lxlylz()):
       norm = (dfact(2*j[0] - 1) * dfact(2*j[1] - 1) * dfact(2*j[2] - 1))
       j = sum(j)

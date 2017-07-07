@@ -230,6 +230,15 @@ class QCinfo:
             'ao_spec',
             'ao_spherical',
             'mo_spec']
+    #These are all safety functions - maybe one day we won't need them anymore
+    if isinstance(self.mo_spec, dict):
+      self.mo_spec = MOClass(restart=self.mo_spec)
+    if isinstance(self.ao_spec, dict):
+      self.ao_spec = AOClass(restart=self.ao_spec)
+    if isinstance(self.mo_spec, list):
+      self.mo_spec = MOClass(self.mo_spec)
+    if isinstance(self.ao_spec, list):
+      self.ao_spec = AOClass(self.ao_spec)
     for key in keys:
       if key != 'ao_spherical':
         dct[key] = getattr(self,key)

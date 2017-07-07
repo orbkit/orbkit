@@ -133,6 +133,7 @@ def get_cart2sph(l,m):
   
     The conversion is currently only supported up to g atomic orbitals.
   '''
+  print(l,m, l+m)
   return cart2sph[l][l+m]
 
 def validate_drv(drv):
@@ -174,34 +175,6 @@ def prepare_ao_calc(ao_spec):
   atom_indices = require(atom_indices, dtype='i')
   ao_coeffs = require(ao_coeffs, dtype='f')
   return ao_coeffs,pnum_list,atom_indices
-
-def create_mo_coeff(mo,name='mo'):
-  '''Converts the input variable to an :literal:`mo_coeff` numpy.ndarray.
-  
-  **Parameters:**
-  
-  mo : list, numpy.ndarray, or mo_spec (cf. :ref:`Central Variables`)
-    Contains the molecular orbital coefficients of all orbitals.
-  name : string, optional
-    Contains a string describing the input variable. 
-  
-  **Returns:**
-  
-  mo : numpy.ndarray, shape = (NMO,NAO)
-    Contains the molecular orbital coefficients of all orbitals.
-  '''
-  if (not is_mo_spec(mo)):
-    if (not isinstance(mo,(list,numpy.ndarray))):
-      raise ValueError('%s has to be mo_spec or an numpy coefficient array.'%name)
-  else:
-    tmp = []
-    for i in mo:
-      tmp.append(i['coeffs'])
-    mo = tmp
-  mo = numpy.array(mo, dtype=numpy.float64)  
-  if mo.ndim != 2:
-    raise ValueError('%s has to be 2-dimensional.'%name)  
-  return mo
 
 def is_mo_spec(mo):
   '''Checks if :literal:`mo` is of :literal:`mo_spec` type. 

@@ -123,7 +123,7 @@ def mo_creator(ao_list,mo_spec):
   ao_list = require(ao_list,dtype='f')
   shape = ao_list.shape
   ao_list.shape = (shape[0],-1)
-  mo_coeff = create_mo_coeff(mo_spec,name='The argument `mo_spec`')
+  mo_coeff = mo_spec.get_coeff()
   mo_list = cy_core.mocreator(ao_list,mo_coeff).reshape(
                                                  ((len(mo_coeff),) + shape[1:]),
                                                  order='C')
@@ -398,7 +398,7 @@ def rho_compute(qc,calc_mo=False,drv=None,laplacian=False,
     is_drv = False
     
   # Specify the global variable containing all desired information needed 
-  # by the function slice_rho   
+  # by the function slice_rho
   if isinstance(qc,dict):
     Spec = qc
   else:
@@ -440,10 +440,9 @@ def rho_compute(qc,calc_mo=False,drv=None,laplacian=False,
   else:
     display("The calculation will be carried out with %d subprocesses." 
             % numproc)
-  #This is only a check on the first element - might be too weak bu then again
-  #There should never be a case when only one element is None anyway
+
   display("\nThere are %d contracted %s AOs and %d MOs to be calculated." %
-          (len(Spec['mo_spec'][0]['coeffs']),
+          (len(Spec['mo_spec'].get_coeff()),
            'Cartesian' if not Spec['ao_spec'].spherical else 'spherical', 
            mo_num))
   

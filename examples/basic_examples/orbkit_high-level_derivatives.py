@@ -43,31 +43,32 @@ ok.options.drv          = None           # do not calculate derivative
 ok.options.no_output    = True           # we will create our own output
 
 # run orbkit
-mo_list,mo = ok.run_orbkit()
+mo = ok.run_orbkit()
 
 # create output: molecular orbital data
-ok.output.HDF5_creator(\
-    mo_list,ok.options.outputname,ok.main.qc.geo_info,ok.main.qc.geo_spec,
+ok.output.HDF5_creator(mo,
+    ok.options.outputname,
+    ok.main.qc.geo_info,ok.main.qc.geo_spec,
     data_id='MO',               # name of data set
     append=None,                # create new file [default]
     data_only=False,            # include grid, structure, and MO data [default]
     is_mo_output=True,
-    mo_spec=mo['mo_spec'])
+    mo_spec=ok.main.qc.mo_spec)
 
 # second run: calculate derivatives
 ok.options.drv       = ['x', 'y', 'z'] # calculate derivatives along x, y and z
 ok.options.no_output = True            # we will create our own output
 
 # run orbkit
-delta_mo_list,mo = ok.run_orbkit()
+mo = ok.run_orbkit()
 
 # append output: derivative data
-ok.output.HDF5_creator(delta_mo_list,ok.options.outputname,None,None,
+ok.output.HDF5_creator(mo,ok.options.outputname,None,None,
   data_id='delta_MO',             # name of data set
   append='/',                     # where to append in file
   data_only=True,                 # do not include grid, structure, and MO data
   is_mo_output=False,
-  mo_spec=mo['mo_spec'])
+  mo_spec=ok.main.qc.mo_spec)
 
 # plot derivative
 x = ok.grid.x
@@ -91,6 +92,8 @@ if maya == False:
     print('mayavi module could not be loaded and vector field cannot be shown')
 else:
     mo_num = 3
-    mlab.quiver3d(x,y,z,delta_mo_list[0,mo_num,:],delta_mo_list[1,mo_num,:],\
-                    delta_mo_list[2,mo_num,:],line_width=1.5,scale_factor=0.1)
+    mlab.quiver3d(x,y,z,mo[0,mo_num,:],mo[1,mo_num,:],\
+                    mo[2,mo_num,:],line_width=1.5,scale_factor=0.1)
     mlab.show()
+
+

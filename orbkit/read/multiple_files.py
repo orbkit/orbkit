@@ -197,7 +197,7 @@ def order_using_analytical_overlap(fid_list,itype=None,deg=0,numproc=1,
   
   fid_list : list of str or None
     If not None, it contains the list of input file names.
-  itype : str, choices={None, 'tar', 'molden', 'gamess', 'gaussian.log', 'gaussian.fchk'}
+  itype : str, choices={'auto', 'tar', 'molden', 'gamess', 'gaussian.log', 'gaussian.fchk'}
     Specifies the type of the input files.
   deg : int, optional
     If greater than zero, specifies the degree of the extrapolation polynomial
@@ -257,6 +257,7 @@ def order_using_analytical_overlap(fid_list,itype=None,deg=0,numproc=1,
         mo_r1 = get_extrapolation(r1,r2,mo_coeff,grid1d=std,deg=deg)
       else:
         mo_r1 = mo_coeff[r1]
+
       overlap = get_mo_overlap_matrix(mo_r1,mo_coeff[r2],ao_overlap,
                                       numproc=numproc)
       for i in range(shape[1]):

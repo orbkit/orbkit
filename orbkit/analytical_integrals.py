@@ -138,7 +138,7 @@ def cartesian2spherical_aoom(ao_overlap_matrix,ao_spec):
   
   ao_overlap_matrix : numpy.ndarray, shape = (NAO,NAO)
     Contains the overlap matrix of the Cartesian basis set. 
-  ao_spec :
+  ao_spec,ao_spherical :
     See :ref:`Central Variables` in the manual for details.
   
   **Returns:**
@@ -154,7 +154,9 @@ def cartesian2spherical_aoom(ao_overlap_matrix,ao_spec):
   
   # Get the exponents of the Cartesian basis functions
   exp_list,assign = ao_spec.get_lxlylz(get_assign=True)
-  
+  ao_spherical  = ao_spec.get_old_ao_spherical()
+  print(ao_spherical)
+  exit()
   if ao_overlap_matrix.shape != (len(exp_list),len(exp_list)):
     raise IOError('No contraction is currently not supported for a '+ 
                   'spherical harmonics. Please come back'+
@@ -163,24 +165,24 @@ def cartesian2spherical_aoom(ao_overlap_matrix,ao_spec):
   l = [[] for i in ao_spec]
   for i,j in enumerate(assign):
     l[j].append(i) 
-  
+
   indices = []
   c = 0
-  for i0, (j0,k0) in enumerate(ao_spec.get_old_ao_spherical()):
+  for i0,(j0,k0) in enumerate(ao_spherical):
     sph0 = get_cart2sph(*k0)    
     for c0 in range(len(sph0[0])):
       for i,j in enumerate(l[j0]):
         if tuple(exp_list[j]) == sph0[0][c0]:
           indices.append(i + l[j0][0])
       c += 1
-  
+
   c = 0
-  aoom_sph = numpy.zeros((len(ao_spec),len(ao_spec)))
-  for i0, (j0,k0) in enumerate(ao_spec.get_old_ao_spherical()):
+  aoom_sph = numpy.zeros((len(ao_spherical),len(ao_spherical)))
+  for i0,(j0,k0) in enumerate(ao_spherical):
     sph0 = get_cart2sph(*k0)    
     for c0 in range(len(sph0[0])):
       d = 0 
-      for i1, (j1,k1) in enumerate(ao_spec.get_old_ao_spherical()):
+      for i1,(j1,k1) in enumerate(ao_spherical):
         sph1 = get_cart2sph(*k1)
         for c1 in range(len(sph1[0])):
           aoom_sph[i0,i1] += (sph0[1][c0]*sph0[2] * sph1[1][c1]*sph1[2]
@@ -248,8 +250,8 @@ def get_mo_overlap_matrix(mo_a,mo_b,ao_overlap_matrix,numproc=1):
   mo_overlap_matrix : numpy.ndarray, shape = (NMO,NMO)
     Contains the overlap matrix between the two sets of input molecular orbitals.
   '''
-  global_args = {'mo_a': create_mo_coeff(mo_a,name='mo_a'),
-                 'mo_b': create_mo_coeff(mo_b,name='mo_b'),
+  global_args = {'mo_a': mo_a,
+                 'mo_b': mo_b,
                  'ao_overlap_matrix': ao_overlap_matrix}
     
   if ((global_args['mo_a'].shape[1] != ao_overlap_matrix.shape[0]) or
@@ -305,8 +307,8 @@ def get_moom_atoms(atoms,qc,mo_a,mo_b,ao_overlap_matrix,numproc=1):
   mo_overlap_matrix : numpy.ndarray, shape = (NMO,NMO)
     Contains the overlap matrix between the two sets of input molecular orbitals.
   '''
-  mo_a = create_mo_coeff(mo_a,name='mo_a')
-  mo_b = create_mo_coeff(mo_b,name='mo_b')
+  mo_a = mo_a.get_coeff()
+  mo_b = mo_b.get_coeff()
   indices = get_lc(atoms,get_atom2mo(qc),strict=True)
   ao_overlap_matrix = numpy.ascontiguousarray(ao_overlap_matrix[:,indices])
   return get_mo_overlap_matrix(numpy.ascontiguousarray(mo_a),

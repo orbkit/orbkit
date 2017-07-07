@@ -25,7 +25,7 @@ Second Part:
 with :math:`r_l = \sqrt{(x-X_l)^2 + (y-Y_l)^2 + (z - Z_l)^2)}`
 '''
 from orbkit.read import main_read
-from orbkit.core import get_lxlylz,l_deg
+from orbkit.tools import *
 from orbkit.analytical_integrals import get_ao_overlap,get_mo_overlap,print2D
 
 in_fid = 'h2o.molden'
@@ -33,8 +33,7 @@ in_fid = 'h2o.molden'
 qc = main_read(in_fid,itype='molden',all_mo=False)
 
 # Compute atomic orbital overlap matrix 
-ao_overlap_matrix = get_ao_overlap(qc.geo_spec,qc.geo_spec,qc.ao_spec,
-                                   ao_spherical=qc.ao_spherical)
+ao_overlap_matrix = get_ao_overlap(qc.geo_spec,qc.geo_spec,qc.ao_spec)
 
 # Compute the overlap of the molecular orbitals and weight it with the occupation number
 electron_number = 0.
@@ -51,20 +50,19 @@ for component in range(3):
   # Compute the first part of the expectation value:
   # Get the the exponents lx, ly, lz for the primitive Cartesian Gaussians of
   # the `Ket` basis set, and increase lz by one.
-  lxlylz_b = get_lxlylz(qc.ao_spec)
+  lxlylz_b = qc.ao_spec.get_lxlylz()
   lxlylz_b[:,component] += 1
 
   ao_part_1 = get_ao_overlap(qc.geo_spec,qc.geo_spec,qc.ao_spec,
-                             lxlylz_b=lxlylz_b,ao_spherical=qc.ao_spherical)
+                             lxlylz_b=lxlylz_b)
 
   # Compute the second part of the expectation value:
-  ao_part_2 = get_ao_overlap(qc.geo_spec,qc.geo_spec,qc.ao_spec,
-                             ao_spherical=qc.ao_spherical)
+  ao_part_2 = get_ao_overlap(qc.geo_spec,qc.geo_spec,qc.ao_spec)
 
   i = 0
   for sel_ao in range(len(qc.ao_spec)):
     l = l_deg(l=qc.ao_spec[sel_ao]['type'].lower(),
-              cartesian_basis=(qc.ao_spherical is None))
+              cartesian_basis=(not qc.ao_spec.spherical))
     for ll in range(l):
       ao_part_2[:,i] *= qc.geo_spec[qc.ao_spec[sel_ao]['atom'],component]
       i += 1

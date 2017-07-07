@@ -32,18 +32,19 @@ from scipy import integrate
 # Import orbkit modules
 from orbkit import core,grid, output, options
 from orbkit.display import display
+from orbkit.orbitals import MOClass
+
 
 def calc_mo(qc, fid_mo_list, drv=None, otype=None, ofid=None,
             numproc=None, slice_length=None):
   '''Calculates and saves the selected molecular orbitals or the derivatives thereof.
-
   **Parameters:**
    
     qc.geo_spec, qc.geo_info, qc.ao_spec, qc.mo_spec :
       See :ref:`Central Variables` for details.
     fid_mo_list : str
       Specifies the filename of the molecular orbitals list or list of molecular
-      orbital labels (cf. :mod:`orbkit.orbitals.MOClass.select` for details). 
+      orbital labels (cf. :mod:`orbkit.read.mo_select` for details). 
       If fid_mo_list is 'all_mo', creates a list containing all molecular orbitals.
     drv : int or string, {None, 'x', 'y', 'z', 0, 1, 2}, optional
       If not None, a derivative calculation of the atomic orbitals 
@@ -64,12 +65,13 @@ def calc_mo(qc, fid_mo_list, drv=None, otype=None, ofid=None,
     mo_list : numpy.ndarray, shape=((NMO,) + N)
       Contains the NMO=len(qc.mo_spec) molecular orbitals on a grid.
   '''
+  mo_spec = qc.mo_spec.select(fid_mo_list, flatten_input=True)
+  qc_select = qc.copy()
+  qc_select.mo_spec = mo_spec
 
-  qc_select = qc.todict()
-  qc_select['mo_spec'] = qc.mo_spec.select(fid_mo_list, strict=True)
-  
   slice_length = options.slice_length if slice_length is None else slice_length
   numproc = options.numproc if numproc is None else numproc
+
   # Calculate the AOs and MOs 
   mo_list = core.rho_compute(qc_select,
                              calc_mo=True,
@@ -87,14 +89,14 @@ def calc_mo(qc, fid_mo_list, drv=None, otype=None, ofid=None,
     if 'h5' in otype:    
       output.main_output(mo_list,qc.geo_info,qc.geo_spec,data_id='MO',
                     outputname=ofid,
-                    mo_spec=qc_select['mo_spec'],drv=drv,is_mo_output=True)
+                    mo_spec=qc_select.mo_spec,drv=drv,is_mo_output=True)
     # Create Output     
     cube_files = []
-    for i,j in enumerate(qc_select['mo_spec']):
-      outputname = '%s_%s' % (ofid, qc_select['mo_spec'].selected_mo[i]) #was mo
-      comments = ('%s,Occ=%.1f,E=%+.4f' % (qc_select['mo_spec'].selected_mo[i], #was mo
-                                           j['occ_num'],
-                                           j['energy']))
+    for i in range(len(qc_select.mo_spec)):
+      outputname = '%s_%s' % (ofid,qc_select.mo_spec.selected_mo[i])
+      comments = ('%s,Occ=%.1f,E=%+.4f' % (qc_select.mo_spec.selected_mo[i],
+                                           qc_select.mo_spec.get_occ()[i],
+                                           qc_select.mo_spec.get_eig()[i]))
       index = numpy.index_exp[:,i] if drv is not None else i
       output_written = output.main_output(mo_list[index],
                                       qc.geo_info,qc.geo_spec,
@@ -113,7 +115,7 @@ def calc_mo(qc, fid_mo_list, drv=None, otype=None, ofid=None,
       output.vmd_network_creator(ofid,cube_files=cube_files)
   if 'mayavi' in otype:
     datalabels = ['MO %(sym)s, Occ=%(occ_num).2f, E=%(energy)+.4f E_h' % 
-                  i for i in qc_select['mo_spec']]
+                  i for i in qc_select.mo_spec]
     if drv is not None:
       tmp = []
       for i in drv:
@@ -165,9 +167,11 @@ def mo_set(qc, fid_mo_list, drv=None, laplacian=None,
       present if derivatives are requested.
   '''
 
-  mo_info = qc.mo_spec.select(fid_mo_list, strict=False)
-  qc_select = qc.copy()
-  qc_select.mo_spec = mo_info
+  #Can be an mo_spec or a list of mo_spec
+  # For later itteration we'll make it into a list here if it is not
+  mo_info_list = qc.mo_spec.select(fid_mo_list)
+  if isinstance(mo_info_list, MOClass):
+    mo_info_list = [mo_info_list]
     
   drv = options.drv if drv is None else drv
   laplacian = options.laplacian if laplacian is None else laplacian
@@ -182,17 +186,22 @@ def mo_set(qc, fid_mo_list, drv=None, laplacian=None,
   datasets = []
   delta_datasets = []
   cube_files = []
-  for i_file,j_file in enumerate(mo_info.selected_mo):
-    display('Starting with the %d. element of the molecular orbital list (%s)...\n\t' % 
-                (i_file+1,fid_mo_list) + str(j_file) + 
-                '\n\t(Only regarding existing and occupied mos.)\n')
-    
+
+  for i_file, mo_info in enumerate(mo_info_list):
+    qc_select = qc.copy()
+    qc_select.mo_spec = mo_info
+    display('Starting with the molecular orbital list'
+            + str(mo_info.selection_string) +
+            '\n\t(Only regarding existing and occupied mos.)\n')
+      
     data = core.rho_compute(qc_select,
                             drv=drv,
                             laplacian=laplacian,
                             slice_length=slice_length,
                             numproc=numproc)
+
     datasets.append(data)
+
     if drv is None:
       rho = data
     elif laplacian:
@@ -233,7 +242,8 @@ def mo_set(qc, fid_mo_list, drv=None, laplacian=None,
             
       fid = '%s_%03d' % (ofid, i_file+1) 
       cube_files.append('%s.cb' % fid)
-      comments = ('mo_set:'+','.join(str(j_file)))
+      comments = ('mo_set:'+','.join(mo_info.selection_string))
+
       output.main_output(rho,qc.geo_info,qc.geo_spec,outputname=fid,
                          otype=otype,omit=['h5','vmd','mayavi'],
                          comments=comments)
@@ -241,14 +251,14 @@ def mo_set(qc, fid_mo_list, drv=None, laplacian=None,
         for i,j in enumerate(drv):
           fid = '%s_%03d_d%s' % (ofid, i_file+1, j) 
           cube_files.append('%s.cb' % fid)
-          comments = ('d%s_of_mo_set:' % j + ','.join(str(j_file)))
+          comments = ('d%s_of_mo_set:' % j + ','.join(mo_info.selection_string))
           output.main_output(delta_rho[i],qc.geo_info,qc.geo_spec,outputname=fid,
                              otype=otype,omit=['h5','vmd','mayavi'],
                              comments=comments)  
         if laplacian:
           fid = '%s_%03d_laplacian' % (ofid, i_file+1) 
           cube_files.append('%s.cb' % fid)
-          comments = ('laplacian_of_mo_set:' + ','.join(str(j_file)))
+          comments = ('laplacian_of_mo_set:' + ','.join(mo_info.selection_string))
           output.main_output(laplacian_rho,qc.geo_info,qc.geo_spec,outputname=fid,
                              otype=otype,omit=['h5','vmd','mayavi'],
                              comments=comments)  
@@ -263,6 +273,7 @@ def mo_set(qc, fid_mo_list, drv=None, laplacian=None,
     if 'mayavi' in otype:
       output.main_output(datasets,qc.geo_info,qc.geo_spec,
                        otype='mayavi',datalabels=mo_info.selected_mo)
+    print(datasets.shape)
     return datasets#, mo_info
   else:
     delta_datasets = numpy.array(delta_datasets)
@@ -274,7 +285,7 @@ def mo_set(qc, fid_mo_list, drv=None, laplacian=None,
           datalabels.append('laplacian of %s' % i)
       output.main_output(delta_datasets.reshape((-1,) + grid.get_shape()),
                          qc.geo_info,qc.geo_spec,otype='mayavi',datalabels=datalabels)
-    return datasets, delta_datasets#, mo_info
+    return datasets, delta_datasets
   # mo_set 
 
 def calc_ao(qc, drv=None, otype=None, ofid=None):  

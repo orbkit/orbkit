@@ -101,12 +101,12 @@ class AOClass(UserList):
     self.up2date = False
   def append(self, item):
     if 'ao_spherical' not in item:
-      item['ao_spherical'] = None
+      item['ao_spherical'] = []
     UserList.append(self, item)
     self.up2date = False
   def extend(self, item):
     if 'ao_spherical' not in item:
-      item['ao_spherical'] = None
+      item['ao_spherical'] = []
     UserList.extend(self, item)
     self.up2date = False
   def remove(self, item):
@@ -215,9 +215,16 @@ class AOClass(UserList):
     '''Compatability funtction to allow access to old-style ao_spherical.
     '''
     old_ao_spherical = []
+    li = -1
     for cont in self.data:
       if cont['ao_spherical'] is not None:
-        old_ao_spherical.extend(cont['ao_spherical'])
+        lm1 = None
+        for (l,m) in cont['ao_spherical']:
+          if lm1 != l:
+            lm1 = l
+            li += 1
+          spher = [li, (l,m)]
+          old_ao_spherical.append(spher)
     return old_ao_spherical
 
   def get_contspher(self):
@@ -413,6 +420,7 @@ class MOClass(UserList):
     self.occ = None
     self.sym = None
     self.eig = None
+    self.selection_string = None
     self.selected_mo = None
     if restart is not None:
       self.up2date = True
@@ -420,12 +428,14 @@ class MOClass(UserList):
       self.occ = restart['occ']
       self.sym = restart['sym']
       self.eig = restart['eig']
-      self.selected_mo = restart['selection']
+      self.selection_string = restart['selection_string']
+      self.selected_mo = restart['selected_mo']
       self.new2old()
   def todict(self):
     self.update()
     data = {'coeff': self.coeff,
-            'selection': self.selected_mo,
+            'selection_string': self.selection_string,
+            'selected_mo': self.selected_mo,
             'occ': self.occ,
             'eig': self.eig,
             'sym': self.sym}
@@ -610,7 +620,7 @@ class MOClass(UserList):
       self.sym = numpy.array(self.sym, dtype=str)
     return self.sym
 
-  def select(self, fid_mo_list, strict=False):
+  def select(self, fid_mo_list, flatten_input=True):
     '''Selects molecular orbitals from an external file or a list of molecular 
        orbital labels.
 
@@ -618,15 +628,15 @@ class MOClass(UserList):
      
       mo_spec :        
         See :ref:`Central Variables` for details.
-      strict : bool, optional
-        If True, orbkit will follow strictly the fid_mo_list, i.e., the order of 
-        the molecular orbitals will be kept and multiple occurrences of items 
-        will evoke multiple calculations of the respective molecular orbitals. 
       fid_mo_list : str, `'all_mo'`, or list
         | If fid_mo_list is a str, specifies the filename of the molecular orbitals list.
         | If fid_mo_list is 'all_mo', creates a list containing all molecular orbitals.
         | If fid_mo_list is a list, provides a list (or a list of lists) of molecular 
           orbital labels.
+
+      flatten_input : boolean, optional
+        Specifies wheter lists of lists should be flattened so a single MOClass instance can be returned rather than a list of MOClass instances
+        
 
     **Supported Formats:**
     
@@ -644,11 +654,8 @@ class MOClass(UserList):
     
     **Returns:**
     
-      Dictionary with following Members:
-        :mo_ii: - List of molecular orbital indices.
-        :mo_spec: - Selected elements of mo_spec. See :ref:`Central Variables` for details.
-        :mo_in_file: - List of molecular orbital labels within the fid_mo_list file.
-        :sym_select: - If True, symmetry labels have been used. 
+      List of MOClass instances containing the selected orbitals as well as further information on the selection criteria used
+      If a sinlge list is used as in input and/or flatten_input=True, an MOClass instance is returned instead
     
     ..attention:
       
@@ -660,10 +667,13 @@ class MOClass(UserList):
     '''
     import re
     display('\nProcessing molecular orbital list...')
+    if flatten_input:
+       display('\nWarning! Flattening of input lists requested!')
     
     mo_in_file = []
     selected_mo = []
     sym_select = False
+
 
     def ordered_set(inlist):
       outlist = []
@@ -685,12 +695,20 @@ class MOClass(UserList):
           raise ArithmeticError('Unknown Operation in input string.')
         return str(i)
 
-    def remove_empty(item):
+    def remove_empty(items):
       out = []
-      for i in item:
-        if i:
-          out.append(i)
+      for i, item in enumerate(items):
+        if item:
+          out.append(item)
       return out
+
+    def range_separators(items):
+      pos_range = []
+      for i, item in enumerate(items):
+        if item == '#':
+          pos_range.append(i)
+      pos_range = numpy.array(pos_range)
+      return pos_range
 
     def parse_nosym(item):
       keys = {'homo': str(self.get_homo()), 
@@ -700,28 +718,34 @@ class MOClass(UserList):
 
       for key in keys:
         item = item.replace(key, keys[key])
-      doub_occur = item.count(':')
+      
+      #This seems quite insane to me... I don't really know what else to do though...
+      pos_range = range_separators(remove_empty(item.replace(':',':#:').split(':')))
       item = remove_empty(item.split(':'))
-      if len(item) > 1:
+      if isinstance(item, list):
         for i in range(len(item)):
           for operation in ['-','+']:
             item[i] = eval_mp(item[i], operation)
       else:
         for operation in ['-','+']:
           item = eval_mp(item, operation)
-      if doub_occur > 0:
+
+      if len(pos_range) > 0:
         s = 1
-        if doub_occur == 1 and len(item) == 1: #Stuff like :b
+        if numpy.allclose(pos_range,numpy.array([0])) and len(item) == 1: #Stuff like :b
           a = 0
           b = int(item[0])
-        elif doub_occur == 1 and len(item) == 2: #Stuff like a:b
+        elif numpy.allclose(pos_range,numpy.array([1])) and len(item) == 1: #Stuff like a:
+          a = int(item[0])
+          b = len(self.data)
+        elif numpy.allclose(pos_range,numpy.array([1])) and len(item) == 2: #Stuff like a:b
           a = int(item[0])
           b = int(item[1])
-        elif doub_occur == 2 and len(item) == 3: #Stuff like a:b:s
+        elif numpy.allclose(pos_range,numpy.array([1,3])) and len(item) == 3: #Stuff like a:b:s
           a = int(item[0])
           b = int(item[1])
           s = int(item[2])
-        elif doub_occur == 2 and len(item) == 1: #Stuff like ::s
+        elif numpy.allclose(pos_range,numpy.array([0,1])) and len(item) == 1: #Stuff like ::s
           a = 0
           b = len(self.data)
           s = int(item[0])
@@ -775,6 +799,7 @@ class MOClass(UserList):
         except:
           raise IOError('The selected mo-list (%(m)s) is not valid!' % 
                         {'m': fid_mo_list} + '\ne.g.\n\t1\t3\n\t2\t7\t9\n')
+        fid_mo_list = mo_in_file
 
       # Print some information
       for i,j in enumerate(mo_in_file):
@@ -797,21 +822,29 @@ class MOClass(UserList):
         mo_in_file_new.append(tmp)
 
     mo_in_file = mo_in_file_new
+    if flatten_input:
+      mo_in_file = [[item for sublist in mo_in_file for item in sublist]]
 
-    if not strict:
-      mo_in_file = [ordered_set(sublist) for sublist in mo_in_file]
+    if len(mo_in_file) == 1:
+      mo_spec = MOClass([])
+      for index in mo_in_file[0]:
+        mo_spec.append(self.data[index])
+      mo_spec.selected_mo = mo_in_file[0]
+      mo_spec.selection_string = str(fid_mo_list[0])
+    else:
+      mo_spec = []
+      for i, sublist in enumerate(mo_in_file):
+        mo_sub = MOClass([])
+        for index in sublist:
+          mo_sub.append(self.data[index])
+        mo_sub.selected_mo = sublist
+        mo_sub.selection_string = str(fid_mo_list[i])
+        mo_spec.append(mo_sub)
 
-    mo_ii = [item for sublist in mo_in_file for item in sublist]
-    mo_spec = MOClass([])
-    for index in mo_ii:
-      mo_spec.append(self.data[index])
-
-    mo_spec.selected_mo = mo_in_file
-        
     # Print some information
     display('\nThe following orbitals will be considered...')
-    for i,j in enumerate(mo_in_file):
-      display('\tLine %d: %s' % (i+1,', '.join(str(j))))
+    for i, sublist in enumerate(mo_in_file):
+      display('\tLine %d: %s' % (i+1, str(sublist)))
     
     display('')
     return mo_spec

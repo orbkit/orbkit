@@ -16,6 +16,7 @@ tests = ['units',
          'read/specific_readers',
          'detci/read/detci_readers',
          'qcinfo/new_qcinfo_save_function',
+         'qcinfo/mo_select',
          'analytical_properties/analytical_integral_norm',
          'analytical_properties/dipole',
          'grid_based/rho_compute']

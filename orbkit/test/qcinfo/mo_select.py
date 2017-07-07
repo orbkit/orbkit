@@ -28,12 +28,12 @@ usecases = {'homo-1:lumo+2': [3,4,5,6],
             '0,1 2:4': [0,1,2,3],
             '::2': range(0,len(qc.mo_spec),2),
             ':2': [0,1],
+            '2:': range(2,len(qc.mo_spec)),
             '0:5:2': [0,2,4],
            }
 
 for case in usecases:
   refmo = MOClass([qc.mo_spec[i] for i in usecases[case]])
   refmo.update()
-  print(qc.mo_spec.select(case).sel_mo)
-  equal(qc.mo_spec.select(case), refmo)
+  equal(qc.mo_spec.select(case, flatten_input=True), refmo)
 
