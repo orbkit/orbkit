@@ -49,14 +49,14 @@ mo_coeff_tck  = []
 mo_energy_tck = []
 mo_occ_tck    = []
 
-def read(fid_list,itype=None,all_mo=True,nosym=False, sort=True, **kwargs):
+def read(fid_list,itype='all',all_mo=True,nosym=False, sort=True, **kwargs):
   '''Reads a list of input files.
   
   **Parameters:**
   
     fid_list : list of str
       List of input file names.
-    itype : str, choices={None, 'tar', 'molden', 'gamess', 'gaussian.log', 'gaussian.fchk'}
+    itype : str, choices={'all', 'tar', 'molden', 'gamess', 'gaussian.log', 'gaussian.fchk'}
       Specifies the type of the input files.
     sort: bool
       Sort input files by name.  
@@ -83,6 +83,8 @@ def read(fid_list,itype=None,all_mo=True,nosym=False, sort=True, **kwargs):
   #read all files from archive if that is the case 
   if is_tar_file(fid_list):
     fid_list, itypes = get_all_files_from_tar(fid_list, sort=sort)
+  else:
+    itypes = [[itype]*len(fid_list)][0]
 
   n_r = len(fid_list)
   
