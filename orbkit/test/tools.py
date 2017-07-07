@@ -21,5 +21,8 @@ def equal(a, b, tol=1e-5):
     assert a == b
   elif isinstance(a, MOClass) and isinstance(b, MOClass):
     assert a == b
+  elif isinstance(a, dict) and isinstance(b, dict):
+    for key in a.keys():
+      assert numpy.allclose(a[key], b[key], rtol=tol*1e2, atol=tol)
   else:
     raise TypeError('Unsupported variable type - must be float, int, np.adarray, QCinfo, AOClass, and MOClass')

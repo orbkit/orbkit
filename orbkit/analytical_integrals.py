@@ -220,7 +220,7 @@ def get_mo_overlap(mo_a,mo_b,ao_overlap_matrix):
   if mo_b.ndim != 1 or len(mo_b) != shape[1]:
     raise ValueError('The coefficients of mo_b have to be a vector of the ' + 
                      'length of the ao_overlap_matrix.')
-  
+
   return cy_overlap.mooverlap(mo_a,mo_b,ao_overlap_matrix)
 
 def initializer(gargs):
@@ -337,16 +337,17 @@ def get_dipole_moment(qc,component=['x','y','z']):
     component = [component]
   
   dipole_moment = numpy.zeros((len(component),))
-  for i,c in enumerate(component):
+  coeff = qc.mo_spec.get_coeff()
+  occ = qc.mo_spec.get_occ()
+  for i_d,c in enumerate(component):
     ao_dipole_matrix = get_ao_dipole_matrix(qc,component=c)
-    for i_mo in qc.mo_spec:
-      dipole_moment[i] -= i_mo['occ_num'] * get_mo_overlap(i_mo['coeffs'],
-                                                           i_mo['coeffs'],
-                                                           ao_dipole_matrix)
-    
+    for i_mo in range(len(qc.mo_spec)):
+      dipole_moment[i_d] -= occ[i_mo] * get_mo_overlap(coeff[i_mo,:],
+                                                       coeff[i_mo,:],
+                                                       ao_dipole_matrix)
+
     # Add the nuclear part
-    dipole_moment[i] += get_nuclear_dipole_moment(qc,component=c)
-  
+    dipole_moment[i_d] += get_nuclear_dipole_moment(qc,component=c)
   return dipole_moment
 
 def get_ao_dipole_matrix(qc,component='x'):
@@ -386,7 +387,7 @@ def get_ao_dipole_matrix(qc,component='x'):
                              lxlylz_b=lxlylz_b)
 
   # Compute the second part of the expectation value:
-  ao_part_2 = get_ao_overlap(qc.geo_spec,qc.geo_spec,qc.ao_spec) 
+  ao_part_2 = get_ao_overlap(qc.geo_spec,qc.geo_spec,qc.ao_spec)
 
   i = 0
   for sel_ao in range(len(qc.ao_spec)):
@@ -394,14 +395,11 @@ def get_ao_dipole_matrix(qc,component='x'):
       l = len(qc.ao_spec[sel_ao]['exp_list'])
     else:
       l = l_deg(l=qc.ao_spec[sel_ao]['type'].lower(),
-              cartesian_basis=qc.ao_spec[0]['ao_spherical'] is None)
-              #Only check first element - is this too weak?
-              #I guess if one is None and the others are not then we have some more
-              #serious problems anyway...
+              cartesian_basis=(not qc.ao_spec.spherical))
     for ll in range(l):
       ao_part_2[:,i] *= qc.geo_spec[qc.ao_spec[sel_ao]['atom'],component]
       i += 1
-  
+
   # the atomic orbital overlap matrix  
   return (ao_part_1+ao_part_2) 
 
@@ -453,10 +451,7 @@ def get_atom2mo(qc):
       l = len(qc.ao_spec[sel_ao]['exp_list'])
     else:
       l = l_deg(l=qc.ao_spec[sel_ao]['type'].lower(),
-              cartesian_basis=qc.ao_spec[0]['ao_spherical'] is None)
-              #Only check first element - is this too weak?
-              #I guess if one is None and the others are not then we have some more
-              #serious problems anyway...
+              cartesian_basis=(not qc.ao_spec.spherical))
     for i in range(l):
       atom2mo.append(a)
       b += 1

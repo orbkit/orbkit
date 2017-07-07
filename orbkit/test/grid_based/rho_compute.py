@@ -14,8 +14,8 @@ folder = os.path.join(tests_home, '../read/outputs_for_testing')
 filepath = os.path.join(folder, 'h2o_rhf_sph.molden')
 qc = read.main_read(filepath, all_mo=True)
 
-grid.adjust_to_geo(qc, extend=2.0, step=1.5)
-grid.grid_init(is_vector=False)
+grid.adjust_to_geo(qc, extend=2.0, step=1)
+grid.grid_init(is_vector=False,force=True)
 
 drv = [None,'x','y','z','xx','xy','xz','yy','yz','zz']
 data = []
@@ -35,7 +35,7 @@ data[1] = [grid.mv2g(d=i) for i in data[1]]
 for i in range(len(data[0])):
   equal(data[0][i],data[1][i])
 
-#numpy.savez('refdata_rho_compute.npz', data=data[0])
+numpy.savez('refdata_rho_compute.npz', data=data[0])
 filepath = os.path.join(tests_home, 'refdata_rho_compute.npz')
 with open(filepath, 'r') as fd:
   refdata = numpy.load(fd)
