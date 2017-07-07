@@ -11,7 +11,7 @@ from .tmol import tmol_escf, tmol_tddft
 from .gamess import gamess_cis, gamess_tddft
 from .molpro import molpro_mcscf
 
-def main_ci_read(qc,finame,itype='psi4_detci',threshold=0.0,
+def main_ci_read(qc,fname,itype='psi4_detci',threshold=0.0,
                  select=None,nforbs=0,bortho=False,
                  **kwargs):
   '''Reads determinant CI calculation. 

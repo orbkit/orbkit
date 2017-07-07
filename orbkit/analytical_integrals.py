@@ -89,7 +89,7 @@ def get_ao_overlap(coord_a, coord_b, ao_spec, lxlylz_b=None,
     if lxlylz_a.shape != lxlylz_b.shape:
       raise ValueError('The exponents lxlylz for basis set a and basis set b ' +
                       'have to have the same shape.')
-  
+
   # Derivative Calculation requested?  
   drv = validate_drv(drv)
   if drv > 3:
@@ -117,10 +117,11 @@ def get_ao_overlap(coord_a, coord_b, ao_spec, lxlylz_b=None,
                                            lxlylz_a,lxlylz_b,
                                            coeff,index,
                                            drv,int(ao_spec.normalized))
+
   if 'N' in ao_spec[0]:
     for i in range(len(ao_overlap_matrix)):
       ao_overlap_matrix[i,:] *= ao_spec[0]['N'][i]*ao_spec[0]['N'][:,0]
-  
+
   if ao_spec.spherical:
     # Convert the overlap matrix to the real-valued spherical harmonic basis.
     ao_overlap_matrix = cartesian2spherical_aoom(ao_overlap_matrix,ao_spec)
@@ -155,8 +156,7 @@ def cartesian2spherical_aoom(ao_overlap_matrix,ao_spec):
   # Get the exponents of the Cartesian basis functions
   exp_list,assign = ao_spec.get_lxlylz(get_assign=True)
   ao_spherical  = ao_spec.get_old_ao_spherical()
-  print(ao_spherical)
-  exit()
+
   if ao_overlap_matrix.shape != (len(exp_list),len(exp_list)):
     raise IOError('No contraction is currently not supported for a '+ 
                   'spherical harmonics. Please come back'+
@@ -189,7 +189,7 @@ def cartesian2spherical_aoom(ao_overlap_matrix,ao_spec):
                               * ao_overlap_matrix[indices[c],indices[d]])
           d += 1
       c+=1
-  
+
   return aoom_sph
 
 def get_mo_overlap(mo_a,mo_b,ao_overlap_matrix):
@@ -517,13 +517,13 @@ def print2D(x,format='%+.2f ',start='\t',end=''):
     s = start
     for j in range(shape[1]):
       s += format % x[i,j]
-    print(s + end)
+    display(s + end)
 
 def pmat(matrix,vmax=lambda x: numpy.max(numpy.abs(x))):
   import matplotlib.pyplot as plt
   plt.figure()
   if matrix.dtype == complex:
-    print('plotting real part of matrix')
+    display('plotting real part of matrix')
     matrix = matrix.real
   vm = vmax(numpy.abs(matrix)) if callable(vmax) else vmax
   plt.imshow(matrix,interpolation=None,vmin=-vm,vmax=vm,cmap='seismic_r')

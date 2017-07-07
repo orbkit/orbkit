@@ -152,30 +152,17 @@ def cartesian2spherical(ao_list,ao_spec):
   
     The conversion is currently only supported up to g atomic orbitals.
   '''
-  # Get the exponents of the Cartesian basis functions
-  #indices = get_lxlylz(ao_spec,get_label=True)
-  
-  #shape = list(ao_list.shape)
-  #shape[0] = len(ao_spherical)
-  #ao_list_sph = numpy.zeros(shape)
-  #for i0,(j0,k0) in enumerate(ao_spherical):
-    #sph0 = cy_core.get_cart2sph(*k0)
-    #for c0 in range(len(sph0[0])):
-      #index0 = int(numpy.argwhere(indices == j0*1000 + sph0[0][c0]))
-      #ao_list_sph[i0,:] += sph0[1][c0]*sph0[2]*ao_list[index0,:]
-  
-  #return ao_list_sph
-  
-  lxlylz,assign = ao_spec.get_lxlylz(get_assign=True)
+
+  lxlylz, assign = ao_spec.get_lxlylz(get_assign=True)
+  ao_spherical = ao_spec.get_old_ao_spherical()  
 
   l = [[] for i in ao_spec]
   for i,j in enumerate(assign):
     l[j].append(i) 
-  
   shape = list(ao_list.shape)
-  shape[0] = len(ao_spec)
+  shape[0] = len(ao_spherical)
   ao_list_sph = numpy.zeros(shape)
-  for i0, (j0,k0) in enumerate(ao_spec.get_old_ao_spherical()):
+  for i0,(j0,k0) in enumerate(ao_spherical):
     sph0 = get_cart2sph(*k0)
     for c0 in range(len(sph0[0])):
       for i,j in enumerate(l[j0]):
@@ -184,6 +171,7 @@ def cartesian2spherical(ao_list,ao_spec):
       ao_list_sph[i0,:] += sph0[1][c0]*sph0[2]*ao_list[index0,:]
   
   return ao_list_sph
+
 
 def slice_rho(xx):
   '''Calculates the density, the molecular orbitals, or the derivatives thereof
@@ -501,7 +489,7 @@ def rho_compute(qc,calc_mo=False,drv=None,laplacian=False,
     it = pool.imap(slice_rho, xx)
   else:
     initializer(Spec)
-  
+
   # Compute the density slice by slice   
   for s in range(sNum):
     # Which slice do we compute 

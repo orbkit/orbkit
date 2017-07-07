@@ -133,7 +133,6 @@ def get_cart2sph(l,m):
   
     The conversion is currently only supported up to g atomic orbitals.
   '''
-  print(l,m, l+m)
   return cart2sph[l][l+m]
 
 def validate_drv(drv):
