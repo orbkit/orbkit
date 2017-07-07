@@ -1,0 +1,1606 @@
+    -----------------------------------------------------------------------
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                              Psi4 1.0.7 Driver
+
+                          Git: Rev {master} 3eebe4e dirty
+
+    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
+    F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
+    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
+    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
+    and T. D. Crawford, WIREs Comput. Mol. Sci. 2, 556-565 (2012)
+    (doi: 10.1002/wcms.93)
+
+                         Additional Contributions by
+    A. E. DePrince, U. Bozkaya, A. Yu. Sokolov, D. G. A. Smith, R. Di Remigio,
+    R. M. Richard, J. F. Gonthier, H. R. McAlexander, M. Saitow, and
+    B. P. Pritchard
+    -----------------------------------------------------------------------
+
+
+    Psi4 started on: Mon Jan 30 14:41:03 2017
+
+    Process ID: 377776
+    PSI4DATADIR: /home/vincpohl/bin/Programs/miniconda/share/psi4
+    Memory level set to 256.000 MB
+
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! H2O FCI Energy
+
+memory 18000 mb
+
+molecule {
+  0 1
+H       0.000000000   -1.682119487    1.055779261
+O       0.000000000    0.000000000   -0.133025257
+H       0.000000000    1.682119487    1.055779261
+units bohr
+symmetry c1 #c2v
+no_reorient
+}
+
+set {
+    basis            STO-3G 
+    reference        rhf
+    print_mos        true
+    print_basis      true
+    molden_write     true
+    puream           false
+}
+    
+
+set {
+    num_roots       1
+    dipmom          true
+    tdm             true
+    tdm_print       true
+    num_dets_print  -1          # ALL
+}
+
+# C2v      A_1     A_2     B_1     B_2
+set num_dets_print -1
+set {
+    reference_sym   0
+    num_roots       5
+    #frozen_docc     [1]
+}
+
+thisenergy = prop('fci', properties=['DIPOLE', 'TRANSITION_DIPOLE'])
+
+--------------------------------------------------------------------------
+
+  Memory set to  18.000 GiB by Python script.
+
+*** tstart() called on qcw46
+*** at Mon Jan 30 14:41:06 2017
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              RHF Reference
+                        4 Threads,  18000 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Full point group: C2v
+
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+           H          0.000000000000    -1.682119487000     1.055759611022     1.007825032070
+           O          0.000000000000     0.000000000000    -0.133044906978    15.994914619560
+           H          0.000000000000     1.682119487000     1.055759611022     1.007825032070
+
+  Running in c1 symmetry.
+
+  Rotational constants: A =     23.79598  B =     10.55517  C =      7.31186 [cm^-1]
+  Rotational constants: A = 713385.54730  B = 316436.16542  C = 219203.94984 [MHz]
+  Nuclear repulsion =    8.064982892263863
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-10
+  Density threshold  = 1.00e-10
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: STO-3G
+    Number of shells: 5
+    Number of basis function: 7
+    Number of Cartesian functions: 7
+    Spherical Harmonics?: false
+    Max angular momentum: 1
+
+  -AO BASIS SET INFORMATION:
+    Name                   = STO-3G
+    Total number of shells = 5
+    Number of primitives   = 15
+    Number of AO           = 7
+    Number of SO           = 7
+    Maximum AM             = 1
+    Spherical Harmonics    = FALSE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     H     3s // 1s 
+       2     O     6s 3p // 2s 1p 
+       3     H     3s // 1s 
+
+  ==> AO Basis Functions <==
+
+    [ STO-3G ]
+    cartesian
+    ****
+    H   1
+    S   3 1.00
+                         3.42525091           0.15432897
+                         0.62391373           0.53532814
+                         0.16885540           0.44463454
+    ****
+    O   2
+    S   3 1.00
+                       130.70932000           0.15432897
+                        23.80886100           0.53532814
+                         6.44360830           0.44463454
+    S   3 1.00
+                         5.03315130          -0.09996723
+                         1.16959610           0.39951283
+                         0.38038900           0.70011547
+    P   3 1.00
+                         5.03315130           0.15591627
+                         1.16959610           0.60768372
+                         0.38038900           0.39195739
+    ****
+    H   3
+    S   3 1.00
+                         3.42525091           0.15432897
+                         0.62391373           0.53532814
+                         0.16885540           0.44463454
+    ****
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A          7       7       0       0       0       0
+   -------------------------------------------------------
+    Total       7       7       5       5       5       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+  Using in-core PK algorithm.
+   Calculation information:
+      Number of atoms:                   3
+      Number of AO shells:               5
+      Number of primitives:             15
+      Number of atomic orbitals:         7
+      Number of basis functions:         7
+
+      Integral cutoff                 1.00e-12
+      Number of threads:                 4
+
+  Performing in-core PK
+  Using 812 doubles for integral storage.
+  We computed 203 shell quartets total.
+  Whereas there are 120 unique shell quartets.
+    69.17 percent of shell quartets recomputed by reordering.
+  ==> DiskJK: Disk-Based J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Memory (MB):             12874
+    Schwarz Cutoff:          1E-12
+
+    OpenMP threads:              4
+  Minimum eigenvalue in the overlap matrix is 4.2875480905E-01.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+   @RHF iter   0:   -74.42844420070344   -7.44284e+01   1.57508e-01 
+   @RHF iter   1:   -74.93211981308207   -5.03676e-01   1.61659e-02 
+   @RHF iter   2:   -74.94127002545025   -9.15021e-03   2.79678e-03 DIIS
+   @RHF iter   3:   -74.94157078451187   -3.00759e-04   6.04432e-04 DIIS
+   @RHF iter   4:   -74.94159844320797   -2.76587e-05   1.35957e-04 DIIS
+   @RHF iter   5:   -74.94160012866945   -1.68546e-06   2.45414e-05 DIIS
+   @RHF iter   6:   -74.94160017415217   -4.54827e-08   3.90516e-08 DIIS
+   @RHF iter   7:   -74.94160017415226   -8.52651e-14   6.68764e-11 DIIS
+
+  ==> Post-Iterations <==
+
+    Orbital Energies (a.u.)
+    -----------------------
+
+    Doubly Occupied:                                                      
+
+       1A    -20.253363     2A     -1.207747     3A     -0.559235  
+       4A     -0.425136     5A     -0.383200  
+
+    Virtual:                                                              
+
+       6A      0.474161     7A      0.612670  
+
+    Final Occupation by Irrep:
+              A 
+    DOCC [     5 ]
+
+  Energy converged.
+
+  @RHF Final Energy:   -74.94160017415226
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              8.0649828922638633
+    One-Electron Energy =                -120.3558021284672748
+    Two-Electron Energy =                  37.3492190620511764
+    DFT Exchange-Correlation Energy =       0.0000000000000000
+    Empirical Dispersion Energy =           0.0000000000000000
+    PCM Polarization Energy =               0.0000000000000000
+    EFP Energy =                            0.0000000000000000
+    Total Energy =                        -74.9416001741522422
+
+
+  Saving occupied orbitals to File 180.
+
+  ==> Molecular Orbitals <==
+
+                 1            2            3            4            5
+
+    1    0.0047096    0.1462375    0.4512707    0.3211200    0.0000000
+    2   -0.9944044   -0.2388418   -0.0000000    0.0920182    0.0000000
+    3   -0.0242926    0.8824487    0.0000000   -0.4728847    0.0000000
+    4    0.0000000   -0.0000000   -0.0000000    0.0000000    1.0000000
+    5   -0.0000000   -0.0000000   -0.5982056   -0.0000000    0.0000000
+    6   -0.0031197    0.0851746   -0.0000000    0.7651423   -0.0000000
+    7    0.0047096    0.1462375   -0.4512707    0.3211200   -0.0000000
+
+ Ene   -20.2533635   -1.2077475   -0.5592348   -0.4251363   -0.3831999
+ Sym             A            A            A            A            A
+ Occ             2            2            2            2            2
+
+
+                 6            7
+
+    1    0.7205412    0.7347166
+    2    0.1151454   -0.0000000
+    3   -0.6925337    0.0000000
+    4    0.0000000    0.0000000
+    5    0.0000000    0.9367461
+    6   -0.7134900    0.0000000
+    7    0.7205412   -0.7347166
+
+ Ene     0.4741614    0.6126698
+ Sym             A            A
+ Occ             0            0
+
+
+*** tstop() called on qcw46 at Mon Jan 30 14:41:07 2017
+Module time:
+	user time   =       2.04 seconds =       0.03 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       2.04 seconds =       0.03 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     1.0472
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:    -0.0000      Z:    -0.4484
+
+  Dipole Moment: (a.u.)
+     X:     0.0000      Y:    -0.0000      Z:     0.5988     Total:     0.5988
+
+  Dipole Moment: (Debye)
+     X:     0.0000      Y:    -0.0000      Z:     1.5220     Total:     1.5220
+
+ MINTS: Wrapper to libmints.
+   by Justin Turney
+
+   Calculation information:
+      Number of atoms:                   3
+      Number of AO shells:               5
+      Number of SO shells:               5
+      Number of primitives:             15
+      Number of atomic orbitals:         7
+      Number of basis functions:         7
+
+      Number of irreps:                  1
+      Integral cutoff                 0.00e+00
+      Number of functions per irrep: [   7 ]
+
+ OEINTS: Overlap, kinetic, potential, dipole, and quadrupole integrals
+         stored in file 35.
+
+      Computing two-electron integrals...done
+      Computed 230 non-zero two-electron integrals.
+        Stored in file 33.
+
+
+         ---------------------------------------------------------
+                                 D E T C I  
+
+                             C. David Sherrill
+                             Matt L. Leininger
+                               18 June 1999
+         ---------------------------------------------------------
+
+
+DETCI PARAMETERS: 
+   EX LEVEL      =       10      H0 BLOCKSIZE =     1000
+   VAL EX LEVEL  =        0      H0 GUESS SIZE=     1000
+   H0COUPLINGSIZE=        0      H0 COUPLING  =       no
+   MAXITER       =       24      NUM PRINT    =       -1
+   NUM ROOTS     =        5      ICORE        =        1
+   PRINT         =        1      FCI          =      yes
+   R CONV        = 1.00e-04      MIXED        =      yes
+   E CONV        = 1.00e-08      MIXED4       =      yes
+   R4S           =       no      REPL OTF     =       no
+   DIAG METHOD   =      SEM
+   PRECONDITIONER= DAVIDSON      UPDATE       = DAVIDSON
+   S             =   0.0000      Ms0          =      yes
+   MAX NUM VECS  =      125
+   RESTART       =       no
+   GUESS VECTOR  =  H0BLOCK      OPENTYPE     =     NONE
+   REF SYM       =        0
+   COLLAPSE SIZE =        1      HD AVG       = EVANGELISTI
+   LSE           =       no      LSE ITER     =        0
+   HD OTF        =      yes      NO DFILE     =       no
+   MPN           =       no      MPN SCHMIDT  =       no
+   ZAPTN         =       no      MPN WIGNER   =       no
+   PERT Z        =   1.0000      FOLLOW ROOT  =        0
+   NUM THREADS   =        4
+   FILTER GUESS  =       no      SF RESTRICT  =       no
+   OPDM          =      yes      TRANS DENSITY=      yes
+
+   FILES         =  50 51 52 53
+
+   EX ALLOW      =  1  1  1  1  1  1  1  1  1  1 
+   STATE AVERAGE =  1(1.00) 
+
+ORBITALS:
+   NMO          =        7
+   FROZEN CORE  =        0      RESTR CORE   =        0
+   FROZEN VIRT  =        0      RESTR VIRT   =        0
+   DROPPED CORE =        0      DROPPED VIRT =        0
+   EXPLICIT CORE=        0      ORBS IN CI   =        7
+   NUM ALP      =        5      NUM BET      =        5
+   NUM ALP EXPL =        5      NUM BET EXPL =        5
+   IOPEN        =       no
+
+   DOCC            =   5 
+   SOCC            =   0 
+
+   FROZEN DOCC     =   0 
+   RESTRICTED DOCC =   0 
+   ACTIVE          =   7 
+   RESTRICTED UOCC =   0 
+   FROZEN UOCC     =   0 
+         ---------------------------------------------------------
+
+
+   ==> Setting up CI strings <==
+
+   There are 21 alpha and 21 beta strings
+   The CI space requires 441 (4.41E+02) determinants and 1 blocks
+
+
+   ==> Transforming CI integrals <==
+	Presorting SO-basis two-electron integrals.
+	Sorting File: SO Ints (nn|nn) nbuckets = 1
+	Transforming the one-electron integrals and constructing Fock matrices
+	Starting first half-transformation.
+	Sorting half-transformed integrals.
+	First half integral transformation complete.
+	Starting second half-transformation.
+	Two-electron integral transformation complete.
+
+*** H0 Block Eigenvalue = -75.01000067
+
+Find the roots by the Simultaneous Expansion Method (Block Davidson Method)
+Using 5 initial trial vectors
+(sem_iter): H0block_->H0b_diag[1][1] - H0block_->H0b_diag[2][1] = -0.681793 - 0.681793 = -1.363586 > 1.0E-8
+(sem_iter): H0block_->H0b_diag[3][3] - H0block_->H0b_diag[4][3] = 0.670145 - -0.670145 = 1.340290 > 1.0E-8
+(sem_iter): H0block_->H0b_diag[5][4] - H0block_->H0b_diag[6][4] = -0.677356 - 0.677356 = -1.354712 > 1.0E-8
+(sem_iter): H0block_->H0b_diag[7][6] - H0block_->H0b_diag[8][6] = 0.408956 - -0.408956 = 0.817911 > 1.0E-8
+(sem_iter): H0block_->H0b_diag[7][8] - H0block_->H0b_diag[8][8] = -0.556031 - 0.556031 = -1.112062 > 1.0E-8
+Iter  0  Root  1 = -75.010000672   Delta_E -8.307E+01   Delta_C  1.800E-12  
+Iter  0  Root  2 = -74.689138483   Delta_E -8.275E+01   Delta_C  3.864E-11  
+Iter  0  Root  3 = -74.599074528   Delta_E -8.266E+01   Delta_C  1.850E-10  
+Iter  0  Root  4 = -74.530826924   Delta_E -8.260E+01   Delta_C  8.639E-12  
+Iter  0  Root  5 = -74.454326720   Delta_E -8.252E+01   Delta_C  3.439E-10  
+
+Warning: Norm of correction (root 0) is < 1.0E-13
+Warning: Norm of correction (root 1) is < 1.0E-13
+Warning: Norm of correction (root 2) is < 1.0E-13
+Warning: Norm of correction (root 3) is < 1.0E-13
+Warning: Norm of correction (root 4) is < 1.0E-13
+Iter  1  Root  1 = -75.010000672   Delta_E -1.421E-14   Delta_C  6.179E-12 c
+Iter  1  Root  2 = -74.689138483   Delta_E  1.421E-14   Delta_C  3.923E-11 c
+Iter  1  Root  3 = -74.599074528   Delta_E -8.527E-14   Delta_C  1.851E-10 c
+Iter  1  Root  4 = -74.530826924   Delta_E -7.105E-14   Delta_C  1.154E-11 c
+Iter  1  Root  5 = -74.454326720   Delta_E -7.105E-14   Delta_C  3.443E-10 c
+
+
+* ROOT 1 CI total energy = -75.0100006715441  (0.0000 eV,      0.00 1/cm)
+
+
+The 441 most important determinants
+
+    1    0.976736  (    0,    0)  1AX  2AX  3AX  4AX  5AX  
+    2   -0.093030  (    8,    8)  1AX  2AX  4AX  5AX  7AX  
+    3   -0.076255  (    2,    2)  1AX  2AX  3AX  5AX  6AX  
+    4    0.067785  (    2,    8)  1AX  2AX  3AA  4AB  5AX  6AA  7AB  
+    5    0.067785  (    8,    2)  1AX  2AX  3AB  4AA  5AX  6AB  7AA  
+    6   -0.059107  (    3,    3)  1AX  2AX  4AX  5AX  6AX  
+    7    0.053047  (    3,    7)  1AX  2AX  3AB  4AA  5AX  6AA  7AB  
+    8    0.053047  (    7,    3)  1AX  2AX  3AA  4AB  5AX  6AB  7AA  
+    9   -0.051124  (    7,    7)  1AX  2AX  3AX  5AX  7AX  
+   10   -0.039724  (    2,    4)  1AX  2AA  3AX  4AB  5AX  6AX  
+   11   -0.039724  (    4,    2)  1AX  2AB  3AX  4AA  5AX  6AX  
+   12    0.031694  (    4,    8)  1AX  2AB  3AA  4AX  5AX  6AA  7AB  
+   13    0.031694  (    8,    4)  1AX  2AA  3AB  4AX  5AX  6AB  7AA  
+   14   -0.030702  (    4,    4)  1AX  3AX  4AX  5AX  6AX  
+   15   -0.027531  (    1,    1)  1AX  2AX  3AX  4AX  6AX  
+   16   -0.022081  (    0,    2)  1AX  2AX  3AX  4AA  5AX  6AB  
+   17   -0.022081  (    2,    0)  1AX  2AX  3AX  4AB  5AX  6AA  
+   18    0.021442  (    3,    9)  1AX  2AA  3AB  4AX  5AX  6AA  7AB  
+   19    0.021442  (    9,    3)  1AX  2AB  3AA  4AX  5AX  6AB  7AA  
+   20   -0.019192  (    9,    9)  1AX  3AX  4AX  5AX  7AX  
+   21    0.019037  (   15,   15)  1AX  2AX  5AX  6AX  7AX  
+   22    0.014738  (    0,   15)  1AX  2AX  3AA  4AA  5AX  6AB  7AB  
+   23    0.014738  (   15,    0)  1AX  2AX  3AB  4AB  5AX  6AA  7AA  
+   24   -0.012132  (    6,    6)  1AX  2AX  3AX  4AX  7AX  
+   25   -0.010252  (    0,   18)  1AX  2AA  3AA  4AX  5AX  6AB  7AB  
+   26   -0.010252  (   18,    0)  1AX  2AB  3AB  4AX  5AX  6AA  7AA  
+   27   -0.007532  (   15,   18)  1AX  2AA  4AB  5AX  6AX  7AX  
+   28   -0.007532  (   18,   15)  1AX  2AB  4AA  5AX  6AX  7AX  
+   29    0.006213  (   18,   18)  1AX  4AX  5AX  6AX  7AX  
+   30    0.004109  (    8,   15)  1AX  2AX  4AA  5AX  6AB  7AX  
+   31    0.004109  (   15,    8)  1AX  2AX  4AB  5AX  6AA  7AX  
+   32    0.004044  (    7,    9)  1AX  2AA  3AX  4AB  5AX  7AX  
+   33    0.004044  (    9,    7)  1AX  2AB  3AX  4AA  5AX  7AX  
+   34    0.003126  (    1,   12)  1AX  2AX  3AA  4AX  6AX  7AB  
+   35    0.003126  (   12,    1)  1AX  2AX  3AB  4AX  6AX  7AA  
+   36    0.003070  (   16,   16)  1AX  3AX  5AX  6AX  7AX  
+   37    0.003029  (   12,   12)  1AX  2AX  4AX  6AX  7AX  
+   38    0.002509  (    0,    4)  1AX  2AA  3AX  4AX  5AX  6AB  
+   39    0.002509  (    4,    0)  1AX  2AB  3AX  4AX  5AX  6AA  
+   40    0.002175  (   11,   11)  1AX  2AX  3AX  6AX  7AX  
+   41    0.002102  (    7,   16)  1AX  2AA  3AX  5AX  6AB  7AX  
+   42    0.002102  (   16,    7)  1AX  2AB  3AX  5AX  6AA  7AX  
+   43    0.001772  (    0,    8)  1AX  2AX  3AA  4AX  5AX  7AB  
+   44    0.001772  (    8,    0)  1AX  2AX  3AB  4AX  5AX  7AA  
+   45   -0.001465  (    2,   18)  1AX  2AA  3AA  4AB  5AX  6AX  7AB  
+   46   -0.001465  (   18,    2)  1AX  2AB  3AB  4AA  5AX  6AX  7AA  
+   47    0.001441  (    2,   15)  1AX  2AX  3AA  5AX  6AX  7AB  
+   48    0.001441  (   15,    2)  1AX  2AX  3AB  5AX  6AX  7AA  
+   49   -0.001383  (    9,   16)  1AX  3AX  4AA  5AX  6AB  7AX  
+   50   -0.001383  (   16,    9)  1AX  3AX  4AB  5AX  6AA  7AX  
+   51    0.001260  (    4,   15)  1AX  2AB  3AA  4AA  5AX  6AX  7AB  
+   52    0.001260  (   15,    4)  1AX  2AA  3AB  4AB  5AX  6AX  7AA  
+   53    0.000841  (   13,   13)  1AX  3AX  4AX  6AX  7AX  
+   54   -0.000751  (    9,   10)  1AA  2AB  3AX  4AX  5AX  7AX  
+   55   -0.000751  (   10,    9)  1AB  2AA  3AX  4AX  5AX  7AX  
+   56   -0.000511  (    5,    5)  2AX  3AX  4AX  5AX  6AX  
+   57    0.000498  (   11,   13)  1AX  2AA  3AX  4AB  6AX  7AX  
+   58    0.000498  (   13,   11)  1AX  2AB  3AX  4AA  6AX  7AX  
+   59    0.000412  (    7,   10)  1AA  2AX  3AX  4AB  5AX  7AX  
+   60    0.000412  (   10,    7)  1AB  2AX  3AX  4AA  5AX  7AX  
+   61   -0.000377  (   10,   10)  2AX  3AX  4AX  5AX  7AX  
+   62    0.000370  (    0,   19)  1AA  2AX  3AA  4AX  5AX  6AB  7AB  
+   63    0.000370  (   19,    0)  1AB  2AX  3AB  4AX  5AX  6AA  7AA  
+   64   -0.000342  (    4,    5)  1AA  2AB  3AX  4AX  5AX  6AX  
+   65   -0.000342  (    5,    4)  1AB  2AA  3AX  4AX  5AX  6AX  
+   66    0.000281  (    6,   13)  1AX  2AA  3AX  4AX  6AB  7AX  
+   67    0.000281  (   13,    6)  1AX  2AB  3AX  4AX  6AA  7AX  
+   68   -0.000205  (    3,   16)  1AX  2AA  3AB  4AA  5AX  6AX  7AB  
+   69   -0.000205  (   16,    3)  1AX  2AB  3AA  4AB  5AX  6AX  7AA  
+   70    0.000204  (    3,   10)  1AA  2AX  3AB  4AX  5AX  6AA  7AB  
+   71    0.000204  (   10,    3)  1AB  2AX  3AA  4AX  5AX  6AB  7AA  
+   72   -0.000185  (    8,   18)  1AX  2AA  4AX  5AX  6AB  7AX  
+   73   -0.000185  (   18,    8)  1AX  2AB  4AX  5AX  6AA  7AX  
+   74    0.000168  (    6,   11)  1AX  2AX  3AX  4AA  6AB  7AX  
+   75    0.000168  (   11,    6)  1AX  2AX  3AX  4AB  6AA  7AX  
+   76   -0.000166  (    5,    8)  1AB  2AX  3AA  4AX  5AX  6AA  7AB  
+   77   -0.000166  (    8,    5)  1AA  2AX  3AB  4AX  5AX  6AB  7AA  
+   78   -0.000125  (    2,    5)  1AA  2AX  3AX  4AB  5AX  6AX  
+   79   -0.000125  (    5,    2)  1AB  2AX  3AX  4AA  5AX  6AX  
+   80    0.000093  (   16,   17)  1AA  2AB  3AX  5AX  6AX  7AX  
+   81    0.000093  (   17,   16)  1AB  2AA  3AX  5AX  6AX  7AX  
+   82    0.000072  (   19,   19)  2AX  4AX  5AX  6AX  7AX  
+   83    0.000070  (   18,   19)  1AA  2AB  4AX  5AX  6AX  7AX  
+   84    0.000070  (   19,   18)  1AB  2AA  4AX  5AX  6AX  7AX  
+   85    0.000053  (   17,   17)  2AX  3AX  5AX  6AX  7AX  
+   86   -0.000049  (    0,    5)  1AA  2AX  3AX  4AX  5AX  6AB  
+   87   -0.000049  (    5,    0)  1AB  2AX  3AX  4AX  5AX  6AA  
+   88   -0.000044  (    4,   18)  1AX  3AA  4AX  5AX  6AX  7AB  
+   89   -0.000044  (   18,    4)  1AX  3AB  4AX  5AX  6AX  7AA  
+   90    0.000036  (    8,   19)  1AA  2AX  4AX  5AX  6AB  7AX  
+   91    0.000036  (   19,    8)  1AB  2AX  4AX  5AX  6AA  7AX  
+   92    0.000036  (   16,   20)  1AA  3AX  4AB  5AX  6AX  7AX  
+   93    0.000036  (   20,   16)  1AB  3AX  4AA  5AX  6AX  7AX  
+   94    0.000032  (    7,   20)  1AA  2AA  3AX  4AB  5AX  6AB  7AX  
+   95    0.000032  (   20,    7)  1AB  2AB  3AX  4AA  5AX  6AA  7AX  
+   96   -0.000024  (    9,   20)  1AA  3AX  4AX  5AX  6AB  7AX  
+   97   -0.000024  (   20,    9)  1AB  3AX  4AX  5AX  6AA  7AX  
+   98    0.000022  (   15,   19)  1AA  2AX  4AB  5AX  6AX  7AX  
+   99    0.000022  (   19,   15)  1AB  2AX  4AA  5AX  6AX  7AX  
+  100    0.000021  (   13,   14)  1AA  2AB  3AX  4AX  6AX  7AX  
+  101    0.000021  (   14,   13)  1AB  2AA  3AX  4AX  6AX  7AX  
+  102    0.000021  (   20,   20)  3AX  4AX  5AX  6AX  7AX  
+  103   -0.000019  (    5,   19)  2AX  3AA  4AX  5AX  6AX  7AB  
+  104   -0.000019  (   19,    5)  2AX  3AB  4AX  5AX  6AX  7AA  
+  105   -0.000018  (   10,   16)  1AB  2AA  3AX  4AA  5AX  6AB  7AX  
+  106   -0.000018  (   16,   10)  1AA  2AB  3AX  4AB  5AX  6AA  7AX  
+  107    0.000015  (    3,   20)  1AA  2AA  3AB  4AX  5AX  6AX  7AB  
+  108    0.000015  (   20,    3)  1AB  2AB  3AA  4AX  5AX  6AX  7AA  
+  109    0.000015  (   14,   14)  2AX  3AX  4AX  6AX  7AX  
+  110   -0.000014  (   10,   17)  2AX  3AX  4AA  5AX  6AB  7AX  
+  111   -0.000014  (   17,   10)  2AX  3AX  4AB  5AX  6AA  7AX  
+  112    0.000014  (    4,   19)  1AA  2AB  3AA  4AX  5AX  6AX  7AB  
+  113    0.000014  (   19,    4)  1AB  2AA  3AB  4AX  5AX  6AX  7AA  
+  114    0.000013  (   17,   20)  2AA  3AX  4AB  5AX  6AX  7AX  
+  115    0.000013  (   20,   17)  2AB  3AX  4AA  5AX  6AX  7AX  
+  116    0.000013  (    9,   17)  1AA  2AB  3AX  4AA  5AX  6AB  7AX  
+  117    0.000013  (   17,    9)  1AB  2AA  3AX  4AB  5AX  6AA  7AX  
+  118   -0.000011  (    7,   17)  1AA  2AX  3AX  5AX  6AB  7AX  
+  119   -0.000011  (   17,    7)  1AB  2AX  3AX  5AX  6AA  7AX  
+  120    0.000009  (    3,   17)  1AA  2AX  3AB  4AA  5AX  6AX  7AB  
+  121    0.000009  (   17,    3)  1AB  2AX  3AA  4AB  5AX  6AX  7AA  
+  122   -0.000009  (   11,   14)  1AA  2AX  3AX  4AB  6AX  7AX  
+  123   -0.000009  (   14,   11)  1AB  2AX  3AX  4AA  6AX  7AX  
+  124    0.000009  (    5,   15)  1AB  2AX  3AA  4AA  5AX  6AX  7AB  
+  125    0.000009  (   15,    5)  1AA  2AX  3AB  4AB  5AX  6AX  7AA  
+  126    0.000006  (    6,   14)  1AA  2AX  3AX  4AX  6AB  7AX  
+  127    0.000006  (   14,    6)  1AB  2AX  3AX  4AX  6AA  7AX  
+  128   -0.000006  (   10,   20)  2AA  3AX  4AX  5AX  6AB  7AX  
+  129   -0.000006  (   20,   10)  2AB  3AX  4AX  5AX  6AA  7AX  
+  130   -0.000002  (    5,   18)  1AB  2AA  3AA  4AX  5AX  6AX  7AB  
+  131   -0.000002  (   18,    5)  1AA  2AB  3AB  4AX  5AX  6AX  7AA  
+  132    0.000001  (    2,   19)  1AA  2AX  3AA  4AB  5AX  6AX  7AB  
+  133    0.000001  (   19,    2)  1AB  2AX  3AB  4AA  5AX  6AX  7AA  
+  134    0.000000  (    0,    1)  1AX  2AX  3AX  4AX  5AA  6AB  
+  135    0.000000  (    1,    0)  1AX  2AX  3AX  4AX  5AB  6AA  
+  136   -0.000000  (    8,    1)  1AX  2AX  3AB  4AX  5AA  6AB  7AA  
+  137   -0.000000  (    1,    8)  1AX  2AX  3AA  4AX  5AB  6AA  7AB  
+  138    0.000000  (    2,    1)  1AX  2AX  3AX  4AB  5AA  6AX  
+  139    0.000000  (    1,    2)  1AX  2AX  3AX  4AA  5AB  6AX  
+  140   -0.000000  (    0,    6)  1AX  2AX  3AX  4AX  5AA  7AB  
+  141   -0.000000  (    6,    0)  1AX  2AX  3AX  4AX  5AB  7AA  
+  142   -0.000000  (    3,    6)  1AX  2AX  3AB  4AX  5AA  6AA  7AB  
+  143   -0.000000  (    6,    3)  1AX  2AX  3AA  4AX  5AB  6AB  7AA  
+  144    0.000000  (    3,    1)  1AX  2AX  3AB  4AX  5AA  6AX  
+  145    0.000000  (    1,    3)  1AX  2AX  3AA  4AX  5AB  6AX  
+  146   -0.000000  (    7,    1)  1AX  2AX  3AX  4AB  5AA  6AB  7AA  
+  147   -0.000000  (    1,    7)  1AX  2AX  3AX  4AA  5AB  6AA  7AB  
+  148    0.000000  (    8,    6)  1AX  2AX  3AB  4AX  5AA  7AX  
+  149    0.000000  (    6,    8)  1AX  2AX  3AA  4AX  5AB  7AX  
+  150   -0.000000  (   12,    8)  1AX  2AX  4AX  5AB  6AA  7AX  
+  151   -0.000000  (    8,   12)  1AX  2AX  4AX  5AA  6AB  7AX  
+  152    0.000000  (    1,    4)  1AX  2AA  3AX  4AX  5AB  6AX  
+  153    0.000000  (    4,    1)  1AX  2AB  3AX  4AX  5AA  6AX  
+  154    0.000000  (    7,    6)  1AX  2AX  3AX  4AB  5AA  7AX  
+  155    0.000000  (    6,    7)  1AX  2AX  3AX  4AA  5AB  7AX  
+  156   -0.000000  (    3,    2)  1AX  2AX  3AB  4AA  5AX  6AX  
+  157   -0.000000  (    2,    3)  1AX  2AX  3AA  4AB  5AX  6AX  
+  158    0.000000  (    8,   11)  1AX  2AX  3AB  4AA  5AA  6AB  7AX  
+  159    0.000000  (   11,    8)  1AX  2AX  3AA  4AB  5AB  6AA  7AX  
+  160    0.000000  (    2,   12)  1AX  2AX  3AA  4AB  5AA  6AX  7AB  
+  161    0.000000  (   12,    2)  1AX  2AX  3AB  4AA  5AB  6AX  7AA  
+  162    0.000000  (    3,   11)  1AX  2AX  3AB  4AA  5AA  6AX  7AB  
+  163    0.000000  (   11,    3)  1AX  2AX  3AA  4AB  5AB  6AX  7AA  
+  164   -0.000000  (    2,   11)  1AX  2AX  3AX  5AA  6AX  7AB  
+  165   -0.000000  (   11,    2)  1AX  2AX  3AX  5AB  6AX  7AA  
+  166   -0.000000  (    7,   11)  1AX  2AX  3AX  5AA  6AB  7AX  
+  167   -0.000000  (   11,    7)  1AX  2AX  3AX  5AB  6AA  7AX  
+  168   -0.000000  (    3,   12)  1AX  2AX  4AX  5AA  6AX  7AB  
+  169   -0.000000  (   12,    3)  1AX  2AX  4AX  5AB  6AX  7AA  
+  170   -0.000000  (    1,    9)  1AX  2AA  3AX  4AX  5AB  6AA  7AB  
+  171   -0.000000  (    9,    1)  1AX  2AB  3AX  4AX  5AA  6AB  7AA  
+  172    0.000000  (    7,    2)  1AX  2AX  3AX  5AX  6AB  7AA  
+  173    0.000000  (    2,    7)  1AX  2AX  3AX  5AX  6AA  7AB  
+  174   -0.000000  (    2,    6)  1AX  2AX  3AX  4AB  5AA  6AA  7AB  
+  175   -0.000000  (    6,    2)  1AX  2AX  3AX  4AA  5AB  6AB  7AA  
+  176    0.000000  (    0,    3)  1AX  2AX  3AA  4AX  5AX  6AB  
+  177    0.000000  (    3,    0)  1AX  2AX  3AB  4AX  5AX  6AA  
+  178   -0.000000  (   12,   15)  1AX  2AX  4AA  5AB  6AX  7AX  
+  179   -0.000000  (   15,   12)  1AX  2AX  4AB  5AA  6AX  7AX  
+  180    0.000000  (    7,   12)  1AX  2AX  3AA  4AB  5AA  6AB  7AX  
+  181    0.000000  (   12,    7)  1AX  2AX  3AB  4AA  5AB  6AA  7AX  
+  182   -0.000000  (    4,    6)  1AX  2AB  3AX  4AX  5AA  6AA  7AB  
+  183   -0.000000  (    6,    4)  1AX  2AA  3AX  4AX  5AB  6AB  7AA  
+  184    0.000000  (   15,   11)  1AX  2AX  3AB  5AA  6AX  7AX  
+  185    0.000000  (   11,   15)  1AX  2AX  3AA  5AB  6AX  7AX  
+  186   -0.000000  (    6,    1)  1AX  2AX  3AX  4AX  6AB  7AA  
+  187   -0.000000  (    1,    6)  1AX  2AX  3AX  4AX  6AA  7AB  
+  188   -0.000000  (    4,   11)  1AX  2AB  3AX  4AA  5AA  6AX  7AB  
+  189   -0.000000  (   11,    4)  1AX  2AA  3AX  4AB  5AB  6AX  7AA  
+  190   -0.000000  (    0,   12)  1AX  2AX  3AA  4AX  5AA  6AB  7AB  
+  191   -0.000000  (   12,    0)  1AX  2AX  3AB  4AX  5AB  6AA  7AA  
+  192   -0.000000  (    4,   13)  1AX  3AX  4AX  5AA  6AX  7AB  
+  193   -0.000000  (   13,    4)  1AX  3AX  4AX  5AB  6AX  7AA  
+  194   -0.000000  (    2,   13)  1AX  2AA  3AX  4AB  5AA  6AX  7AB  
+  195   -0.000000  (   13,    2)  1AX  2AB  3AX  4AA  5AB  6AX  7AA  
+  196    0.000000  (    4,   12)  1AX  2AB  3AA  4AX  5AA  6AX  7AB  
+  197    0.000000  (   12,    4)  1AX  2AA  3AB  4AX  5AB  6AX  7AA  
+  198    0.000000  (    8,   13)  1AX  2AA  3AB  4AX  5AA  6AB  7AX  
+  199    0.000000  (   13,    8)  1AX  2AB  3AA  4AX  5AB  6AA  7AX  
+  200    0.000000  (   18,   12)  1AX  2AB  4AX  5AA  6AX  7AX  
+  201    0.000000  (   12,   18)  1AX  2AA  4AX  5AB  6AX  7AX  
+  202    0.000000  (    3,   13)  1AX  2AA  3AB  4AX  5AA  6AX  7AB  
+  203    0.000000  (   13,    3)  1AX  2AB  3AA  4AX  5AB  6AX  7AA  
+  204   -0.000000  (    3,    8)  1AX  2AX  4AX  5AX  6AA  7AB  
+  205   -0.000000  (    8,    3)  1AX  2AX  4AX  5AX  6AB  7AA  
+  206    0.000000  (   15,    3)  1AX  2AX  4AB  5AX  6AX  7AA  
+  207    0.000000  (    3,   15)  1AX  2AX  4AA  5AX  6AX  7AB  
+  208    0.000000  (    6,    9)  1AX  2AA  3AX  4AX  5AB  7AX  
+  209    0.000000  (    9,    6)  1AX  2AB  3AX  4AX  5AA  7AX  
+  210    0.000000  (    9,   12)  1AX  2AB  3AA  4AX  5AA  6AB  7AX  
+  211    0.000000  (   12,    9)  1AX  2AA  3AB  4AX  5AB  6AA  7AX  
+  212   -0.000000  (   15,    6)  1AX  2AX  3AB  4AB  5AA  6AA  7AX  
+  213   -0.000000  (    6,   15)  1AX  2AX  3AA  4AA  5AB  6AB  7AX  
+  214   -0.000000  (    9,   13)  1AX  3AX  4AX  5AA  6AB  7AX  
+  215   -0.000000  (   13,    9)  1AX  3AX  4AX  5AB  6AA  7AX  
+  216    0.000000  (    9,    8)  1AX  2AB  3AA  4AX  5AX  7AX  
+  217    0.000000  (    8,    9)  1AX  2AA  3AB  4AX  5AX  7AX  
+
+
+
+* ROOT 2 CI total energy = -74.6891384829877  (8.7311 eV,  70421.10 1/cm)
+
+
+The 441 most important determinants
+
+    1    0.672753  (    1,    0)  1AX  2AX  3AX  4AX  5AB  6AA  
+    2    0.672753  (    0,    1)  1AX  2AX  3AX  4AX  5AA  6AB  
+    3   -0.110746  (    1,    8)  1AX  2AX  3AA  4AX  5AB  6AA  7AB  
+    4   -0.110746  (    8,    1)  1AX  2AX  3AB  4AX  5AA  6AB  7AA  
+    5   -0.096386  (    3,    6)  1AX  2AX  3AB  4AX  5AA  6AA  7AB  
+    6   -0.096386  (    6,    3)  1AX  2AX  3AA  4AX  5AB  6AB  7AA  
+    7    0.092602  (    1,    2)  1AX  2AX  3AX  4AA  5AB  6AX  
+    8    0.092602  (    2,    1)  1AX  2AX  3AX  4AB  5AA  6AX  
+    9   -0.068531  (   12,    8)  1AX  2AX  4AX  5AB  6AA  7AX  
+   10   -0.068531  (    8,   12)  1AX  2AX  4AX  5AA  6AB  7AX  
+   11    0.063841  (    1,    4)  1AX  2AA  3AX  4AX  5AB  6AX  
+   12    0.063841  (    4,    1)  1AX  2AB  3AX  4AX  5AA  6AX  
+   13    0.054422  (    6,    7)  1AX  2AX  3AX  4AA  5AB  7AX  
+   14    0.054422  (    7,    6)  1AX  2AX  3AX  4AB  5AA  7AX  
+   15    0.039196  (   12,    2)  1AX  2AX  3AB  4AA  5AB  6AX  7AA  
+   16    0.039196  (    2,   12)  1AX  2AX  3AA  4AB  5AA  6AX  7AB  
+   17    0.034922  (   11,    3)  1AX  2AX  3AA  4AB  5AB  6AX  7AA  
+   18    0.034922  (    3,   11)  1AX  2AX  3AB  4AA  5AA  6AX  7AB  
+   19   -0.031977  (   11,    7)  1AX  2AX  3AX  5AB  6AA  7AX  
+   20   -0.031977  (    7,   11)  1AX  2AX  3AX  5AA  6AB  7AX  
+   21   -0.024863  (   12,   15)  1AX  2AX  4AA  5AB  6AX  7AX  
+   22   -0.024863  (   15,   12)  1AX  2AX  4AB  5AA  6AX  7AX  
+   23    0.017127  (   12,    4)  1AX  2AA  3AB  4AX  5AB  6AX  7AA  
+   24    0.017127  (    4,   12)  1AX  2AB  3AA  4AX  5AA  6AX  7AB  
+   25    0.014853  (   13,    3)  1AX  2AB  3AA  4AX  5AB  6AX  7AA  
+   26    0.014853  (    3,   13)  1AX  2AA  3AB  4AX  5AA  6AX  7AB  
+   27   -0.014360  (   12,    0)  1AX  2AX  3AB  4AX  5AB  6AA  7AA  
+   28   -0.014360  (    0,   12)  1AX  2AX  3AA  4AX  5AA  6AB  7AB  
+   29    0.012880  (   12,   18)  1AX  2AA  4AX  5AB  6AX  7AX  
+   30    0.012880  (   18,   12)  1AX  2AB  4AX  5AA  6AX  7AX  
+   31   -0.011265  (   13,    9)  1AX  3AX  4AX  5AB  6AA  7AX  
+   32   -0.011265  (    9,   13)  1AX  3AX  4AX  5AA  6AB  7AX  
+   33    0.008574  (    6,    9)  1AX  2AA  3AX  4AX  5AB  7AX  
+   34    0.008574  (    9,    6)  1AX  2AB  3AX  4AX  5AA  7AX  
+   35    0.004274  (    1,   15)  1AX  2AX  3AA  4AA  5AB  6AX  7AB  
+   36    0.004274  (   15,    1)  1AX  2AX  3AB  4AB  5AA  6AX  7AA  
+   37   -0.003962  (   13,   16)  1AX  3AX  4AA  5AB  6AX  7AX  
+   38   -0.003962  (   16,   13)  1AX  3AX  4AB  5AA  6AX  7AX  
+   39    0.003019  (   11,   16)  1AX  2AA  3AX  5AB  6AX  7AX  
+   40    0.003019  (   16,   11)  1AX  2AB  3AX  5AA  6AX  7AX  
+   41   -0.002275  (    1,   18)  1AX  2AA  3AA  4AX  5AB  6AX  7AB  
+   42   -0.002275  (   18,    1)  1AX  2AB  3AB  4AX  5AA  6AX  7AA  
+   43   -0.002074  (    6,   16)  1AX  2AA  3AX  4AA  5AB  6AB  7AX  
+   44   -0.002074  (   16,    6)  1AX  2AB  3AX  4AB  5AA  6AA  7AX  
+   45    0.001690  (    9,   11)  1AX  2AB  3AX  4AA  5AA  6AB  7AX  
+   46    0.001690  (   11,    9)  1AX  2AA  3AX  4AB  5AB  6AA  7AX  
+   47   -0.000490  (   14,    9)  1AB  2AA  3AX  4AX  5AB  6AA  7AX  
+   48   -0.000490  (    9,   14)  1AA  2AB  3AX  4AX  5AA  6AB  7AX  
+   49   -0.000463  (   13,   10)  1AA  2AB  3AX  4AX  5AB  6AA  7AX  
+   50   -0.000463  (   10,   13)  1AB  2AA  3AX  4AX  5AA  6AB  7AX  
+   51   -0.000385  (   13,    7)  1AX  2AB  3AX  4AA  5AB  6AA  7AX  
+   52   -0.000385  (    7,   13)  1AX  2AA  3AX  4AB  5AA  6AB  7AX  
+   53    0.000268  (   11,   10)  1AA  2AX  3AX  4AB  5AB  6AA  7AX  
+   54    0.000268  (   10,   11)  1AB  2AX  3AX  4AA  5AA  6AB  7AX  
+   55    0.000254  (    7,   14)  1AA  2AX  3AX  4AB  5AA  6AB  7AX  
+   56    0.000254  (   14,    7)  1AB  2AX  3AX  4AA  5AB  6AA  7AX  
+   57    0.000246  (   19,    1)  1AB  2AX  3AB  4AX  5AA  6AX  7AA  
+   58    0.000246  (    1,   19)  1AA  2AX  3AA  4AX  5AB  6AX  7AB  
+   59   -0.000237  (   14,   10)  2AX  3AX  4AX  5AB  6AA  7AX  
+   60   -0.000237  (   10,   14)  2AX  3AX  4AX  5AA  6AB  7AX  
+   61   -0.000235  (    6,   10)  1AA  2AX  3AX  4AX  5AB  7AX  
+   62   -0.000235  (   10,    6)  1AB  2AX  3AX  4AX  5AA  7AX  
+   63    0.000192  (    5,    1)  1AB  2AX  3AX  4AX  5AA  6AX  
+   64    0.000192  (    1,    5)  1AA  2AX  3AX  4AX  5AB  6AX  
+   65   -0.000139  (    5,   12)  1AB  2AX  3AA  4AX  5AA  6AX  7AB  
+   66   -0.000139  (   12,    5)  1AA  2AX  3AB  4AX  5AB  6AX  7AA  
+   67   -0.000133  (   14,   16)  1AB  2AA  3AX  4AA  5AB  6AX  7AX  
+   68   -0.000133  (   16,   14)  1AA  2AB  3AX  4AB  5AA  6AX  7AX  
+   69    0.000107  (    3,   14)  1AA  2AX  3AB  4AX  5AA  6AX  7AB  
+   70    0.000107  (   14,    3)  1AB  2AX  3AA  4AX  5AB  6AX  7AA  
+   71   -0.000099  (   13,   17)  1AA  2AB  3AX  4AA  5AB  6AX  7AX  
+   72   -0.000099  (   17,   13)  1AB  2AA  3AX  4AB  5AA  6AX  7AX  
+   73   -0.000074  (   14,   17)  2AX  3AX  4AA  5AB  6AX  7AX  
+   74   -0.000074  (   17,   14)  2AX  3AX  4AB  5AA  6AX  7AX  
+   75   -0.000061  (   13,   20)  1AA  3AX  4AX  5AB  6AX  7AX  
+   76   -0.000061  (   20,   13)  1AB  3AX  4AX  5AA  6AX  7AX  
+   77    0.000034  (   11,   20)  1AA  2AA  3AX  4AB  5AB  6AX  7AX  
+   78    0.000034  (   20,   11)  1AB  2AB  3AX  4AA  5AA  6AX  7AX  
+   79   -0.000031  (   20,   14)  2AB  3AX  4AX  5AA  6AX  7AX  
+   80   -0.000031  (   14,   20)  2AA  3AX  4AX  5AB  6AX  7AX  
+   81   -0.000026  (    6,   20)  1AA  2AA  3AX  4AX  5AB  6AB  7AX  
+   82   -0.000026  (   20,    6)  1AB  2AB  3AX  4AX  5AA  6AA  7AX  
+   83    0.000025  (   11,   17)  1AA  2AX  3AX  5AB  6AX  7AX  
+   84    0.000025  (   17,   11)  1AB  2AX  3AX  5AA  6AX  7AX  
+   85    0.000023  (   19,   12)  1AB  2AX  4AX  5AA  6AX  7AX  
+   86    0.000023  (   12,   19)  1AA  2AX  4AX  5AB  6AX  7AX  
+   87   -0.000014  (    6,   17)  1AA  2AX  3AX  4AA  5AB  6AB  7AX  
+   88   -0.000014  (   17,    6)  1AB  2AX  3AX  4AB  5AA  6AA  7AX  
+   89   -0.000000  (    6,    0)  1AX  2AX  3AX  4AX  5AB  7AA  
+   90   -0.000000  (    0,    6)  1AX  2AX  3AX  4AX  5AA  7AB  
+   91   -0.000000  (    0,    0)  1AX  2AX  3AX  4AX  5AX  
+   92   -0.000000  (    8,    8)  1AX  2AX  4AX  5AX  7AX  
+   93   -0.000000  (    3,    3)  1AX  2AX  4AX  5AX  6AX  
+   94    0.000000  (    6,    8)  1AX  2AX  3AA  4AX  5AB  7AX  
+   95    0.000000  (    8,    6)  1AX  2AX  3AB  4AX  5AA  7AX  
+   96   -0.000000  (    3,    0)  1AX  2AX  3AB  4AX  5AX  6AA  
+   97   -0.000000  (    0,    3)  1AX  2AX  3AA  4AX  5AX  6AB  
+   98   -0.000000  (    1,    7)  1AX  2AX  3AX  4AA  5AB  6AA  7AB  
+   99   -0.000000  (    7,    1)  1AX  2AX  3AX  4AB  5AA  6AB  7AA  
+  100    0.000000  (    1,    3)  1AX  2AX  3AA  4AX  5AB  6AX  
+  101   -0.000000  (    6,    2)  1AX  2AX  3AX  4AA  5AB  6AB  7AA  
+  102   -0.000000  (    2,    2)  1AX  2AX  3AX  5AX  6AX  
+  103    0.000000  (    3,    1)  1AX  2AX  3AB  4AX  5AA  6AX  
+  104    0.000000  (    2,    8)  1AX  2AX  3AA  4AB  5AX  6AA  7AB  
+  105    0.000000  (    8,    2)  1AX  2AX  3AB  4AA  5AX  6AB  7AA  
+  106   -0.000000  (    2,    6)  1AX  2AX  3AX  4AB  5AA  6AA  7AB  
+  107    0.000000  (    7,    3)  1AX  2AX  3AA  4AB  5AX  6AB  7AA  
+  108    0.000000  (    3,    7)  1AX  2AX  3AB  4AA  5AX  6AA  7AB  
+  109   -0.000000  (    2,    4)  1AX  2AA  3AX  4AB  5AX  6AX  
+  110   -0.000000  (    4,    2)  1AX  2AB  3AX  4AA  5AX  6AX  
+  111    0.000000  (    4,    8)  1AX  2AB  3AA  4AX  5AX  6AA  7AB  
+  112    0.000000  (    8,    4)  1AX  2AA  3AB  4AX  5AX  6AB  7AA  
+  113   -0.000000  (   11,    2)  1AX  2AX  3AX  5AB  6AX  7AA  
+  114   -0.000000  (    2,   11)  1AX  2AX  3AX  5AA  6AX  7AB  
+  115    0.000000  (   11,    8)  1AX  2AX  3AA  4AB  5AB  6AA  7AX  
+  116    0.000000  (    3,    2)  1AX  2AX  3AB  4AA  5AX  6AX  
+  117    0.000000  (    8,    0)  1AX  2AX  3AB  4AX  5AX  7AA  
+  118    0.000000  (    8,   11)  1AX  2AX  3AB  4AA  5AA  6AB  7AX  
+  119    0.000000  (    7,    0)  1AX  2AX  3AX  4AB  5AX  7AA  
+  120   -0.000000  (    6,    4)  1AX  2AA  3AX  4AX  5AB  6AB  7AA  
+  121    0.000000  (    2,    3)  1AX  2AX  3AA  4AB  5AX  6AX  
+  122   -0.000000  (   12,    3)  1AX  2AX  4AX  5AB  6AX  7AA  
+  123    0.000000  (    0,    8)  1AX  2AX  3AA  4AX  5AX  7AB  
+  124   -0.000000  (    7,    7)  1AX  2AX  3AX  5AX  7AX  
+  125   -0.000000  (    4,    6)  1AX  2AB  3AX  4AX  5AA  6AA  7AB  
+  126   -0.000000  (    3,   12)  1AX  2AX  4AX  5AA  6AX  7AB  
+  127   -0.000000  (    9,    1)  1AX  2AB  3AX  4AX  5AA  6AB  7AA  
+  128   -0.000000  (    1,    1)  1AX  2AX  3AX  4AX  6AX  
+  129   -0.000000  (    1,    9)  1AX  2AA  3AX  4AX  5AB  6AA  7AB  
+  130    0.000000  (    0,    7)  1AX  2AX  3AX  4AA  5AX  7AB  
+  131    0.000000  (   12,    7)  1AX  2AX  3AB  4AA  5AB  6AA  7AX  
+  132   -0.000000  (    4,    4)  1AX  3AX  4AX  5AX  6AX  
+  133    0.000000  (    7,   12)  1AX  2AX  3AA  4AB  5AA  6AB  7AX  
+  134   -0.000000  (    9,    9)  1AX  3AX  4AX  5AX  7AX  
+  135    0.000000  (    3,    9)  1AX  2AA  3AB  4AX  5AX  6AA  7AB  
+  136    0.000000  (    9,    3)  1AX  2AB  3AA  4AX  5AX  6AB  7AA  
+  137    0.000000  (    0,    2)  1AX  2AX  3AX  4AA  5AX  6AB  
+  138   -0.000000  (   11,    4)  1AX  2AA  3AX  4AB  5AB  6AX  7AA  
+  139    0.000000  (    2,    0)  1AX  2AX  3AX  4AB  5AX  6AA  
+  140   -0.000000  (    4,   11)  1AX  2AB  3AX  4AA  5AA  6AX  7AB  
+  141    0.000000  (   11,   15)  1AX  2AX  3AA  5AB  6AX  7AX  
+  142   -0.000000  (   13,    2)  1AX  2AB  3AX  4AA  5AB  6AX  7AA  
+  143    0.000000  (   15,   11)  1AX  2AX  3AB  5AA  6AX  7AX  
+  144   -0.000000  (    2,   13)  1AX  2AA  3AX  4AB  5AA  6AX  7AB  
+  145   -0.000000  (    2,    7)  1AX  2AX  3AX  5AX  6AA  7AB  
+  146   -0.000000  (   13,    4)  1AX  3AX  4AX  5AB  6AX  7AA  
+  147   -0.000000  (    7,    2)  1AX  2AX  3AX  5AX  6AB  7AA  
+  148   -0.000000  (    4,   13)  1AX  3AX  4AX  5AA  6AX  7AB  
+  149    0.000000  (   13,    8)  1AX  2AB  3AA  4AX  5AB  6AA  7AX  
+  150   -0.000000  (   18,    0)  1AX  2AB  3AB  4AX  5AX  6AA  7AA  
+  151    0.000000  (    8,   13)  1AX  2AA  3AB  4AX  5AA  6AB  7AX  
+  152   -0.000000  (    0,   18)  1AX  2AA  3AA  4AX  5AX  6AB  7AB  
+  153    0.000000  (   15,   15)  1AX  2AX  5AX  6AX  7AX  
+  154    0.000000  (    6,    1)  1AX  2AX  3AX  4AX  6AB  7AA  
+  155   -0.000000  (    6,    6)  1AX  2AX  3AX  4AX  7AX  
+  156   -0.000000  (    4,    0)  1AX  2AB  3AX  4AX  5AX  6AA  
+  157    0.000000  (   12,    9)  1AX  2AA  3AB  4AX  5AB  6AA  7AX  
+  158    0.000000  (   15,    0)  1AX  2AX  3AB  4AB  5AX  6AA  7AA  
+  159    0.000000  (    0,   15)  1AX  2AX  3AA  4AA  5AX  6AB  7AB  
+  160    0.000000  (    9,   12)  1AX  2AB  3AA  4AX  5AA  6AB  7AX  
+  161    0.000000  (    1,    6)  1AX  2AX  3AX  4AX  6AA  7AB  
+  162   -0.000000  (    0,    4)  1AX  2AA  3AX  4AX  5AX  6AB  
+  163    0.000000  (    2,   15)  1AX  2AX  3AA  5AX  6AX  7AB  
+  164    0.000000  (   15,    2)  1AX  2AX  3AB  5AX  6AX  7AA  
+  165   -0.000000  (    6,   15)  1AX  2AX  3AA  4AA  5AB  6AB  7AX  
+  166    0.000000  (    9,    7)  1AX  2AB  3AX  4AA  5AX  7AX  
+  167    0.000000  (    7,    9)  1AX  2AA  3AX  4AB  5AX  7AX  
+  168   -0.000000  (   15,    6)  1AX  2AX  3AB  4AB  5AA  6AA  7AX  
+  169    0.000000  (    3,    8)  1AX  2AX  4AX  5AX  6AA  7AB  
+  170    0.000000  (   18,   18)  1AX  4AX  5AX  6AX  7AX  
+  171    0.000000  (    8,    3)  1AX  2AX  4AX  5AX  6AB  7AA  
+  172   -0.000000  (   11,   18)  1AX  2AA  3AA  4AB  5AB  6AX  7AX  
+  173    0.000000  (   15,    4)  1AX  2AA  3AB  4AB  5AX  6AX  7AA  
+  174    0.000000  (    4,   15)  1AX  2AB  3AA  4AA  5AX  6AX  7AB  
+  175   -0.000000  (   18,   11)  1AX  2AB  3AB  4AA  5AA  6AX  7AX  
+  176    0.000000  (   13,   15)  1AX  2AB  3AA  4AA  5AB  6AX  7AX  
+  177   -0.000000  (   15,   18)  1AX  2AA  4AB  5AX  6AX  7AX  
+  178   -0.000000  (   18,   15)  1AX  2AB  4AA  5AX  6AX  7AX  
+  179    0.000000  (   15,   13)  1AX  2AA  3AB  4AB  5AA  6AX  7AX  
+  180   -0.000000  (    8,    9)  1AX  2AA  3AB  4AX  5AX  7AX  
+  181   -0.000000  (    9,    8)  1AX  2AB  3AA  4AX  5AX  7AX  
+  182   -0.000000  (   13,   18)  1AX  3AA  4AX  5AB  6AX  7AX  
+  183   -0.000000  (   11,    0)  1AX  2AX  3AX  4AB  5AB  6AA  7AA  
+  184   -0.000000  (   16,    9)  1AX  3AX  4AB  5AX  6AA  7AX  
+  185   -0.000000  (    9,   16)  1AX  3AX  4AA  5AX  6AB  7AX  
+  186   -0.000000  (   18,   13)  1AX  3AB  4AX  5AA  6AX  7AX  
+  187   -0.000000  (    0,   11)  1AX  2AX  3AX  4AA  5AA  6AB  7AB  
+  188   -0.000000  (    3,   15)  1AX  2AX  4AA  5AX  6AX  7AB  
+
+
+
+* ROOT 3 CI total energy = -74.5990745282464  (11.1819 eV,  90187.85 1/cm)
+
+
+The 441 most important determinants
+
+    1   -0.672688  (    0,    6)  1AX  2AX  3AX  4AX  5AA  7AB  
+    2   -0.672688  (    6,    0)  1AX  2AX  3AX  4AX  5AB  7AA  
+    3    0.099321  (    8,    6)  1AX  2AX  3AB  4AX  5AA  7AX  
+    4    0.099321  (    6,    8)  1AX  2AX  3AA  4AX  5AB  7AX  
+    5   -0.088161  (    7,    1)  1AX  2AX  3AX  4AB  5AA  6AB  7AA  
+    6   -0.088161  (    1,    7)  1AX  2AX  3AX  4AA  5AB  6AA  7AB  
+    7    0.087711  (    3,    1)  1AX  2AX  3AB  4AX  5AA  6AX  
+    8    0.087711  (    1,    3)  1AX  2AX  3AA  4AX  5AB  6AX  
+    9   -0.078583  (    2,    6)  1AX  2AX  3AX  4AB  5AA  6AA  7AB  
+   10   -0.078583  (    6,    2)  1AX  2AX  3AX  4AA  5AB  6AB  7AA  
+   11   -0.052395  (    2,   11)  1AX  2AX  3AX  5AA  6AX  7AB  
+   12   -0.052395  (   11,    2)  1AX  2AX  3AX  5AB  6AX  7AA  
+   13    0.050107  (    8,   11)  1AX  2AX  3AB  4AA  5AA  6AB  7AX  
+   14    0.050107  (   11,    8)  1AX  2AX  3AA  4AB  5AB  6AA  7AX  
+   15   -0.044101  (    3,   12)  1AX  2AX  4AX  5AA  6AX  7AB  
+   16   -0.044101  (   12,    3)  1AX  2AX  4AX  5AB  6AX  7AA  
+   17   -0.043545  (    4,    6)  1AX  2AB  3AX  4AX  5AA  6AA  7AB  
+   18   -0.043545  (    6,    4)  1AX  2AA  3AX  4AX  5AB  6AB  7AA  
+   19   -0.041656  (    1,    9)  1AX  2AA  3AX  4AX  5AB  6AA  7AB  
+   20   -0.041656  (    9,    1)  1AX  2AB  3AX  4AX  5AA  6AB  7AA  
+   21    0.037089  (    7,   12)  1AX  2AX  3AA  4AB  5AA  6AB  7AX  
+   22    0.037089  (   12,    7)  1AX  2AX  3AB  4AA  5AB  6AA  7AX  
+   23   -0.026509  (    4,   11)  1AX  2AB  3AX  4AA  5AA  6AX  7AB  
+   24   -0.026509  (   11,    4)  1AX  2AA  3AX  4AB  5AB  6AX  7AA  
+   25    0.025671  (   15,   11)  1AX  2AX  3AB  5AA  6AX  7AX  
+   26    0.025671  (   11,   15)  1AX  2AX  3AA  5AB  6AX  7AX  
+   27   -0.024705  (    2,   13)  1AX  2AA  3AX  4AB  5AA  6AX  7AB  
+   28   -0.024705  (   13,    2)  1AX  2AB  3AX  4AA  5AB  6AX  7AA  
+   29   -0.022765  (    4,   13)  1AX  3AX  4AX  5AA  6AX  7AB  
+   30   -0.022765  (   13,    4)  1AX  3AX  4AX  5AB  6AX  7AA  
+   31    0.021768  (    8,   13)  1AX  2AA  3AB  4AX  5AA  6AB  7AX  
+   32    0.021768  (   13,    8)  1AX  2AB  3AA  4AX  5AB  6AA  7AX  
+   33    0.015549  (    9,   12)  1AX  2AB  3AA  4AX  5AA  6AB  7AX  
+   34    0.015549  (   12,    9)  1AX  2AA  3AB  4AX  5AB  6AA  7AX  
+   35   -0.013018  (   15,    6)  1AX  2AX  3AB  4AB  5AA  6AA  7AX  
+   36   -0.013018  (    6,   15)  1AX  2AX  3AA  4AA  5AB  6AB  7AX  
+   37   -0.010287  (   18,   11)  1AX  2AB  3AB  4AA  5AA  6AX  7AX  
+   38   -0.010287  (   11,   18)  1AX  2AA  3AA  4AB  5AB  6AX  7AX  
+   39    0.009851  (   15,   13)  1AX  2AA  3AB  4AB  5AA  6AX  7AX  
+   40    0.009851  (   13,   15)  1AX  2AB  3AA  4AA  5AB  6AX  7AX  
+   41   -0.009578  (    0,   11)  1AX  2AX  3AX  4AA  5AA  6AB  7AB  
+   42   -0.009578  (   11,    0)  1AX  2AX  3AX  4AB  5AB  6AA  7AA  
+   43   -0.007814  (   18,   13)  1AX  3AB  4AX  5AA  6AX  7AX  
+   44   -0.007814  (   13,   18)  1AX  3AA  4AX  5AB  6AX  7AX  
+   45    0.006219  (   18,    6)  1AX  2AB  3AB  4AX  5AA  6AA  7AX  
+   46    0.006219  (    6,   18)  1AX  2AA  3AA  4AX  5AB  6AB  7AX  
+   47    0.001888  (    0,   13)  1AX  2AA  3AX  4AX  5AA  6AB  7AB  
+   48    0.001888  (   13,    0)  1AX  2AB  3AX  4AX  5AB  6AA  7AA  
+   49    0.001804  (   16,    1)  1AX  2AB  3AX  4AB  5AA  6AX  7AA  
+   50    0.001804  (    1,   16)  1AX  2AA  3AX  4AA  5AB  6AX  7AB  
+   51   -0.000436  (   12,   16)  1AX  2AA  3AB  4AA  5AB  6AX  7AX  
+   52   -0.000436  (   16,   12)  1AX  2AB  3AA  4AB  5AA  6AX  7AX  
+   53   -0.000351  (    5,   14)  2AX  3AX  4AX  5AA  6AX  7AB  
+   54   -0.000351  (   14,    5)  2AX  3AX  4AX  5AB  6AX  7AA  
+   55   -0.000307  (   19,    6)  1AB  2AX  3AB  4AX  5AA  6AA  7AX  
+   56   -0.000307  (    6,   19)  1AA  2AX  3AA  4AX  5AB  6AB  7AX  
+   57   -0.000268  (    4,   14)  1AA  2AB  3AX  4AX  5AA  6AX  7AB  
+   58   -0.000268  (   14,    4)  1AB  2AA  3AX  4AX  5AB  6AX  7AA  
+   59   -0.000264  (    5,   13)  1AB  2AA  3AX  4AX  5AA  6AX  7AB  
+   60   -0.000264  (   13,    5)  1AA  2AB  3AX  4AX  5AB  6AX  7AA  
+   61   -0.000208  (    1,   10)  1AA  2AX  3AX  4AX  5AB  6AA  7AB  
+   62   -0.000208  (   10,    1)  1AB  2AX  3AX  4AX  5AA  6AB  7AA  
+   63    0.000160  (   12,   10)  1AA  2AX  3AB  4AX  5AB  6AA  7AX  
+   64    0.000160  (   10,   12)  1AB  2AX  3AA  4AX  5AA  6AB  7AX  
+   65   -0.000147  (    8,   14)  1AA  2AX  3AB  4AX  5AA  6AB  7AX  
+   66   -0.000147  (   14,    8)  1AB  2AX  3AA  4AX  5AB  6AA  7AX  
+   67   -0.000146  (    0,   14)  1AA  2AX  3AX  4AX  5AA  6AB  7AB  
+   68   -0.000146  (   14,    0)  1AB  2AX  3AX  4AX  5AB  6AA  7AA  
+   69   -0.000105  (   18,   14)  1AA  2AB  3AB  4AX  5AA  6AX  7AX  
+   70   -0.000105  (   14,   18)  1AB  2AA  3AA  4AX  5AB  6AX  7AX  
+   71   -0.000100  (   19,   14)  2AX  3AB  4AX  5AA  6AX  7AX  
+   72   -0.000100  (   14,   19)  2AX  3AA  4AX  5AB  6AX  7AX  
+   73   -0.000098  (   19,   13)  1AB  2AA  3AB  4AX  5AA  6AX  7AX  
+   74   -0.000098  (   13,   19)  1AA  2AB  3AA  4AX  5AB  6AX  7AX  
+   75   -0.000085  (    5,   11)  1AB  2AX  3AX  4AA  5AA  6AX  7AB  
+   76   -0.000085  (   11,    5)  1AA  2AX  3AX  4AB  5AB  6AX  7AA  
+   77   -0.000085  (    2,   14)  1AA  2AX  3AX  4AB  5AA  6AX  7AB  
+   78   -0.000085  (   14,    2)  1AB  2AX  3AX  4AA  5AB  6AX  7AA  
+   79   -0.000063  (    5,    6)  1AB  2AX  3AX  4AX  5AA  6AA  7AB  
+   80   -0.000063  (    6,    5)  1AA  2AX  3AX  4AX  5AB  6AB  7AA  
+   81   -0.000024  (   15,   14)  1AA  2AX  3AB  4AB  5AA  6AX  7AX  
+   82   -0.000024  (   14,   15)  1AB  2AX  3AA  4AA  5AB  6AX  7AX  
+   83   -0.000012  (   12,   17)  1AA  2AX  3AB  4AA  5AB  6AX  7AX  
+   84   -0.000012  (   17,   12)  1AB  2AX  3AA  4AB  5AA  6AX  7AX  
+   85    0.000011  (   19,   11)  1AB  2AX  3AB  4AA  5AA  6AX  7AX  
+   86    0.000011  (   11,   19)  1AA  2AX  3AA  4AB  5AB  6AX  7AX  
+   87    0.000007  (   12,   20)  1AA  2AA  3AB  4AX  5AB  6AX  7AX  
+   88    0.000007  (   20,   12)  1AB  2AB  3AA  4AX  5AA  6AX  7AX  
+   89   -0.000004  (   20,    1)  1AB  2AB  3AX  4AX  5AA  6AX  7AA  
+   90   -0.000004  (    1,   20)  1AA  2AA  3AX  4AX  5AB  6AX  7AB  
+   91    0.000001  (    1,   17)  1AA  2AX  3AX  4AA  5AB  6AX  7AB  
+   92    0.000001  (   17,    1)  1AB  2AX  3AX  4AB  5AA  6AX  7AA  
+   93   -0.000000  (    1,    0)  1AX  2AX  3AX  4AX  5AB  6AA  
+   94   -0.000000  (    0,    1)  1AX  2AX  3AX  4AX  5AA  6AB  
+   95   -0.000000  (    3,    0)  1AX  2AX  3AB  4AX  5AX  6AA  
+   96    0.000000  (    7,    0)  1AX  2AX  3AX  4AB  5AX  7AA  
+   97   -0.000000  (    0,    3)  1AX  2AX  3AA  4AX  5AX  6AB  
+   98   -0.000000  (    0,    0)  1AX  2AX  3AX  4AX  5AX  
+   99    0.000000  (    0,    7)  1AX  2AX  3AX  4AA  5AX  7AB  
+  100    0.000000  (    3,    3)  1AX  2AX  4AX  5AX  6AX  
+  101    0.000000  (    3,    2)  1AX  2AX  3AB  4AA  5AX  6AX  
+  102    0.000000  (    8,    8)  1AX  2AX  4AX  5AX  7AX  
+  103   -0.000000  (    2,    7)  1AX  2AX  3AX  5AX  6AA  7AB  
+  104    0.000000  (    2,    3)  1AX  2AX  3AA  4AB  5AX  6AX  
+  105   -0.000000  (    7,    2)  1AX  2AX  3AX  5AX  6AB  7AA  
+  106    0.000000  (    2,    0)  1AX  2AX  3AX  4AB  5AX  6AA  
+  107    0.000000  (    4,    0)  1AX  2AB  3AX  4AX  5AX  6AA  
+  108   -0.000000  (    8,    4)  1AX  2AA  3AB  4AX  5AX  6AB  7AA  
+  109   -0.000000  (    7,    3)  1AX  2AX  3AA  4AB  5AX  6AB  7AA  
+  110    0.000000  (    0,    4)  1AX  2AA  3AX  4AX  5AX  6AB  
+  111   -0.000000  (    4,    8)  1AX  2AB  3AA  4AX  5AX  6AA  7AB  
+  112    0.000000  (    2,    1)  1AX  2AX  3AX  4AB  5AA  6AX  
+  113    0.000000  (    2,    4)  1AX  2AA  3AX  4AB  5AX  6AX  
+  114   -0.000000  (    0,    8)  1AX  2AX  3AA  4AX  5AX  7AB  
+  115    0.000000  (    1,    2)  1AX  2AX  3AX  4AA  5AB  6AX  
+  116    0.000000  (    4,    2)  1AX  2AB  3AX  4AA  5AX  6AX  
+  117   -0.000000  (    8,    0)  1AX  2AX  3AB  4AX  5AX  7AA  
+  118    0.000000  (    3,    8)  1AX  2AX  4AX  5AX  6AA  7AB  
+  119   -0.000000  (    3,    7)  1AX  2AX  3AB  4AA  5AX  6AA  7AB  
+  120   -0.000000  (    8,    1)  1AX  2AX  3AB  4AX  5AA  6AB  7AA  
+  121   -0.000000  (    9,    3)  1AX  2AB  3AA  4AX  5AX  6AB  7AA  
+  122    0.000000  (    8,    3)  1AX  2AX  4AX  5AX  6AB  7AA  
+  123    0.000000  (    1,    1)  1AX  2AX  3AX  4AX  6AX  
+  124   -0.000000  (    3,    9)  1AX  2AA  3AB  4AX  5AX  6AA  7AB  
+  125    0.000000  (    9,    9)  1AX  3AX  4AX  5AX  7AX  
+  126   -0.000000  (    2,   15)  1AX  2AX  3AA  5AX  6AX  7AB  
+  127   -0.000000  (    0,    2)  1AX  2AX  3AX  4AA  5AX  6AB  
+  128    0.000000  (   12,    8)  1AX  2AX  4AX  5AB  6AA  7AX  
+  129   -0.000000  (   15,    2)  1AX  2AX  3AB  5AX  6AX  7AA  
+  130   -0.000000  (   15,    7)  1AX  2AX  3AB  5AX  6AA  7AX  
+  131   -0.000000  (    1,    8)  1AX  2AX  3AA  4AX  5AB  6AA  7AB  
+  132   -0.000000  (    3,   15)  1AX  2AX  4AA  5AX  6AX  7AB  
+  133    0.000000  (    0,   18)  1AX  2AA  3AA  4AX  5AX  6AB  7AB  
+  134    0.000000  (    8,   12)  1AX  2AX  4AX  5AA  6AB  7AX  
+  135    0.000000  (   18,    0)  1AX  2AB  3AB  4AX  5AX  6AA  7AA  
+  136   -0.000000  (    8,    9)  1AX  2AA  3AB  4AX  5AX  7AX  
+  137    0.000000  (    6,    6)  1AX  2AX  3AX  4AX  7AX  
+  138   -0.000000  (    4,   15)  1AX  2AB  3AA  4AA  5AX  6AX  7AB  
+  139   -0.000000  (    7,    7)  1AX  2AX  3AX  5AX  7AX  
+  140   -0.000000  (    6,    1)  1AX  2AX  3AX  4AX  6AB  7AA  
+  141   -0.000000  (    9,    7)  1AX  2AB  3AX  4AA  5AX  7AX  
+  142   -0.000000  (    1,    6)  1AX  2AX  3AX  4AX  6AA  7AB  
+  143    0.000000  (    4,    4)  1AX  3AX  4AX  5AX  6AX  
+  144   -0.000000  (   15,    4)  1AX  2AA  3AB  4AB  5AX  6AX  7AA  
+  145   -0.000000  (   12,    2)  1AX  2AX  3AB  4AA  5AB  6AX  7AA  
+  146   -0.000000  (    7,    9)  1AX  2AA  3AX  4AB  5AX  7AX  
+  147   -0.000000  (    9,    8)  1AX  2AB  3AA  4AX  5AX  7AX  
+  148    0.000000  (    8,   15)  1AX  2AX  4AA  5AX  6AB  7AX  
+  149    0.000000  (    7,    6)  1AX  2AX  3AX  4AB  5AA  7AX  
+  150   -0.000000  (    2,    8)  1AX  2AX  3AA  4AB  5AX  6AA  7AB  
+  151    0.000000  (   11,    7)  1AX  2AX  3AX  5AB  6AA  7AX  
+  152   -0.000000  (    2,   12)  1AX  2AX  3AA  4AB  5AA  6AX  7AB  
+  153   -0.000000  (   11,    3)  1AX  2AX  3AA  4AB  5AB  6AX  7AA  
+  154    0.000000  (    9,   16)  1AX  3AX  4AA  5AX  6AB  7AX  
+  155    0.000000  (   16,    9)  1AX  3AX  4AB  5AX  6AA  7AX  
+  156   -0.000000  (    4,    7)  1AX  2AB  3AX  4AA  5AX  6AA  7AB  
+  157   -0.000000  (    1,    4)  1AX  2AA  3AX  4AX  5AB  6AX  
+  158   -0.000000  (    4,    1)  1AX  2AB  3AX  4AX  5AA  6AX  
+  159    0.000000  (    7,   11)  1AX  2AX  3AX  5AA  6AB  7AX  
+  160   -0.000000  (   15,    0)  1AX  2AX  3AB  4AB  5AX  6AA  7AA  
+
+
+
+* ROOT 4 CI total energy = -74.5308269242910  (13.0390 eV, 105166.47 1/cm)
+
+
+The 441 most important determinants
+
+    1   -0.651109  (    0,    2)  1AX  2AX  3AX  4AA  5AX  6AB  
+    2   -0.651109  (    2,    0)  1AX  2AX  3AX  4AB  5AX  6AA  
+    3   -0.174642  (    8,    0)  1AX  2AX  3AB  4AX  5AX  7AA  
+    4   -0.174642  (    0,    8)  1AX  2AX  3AA  4AX  5AX  7AB  
+    5   -0.129117  (    2,    2)  1AX  2AX  3AX  5AX  6AX  
+    6   -0.112891  (    7,    7)  1AX  2AX  3AX  5AX  7AX  
+    7    0.105084  (    3,    3)  1AX  2AX  4AX  5AX  6AX  
+    8    0.074382  (    8,    2)  1AX  2AX  3AB  4AA  5AX  6AB  7AA  
+    9    0.074382  (    2,    8)  1AX  2AX  3AA  4AB  5AX  6AA  7AB  
+   10    0.068875  (    4,    0)  1AX  2AB  3AX  4AX  5AX  6AA  
+   11    0.068875  (    0,    4)  1AX  2AA  3AX  4AX  5AX  6AB  
+   12    0.060470  (    3,    7)  1AX  2AX  3AB  4AA  5AX  6AA  7AB  
+   13    0.060470  (    7,    3)  1AX  2AX  3AA  4AB  5AX  6AB  7AA  
+   14   -0.051158  (    0,    0)  1AX  2AX  3AX  4AX  5AX  
+   15   -0.041974  (    8,    4)  1AX  2AA  3AB  4AX  5AX  6AB  7AA  
+   16   -0.041974  (    4,    8)  1AX  2AB  3AA  4AX  5AX  6AA  7AB  
+   17    0.039014  (    8,   15)  1AX  2AX  4AA  5AX  6AB  7AX  
+   18    0.039014  (   15,    8)  1AX  2AX  4AB  5AX  6AA  7AX  
+   19   -0.038696  (    2,   15)  1AX  2AX  3AA  5AX  6AX  7AB  
+   20   -0.038696  (   15,    2)  1AX  2AX  3AB  5AX  6AX  7AA  
+   21    0.029350  (   15,   15)  1AX  2AX  5AX  6AX  7AX  
+   22   -0.028390  (    4,   15)  1AX  2AB  3AA  4AA  5AX  6AX  7AB  
+   23   -0.028390  (   15,    4)  1AX  2AA  3AB  4AB  5AX  6AX  7AA  
+   24    0.024030  (   18,    0)  1AX  2AB  3AB  4AX  5AX  6AA  7AA  
+   25    0.024030  (    0,   18)  1AX  2AA  3AA  4AX  5AX  6AB  7AB  
+   26   -0.023881  (    9,    7)  1AX  2AB  3AX  4AA  5AX  7AX  
+   27   -0.023881  (    7,    9)  1AX  2AA  3AX  4AB  5AX  7AX  
+   28    0.022559  (    9,    9)  1AX  3AX  4AX  5AX  7AX  
+   29    0.018823  (    2,    4)  1AX  2AA  3AX  4AB  5AX  6AX  
+   30    0.018823  (    4,    2)  1AX  2AB  3AX  4AA  5AX  6AX  
+   31    0.018553  (   16,    9)  1AX  3AX  4AB  5AX  6AA  7AX  
+   32    0.018553  (    9,   16)  1AX  3AX  4AA  5AX  6AB  7AX  
+   33    0.018357  (    6,    6)  1AX  2AX  3AX  4AX  7AX  
+   34   -0.017944  (    3,    9)  1AX  2AA  3AB  4AX  5AX  6AA  7AB  
+   35   -0.017944  (    9,    3)  1AX  2AB  3AA  4AX  5AX  6AB  7AA  
+   36   -0.017332  (    3,   16)  1AX  2AA  3AB  4AA  5AX  6AX  7AB  
+   37   -0.017332  (   16,    3)  1AX  2AB  3AA  4AB  5AX  6AX  7AA  
+   38    0.015908  (   18,    8)  1AX  2AB  4AX  5AX  6AA  7AX  
+   39    0.015908  (    8,   18)  1AX  2AA  4AX  5AX  6AB  7AX  
+   40   -0.014681  (    4,    4)  1AX  3AX  4AX  5AX  6AX  
+   41    0.013912  (   15,    0)  1AX  2AX  3AB  4AB  5AX  6AA  7AA  
+   42    0.013912  (    0,   15)  1AX  2AX  3AA  4AA  5AX  6AB  7AB  
+   43   -0.012520  (   18,    4)  1AX  3AB  4AX  5AX  6AX  7AA  
+   44   -0.012520  (    4,   18)  1AX  3AA  4AX  5AX  6AX  7AB  
+   45   -0.011810  (    6,   11)  1AX  2AX  3AX  4AA  6AB  7AX  
+   46   -0.011810  (   11,    6)  1AX  2AX  3AX  4AB  6AA  7AX  
+   47    0.011482  (    1,    1)  1AX  2AX  3AX  4AX  6AX  
+   48    0.011058  (    2,   18)  1AX  2AA  3AA  4AB  5AX  6AX  7AB  
+   49    0.011058  (   18,    2)  1AX  2AB  3AB  4AA  5AX  6AX  7AA  
+   50   -0.008406  (   18,   18)  1AX  4AX  5AX  6AX  7AX  
+   51    0.007735  (   16,   16)  1AX  3AX  5AX  6AX  7AX  
+   52   -0.007239  (    8,    8)  1AX  2AX  4AX  5AX  7AX  
+   53   -0.005040  (   12,   12)  1AX  2AX  4AX  6AX  7AX  
+   54    0.004913  (   11,   11)  1AX  2AX  3AX  6AX  7AX  
+   55    0.003703  (    1,   12)  1AX  2AX  3AA  4AX  6AX  7AB  
+   56    0.003703  (   12,    1)  1AX  2AX  3AB  4AX  6AX  7AA  
+   57   -0.001673  (   15,   18)  1AX  2AA  4AB  5AX  6AX  7AX  
+   58   -0.001673  (   18,   15)  1AX  2AB  4AA  5AX  6AX  7AX  
+   59   -0.001130  (    5,    4)  1AB  2AA  3AX  4AX  5AX  6AX  
+   60   -0.001130  (    4,    5)  1AA  2AB  3AX  4AX  5AX  6AX  
+   61    0.001115  (    7,   16)  1AX  2AA  3AX  5AX  6AB  7AX  
+   62    0.001115  (   16,    7)  1AX  2AB  3AX  5AX  6AA  7AX  
+   63   -0.000885  (   13,   13)  1AX  3AX  4AX  6AX  7AX  
+   64   -0.000579  (    0,    5)  1AA  2AX  3AX  4AX  5AX  6AB  
+   65   -0.000579  (    5,    0)  1AB  2AX  3AX  4AX  5AX  6AA  
+   66    0.000541  (    9,   17)  1AA  2AB  3AX  4AA  5AX  6AB  7AX  
+   67    0.000541  (   17,    9)  1AB  2AA  3AX  4AB  5AX  6AA  7AX  
+   68    0.000536  (   10,   16)  1AB  2AA  3AX  4AA  5AX  6AB  7AX  
+   69    0.000536  (   16,   10)  1AA  2AB  3AX  4AB  5AX  6AA  7AX  
+   70   -0.000437  (    6,   13)  1AX  2AA  3AX  4AX  6AB  7AX  
+   71   -0.000437  (   13,    6)  1AX  2AB  3AX  4AX  6AA  7AX  
+   72    0.000407  (   11,   13)  1AX  2AA  3AX  4AB  6AX  7AX  
+   73    0.000407  (   13,   11)  1AX  2AB  3AX  4AA  6AX  7AX  
+   74    0.000397  (    9,   10)  1AA  2AB  3AX  4AX  5AX  7AX  
+   75    0.000397  (   10,    9)  1AB  2AA  3AX  4AX  5AX  7AX  
+   76    0.000379  (    2,    5)  1AA  2AX  3AX  4AB  5AX  6AX  
+   77    0.000379  (    5,    2)  1AB  2AX  3AX  4AA  5AX  6AX  
+   78   -0.000289  (    7,   17)  1AA  2AX  3AX  5AX  6AB  7AX  
+   79   -0.000289  (   17,    7)  1AB  2AX  3AX  5AX  6AA  7AX  
+   80    0.000264  (   17,   10)  2AX  3AX  4AB  5AX  6AA  7AX  
+   81    0.000264  (   10,   17)  2AX  3AX  4AA  5AX  6AB  7AX  
+   82   -0.000262  (   18,    5)  1AA  2AB  3AB  4AX  5AX  6AX  7AA  
+   83   -0.000262  (    5,   18)  1AB  2AA  3AA  4AX  5AX  6AX  7AB  
+   84   -0.000202  (    4,   19)  1AA  2AB  3AA  4AX  5AX  6AX  7AB  
+   85   -0.000202  (   19,    4)  1AB  2AA  3AB  4AX  5AX  6AX  7AA  
+   86    0.000197  (   17,   16)  1AB  2AA  3AX  5AX  6AX  7AX  
+   87    0.000197  (   16,   17)  1AA  2AB  3AX  5AX  6AX  7AX  
+   88    0.000150  (   10,   10)  2AX  3AX  4AX  5AX  7AX  
+   89   -0.000145  (    8,   19)  1AA  2AX  4AX  5AX  6AB  7AX  
+   90   -0.000145  (   19,    8)  1AB  2AX  4AX  5AX  6AA  7AX  
+   91   -0.000136  (   19,    2)  1AB  2AX  3AB  4AA  5AX  6AX  7AA  
+   92   -0.000136  (    2,   19)  1AA  2AX  3AA  4AB  5AX  6AX  7AB  
+   93    0.000132  (   17,   17)  2AX  3AX  5AX  6AX  7AX  
+   94    0.000118  (    5,    5)  2AX  3AX  4AX  5AX  6AX  
+   95   -0.000117  (   17,    3)  1AB  2AX  3AA  4AB  5AX  6AX  7AA  
+   96   -0.000117  (    3,   17)  1AA  2AX  3AB  4AA  5AX  6AX  7AB  
+   97   -0.000083  (    0,   19)  1AA  2AX  3AA  4AX  5AX  6AB  7AB  
+   98   -0.000083  (   19,    0)  1AB  2AX  3AB  4AX  5AX  6AA  7AA  
+   99   -0.000082  (   19,    5)  2AX  3AB  4AX  5AX  6AX  7AA  
+  100   -0.000082  (    5,   19)  2AX  3AA  4AX  5AX  6AX  7AB  
+  101   -0.000066  (   19,   19)  2AX  4AX  5AX  6AX  7AX  
+  102    0.000061  (   20,    3)  1AB  2AB  3AA  4AX  5AX  6AX  7AA  
+  103    0.000061  (    3,   20)  1AA  2AA  3AB  4AX  5AX  6AX  7AB  
+  104    0.000060  (    8,    5)  1AA  2AX  3AB  4AX  5AX  6AB  7AA  
+  105    0.000060  (    5,    8)  1AB  2AX  3AA  4AX  5AX  6AA  7AB  
+  106    0.000052  (   10,    7)  1AB  2AX  3AX  4AA  5AX  7AX  
+  107    0.000052  (    7,   10)  1AA  2AX  3AX  4AB  5AX  7AX  
+  108   -0.000029  (   15,   19)  1AA  2AX  4AB  5AX  6AX  7AX  
+  109   -0.000029  (   19,   15)  1AB  2AX  4AA  5AX  6AX  7AX  
+  110    0.000025  (   16,   20)  1AA  3AX  4AB  5AX  6AX  7AX  
+  111    0.000025  (   20,   16)  1AB  3AX  4AA  5AX  6AX  7AX  
+  112   -0.000023  (   20,   10)  2AB  3AX  4AX  5AX  6AA  7AX  
+  113   -0.000023  (   10,   20)  2AA  3AX  4AX  5AX  6AB  7AX  
+  114   -0.000023  (   10,    3)  1AB  2AX  3AA  4AX  5AX  6AB  7AA  
+  115   -0.000023  (    3,   10)  1AA  2AX  3AB  4AX  5AX  6AA  7AB  
+  116    0.000019  (    5,   15)  1AB  2AX  3AA  4AA  5AX  6AX  7AB  
+  117    0.000019  (   15,    5)  1AA  2AX  3AB  4AB  5AX  6AX  7AA  
+  118   -0.000017  (   14,   14)  2AX  3AX  4AX  6AX  7AX  
+  119   -0.000016  (   20,   20)  3AX  4AX  5AX  6AX  7AX  
+  120   -0.000011  (   14,    6)  1AB  2AX  3AX  4AX  6AA  7AX  
+  121   -0.000011  (    6,   14)  1AA  2AX  3AX  4AX  6AB  7AX  
+  122    0.000008  (    9,   20)  1AA  3AX  4AX  5AX  6AB  7AX  
+  123    0.000008  (   20,    9)  1AB  3AX  4AX  5AX  6AA  7AX  
+  124    0.000007  (   17,   20)  2AA  3AX  4AB  5AX  6AX  7AX  
+  125    0.000007  (   20,   17)  2AB  3AX  4AA  5AX  6AX  7AX  
+  126    0.000005  (   20,    7)  1AB  2AB  3AX  4AA  5AX  6AA  7AX  
+  127    0.000005  (    7,   20)  1AA  2AA  3AX  4AB  5AX  6AB  7AX  
+  128    0.000005  (   18,   19)  1AA  2AB  4AX  5AX  6AX  7AX  
+  129    0.000005  (   19,   18)  1AB  2AA  4AX  5AX  6AX  7AX  
+  130   -0.000004  (   14,   13)  1AB  2AA  3AX  4AX  6AX  7AX  
+  131   -0.000004  (   13,   14)  1AA  2AB  3AX  4AX  6AX  7AX  
+  132    0.000001  (   14,   11)  1AB  2AX  3AX  4AA  6AX  7AX  
+  133    0.000001  (   11,   14)  1AA  2AX  3AX  4AB  6AX  7AX  
+  134    0.000000  (    0,    7)  1AX  2AX  3AX  4AA  5AX  7AB  
+  135    0.000000  (    7,    0)  1AX  2AX  3AX  4AB  5AX  7AA  
+  136   -0.000000  (    3,    2)  1AX  2AX  3AB  4AA  5AX  6AX  
+  137   -0.000000  (    2,    3)  1AX  2AX  3AA  4AB  5AX  6AX  
+  138    0.000000  (    0,    3)  1AX  2AX  3AA  4AX  5AX  6AB  
+  139    0.000000  (    3,    0)  1AX  2AX  3AB  4AX  5AX  6AA  
+  140    0.000000  (    7,    2)  1AX  2AX  3AX  5AX  6AB  7AA  
+  141    0.000000  (    2,    7)  1AX  2AX  3AX  5AX  6AA  7AB  
+  142   -0.000000  (    8,    3)  1AX  2AX  4AX  5AX  6AB  7AA  
+  143   -0.000000  (    3,    8)  1AX  2AX  4AX  5AX  6AA  7AB  
+  144    0.000000  (    1,    0)  1AX  2AX  3AX  4AX  5AB  6AA  
+  145    0.000000  (    0,    1)  1AX  2AX  3AX  4AX  5AA  6AB  
+  146    0.000000  (   15,    3)  1AX  2AX  4AB  5AX  6AX  7AA  
+  147    0.000000  (    3,   15)  1AX  2AX  4AA  5AX  6AX  7AB  
+  148    0.000000  (    9,    8)  1AX  2AB  3AA  4AX  5AX  7AX  
+  149    0.000000  (    8,    9)  1AX  2AA  3AB  4AX  5AX  7AX  
+  150   -0.000000  (    1,    6)  1AX  2AX  3AX  4AX  6AA  7AB  
+  151   -0.000000  (    6,    1)  1AX  2AX  3AX  4AX  6AB  7AA  
+  152    0.000000  (    6,    0)  1AX  2AX  3AX  4AX  5AB  7AA  
+  153    0.000000  (    3,    1)  1AX  2AX  3AB  4AX  5AA  6AX  
+  154    0.000000  (    0,    6)  1AX  2AX  3AX  4AX  5AA  7AB  
+  155    0.000000  (    1,    3)  1AX  2AX  3AA  4AX  5AB  6AX  
+  156    0.000000  (   12,    8)  1AX  2AX  4AX  5AB  6AA  7AX  
+  157    0.000000  (    8,   12)  1AX  2AX  4AX  5AA  6AB  7AX  
+  158    0.000000  (    7,    4)  1AX  2AA  3AX  4AB  5AX  6AB  7AA  
+  159    0.000000  (    4,    7)  1AX  2AB  3AX  4AA  5AX  6AA  7AB  
+  160    0.000000  (    6,    2)  1AX  2AX  3AX  4AA  5AB  6AB  7AA  
+  161    0.000000  (    2,    6)  1AX  2AX  3AX  4AB  5AA  6AA  7AB  
+  162    0.000000  (    1,    2)  1AX  2AX  3AX  4AA  5AB  6AX  
+  163   -0.000000  (    0,   16)  1AX  2AA  3AX  4AA  5AX  6AB  7AB  
+  164   -0.000000  (   16,    0)  1AX  2AB  3AX  4AB  5AX  6AA  7AA  
+  165   -0.000000  (    3,    4)  1AX  2AA  3AB  4AX  5AX  6AX  
+  166   -0.000000  (    4,    3)  1AX  2AB  3AA  4AX  5AX  6AX  
+  167   -0.000000  (    1,    7)  1AX  2AX  3AX  4AA  5AB  6AA  7AB  
+  168   -0.000000  (    7,   18)  1AX  2AA  3AA  4AB  5AX  6AB  7AX  
+  169   -0.000000  (   18,    7)  1AX  2AB  3AB  4AA  5AX  6AA  7AX  
+  170    0.000000  (    4,   16)  1AX  3AX  4AA  5AX  6AX  7AB  
+  171    0.000000  (   16,    4)  1AX  3AX  4AB  5AX  6AX  7AA  
+
+
+
+* ROOT 5 CI total energy = -74.4543267198823  (15.1207 eV, 121956.32 1/cm)
+
+
+The 441 most important determinants
+
+    1    0.588161  (    0,    7)  1AX  2AX  3AX  4AA  5AX  7AB  
+    2    0.588161  (    7,    0)  1AX  2AX  3AX  4AB  5AX  7AA  
+    3    0.325064  (    0,    3)  1AX  2AX  3AA  4AX  5AX  6AB  
+    4    0.325064  (    3,    0)  1AX  2AX  3AB  4AX  5AX  6AA  
+    5    0.137724  (    7,    2)  1AX  2AX  3AX  5AX  6AB  7AA  
+    6    0.137724  (    2,    7)  1AX  2AX  3AX  5AX  6AA  7AB  
+    7   -0.119392  (    3,    2)  1AX  2AX  3AB  4AA  5AX  6AX  
+    8   -0.119392  (    2,    3)  1AX  2AX  3AA  4AB  5AX  6AX  
+    9   -0.078676  (    3,    8)  1AX  2AX  4AX  5AX  6AA  7AB  
+   10   -0.078676  (    8,    3)  1AX  2AX  4AX  5AX  6AB  7AA  
+   11    0.051993  (   15,    3)  1AX  2AX  4AB  5AX  6AX  7AA  
+   12    0.051993  (    3,   15)  1AX  2AX  4AA  5AX  6AX  7AB  
+   13    0.046042  (    8,    9)  1AX  2AA  3AB  4AX  5AX  7AX  
+   14    0.046042  (    9,    8)  1AX  2AB  3AA  4AX  5AX  7AX  
+   15    0.028855  (    7,    4)  1AX  2AA  3AX  4AB  5AX  6AB  7AA  
+   16    0.028855  (    4,    7)  1AX  2AB  3AX  4AA  5AX  6AA  7AB  
+   17    0.019664  (    4,   16)  1AX  3AX  4AA  5AX  6AX  7AB  
+   18    0.019664  (   16,    4)  1AX  3AX  4AB  5AX  6AX  7AA  
+   19   -0.019320  (    8,   16)  1AX  2AA  3AB  4AA  5AX  6AB  7AX  
+   20   -0.019320  (   16,    8)  1AX  2AB  3AA  4AB  5AX  6AA  7AX  
+   21    0.017545  (    2,   16)  1AX  2AA  3AX  5AX  6AX  7AB  
+   22    0.017545  (   16,    2)  1AX  2AB  3AX  5AX  6AX  7AA  
+   23   -0.017146  (   18,    7)  1AX  2AB  3AB  4AA  5AX  6AA  7AX  
+   24   -0.017146  (    7,   18)  1AX  2AA  3AA  4AB  5AX  6AB  7AX  
+   25   -0.016581  (    0,   16)  1AX  2AA  3AX  4AA  5AX  6AB  7AB  
+   26   -0.016581  (   16,    0)  1AX  2AB  3AX  4AB  5AX  6AA  7AA  
+   27    0.015953  (    7,    8)  1AX  2AX  3AA  4AB  5AX  7AX  
+   28    0.015953  (    8,    7)  1AX  2AX  3AB  4AA  5AX  7AX  
+   29   -0.015559  (    1,   11)  1AX  2AX  3AX  4AA  6AX  7AB  
+   30   -0.015559  (   11,    1)  1AX  2AX  3AX  4AB  6AX  7AA  
+   31   -0.015408  (    3,    4)  1AX  2AA  3AB  4AX  5AX  6AX  
+   32   -0.015408  (    4,    3)  1AX  2AB  3AA  4AX  5AX  6AX  
+   33   -0.014759  (    6,    1)  1AX  2AX  3AX  4AX  6AB  7AA  
+   34   -0.014759  (    1,    6)  1AX  2AX  3AX  4AX  6AA  7AB  
+   35    0.012274  (    9,    2)  1AX  2AB  3AX  4AA  5AX  6AB  7AA  
+   36    0.012274  (    2,    9)  1AX  2AA  3AX  4AB  5AX  6AA  7AB  
+   37    0.012048  (   15,    7)  1AX  2AX  3AB  5AX  6AA  7AX  
+   38    0.012048  (    7,   15)  1AX  2AX  3AA  5AX  6AB  7AX  
+   39   -0.010861  (    9,   18)  1AX  3AA  4AX  5AX  6AB  7AX  
+   40   -0.010861  (   18,    9)  1AX  3AB  4AX  5AX  6AA  7AX  
+   41   -0.010548  (   15,   16)  1AX  2AA  3AB  5AX  6AX  7AX  
+   42   -0.010548  (   16,   15)  1AX  2AB  3AA  5AX  6AX  7AX  
+   43    0.008766  (    6,   12)  1AX  2AX  3AA  4AX  6AB  7AX  
+   44    0.008766  (   12,    6)  1AX  2AX  3AB  4AX  6AA  7AX  
+   45   -0.008481  (    0,    9)  1AX  2AA  3AX  4AX  5AX  7AB  
+   46   -0.008481  (    9,    0)  1AX  2AB  3AX  4AX  5AX  7AA  
+   47    0.005489  (   18,   16)  1AX  3AB  4AA  5AX  6AX  7AX  
+   48    0.005489  (   16,   18)  1AX  3AA  4AB  5AX  6AX  7AX  
+   49    0.004465  (   12,   11)  1AX  2AX  3AB  4AA  6AX  7AX  
+   50    0.004465  (   11,   12)  1AX  2AX  3AA  4AB  6AX  7AX  
+   51   -0.003064  (   18,    3)  1AX  2AB  4AX  5AX  6AX  7AA  
+   52   -0.003064  (    3,   18)  1AX  2AA  4AX  5AX  6AX  7AB  
+   53   -0.002174  (    9,   15)  1AX  2AB  3AA  4AA  5AX  6AB  7AX  
+   54   -0.002174  (   15,    9)  1AX  2AA  3AB  4AB  5AX  6AA  7AX  
+   55   -0.001667  (    9,    4)  1AX  3AX  4AX  5AX  6AB  7AA  
+   56   -0.001667  (    4,    9)  1AX  3AX  4AX  5AX  6AA  7AB  
+   57   -0.001226  (    1,   13)  1AX  2AA  3AX  4AX  6AX  7AB  
+   58   -0.001226  (   13,    1)  1AX  2AB  3AX  4AX  6AX  7AA  
+   59    0.000807  (    0,   10)  1AA  2AX  3AX  4AX  5AX  7AB  
+   60    0.000807  (   10,    0)  1AB  2AX  3AX  4AX  5AX  7AA  
+   61    0.000384  (    7,   19)  1AA  2AX  3AA  4AB  5AX  6AB  7AX  
+   62    0.000384  (   19,    7)  1AB  2AX  3AB  4AA  5AX  6AA  7AX  
+   63    0.000313  (    5,   17)  2AX  3AX  4AA  5AX  6AX  7AB  
+   64    0.000313  (   17,    5)  2AX  3AX  4AB  5AX  6AX  7AA  
+   65    0.000279  (    5,    9)  1AB  2AA  3AX  4AX  5AX  6AA  7AB  
+   66    0.000279  (    9,    5)  1AA  2AB  3AX  4AX  5AX  6AB  7AA  
+   67   -0.000225  (   10,   18)  1AB  2AA  3AA  4AX  5AX  6AB  7AX  
+   68   -0.000225  (   18,   10)  1AA  2AB  3AB  4AX  5AX  6AA  7AX  
+   69   -0.000223  (    5,    3)  1AB  2AX  3AA  4AX  5AX  6AX  
+   70   -0.000223  (    3,    5)  1AA  2AX  3AB  4AX  5AX  6AX  
+   71    0.000219  (    5,   16)  1AB  2AA  3AX  4AA  5AX  6AX  7AB  
+   72    0.000219  (   16,    5)  1AA  2AB  3AX  4AB  5AX  6AX  7AA  
+   73   -0.000205  (    9,   19)  1AA  2AB  3AA  4AX  5AX  6AB  7AX  
+   74   -0.000205  (   19,    9)  1AB  2AA  3AB  4AX  5AX  6AA  7AX  
+   75    0.000199  (    8,   17)  1AA  2AX  3AB  4AA  5AX  6AB  7AX  
+   76    0.000199  (   17,    8)  1AB  2AX  3AA  4AB  5AX  6AA  7AX  
+   77   -0.000186  (   10,   15)  1AB  2AX  3AA  4AA  5AX  6AB  7AX  
+   78   -0.000186  (   15,   10)  1AA  2AX  3AB  4AB  5AX  6AA  7AX  
+   79    0.000182  (    4,   17)  1AA  2AB  3AX  4AA  5AX  6AX  7AB  
+   80    0.000182  (   17,    4)  1AB  2AA  3AX  4AB  5AX  6AX  7AA  
+   81    0.000153  (    4,   10)  1AA  2AB  3AX  4AX  5AX  6AA  7AB  
+   82    0.000153  (   10,    4)  1AB  2AA  3AX  4AX  5AX  6AB  7AA  
+   83   -0.000145  (   10,   19)  2AX  3AA  4AX  5AX  6AB  7AX  
+   84   -0.000145  (   19,   10)  2AX  3AB  4AX  5AX  6AA  7AX  
+   85   -0.000126  (    0,   20)  1AA  2AA  3AX  4AX  5AX  6AB  7AB  
+   86   -0.000126  (   20,    0)  1AB  2AB  3AX  4AX  5AX  6AA  7AA  
+   87    0.000113  (   19,    3)  1AB  2AX  4AX  5AX  6AX  7AA  
+   88    0.000113  (    3,   19)  1AA  2AX  4AX  5AX  6AX  7AB  
+   89   -0.000110  (   10,    5)  2AX  3AX  4AX  5AX  6AB  7AA  
+   90   -0.000110  (    5,   10)  2AX  3AX  4AX  5AX  6AA  7AB  
+   91    0.000099  (   17,    0)  1AB  2AX  3AX  4AB  5AX  6AA  7AA  
+   92    0.000099  (    0,   17)  1AA  2AX  3AX  4AA  5AX  6AB  7AB  
+   93   -0.000083  (   10,    8)  1AB  2AX  3AA  4AX  5AX  7AX  
+   94   -0.000083  (    8,   10)  1AA  2AX  3AB  4AX  5AX  7AX  
+   95    0.000079  (    2,   10)  1AA  2AX  3AX  4AB  5AX  6AA  7AB  
+   96    0.000079  (   10,    2)  1AB  2AX  3AX  4AA  5AX  6AB  7AA  
+   97   -0.000056  (   13,   12)  1AX  2AB  3AA  4AX  6AX  7AX  
+   98   -0.000056  (   12,   13)  1AX  2AA  3AB  4AX  6AX  7AX  
+   99    0.000056  (   19,   17)  2AX  3AB  4AA  5AX  6AX  7AX  
+  100    0.000056  (   17,   19)  2AX  3AA  4AB  5AX  6AX  7AX  
+  101    0.000052  (   15,   17)  1AA  2AX  3AB  5AX  6AX  7AX  
+  102    0.000052  (   17,   15)  1AB  2AX  3AA  5AX  6AX  7AX  
+  103    0.000048  (   18,   17)  1AA  2AB  3AB  4AA  5AX  6AX  7AX  
+  104    0.000048  (   17,   18)  1AB  2AA  3AA  4AB  5AX  6AX  7AX  
+  105   -0.000037  (    2,   20)  1AA  2AA  3AX  4AB  5AX  6AX  7AB  
+  106   -0.000037  (   20,    2)  1AB  2AB  3AX  4AA  5AX  6AX  7AA  
+  107   -0.000037  (   14,    1)  1AB  2AX  3AX  4AX  6AX  7AA  
+  108   -0.000037  (    1,   14)  1AA  2AX  3AX  4AX  6AX  7AB  
+  109    0.000032  (   17,    2)  1AB  2AX  3AX  5AX  6AX  7AA  
+  110    0.000032  (    2,   17)  1AA  2AX  3AX  5AX  6AX  7AB  
+  111    0.000031  (   19,   16)  1AB  2AA  3AB  4AA  5AX  6AX  7AX  
+  112    0.000031  (   16,   19)  1AA  2AB  3AA  4AB  5AX  6AX  7AX  
+  113   -0.000021  (    5,    7)  1AB  2AX  3AX  4AA  5AX  6AA  7AB  
+  114   -0.000021  (    7,    5)  1AA  2AX  3AX  4AB  5AX  6AB  7AA  
+  115    0.000020  (   20,    8)  1AB  2AB  3AA  4AX  5AX  6AA  7AX  
+  116    0.000020  (    8,   20)  1AA  2AA  3AB  4AX  5AX  6AB  7AX  
+  117   -0.000017  (   20,   15)  1AB  2AB  3AA  4AA  5AX  6AX  7AX  
+  118   -0.000017  (   15,   20)  1AA  2AA  3AB  4AB  5AX  6AX  7AX  
+  119   -0.000015  (   20,   18)  1AB  3AA  4AX  5AX  6AX  7AX  
+  120   -0.000015  (   18,   20)  1AA  3AB  4AX  5AX  6AX  7AX  
+  121   -0.000014  (   20,    4)  1AB  3AX  4AX  5AX  6AX  7AA  
+  122   -0.000014  (    4,   20)  1AA  3AX  4AX  5AX  6AX  7AB  
+  123   -0.000013  (   19,   20)  2AA  3AB  4AX  5AX  6AX  7AX  
+  124   -0.000013  (   20,   19)  2AB  3AA  4AX  5AX  6AX  7AX  
+  125    0.000009  (   12,   14)  1AA  2AX  3AB  4AX  6AX  7AX  
+  126    0.000009  (   14,   12)  1AB  2AX  3AA  4AX  6AX  7AX  
+  127    0.000004  (   20,    5)  2AB  3AX  4AX  5AX  6AX  7AA  
+  128    0.000004  (    5,   20)  2AA  3AX  4AX  5AX  6AX  7AB  
+  129    0.000000  (    8,    8)  1AX  2AX  4AX  5AX  7AX  
+  130    0.000000  (    3,    3)  1AX  2AX  4AX  5AX  6AX  
+  131    0.000000  (    2,    0)  1AX  2AX  3AX  4AB  5AX  6AA  
+  132    0.000000  (    0,    2)  1AX  2AX  3AX  4AA  5AX  6AB  
+  133   -0.000000  (    3,    7)  1AX  2AX  3AB  4AA  5AX  6AA  7AB  
+  134    0.000000  (    2,    2)  1AX  2AX  3AX  5AX  6AX  
+  135   -0.000000  (    7,    3)  1AX  2AX  3AA  4AB  5AX  6AB  7AA  
+  136   -0.000000  (    4,    8)  1AX  2AB  3AA  4AX  5AX  6AA  7AB  
+  137   -0.000000  (    8,    4)  1AX  2AA  3AB  4AX  5AX  6AB  7AA  
+  138   -0.000000  (    2,    8)  1AX  2AX  3AA  4AB  5AX  6AA  7AB  
+  139    0.000000  (    4,    2)  1AX  2AB  3AX  4AA  5AX  6AX  
+  140    0.000000  (    2,    4)  1AX  2AA  3AX  4AB  5AX  6AX  
+  141   -0.000000  (    8,    2)  1AX  2AX  3AB  4AA  5AX  6AB  7AA  
+  142    0.000000  (    0,    8)  1AX  2AX  3AA  4AX  5AX  7AB  
+  143    0.000000  (    0,    0)  1AX  2AX  3AX  4AX  5AX  
+  144    0.000000  (    1,    1)  1AX  2AX  3AX  4AX  6AX  
+  145   -0.000000  (    3,    9)  1AX  2AA  3AB  4AX  5AX  6AA  7AB  
+  146   -0.000000  (    9,    3)  1AX  2AB  3AA  4AX  5AX  6AB  7AA  
+  147    0.000000  (    1,    3)  1AX  2AX  3AA  4AX  5AB  6AX  
+  148    0.000000  (    4,    4)  1AX  3AX  4AX  5AX  6AX  
+  149    0.000000  (    3,    1)  1AX  2AX  3AB  4AX  5AA  6AX  
+  150    0.000000  (    9,    9)  1AX  3AX  4AX  5AX  7AX  
+  151    0.000000  (    7,    7)  1AX  2AX  3AX  5AX  7AX  
+  152    0.000000  (    0,    1)  1AX  2AX  3AX  4AX  5AA  6AB  
+  153    0.000000  (    8,    0)  1AX  2AX  3AB  4AX  5AX  7AA  
+  154    0.000000  (    1,    0)  1AX  2AX  3AX  4AX  5AB  6AA  
+  155    0.000000  (   18,    0)  1AX  2AB  3AB  4AX  5AX  6AA  7AA  
+  156    0.000000  (    0,   18)  1AX  2AA  3AA  4AX  5AX  6AB  7AB  
+  157    0.000000  (    6,    0)  1AX  2AX  3AX  4AX  5AB  7AA  
+  158   -0.000000  (    2,    1)  1AX  2AX  3AX  4AB  5AA  6AX  
+  159   -0.000000  (    7,    1)  1AX  2AX  3AX  4AB  5AA  6AB  7AA  
+  160    0.000000  (    0,    6)  1AX  2AX  3AX  4AX  5AA  7AB  
+  161   -0.000000  (    1,    7)  1AX  2AX  3AX  4AA  5AB  6AA  7AB  
+  162   -0.000000  (    1,    2)  1AX  2AX  3AX  4AA  5AB  6AX  
+  163    0.000000  (    6,    3)  1AX  2AX  3AA  4AX  5AB  6AB  7AA  
+  164    0.000000  (    6,    6)  1AX  2AX  3AX  4AX  7AX  
+  165    0.000000  (    3,    6)  1AX  2AX  3AB  4AX  5AA  6AA  7AB  
+  166    0.000000  (    8,    1)  1AX  2AX  3AB  4AX  5AA  6AB  7AA  
+  167    0.000000  (    1,    8)  1AX  2AX  3AA  4AX  5AB  6AA  7AB  
+  168    0.000000  (    8,   12)  1AX  2AX  4AX  5AA  6AB  7AX  
+  169    0.000000  (   12,    8)  1AX  2AX  4AX  5AB  6AA  7AX  
+  170   -0.000000  (    2,   15)  1AX  2AX  3AA  5AX  6AX  7AB  
+  171   -0.000000  (    0,   15)  1AX  2AX  3AA  4AA  5AX  6AB  7AB  
+  172   -0.000000  (    9,    7)  1AX  2AB  3AX  4AA  5AX  7AX  
+  173   -0.000000  (   15,   15)  1AX  2AX  5AX  6AX  7AX  
+  174   -0.000000  (    7,    9)  1AX  2AA  3AX  4AB  5AX  7AX  
+  175   -0.000000  (   15,    2)  1AX  2AX  3AB  5AX  6AX  7AA  
+  176   -0.000000  (   15,    0)  1AX  2AX  3AB  4AB  5AX  6AA  7AA  
+  177   -0.000000  (    4,    1)  1AX  2AB  3AX  4AX  5AA  6AX  
+  178    0.000000  (    8,    6)  1AX  2AX  3AB  4AX  5AA  7AX  
+  179   -0.000000  (    1,    4)  1AX  2AA  3AX  4AX  5AB  6AX  
+  180    0.000000  (    6,    8)  1AX  2AX  3AA  4AX  5AB  7AX  
+  181   -0.000000  (    4,   15)  1AX  2AB  3AA  4AA  5AX  6AX  7AB  
+  182   -0.000000  (    6,    7)  1AX  2AX  3AX  4AA  5AB  7AX  
+  183    0.000000  (    4,    0)  1AX  2AB  3AX  4AX  5AX  6AA  
+  184   -0.000000  (   15,    4)  1AX  2AA  3AB  4AB  5AX  6AX  7AA  
+  185   -0.000000  (   18,   18)  1AX  4AX  5AX  6AX  7AX  
+  186   -0.000000  (    7,    6)  1AX  2AX  3AX  4AB  5AA  7AX  
+  187    0.000000  (    9,   16)  1AX  3AX  4AA  5AX  6AB  7AX  
+  188    0.000000  (   16,    9)  1AX  3AX  4AB  5AX  6AA  7AX  
+  189   -0.000000  (   12,    2)  1AX  2AX  3AB  4AA  5AB  6AX  7AA  
+  190    0.000000  (   18,   15)  1AX  2AB  4AA  5AX  6AX  7AX  
+  191    0.000000  (   15,   18)  1AX  2AA  4AB  5AX  6AX  7AX  
+  192    0.000000  (   11,    7)  1AX  2AX  3AX  5AB  6AA  7AX  
+  193   -0.000000  (    2,   12)  1AX  2AX  3AA  4AB  5AA  6AX  7AB  
+  194    0.000000  (    7,   11)  1AX  2AX  3AX  5AA  6AB  7AX  
+  195   -0.000000  (   11,    3)  1AX  2AX  3AA  4AB  5AB  6AX  7AA  
+  196    0.000000  (    0,    4)  1AX  2AA  3AX  4AX  5AX  6AB  
+  197   -0.000000  (    3,   11)  1AX  2AX  3AB  4AA  5AA  6AX  7AB  
+  198    0.000000  (    2,   18)  1AX  2AA  3AA  4AB  5AX  6AX  7AB  
+  199    0.000000  (   12,   15)  1AX  2AX  4AA  5AB  6AX  7AX  
+  200    0.000000  (    8,   15)  1AX  2AX  4AA  5AX  6AB  7AX  
+  201    0.000000  (   15,   12)  1AX  2AX  4AB  5AA  6AX  7AX  
+  202   -0.000000  (   12,   12)  1AX  2AX  4AX  6AX  7AX  
+  203    0.000000  (   15,    8)  1AX  2AX  4AB  5AX  6AA  7AX  
+  204    0.000000  (   18,    2)  1AX  2AB  3AB  4AA  5AX  6AX  7AA  
+  205    0.000000  (    2,    6)  1AX  2AX  3AX  4AB  5AA  6AA  7AB  
+  206    0.000000  (   18,    8)  1AX  2AB  4AX  5AX  6AA  7AX  
+  207   -0.000000  (   16,    3)  1AX  2AB  3AA  4AB  5AX  6AX  7AA  
+  208    0.000000  (   12,    0)  1AX  2AX  3AB  4AX  5AB  6AA  7AA  
+  209   -0.000000  (    3,   16)  1AX  2AA  3AB  4AA  5AX  6AX  7AB  
+  210    0.000000  (    0,   11)  1AX  2AX  3AX  4AA  5AA  6AB  7AB  
+  211    0.000000  (   11,    0)  1AX  2AX  3AX  4AB  5AB  6AA  7AA  
+  212    0.000000  (    8,   18)  1AX  2AA  4AX  5AX  6AB  7AX  
+  213   -0.000000  (    4,   12)  1AX  2AB  3AA  4AX  5AA  6AX  7AB  
+  214   -0.000000  (   12,    4)  1AX  2AA  3AB  4AX  5AB  6AX  7AA  
+  215   -0.000000  (    6,   11)  1AX  2AX  3AX  4AA  6AB  7AX  
+  216    0.000000  (    6,    2)  1AX  2AX  3AX  4AA  5AB  6AB  7AA  
+  217   -0.000000  (   15,    6)  1AX  2AX  3AB  4AB  5AA  6AA  7AX  
+  218   -0.000000  (   18,    4)  1AX  3AB  4AX  5AX  6AX  7AA  
+  219   -0.000000  (   11,    6)  1AX  2AX  3AX  4AB  6AA  7AX  
+  220    0.000000  (    0,   12)  1AX  2AX  3AA  4AX  5AA  6AB  7AB  
+  221   -0.000000  (    6,   15)  1AX  2AX  3AA  4AA  5AB  6AB  7AX  
+  222   -0.000000  (    9,    1)  1AX  2AB  3AX  4AX  5AA  6AB  7AA  
+  223   -0.000000  (    1,    9)  1AX  2AA  3AX  4AX  5AB  6AA  7AB  
+  224   -0.000000  (   18,   12)  1AX  2AB  4AX  5AA  6AX  7AX  
+  225   -0.000000  (    2,   11)  1AX  2AX  3AX  5AA  6AX  7AB  
+  226   -0.000000  (    4,   18)  1AX  3AA  4AX  5AX  6AX  7AB  
+  227   -0.000000  (   12,   18)  1AX  2AA  4AX  5AB  6AX  7AX  
+  228   -0.000000  (    1,   12)  1AX  2AX  3AA  4AX  6AX  7AB  
+  229   -0.000000  (   12,    1)  1AX  2AX  3AB  4AX  6AX  7AA  
+  230   -0.000000  (    7,   16)  1AX  2AA  3AX  5AX  6AB  7AX  
+
+
+		 "A good bug is a dead bug" 
+
+			 - Starship Troopers
+
+		 "I didn't write FORTRAN.  That's the problem."
+
+			 - Edward Valeev
+
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+
+Properties computed using the CI density matrix
+
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     1.0472
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -0.5151
+
+  Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.5321     Total:     0.5321
+
+  Dipole Moment: (Debye)
+     X:     0.0000      Y:     0.0000      Z:     1.3524     Total:     1.3524
+
+
+   ===> CI properties for all CI roots <=== 
+
+
+Properties computed using the CI ROOT 1 density matrix
+
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     1.0472
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -0.5151
+
+  Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.5321     Total:     0.5321
+
+  Dipole Moment: (Debye)
+     X:     0.0000      Y:     0.0000      Z:     1.3524     Total:     1.3524
+
+
+Properties computed using the CI ROOT 2 density matrix
+
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     1.0472
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:    -0.0000      Z:    -1.0801
+
+  Dipole Moment: (a.u.)
+     X:     0.0000      Y:    -0.0000      Z:    -0.0329     Total:     0.0329
+
+  Dipole Moment: (Debye)
+     X:     0.0000      Y:    -0.0000      Z:    -0.0836     Total:     0.0836
+
+
+Properties computed using the CI ROOT 3 density matrix
+
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     1.0472
+
+  Electronic Dipole Moment: (a.u.)
+     X:    -0.0000      Y:     0.0000      Z:    -0.8723
+
+  Dipole Moment: (a.u.)
+     X:    -0.0000      Y:     0.0000      Z:     0.1749     Total:     0.1749
+
+  Dipole Moment: (Debye)
+     X:    -0.0000      Y:     0.0000      Z:     0.4445     Total:     0.4445
+
+
+Properties computed using the CI ROOT 4 density matrix
+
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     1.0472
+
+  Electronic Dipole Moment: (a.u.)
+     X:    -0.0000      Y:    -0.0000      Z:    -1.1224
+
+  Dipole Moment: (a.u.)
+     X:    -0.0000      Y:    -0.0000      Z:    -0.0753     Total:     0.0753
+
+  Dipole Moment: (Debye)
+     X:    -0.0000      Y:    -0.0000      Z:    -0.1913     Total:     0.1913
+
+
+Properties computed using the CI ROOT 5 density matrix
+
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     1.0472
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -0.9282
+
+  Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.1190     Total:     0.1190
+
+  Dipole Moment: (Debye)
+     X:     0.0000      Y:     0.0000      Z:     0.3024     Total:     0.3024
+
+
+   ===> CI properties for all CI transition density matrices <=== 
+
+
+Properties computed using the CI ROOT 1 -> ROOT 2 density matrix
+
+  Transition Dipole Moment: (a.u.)
+     X:     0.0988      Y:    -0.0000      Z:    -0.0000     Total:     0.0988
+
+  Transition Dipole Moment: (Debye)
+     X:     0.2512      Y:    -0.0000      Z:    -0.0000     Total:     0.2512
+
+
+Properties computed using the CI ROOT 1 -> ROOT 3 density matrix
+
+  Transition Dipole Moment: (a.u.)
+     X:    -0.0000      Y:    -0.0000      Z:     0.0000     Total:     0.0000
+
+  Transition Dipole Moment: (Debye)
+     X:    -0.0000      Y:    -0.0000      Z:     0.0000     Total:     0.0000
+
+
+Properties computed using the CI ROOT 1 -> ROOT 4 density matrix
+
+  Transition Dipole Moment: (a.u.)
+     X:    -0.0000      Y:    -0.0000      Z:    -0.4281     Total:     0.4281
+
+  Transition Dipole Moment: (Debye)
+     X:    -0.0000      Y:    -0.0000      Z:    -1.0882     Total:     1.0882
+
+
+Properties computed using the CI ROOT 1 -> ROOT 5 density matrix
+
+  Transition Dipole Moment: (a.u.)
+     X:    -0.0000      Y:    -0.2936      Z:     0.0000     Total:     0.2936
+
+  Transition Dipole Moment: (Debye)
+     X:    -0.0000      Y:    -0.7464      Z:     0.0000     Total:     0.7464
+
+
+*** Psi4 exiting successfully. Buy a developer a beer!

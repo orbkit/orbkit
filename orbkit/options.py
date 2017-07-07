@@ -41,10 +41,11 @@ available = [
   'numproc','mo_set','calc_ao','all_mo','calc_mo','spin','drv','laplacian',
   'slice_length','is_vector','grid_file','adjust_grid','center_grid','random_grid',
   'z_reduced_density','gross_atomic_density','mo_tefd',
-  'quiet','no_log','no_output','no_slice','interactive'
+  'quiet','no_log','no_output','no_slice','interactive', 'test'
   ]
 
-itypes = ['molden',
+itypes = ['auto',
+          'molden',
           'aomix',
           'gamess', 
           'gaussian.log', 
@@ -86,7 +87,8 @@ def init_parser():
   #optparse.Option.STORE_ACTIONS += ('call_back',)
   usage = 'Usage: %prog [options] -i INPUT'
   parser = optparse.OptionParser(usage=usage,description=lgpl_short) 
-  
+
+
   parser.add_option("-l", dest="show_lgpl",
                       default=False,action="store_true", 
                       help="show license information and exit")
@@ -101,7 +103,7 @@ def init_parser():
                       default='', type="string",nargs=1,
                       help="input file")
   group.add_option("-e", "--itype", dest="itype",
-                      default='molden', type="choice",choices=itypes,
+                      default='auto', type="choice",choices=itypes,
                       help="input type: '" + "', '".join(itypes) + 
                       "' [default: '%default']")
   group.add_option("--cclib_parser",dest="cclib_parser",
@@ -228,15 +230,12 @@ def init_parser():
   parser.add_option_group(group)
 
   (kwargs, args) = parser.parse_args()
+
   # Print the licence, if requested
   if kwargs.show_lgpl:
     print(lgpl.replace('\nThis file is part of orbkit.\n',''))
     sys.exit(0)
   
-  # Print help if no input file has been set
-  if kwargs.filename == '':
-    parser.print_help()
-    sys.exit(1)
   if kwargs.otype is None:
     kwargs.otype = ['h5']
   for i,j in vars(kwargs).items():
@@ -244,9 +243,14 @@ def init_parser():
   
   # Check the options for compatibility and correctness
   check_options(error=parser.error,
-                        interactive=interactive,
-                        info=False)
+                interactive=interactive,
+                info=False,
+                check_io=(not len(args)))
   
+  if len(args) and args[0] == 'test':
+    from orbkit.test import test
+    test()
+
   return
   # init_parser 
 
@@ -282,11 +286,11 @@ def check_options(error=raise_error,display=print_message,
   #--- Input/Output Options ---#
   if check_io:
     # Look for the input file
+
     setattr(thismodule,'filename',check_if_exists(filename, 
                           what='filename for the input file', 
                           interactive=interactive,
                           error=error))
-    
     # Check the input type for correctness
     if itype not in itypes:
       error('Invalid input file format (choose from "%s")\n' % 
@@ -478,7 +482,7 @@ def check_grid_output_compatibilty(error=raise_error):
 
 #--- Input/Output Options ---
 filename        = ''            #: Specifies input file name. (str)
-itype           = 'molden'      #: Specifies input file type. See :data:`itypes` for details. (str) 
+itype           = 'auto'          #: Specifies input file type. See :data:`itypes` for details. (str) 
 cclib_parser    = None          #: If itype is 'cclib', specifies the cclib.parser. (str)
 outputname      = None          #: Specifies output file (base) name. (str)
 otype           = 'h5'          #: Specifies output file type. See :data:`otypes` for details. (str or list of str or None)

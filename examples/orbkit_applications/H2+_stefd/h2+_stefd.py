@@ -30,7 +30,7 @@ display.display(grid.get_grid())
 
 # Choose the molecular orbitals to be calculated
 selected_MO = ['1.1_a','1.5_a']
-qc.mo_spec = read.mo_select(qc.mo_spec, selected_MO, strict=True)['mo_spec']
+qc.mo_spec = qc.mo_spec.select(selected_MO)
 
 # Calculate molecular orbitals
 mo_list = core.rho_compute(qc,calc_mo=True,slice_length=slice_length,drv=None,

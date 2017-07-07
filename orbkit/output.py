@@ -30,6 +30,7 @@ import h5py
 # Import orbkit modules
 from orbkit import grid, options
 from orbkit.display import display
+from orbkit.units import a02aa
 
 def main_output(data,geo_info,geo_spec,outputname='new',otype='h5',
                 drv=None,omit=[],**kwargs):
@@ -69,7 +70,7 @@ def main_output(data,geo_info,geo_spec,outputname='new',otype='h5',
   
   if otype is None or otype == []:
     return output_written 
-  
+
   # Convert the data to a regular grid, if possible
   output_not_possible = (grid.is_vector and not grid.is_regular)
   is_regular_vector = (grid.is_vector and grid.is_regular)
@@ -90,7 +91,7 @@ def main_output(data,geo_info,geo_spec,outputname='new',otype='h5',
     it = [(0,None)]
     data = [data]
   f = {'f': outputname}
-  
+
   for i,j in it:
     f['d'] = j
     d = data[i]
@@ -111,7 +112,7 @@ def main_output(data,geo_info,geo_spec,outputname='new',otype='h5',
       else: 
         # Create Amira network incl. Alphamap
         display('\nCreating ZIBAmira network file...')
-        hx_network_creator(data,(fid % f))
+        hx_network_creator(d,(fid % f))
         output_written.append('%s.hx' % (fid % f))
     if 'cb' in otype or 'vmd' in otype and not print_waring:
       if output_not_possible: print_waring = True
@@ -284,14 +285,16 @@ def hdf5_append(x,group,name='data'):
   
   **Parameters:**
   
-  s : numpy.ndarray, list, dict, int, float, str
-    Input data. Not supported: None
   group : h5py.File or h5py.Group
     The HDF5 file/group where the data will be appended.
   name : string, optional
     Specifies the group/dataset name in the HDF5 file/group. If empty,
     root directory of HDF5 file/group is chosen.  
   '''
+  from orbkit.orbitals import MOClass, AOClass
+
+  if isinstance(x, MOClass) or isinstance(x, AOClass):
+    x = x.todict()
   if isinstance(x,numpy.ndarray):
     if x.dtype.type is numpy.unicode_:
       x = numpy.asarray(x,dtype=numpy.string_)
@@ -938,9 +941,6 @@ def pdb_creator(geo_info,geo_spec,filename='new',charges=None,comments='',
     If True, conversion of molecular coordinates from Bohr radii to Angstrom.
   '''
   
-  # Conversion factor form Angstrom in Bohr radii
-  aa_to_au = 1/0.52917720859 if angstrom else 1.
-  
   # Check for charges
   if charges is None:
     charges = numpy.zeros(len(geo_spec))
@@ -962,7 +962,9 @@ def pdb_creator(geo_info,geo_spec,filename='new',charges=None,comments='',
     string += '%s' % (geo_info[il][0])
     while len(string) < 17:
       string += ' '
-    xyz = geo_spec[il]/aa_to_au
+    xyz = geo_spec[il]
+    if angstrom:
+      xyz *= a02aa
     string += '             %s %s %s        ' % (('%.9f' % xyz[0])[:7],
                                                  ('%.9f' % xyz[1])[:7],
                                                  ('%.9f' % xyz[2])[:7])
@@ -994,9 +996,6 @@ def xyz_creator(geo_info,geo_spec,filename='new',mode='w',charges=None,comments=
     If True, conversion of molecular coordinates from Bohr radii to Angstrom.
   '''
   
-  # Conversion factor form Angstrom in Bohr radii
-  aa_to_au = 1/0.52917720859 if angstrom else 1.
-  
   # Open an empty file 
   fid = open('%s.xyz' % filename,mode)
   
@@ -1008,7 +1007,10 @@ def xyz_creator(geo_info,geo_spec,filename='new',mode='w',charges=None,comments=
   for il in range(len(geo_spec)):
     string += '%-2s' % geo_info[il][0]
     for i in range(3):
-      string += ' %22.15f'  % (geo_spec[il][i]/aa_to_au)
+      xyz = geo_spec[il]
+      if angstrom:
+        xyz *= a02aa
+      string += ' %22.15f'  % (xyz[i])
     if charges is not None:
       string += ' %22.15f'  % charges[il]
     string += '\n'

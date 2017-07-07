@@ -42,6 +42,17 @@ environment variables need to be set.
 In the following, we describe this procedure exemplary 
 for the different platforms.
 
+Irrespective of the system you'r using you should test
+the code after completing the installation process.
+
+* First, to test the serial version of the code run::
+
+    $ orbkit test
+
+* If tests run successfully also test the parallel version::
+
+    $ orbkit test -p 2
+
 Linux and Mac OS X
 ..................
 

@@ -43,14 +43,12 @@ print(ok.get_grid())
 # define the molecular orbital to be calculated
 selected_MO = ['3.1']
 
+# get only the information of selected MO
+qc_select = qc.copy()
+qc_select.mo_spec = qc_select.mo_spec.select(selected_MO)
+
 # Convert the qc class to a dictionary
 qc_select = qc.todict()
-
-# get only the information of selected MO
-qc_select['mo_spec'] = []
-for k in range(len(qc.mo_spec)):
-  if qc.mo_spec[k]['sym'] in selected_MO:
-    qc_select['mo_spec'].append(qc.mo_spec[k])
 
 # calculate MO
 mo_list = ok.rho_compute(qc_select,calc_mo=True,numproc=numproc)    

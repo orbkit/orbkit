@@ -50,14 +50,15 @@ path = 'NaCl_molden_files'
 if not os.path.exists(path):
   raise IOError('%s does not exist! Please extract NaCl_molden_files.tar.gz' % path)
 
-# How are input files formatted?
-fid = 'nacl.%03d.molden'
-fid_list = []
-for i in range(0,16,1):
-  f = os.path.join(path,fid % i)
-  if not os.path.exists(f):
-    raise IOError('%s does not exist!' % f)
-  fid_list.append(f)
+#How are input files formatted?
+fid_list = 'NaCl_molden_files.tar.gz'
+#fid = 'nacl.%03d.molden'
+#fid_list = []
+#for i in range(0,16,1):
+#  f = os.path.join(path,fid % i)
+#  if not os.path.exists(f):
+#    raise IOError('%s does not exist!' % f)
+#  fid_list.append(f)
 
 # Read all input files
 mult.read(fid_list,itype='molden',all_mo=True,nosym=False)

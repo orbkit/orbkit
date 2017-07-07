@@ -121,7 +121,7 @@ def mooverlap(np.ndarray[double, ndim=1, mode="c"] mo_a           not None,
   cdef int mao = aoom.shape[1]
   cdef double overlap = 0.0
   cdef int k,l
-  
+
   for k in range(nao):
     for l in range(nao):
       overlap += mo_a[k] * mo_b[l] * aoom[k,l]

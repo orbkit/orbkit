@@ -2,7 +2,7 @@
 '''
 import itertools
 import numpy
-from orbkit.analytical_integrals import get_atom2mo,get_lc,create_mo_coeff
+from orbkit.analytical_integrals import get_atom2mo,get_lc
 from orbkit.analytical_integrals import get_ao_overlap
 
 def mulliken(qc):
@@ -23,10 +23,10 @@ def mulliken(qc):
   '''
   # Calculate AO-overlap matrix
   
-  S = get_ao_overlap(qc.geo_spec,qc.geo_spec,qc.ao_spec,ao_spherical=qc.ao_spherical)
+  S = get_ao_overlap(qc.geo_spec,qc.geo_spec,qc.ao_spec)
 
   # Get MO-coefficients
-  mo = create_mo_coeff(qc.mo_spec)
+  mo = qc.mo_spec.get_coeff()
   mo_dim,ao_dim = mo.shape
 
   # Calculate density matrix  
@@ -72,10 +72,10 @@ def lowdin(qc):
       
   '''
   # Calculate AO-overlap matrix
-  S = get_ao_overlap(qc.geo_spec,qc.geo_spec,qc.ao_spec,ao_spherical=qc.ao_spherical)
+  S = get_ao_overlap(qc.geo_spec,qc.geo_spec,qc.ao_spec)
 
   # Get MO-coefficients
-  mo = create_mo_coeff(qc.mo_spec)
+  mo = qc.mo_spec.get_coeff()
   mo_dim,ao_dim = mo.shape
   
   # Orthogonalize basis set
