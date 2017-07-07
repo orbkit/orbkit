@@ -13,7 +13,7 @@ import shutil
 tests = ['units',
          'read/find_filetype',
          'read/read_multiple_input_files',
-         'read/specific_readers',
+         'read/individual_readers',
          'detci/read/detci_readers',
          'detci/h3+',
          'qcinfo/new_qcinfo_save_function',
@@ -39,7 +39,7 @@ class ScriptTestCase(unittest.TestCase):
         return self.filename
 
     def __str__(self):
-        return self.filename.split('/')[-1]
+        return self.filename.split('/')[-1][:-3]
 
     def id(self):
         return self.filename
