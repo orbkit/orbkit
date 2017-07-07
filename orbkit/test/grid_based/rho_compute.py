@@ -35,8 +35,8 @@ data[1] = [grid.mv2g(d=i) for i in data[1]]
 for i in range(len(data[0])):
   equal(data[0][i],data[1][i])
 
-numpy.savez('refdata_rho_compute.npz', data=data[0])
 filepath = os.path.join(tests_home, 'refdata_rho_compute.npz')
+#numpy.savez(filepath, data=data[0])
 with open(filepath, 'r') as fd:
   refdata = numpy.load(fd)
   for i in range(len(data[0])):
