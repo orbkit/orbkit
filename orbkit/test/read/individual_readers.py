@@ -20,7 +20,7 @@ options.quiet = True
 #We need to test cclib as well
 
 files = {'fchk': 'h2o_rhf_cart.fchk',
-         'gaussian_log': 'h2o_rhf_cart.inp.out',
+         'gaussian_log': 'h2o_rhf_cart.inp.log',
          'molden': 'h2o_rhf_sph.molden',
          'aomix': 'aomix.in',
          'wfx': '1.wfx',
