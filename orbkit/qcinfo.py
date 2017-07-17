@@ -50,6 +50,7 @@ class QCinfo:
     self.states         = {'multiplicity' : None,
                            'energy'       : None}
     self.dipole_moments = None
+    self.charge = self.get_charge()
 
     data = None
     if filename:
@@ -76,6 +77,7 @@ class QCinfo:
         raise ValueError('Atom object are of different length!')
       for i in range(len(self.geo_info)):
         if atom1[i] != atom2[i]:
+          print(i,atom1[i], atom2[i] )
           same = False
     return same
 
@@ -162,6 +164,15 @@ class QCinfo:
       total_mass += nuc_mass
     self.com = self.com/total_mass
     return self.com
+
+  def get_charge(self):
+    '''Computes total charge of the system.
+    '''
+    self.charge = 0.
+    for ii in range(len(self.geo_info)):
+      nuc_charge    = float(self.geo_info[ii][2])
+      self.charge += nuc_charge
+    return self.charge
 
   def get_coc(self):
     '''Computes the center of charge.

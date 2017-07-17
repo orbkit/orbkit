@@ -1,5 +1,6 @@
 import numpy
 from os import path
+
 try:
   from UserList import UserList
 except ImportError:

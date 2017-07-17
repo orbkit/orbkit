@@ -35,6 +35,8 @@ file_molden = file_ci + '.default.molden'
 qc = main_read(file_molden, all_mo=True)
 qc,ci = detci.ci_read.main_ci_read(qc,file_ci,itype='psi4_detci',
                                    threshold=ci_readthreshold)
+print(ci[0])
+exit()
 
 grid.min_   = [-2.5,-2.5, 0.0]
 grid.max_   = [ 2.5, 2.5, 0.0]

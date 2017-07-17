@@ -3,6 +3,7 @@ from copy import copy
 
 from orbkit.display import display
 from orbkit.qcinfo import QCinfo, CIinfo
+from orbkit.orbitals import MOClass
 from orbkit.units import ev2ha
 
 from .tools import molpro_mo_order_ci
@@ -94,6 +95,7 @@ def main_ci_read(qc,fname,itype='psi4_detci',threshold=0.0,
                                                 irreps=irreps
                                                 )
     qc.mo_spec = closed+active+external
+    qc.mo_spec = MOClass(qc.mo_spec)
     moocc = numpy.zeros(len(closed),dtype=numpy.intc) + 2
   
   # Add moocc to CI class instances
