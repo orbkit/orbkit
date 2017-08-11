@@ -122,6 +122,25 @@ ANG  ZEF DIP CAR
 
 
 
+  def write_mos(self, path='.'):
+    '''Writes mos1 and mos2 files in Turbomole format.
+    
+    **Parameters:**
+    
+      path : str
+        Specifies where file are written.
+    '''
+
+    qc_data = {0: self.qc_bra, 1: self.qc_ket}
+    ci_data = {0: self.ci_bra, 1: self.ci_ket}
+    spins = {0: 'Alpha', 1: 'Beta'}
+#    for fname in range(2):
+#      for spin in 
+
+
+
+
+
 
 
 

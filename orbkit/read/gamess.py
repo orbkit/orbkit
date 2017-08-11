@@ -1,4 +1,6 @@
 from .tools import descriptor_from_file
+from orbkit.qcinfo import QCinfo
+from orbkit.orbitals import AOClass, MOClass
 
 def read_gamess(fname, all_mo=False, spin=None, read_properties=False,
                 **kwargs):
@@ -402,5 +404,6 @@ def read_gamess(fname, all_mo=False, spin=None, read_properties=False,
   # Convert geo_info and geo_spec to numpy.ndarrays
   qc.format_geo(angstrom=angstrom)
 
+  qc.ao_spec = AOClass(qc.ao_spec)
+  qc.mo_spec = MOClass(qc.mo_spec)
   return qc
-  # read_gamess 

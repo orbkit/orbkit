@@ -2,6 +2,7 @@ import numpy
 import re
 
 from orbkit.qcinfo import QCinfo
+from orbkit.orbitals import AOClass, MOClass
 from orbkit.display import display
 from orbkit.core import l_deg, lquant
 from orbkit.read.tools import set_ao_spherical
@@ -351,5 +352,6 @@ def read_molden(fname, all_mo=False, spin=None, i_md=-1, interactive=True,
       for mo in qc.mo_spec:
         mo['coeffs'] *= cca
   
+  qc.ao_spec = AOClass(qc.ao_spec)
+  qc.mo_spec = MOClass(qc.mo_spec)
   return qc
-  

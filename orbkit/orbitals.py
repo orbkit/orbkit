@@ -421,6 +421,7 @@ class MOClass(UserList):
     self.occ = None
     self.sym = None
     self.eig = None
+    self.spinpolarized = False
     self.selection_string = None
     self.selected_mo = None
     if restart is not None:
@@ -429,6 +430,7 @@ class MOClass(UserList):
       self.occ = restart['occ']
       self.sym = restart['sym']
       self.eig = restart['eig']
+      self.spinpolarized = restart['spinpolarized']
       self.selection_string = restart['selection_string']
       self.selected_mo = restart['selected_mo']
       self.new2old()
@@ -437,6 +439,7 @@ class MOClass(UserList):
     data = {'coeff': self.coeff,
             'selection_string': self.selection_string,
             'selected_mo': self.selected_mo,
+            'spinpolarized': self.spinpolarized,
             'occ': self.occ,
             'eig': self.eig,
             'sym': self.sym}
@@ -471,26 +474,60 @@ class MOClass(UserList):
         if self.sym[i] != sym2[i]:
           same = False
     return same
+  def splinsplit_array(self, array):
+    array_alpha = array[:len(self.data)//2]
+    array_beta = array[len(self.data)//2:]
+    return array_alpha, array_beta
   def get_homo(self, tol=1e-5):
     '''Returns index of highest occupied MO.
     '''
-    return (self.get_occ() > tol).nonzero()[0][-1]
+    if not self.up2date:
+      self.update()
+    if not self.spinpolarized:
+      return (self.get_occ() > tol).nonzero()[0][-1]
+    else:
+      occ_alpha, occ_beta = self.splinsplit_array(self.get_occ())
+      return min([(occ_alpha > tol).nonzero()[0][-1],
+                  (occ_beta > tol).nonzero()[0][-1]])
   def get_lumo(self, tol=1e-5):
     '''Returns index of lowest unoccupied MO.
     '''
-    ilumo = (self.get_occ() > tol).nonzero()[0][-1]+1
-    if ilumo > len(self.data):
-      raise ValueError('No unoccupied orbitals present!')
+    if not self.up2date:
+      self.update()
+    if not self.spinpolarized:
+      ilumo = (self.get_occ() > tol).nonzero()[0][-1]+1
+      if ilumo > len(self.data):
+        raise ValueError('No unoccupied orbitals present!')
+      else:
+        return ilumo
     else:
-      return ilumo
+      occ_alpha, occ_beta = self.splinsplit_array(self.get_occ())
+      ilumo = max([(occ_alpha > tol).nonzero()[0][-1]+1,
+                   (occ_beta > tol).nonzero()[0][-1]+1])
+      if ilumo > len(self.data):
+        raise ValueError('No unoccupied orbitals present!')
+      else:
+        return ilumo
   def get_lastbound(self):
     '''Returns index of highest bound MO.
     ''' 
-    imaxbound = (self.get_eig() <= 0.).nonzero()[0][-1]
-    if imaxbound > len(self.data):
-      raise ValueError('No unoccupied orbitals present!')
+    if not self.up2date:
+      self.update()
+    if not self.spinpolarized:
+      imaxbound = (self.get_eig() <= 0.).nonzero()[0][-1]
+      if imaxbound > len(self.data):
+        raise ValueError('No unoccupied orbitals present!')
+      else:
+        return imaxbound
     else:
-      return imaxbound
+      eigen_alpha, eigen_beta = self.splinsplit_array(self.get_eig())
+      imaxbound = max([(eigen_alpha <= 0.).nonzero()[0][-1],
+                       (eigen_beta <= 0.).nonzero()[0][-1]])
+      if imaxbound > len(self.data):
+        raise ValueError('No unoccupied orbitals present!')
+      else:
+        return imaxbound   
+
   def sort_by_sym(self):
     '''Sorts mo_spec by symmetry.
     '''
@@ -525,8 +562,16 @@ class MOClass(UserList):
     self.get_occ()
     self.get_eig()
     self.get_sym()
+    self.get_spinstate()
     self.up2date = True
     return
+  def get_spinstate(self):
+    '''Determines whether the MOClass has alpha and beta spins.
+    '''
+    self.spinpolarized = False
+    if self.sym[0].split('_') > 0:
+      if self.sym[0].split('_')[-1] in ['a', 'b']:
+        self.spinpolarized = True
   def set_template(self, array, item):
     '''Template for updating Numpy-style data.
     '''
@@ -621,6 +666,26 @@ class MOClass(UserList):
       self.sym = numpy.array(self.sym, dtype=str)
     return self.sym
 
+  def get_spin(self, spin):
+    '''Function used to select MO's by spin. A numpy.ndarray is returned
+       which contains the indexes of MO's of the selected spin.
+
+    **Parameters:**
+     
+      spin : 'str', can be either 'alpha' or 'beta'
+
+       **Returns:**
+
+        alpha: numpy.ndarray, dtype=numpy.intc
+    '''
+    spindic = {'alpha': 'a', 'beta': 'b'}
+    indexes = []
+    for imo, mo in enumerate(self.data):
+      mo_spin = mo['sym'].split('_')[-1]
+      if mo_spin == spindic[spin]:
+        indexes.append(imo)
+    return numpy.array(indexes, dtype=numpy.intc)
+
   def select(self, fid_mo_list, flatten_input=True):
     '''Selects molecular orbitals from an external file or a list of molecular 
        orbital labels.
@@ -662,7 +727,7 @@ class MOClass(UserList):
       
       For **unrestricted** calculations, orbkit adds `_a` (alpha) or `_b` (beta) to
       the symmetry labels, e.g., `1.1_a`. 
-      If you have specified the option `spin=alpha` or `spin=beta`, only the 
+      If you have specified the option `alpha` or `beta`, only the 
       alpha or the beta orbitals are taken into account for the counting 
       within the Integer List.
     '''
@@ -674,8 +739,7 @@ class MOClass(UserList):
     mo_in_file = []
     selected_mo = []
     sym_select = False
-
-
+    
     def ordered_set(inlist):
       outlist = []
       for i in inlist:
@@ -773,9 +837,27 @@ class MOClass(UserList):
       tmp.extend(list(numpy.argwhere(self.get_sym() == item)[0]))
       return tmp
 
+    def parse_spin(item):
+      if isinstance(item, str):
+        if 'alpha' in item:
+          return item.replace('alpha', ''), self.get_spin('alpha')
+        elif 'beta' in item:
+          return item.replace('beta', ''), self.get_spin('beta')
+        else:
+          return item, None
+      elif isinstance(item, list):
+        if 'alpha' in item:
+          return remove_from_list(item, 'alpha'), self.get_spin('alpha')
+        elif 'beta' in item:
+          return remove_from_list(item, 'beta'), self.get_spin('beta')
+        else:
+          return item, None
+
     regsplit = re.compile(r"[\s,;]")
 
-    if isinstance(fid_mo_list,str) and fid_mo_list.lower() == 'all_mo':
+    if isinstance(fid_mo_list,str) and 'all_mo' in fid_mo_list.lower():
+      fid_mo_list, srec = parse_spin(fid_mo_list)
+      spinrestructions = [srec]
       mo_in_file_new = [[i for i in range(len(self.data))]]
     else:
       if isinstance(fid_mo_list,str) and not path.exists(fid_mo_list):
@@ -810,7 +892,10 @@ class MOClass(UserList):
       # (e.g. 1.1 in MOLPRO nomenclature) or 
       # by the number in the input file (e.g. 1)
       mo_in_file_new = []
+      spinrestructions = []
       for sublist in mo_in_file:
+        sublist, srec = parse_spin(sublist)
+        spinrestructions.append(srec)
         tmp = []
         for item in sublist:
           if '.' not in item:
@@ -822,7 +907,18 @@ class MOClass(UserList):
             tmp.extend(parse_sym(item))
         mo_in_file_new.append(tmp)
 
-    mo_in_file = mo_in_file_new
+    mo_in_file = []
+    for isub, sublist in enumerate(mo_in_file_new):
+      if spinrestructions[isub] is not None:
+        selected = []
+        print(spinrestructions[isub])
+        for isel in range(len(sublist)):
+          if sublist[isel] in spinrestructions[isub]:
+            selected.append(isel)
+      else:
+        selected = range(len(sublist))
+      mo_in_file.append([sublist[i] for i in selected])
+
     if flatten_input:
       mo_in_file = [[item for sublist in mo_in_file for item in sublist]]
 

@@ -2,6 +2,7 @@ import re
 import numpy
 
 from orbkit.qcinfo import QCinfo
+from orbkit.orbitals import AOClass, MOClass
 from orbkit.core import l_deg, lquant
 from orbkit.display import display
 
@@ -313,5 +314,6 @@ def read_aomix(fname, all_mo=False, spin=None, i_md=-1, interactive=True,
     for ii in range(len(qc.mo_spec)):
       qc.mo_spec[ii]['coeffs'] = mo[ii]
  
+  qc.ao_spec = AOClass(qc.ao_spec)
+  qc.mo_spec = MOClass(qc.mo_spec)
   return qc
-  # read_aomix

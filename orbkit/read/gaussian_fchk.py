@@ -1,6 +1,7 @@
 import numpy
 
 from orbkit.qcinfo import QCinfo
+from orbkit.orbitals import AOClass, MOClass
 from orbkit.display import display
 from orbkit.core import lquant
 from orbkit.core import orbit
@@ -49,7 +50,7 @@ def read_gaussian_fchk(fname, all_mo=False, spin=None, **kwargs):
   cartesian_basis = (is_6D and is_10F)
   if ((not is_6D) and is_10F) or (is_6D and (not is_10F)):
     raise IOError('Please apply a Spherical Harmonics (5D, 7F) or '+
-                          'a Cartesian Gaussian Basis Set (6D, 10F)!')
+                  'a Cartesian Gaussian Basis Set (6D, 10F)!')
   
   if spin is not None:
     if spin != 'alpha' and spin != 'beta':
@@ -306,6 +307,6 @@ def read_gaussian_fchk(fname, all_mo=False, spin=None, **kwargs):
   # Convert geo_info and geo_spec to numpy.ndarrays
   qc.format_geo(is_angstrom=False)
   
+  qc.ao_spec = AOClass(qc.ao_spec)
+  qc.mo_spec = MOClass(qc.mo_spec)
   return qc
-  # read_gaussian_fchk 
-

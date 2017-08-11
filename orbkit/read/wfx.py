@@ -2,6 +2,7 @@ import numpy
 
 from orbkit.read.tools import spin_check
 from orbkit.qcinfo import QCinfo
+from orbkit.orbitals import AOClass, MOClass
 from orbkit.core import exp_wfn
 
 from .tools import descriptor_from_file
@@ -147,4 +148,7 @@ def read_wfx(fname, all_mo=False, spin=None, **kwargs):
     i[0] = ''.join([k for k in i[0] if not k.isdigit()])
   # Convert geo_info and geo_spec to numpy.ndarrays
   qc.format_geo()
+
+  qc.ao_spec = AOClass(qc.ao_spec)
+  qc.mo_spec = MOClass(qc.mo_spec)
   return qc

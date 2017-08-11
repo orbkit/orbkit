@@ -1,4 +1,6 @@
 from orbkit.read.tools import set_ao_spherical
+from orbkit.qcinfo import QCinfo
+from orbkit.orbitals import AOClass, MOClass
 
 def read_with_cclib(filename, cclib_parser=None, all_mo=False, spin=None, 
                     **kwargs):
@@ -197,4 +199,6 @@ def convert_cclib(ccData, all_mo=False, spin=None):
       if qc.mo_spec[i]['occ_num'] < 0.0000001:
         del qc.mo_spec[i]
 
+  qc.ao_spec = AOClass(qc.ao_spec)
+  qc.mo_spec = MOClass(qc.mo_spec)
   return qc

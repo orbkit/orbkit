@@ -1,6 +1,7 @@
 import numpy
 
 from orbkit.qcinfo import QCinfo
+from orbkit.orbitals import AOClass, MOClass
 from orbkit.core import l_deg, lquant
 from orbkit.display import display
 
@@ -382,6 +383,6 @@ def read_gaussian_log(fname,all_mo=False,spin=None,orientation='standard',
   # Convert geo_info and geo_spec to numpy.ndarrays
   qc.format_geo(is_angstrom=True)
 
+  qc.ao_spec = AOClass(qc.ao_spec)
+  qc.mo_spec = MOClass(qc.mo_spec)
   return qc
-  # read_gaussian_log 
-
