@@ -678,13 +678,16 @@ class MOClass(UserList):
 
         alpha: numpy.ndarray, dtype=numpy.intc
     '''
-    spindic = {'alpha': 'a', 'beta': 'b'}
-    indexes = []
-    for imo, mo in enumerate(self.data):
-      mo_spin = mo['sym'].split('_')[-1]
-      if mo_spin == spindic[spin]:
-        indexes.append(imo)
-    return numpy.array(indexes, dtype=numpy.intc)
+    if self.spinpolarized:
+      spindic = {'alpha': 'a', 'beta': 'b'}
+      indexes = []
+      for imo, mo in enumerate(self.data):
+        mo_spin = mo['sym'].split('_')[-1]
+        if mo_spin == spindic[spin]:
+          indexes.append(imo)
+      return numpy.array(indexes, dtype=numpy.intc)
+    else:
+        return numpy.array(range(len(self.data)), dtype=numpy.intc)
 
   def select(self, fid_mo_list, flatten_input=True):
     '''Selects molecular orbitals from an external file or a list of molecular 

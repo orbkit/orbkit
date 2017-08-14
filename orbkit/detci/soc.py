@@ -25,10 +25,6 @@ class SOC:
     if not self.qc_ket:
       self.qc_ket = self.qc_bra
 
-#    if self.ci_bra.info['spin'] != 'Singlet'\
-#    or self.ci_ket.info['spin'] != 'Singlet':
-#      raise ValueError('Bra and Ket states must be singlets!')
-
     if not self.qc_bra.charge == self.qc_ket.charge:
       raise ValueError('Bra and Ket states must have the same total charge!')
 
@@ -39,30 +35,54 @@ class SOC:
       raise ValueError('Bra and Ket states must have the same atomic positions!')
 
 
-  def write_molsoc_inp(self, path='.'):
+  def write_molsoc_inp(self, path='.', **args):
     '''Writes molsoc.inp file.
     
     **Parameters:**
     
       path : str
         Specifies where file are written.
+
+    **Note:**
+  
+      All arguments supported by MolSOC can be passed as optinal extra arguments.
+      Note that most parameters are determied automatically.
+      Important options include:
+      
+        - ZE: Screened-nuclear charge method is used to calculate SO coupling.
+        - Dip/Qua/Oct: Dipole, quadrupole, and octupole moment components are calculated.
     '''
 
-    multiplicities = {'Singlet': 1, 'Triplet': 3}
+    header = '''#input for MolSOC
+Tur Ang'''
 
-    charge = self.qc_bra.charge
+    assert self.qc_bra.ao_spec.spherical == self.qc_ket.ao_spec.spherical
+
+    if self.qc_bra.ao_spec.spherical:
+      header += 'Sph'
+    else:
+      header += 'Car'
+
+    assert self.qc_bra.mo_spec.spinpolarized == self.qc_ket.mo_spec.spinpolarized
+
+    if self.qc_bra.mo_spec.spinpolarized:
+      header += 'UKS'
+    else:
+      header += 'RKS'
+
+    for arg in **args:
+      header += ' ' + arg
+
+    header += '\n'
+
+    multiplicities = {'Singlet': 1, 'Doublet': 2, 'Triplet': 3, 'Quartet': 4}
     m1 = multiplicities[self.ci_bra.info['spin']]
     m2 = multiplicities[self.ci_ket.info['spin']]
-
-    #Use one-electron SO coupling calculations with screened-nuclear charge
-    #J. Comput. Chem., 30 (2009), p. 83
-    #https://doi.org/10.1002/jcc.20982
-    #Positions given in Angstrom
-    #Calculate dipole moments
-    header = '''#input for MolSOC
-ANG  ZEF DIP CAR
-#\n'''
     
+    header += str(self.qc_bra.charge) + '  ' + str(m1)
+
+    
+
     geom = ''
 
     info = self.qc_ket.geo_info
@@ -142,7 +162,23 @@ ANG  ZEF DIP CAR
   
     return qc
 
-  def write_mos(self, path='.'):
+  def write_mo(self, eigen, coeff):
+    tmp = ''
+    for imo in range(len(eigen)):
+      tmp += '     {0}  a      eigenvalue={1}   nsaos={2}\n'.format(imo+1,eigen[imo],len(coeff[imo]))
+      iao = 0
+      while iao <= len(coeff[imo]):
+        if iao < len(coeff[imo]) - 4:
+          for c in coeff[imo,iao:iao+4]:
+            tmp += str(c) + '  '
+        else:
+          for c in coeff[imo,iao:]:
+            tmp += str(c) + '  '
+        iao += 4
+        tmp += '\n'
+    return tmp
+
+  def write_molecular_orbitals(self, path='.'):
     '''Writes mos1 and mos2 files in Turbomole format.
     
     **Parameters:**
@@ -152,30 +188,29 @@ ANG  ZEF DIP CAR
     '''
 
     qc_data = {0: self.qc_bra, 1: self.qc_ket}
+    #This is not normal Turbomole behavior but its what MolSOC wants
+    spin_seperators = {0: 'alpha', 1: 'beta '}
     files = {0: 'mos1', 1: 'mos2'}
     for iqc in range(2):
-      qc_data[iqc] = self.unnormalize_orbitals(qc_data[iqc])
 
-      header = '''$scfmo    scfconv=7   format(4d20.14)                                           
-# SCF total energy is      -75.9920448746 a.u.
+      header = '''$scfmo    scfconv=None   format(4d20.14)                                           
+# SCF total energy is      None
 #
 '''
       out = header
+      qc = self.unnormalize_orbitals(qc_data[iqc])
       eigen = qc_data[iqc].mo_spec.get_eig()
       coeff = qc_data[iqc].mo_spec.get_coeff()
+      if qc.mo_spec.spinpolarized:
+        for spin in ['alpha', 'beta']:
+          out += spin + '\n'
+          spin_index = qc.mo_spec.get_spin(spin)
+          eigen = eigen[spin_index]
+          coeff = coeff[spin_index]
+          out += write_mo(eigen, coeff)
+      else:
+        out += write_mo(eigen, coeff)
 
-      for imo in range(len(qc_data[iqc].mo_spec)):
-        out += '     {0}  a      eigenvalue={1}   nsaos={2}\n'.format(imo+1,eigen[imo],len(coeff[imo]))
-        iao = 0
-        while iao <= len(coeff[imo]):
-          if iao < len(coeff[imo]) - 4:
-            for c in coeff[imo,iao:iao+4]:
-              out += str(c) + '  '
-          else:
-            for c in coeff[imo,iao:]:
-              out += str(c) + '  '
-          iao += 4
-          out += '\n'
       out += '$end'
       with open(os.path.join(path, files[iqc]), 'wb') as fd:
         print(out, file=fd)

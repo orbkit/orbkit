@@ -229,6 +229,7 @@ class QCinfo:
         del mo['spin']
     else:
       # Rename MOs according to spin
+      self.mo_spec.spinpolarized = True
       for mo in self.mo_spec:      
         mo['sym'] += '_%s' % mo['spin'][0]
   
