@@ -288,10 +288,11 @@ def read_molden(fname, all_mo=False, spin=None, i_md=-1, interactive=True,
                 # If it cannot be converted print error message 
                 raise ValueError('Error in coefficient %d of MO %s!' % (index, 
                       qc.mo_spec[-1]['sym']) + '\nSetting this coefficient to zero...')
-  
+
   # Spherical basis?
   if not cartesian_basis[i_md]:
     set_ao_spherical(qc.ao_spec,p=[1,0])
+    qc.ao_spec.spherical = True
   if max_l > 2 and mixed_warning[i_md]:
     raise IOError('The input file %s contains ' % filename +
                   'mixed spherical and Cartesian function (%s).' %  mixed_warning[i_md] + 
@@ -352,6 +353,5 @@ def read_molden(fname, all_mo=False, spin=None, i_md=-1, interactive=True,
       for mo in qc.mo_spec:
         mo['coeffs'] *= cca
   
-  qc.ao_spec = AOClass(qc.ao_spec)
   qc.mo_spec = MOClass(qc.mo_spec)
   return qc

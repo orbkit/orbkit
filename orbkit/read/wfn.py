@@ -103,6 +103,5 @@ def read_wfn(fname, all_mo=False, spin=None, **kwargs):
   # Convert geo_info and geo_spec to numpy.ndarrays
   qc.format_geo(is_angstrom=False)
   
-  qc.ao_spec = AOClass(qc.ao_spec)
   qc.mo_spec = MOClass(qc.mo_spec)
   return qc

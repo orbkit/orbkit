@@ -25,9 +25,9 @@ class SOC:
     if not self.qc_ket:
       self.qc_ket = self.qc_bra
 
-    if self.ci_bra.info['spin'] not in ['Singlet', 'Triplet']\
-    or self.ci_ket.info['spin'] not in ['Singlet', 'Triplet']:
-      raise ValueError('Bra and Ket states must be either singlets or triplets!')
+#    if self.ci_bra.info['spin'] != 'Singlet'\
+#    or self.ci_ket.info['spin'] != 'Singlet':
+#      raise ValueError('Bra and Ket states must be singlets!')
 
     if not self.qc_bra.charge == self.qc_ket.charge:
       raise ValueError('Bra and Ket states must have the same total charge!')
@@ -140,7 +140,7 @@ ANG  ZEF DIP CAR
     for ii in range(len(qc.mo_spec)):
       qc.mo_spec[ii]['coeffs'] = mo[ii]
   
-    return mo_spec
+    return qc
 
   def write_mos(self, path='.'):
     '''Writes mos1 and mos2 files in Turbomole format.
@@ -152,26 +152,33 @@ ANG  ZEF DIP CAR
     '''
 
     qc_data = {0: self.qc_bra, 1: self.qc_ket}
+    files = {0: 'mos1', 1: 'mos2'}
     for iqc in range(2):
       qc_data[iqc] = self.unnormalize_orbitals(qc_data[iqc])
-      
-      mo = header
 
       header = '''$scfmo    scfconv=7   format(4d20.14)                                           
 # SCF total energy is      -75.9920448746 a.u.
 #
 '''
-      
+      out = header
       eigen = qc_data[iqc].mo_spec.get_eig()
       coeff = qc_data[iqc].mo_spec.get_coeff()
 
       for imo in range(len(qc_data[iqc].mo_spec)):
-        mo += '     {0}  a      eigenvalue={1}   nsaos={2}\n'.format(imo+1,eigen[imo],len(coeff[imo]))
+        out += '     {0}  a      eigenvalue={1}   nsaos={2}\n'.format(imo+1,eigen[imo],len(coeff[imo]))
         iao = 0
         while iao <= len(coeff[imo]):
-          for j in range(4):
-            mo += str(coeff[imo,iao+j])
-        mo += '\n'
+          if iao < len(coeff[imo]) - 4:
+            for c in coeff[imo,iao:iao+4]:
+              out += str(c) + '  '
+          else:
+            for c in coeff[imo,iao:]:
+              out += str(c) + '  '
+          iao += 4
+          out += '\n'
+      out += '$end'
+      with open(os.path.join(path, files[iqc]), 'wb') as fd:
+        print(out, file=fd)
       
 
 

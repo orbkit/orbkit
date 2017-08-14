@@ -187,6 +187,7 @@ def convert_cclib(ccData, all_mo=False, spin=None):
     
     c = qc.mo_spec.get_coeff().shape[-1]
     if c != c_cart and c == c_sph: # Spherical basis
+      qc.ao_spec.spherical = True
       set_ao_spherical(qc.ao_spec,p=[0,1])
     elif c != c_cart:
       display('Warning: The basis set type does not match with pure spherical ' +
@@ -199,6 +200,5 @@ def convert_cclib(ccData, all_mo=False, spin=None):
       if qc.mo_spec[i]['occ_num'] < 0.0000001:
         del qc.mo_spec[i]
 
-  qc.ao_spec = AOClass(qc.ao_spec)
   qc.mo_spec = MOClass(qc.mo_spec)
   return qc

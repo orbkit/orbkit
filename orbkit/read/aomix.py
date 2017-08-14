@@ -314,6 +314,5 @@ def read_aomix(fname, all_mo=False, spin=None, i_md=-1, interactive=True,
     for ii in range(len(qc.mo_spec)):
       qc.mo_spec[ii]['coeffs'] = mo[ii]
  
-  qc.ao_spec = AOClass(qc.ao_spec)
   qc.mo_spec = MOClass(qc.mo_spec)
   return qc
