@@ -911,7 +911,6 @@ class MOClass(UserList):
     for isub, sublist in enumerate(mo_in_file_new):
       if spinrestructions[isub] is not None:
         selected = []
-        print(spinrestructions[isub])
         for isel in range(len(sublist)):
           if sublist[isel] in spinrestructions[isub]:
             selected.append(isel)

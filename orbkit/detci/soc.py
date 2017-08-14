@@ -16,16 +16,6 @@ import os
 import numpy
 
 class SOC:
-  '''Class used to calculate SO-coupling between singlet and tripplet states.
-
-  The implementation is based on PySOC by Gao et al.
-
-  J. Chem. Theory Comput., 2017, 13 (2), pp 515-524
-
-  https://doi.org/10.1021/acs.jctc.6b00915
-
-  Currently only singlet and tripplet states are supported.
-  '''
   def __init__(self, qc_bra, qc_ket, ci_bra, ci_ket):
     self.qc_bra = qc_bra
     self.qc_ket = qc_ket
@@ -121,6 +111,36 @@ ANG  ZEF DIP CAR
       print(out, file=fd)
 
 
+  def unnormalize_orbitals(self, qc):
+    '''Apply the inverse of of the normalization procedure used to
+       normalize molecular orbitals during reading.
+    
+    **Parameters:**
+    
+      qc : QCinfo instance
+
+    **Returns:**
+    
+      qc : QCinfo instance
+    '''
+
+    # Convert MO coefficients
+    def dfact(n):
+      if n <= 0:
+        return 1
+      else:
+        return n * dfact(n-2)
+
+    mo = qc.mo_spec.get_coeff()
+    for i,j in enumerate(qc.ao_spec.get_lxlylz()):
+      norm = (dfact(2*j[0] - 1) * dfact(2*j[1] - 1) * dfact(2*j[2] - 1))
+      j = sum(j)
+      if j >1: 
+        mo[:,i] /= numpy.sqrt(norm)   
+    for ii in range(len(qc.mo_spec)):
+      qc.mo_spec[ii]['coeffs'] = mo[ii]
+  
+    return mo_spec
 
   def write_mos(self, path='.'):
     '''Writes mos1 and mos2 files in Turbomole format.
@@ -132,10 +152,27 @@ ANG  ZEF DIP CAR
     '''
 
     qc_data = {0: self.qc_bra, 1: self.qc_ket}
-    ci_data = {0: self.ci_bra, 1: self.ci_ket}
-    spins = {0: 'Alpha', 1: 'Beta'}
-#    for fname in range(2):
-#      for spin in 
+    for iqc in range(2):
+      qc_data[iqc] = self.unnormalize_orbitals(qc_data[iqc])
+      
+      mo = header
+
+      header = '''$scfmo    scfconv=7   format(4d20.14)                                           
+# SCF total energy is      -75.9920448746 a.u.
+#
+'''
+      
+      eigen = qc_data[iqc].mo_spec.get_eig()
+      coeff = qc_data[iqc].mo_spec.get_coeff()
+
+      for imo in range(len(qc_data[iqc].mo_spec)):
+        mo += '     {0}  a      eigenvalue={1}   nsaos={2}\n'.format(imo+1,eigen[imo],len(coeff[imo]))
+        iao = 0
+        while iao <= len(coeff[imo]):
+          for j in range(4):
+            mo += str(coeff[imo,iao+j])
+        mo += '\n'
+      
 
 
 

@@ -53,7 +53,8 @@ molist = molist[0]                                     # MOs
 aoom = get_ao_overlap(qc.geo_spec,qc.geo_spec,qc.ao_spec,
                       drv=[None,'x','y','z'])
 dm_aoom = get_ao_dipole_matrix(qc,component=['x','y','z'])
-
+print(aoom[0].shape)
+exit()
 coeff = qc.mo_spec.get_coeff()
 moom = get_mo_overlap_matrix(coeff,coeff,aoom[0],
                              numproc=numproc)          # <m|n>
