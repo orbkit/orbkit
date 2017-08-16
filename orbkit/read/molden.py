@@ -173,12 +173,9 @@ def read_molden(fname, all_mo=False, spin=None, i_md=-1, interactive=True,
         # the molecular geometry begins 
         sec_flag = 'geo_info'
         if 'Angs' in line:
-          # The length are given in Angstroem 
-          # and have to be converted to Bohr radii --
-          aa_to_au = 1/0.52917720859
+          angstrom = True
         else:
-          # The length are given in Bohr radii 
-          aa_to_au = 1.0
+          angstrom = False
       elif '[gto]' in line.lower():
         # The section containing information about 
         # the atomic orbitals begins 
@@ -199,7 +196,7 @@ def read_molden(fname, all_mo=False, spin=None, i_md=-1, interactive=True,
         if sec_flag == 'geo_info' and thisline != []:
           # Geometry section 
           qc.geo_info.append(thisline[0:3])
-          qc.geo_spec.append([float(ii)*aa_to_au for ii in thisline[3:]])
+          qc.geo_spec.append([float(ii) for ii in thisline[3:]])
         if sec_flag == 'ao_info':
           # Atomic orbital section 
           def check_int(i):
@@ -327,7 +324,7 @@ def read_molden(fname, all_mo=False, spin=None, i_md=-1, interactive=True,
       qc.mo_spec[i]['sym'] = '%d.%s' % (i+1,sym)
   
   # Convert geo_info and geo_spec to numpy.ndarrays
-  qc.format_geo()
+  qc.format_geo(is_angstrom=angstrom)
   
   # Check the normalization
   from orbkit.analytical_integrals import get_ao_overlap
@@ -354,4 +351,5 @@ def read_molden(fname, all_mo=False, spin=None, i_md=-1, interactive=True,
         mo['coeffs'] *= cca
   
   qc.mo_spec = MOClass(qc.mo_spec)
+  qc.mo_spec.get_spinstate()
   return qc

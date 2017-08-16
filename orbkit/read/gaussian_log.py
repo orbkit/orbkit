@@ -384,4 +384,5 @@ def read_gaussian_log(fname,all_mo=False,spin=None,orientation='standard',
   qc.format_geo(is_angstrom=True)
 
   qc.mo_spec = MOClass(qc.mo_spec)
+  qc.mo_spec.get_spinstate()
   return qc

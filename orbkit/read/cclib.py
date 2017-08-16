@@ -137,6 +137,7 @@ def convert_cclib(ccData, all_mo=False, spin=None):
     elif restricted:
       raise IOError('The keyword `spin` is only supported for unrestricted calculations.')
     else:
+      qc.mo_spec.spinpola
       display('Converting only molecular orbitals of spin %s.' % spin)
   
   sym = {}
@@ -201,4 +202,5 @@ def convert_cclib(ccData, all_mo=False, spin=None):
         del qc.mo_spec[i]
 
   qc.mo_spec = MOClass(qc.mo_spec)
+  qc.mo_spec.get_spinstate()
   return qc

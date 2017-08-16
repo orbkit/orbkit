@@ -405,4 +405,5 @@ def read_gamess(fname, all_mo=False, spin=None, read_properties=False,
   qc.format_geo(angstrom=angstrom)
 
   qc.mo_spec = MOClass(qc.mo_spec)
+  qc.mo_spec.get_spinstate()
   return qc

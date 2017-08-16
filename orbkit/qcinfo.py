@@ -229,9 +229,11 @@ class QCinfo:
         del mo['spin']
     else:
       # Rename MOs according to spin
-      self.mo_spec.spinpolarized = True
       for mo in self.mo_spec:      
         mo['sym'] += '_%s' % mo['spin'][0]
+      if not isinstance(self.mo_spec, MOClass):
+        self.mo_spec = MOClass(self.mo_spec)
+        self.mo_spec.get_spinstate()
   
   def todict(self):
     '''Converts all essential variables into a dictionary.

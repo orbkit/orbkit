@@ -308,4 +308,5 @@ def read_gaussian_fchk(fname, all_mo=False, spin=None, **kwargs):
   qc.format_geo(is_angstrom=False)
   
   qc.mo_spec = MOClass(qc.mo_spec)
+  qc.mo_spec.get_spinstate()
   return qc

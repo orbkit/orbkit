@@ -290,7 +290,7 @@ def read_aomix(fname, all_mo=False, spin=None, i_md=-1, interactive=True,
   qc.select_spin(restricted[i_md],spin=spin)
   
   # Convert geo_info and geo_spec to numpy.ndarrays
-  qc.format_geo(is_angstrom=False)
+  qc.format_geo(is_angstrom=angstrom)
   
   if is_tmol_cart and created_by_tmol:
     display('\nFound a Cartesian basis set in the AOMix file.')
@@ -313,6 +313,7 @@ def read_aomix(fname, all_mo=False, spin=None, i_md=-1, interactive=True,
         mo[:,i] *= numpy.sqrt(norm)   
     for ii in range(len(qc.mo_spec)):
       qc.mo_spec[ii]['coeffs'] = mo[ii]
- 
+
   qc.mo_spec = MOClass(qc.mo_spec)
+  qc.mo_spec.get_spinstate()
   return qc

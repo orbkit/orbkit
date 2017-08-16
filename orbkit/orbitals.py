@@ -568,6 +568,8 @@ class MOClass(UserList):
   def get_spinstate(self):
     '''Determines whether the MOClass has alpha and beta spins.
     '''
+    if not self.up2date:
+      self.get_sym()
     self.spinpolarized = False
     if self.sym[0].split('_') > 0:
       if self.sym[0].split('_')[-1] in ['a', 'b']:
@@ -640,8 +642,17 @@ class MOClass(UserList):
       for imo, mo in enumerate(self.data):
         self.eig[imo] = mo['energy']
     return self.eig
-  def get_occ(self):
+  def get_occ(self, return_alpha_beta=False):
     '''Get function for numpy array version of molecular orbital occupancies.
+
+       **Parameters:**
+
+        return_alpha_beta: bool, optional, determines whether occupancies should be
+        returned as a shape = (NMO) array (False) or a shape = (2,NMO/2) array (True)-
+
+       **Note:**
+
+        return_alpha_beta=True is only supported for spin-polarized calculations.
 
        **Returns:**
 
@@ -651,7 +662,11 @@ class MOClass(UserList):
       self.occ = numpy.zeros(shape=(len(self.data)), dtype=numpy.float64)
       for imo, mo in enumerate(self.data):
         self.occ[imo] = mo['occ_num']
-    return self.occ
+    if not return_alpha_beta or not self.spinpolarized:
+      return self.occ
+    else:
+      return numpy.rashape(self.occ, (2,-1))
+
   def get_sym(self):
     '''Get function for numpy array version of molecular orbital symmetries.
 
