@@ -9,6 +9,7 @@ from orbkit.display import display
 import os
 import sys
 import shutil
+from orbkit import options
 
 tests = ['units',
          'read/find_filetype',
@@ -49,9 +50,14 @@ def test():
 
   ts = unittest.TestSuite()
 
-  display('----------------------------------------------------------------------')
-  display('                     Testing ORBKIT functionality                     ')
-  display('----------------------------------------------------------------------\n')
+  if options.numproc == 1:
+    display('----------------------------------------------------------------------')
+    display('              Testing serial ORBKIT functionality                     ')
+    display('----------------------------------------------------------------------\n')
+  else:
+    display('----------------------------------------------------------------------')
+    display('             Testing parallel ORBKIT functionality                    ')
+    display('----------------------------------------------------------------------\n')
 
   tsrun = unittest.TextTestRunner(verbosity=2)
 

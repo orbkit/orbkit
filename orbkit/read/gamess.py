@@ -32,6 +32,8 @@ def read_gamess(fname, all_mo=False, spin=None, read_properties=False,
   
   # Initialize the variables 
   qc = QCinfo()
+  qc.ao_spec = AOClass([])
+  qc.mo_spec = MOClass([])
   has_alpha = False                  # Flag for alpha electron set
   has_beta = False                   # Flag for beta electron set
   restricted = True                  # Flag for restricted calculation
@@ -404,6 +406,5 @@ def read_gamess(fname, all_mo=False, spin=None, read_properties=False,
   # Convert geo_info and geo_spec to numpy.ndarrays
   qc.format_geo(angstrom=angstrom)
 
-  qc.mo_spec = MOClass(qc.mo_spec)
   qc.mo_spec.get_spinstate()
   return qc

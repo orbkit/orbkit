@@ -100,6 +100,9 @@ class AOClass(UserList):
   def __setitem__(self, i, item):
     self.data[i] = item
     self.up2date = False
+  def __delitem__(self, i):
+    del self.data[i]
+    self.up2date = False
   def append(self, item):
     if 'ao_spherical' not in item:
       item['ao_spherical'] = []
@@ -448,6 +451,9 @@ class MOClass(UserList):
     return UserList.__getitem__(self, item)
   def __setitem__(self, i, item):
     self.data[i] = item
+    self.up2date = False
+  def __delitem__(self, i):
+    del self.data[i]
     self.up2date = False
   def __eq__(self, other):
     cases = [isinstance(other, MOClass), other == [], other is None]

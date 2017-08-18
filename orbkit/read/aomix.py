@@ -129,6 +129,8 @@ def read_aomix(fname, all_mo=False, spin=None, i_md=-1, interactive=True,
       # Initialize the variables 
       if i_md == count:
         qc = QCinfo()
+        qc.ao_spec = AOClass([])
+        qc.mo_spec = MOClass([])
         sec_flag = False           # A Flag specifying the current section 
         start_reading = True       # Found the selected section
       else:
@@ -314,6 +316,5 @@ def read_aomix(fname, all_mo=False, spin=None, i_md=-1, interactive=True,
     for ii in range(len(qc.mo_spec)):
       qc.mo_spec[ii]['coeffs'] = mo[ii]
 
-  qc.mo_spec = MOClass(qc.mo_spec)
   qc.mo_spec.get_spinstate()
   return qc

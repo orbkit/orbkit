@@ -28,6 +28,8 @@ def read_wfx(fname, all_mo=False, spin=None, **kwargs):
 
   # Initialize the variables 
   qc = QCinfo()
+  qc.ao_spec = AOClass([])
+  qc.mo_spec = MOClass([])
   exp_list = []
   for j in exp_wfn:         
     exp_list.extend(j)
@@ -83,11 +85,11 @@ def read_wfx(fname, all_mo=False, spin=None, **kwargs):
         qc.geo_spec.append(flines[il+i+1].split())
     elif '<Number of Primitives>' in line:
       ao_num = int(flines[il+1])
-      qc.ao_spec = [{'atom': None,
+      qc.ao_spec = AOClass([{'atom': None,
                     'pnum': -1,
                     'coeffs': None,
                     'exp_list': None,
-                    } for i in range(ao_num)]
+                    } for i in range(ao_num)])
     elif '<Primitive Centers>' in line:
       sec_flag = 'ao_center'
       count = 0
@@ -99,12 +101,12 @@ def read_wfx(fname, all_mo=False, spin=None, **kwargs):
       count = 0
     elif '<Number of Occupied Molecular Orbitals>' in line:    
       mo_num = int(flines[il+1])
-      qc.mo_spec = [{'coeffs': numpy.zeros(ao_num),
+      qc.mo_spec = MOClass([{'coeffs': numpy.zeros(ao_num),
                      'energy': None,
                      'occ_num': None,
                      'spin': None,
                      'sym': '%s.1' % (i+1)
-                    } for i in range(mo_num)]
+                    } for i in range(mo_num)])
     elif '<Molecular Orbital Occupation Numbers>' in line:
       for i in range(mo_num):
         qc.mo_spec[i]['occ_num'] = float(flines[il+1+i])
@@ -149,6 +151,5 @@ def read_wfx(fname, all_mo=False, spin=None, **kwargs):
   # Convert geo_info and geo_spec to numpy.ndarrays
   qc.format_geo()
 
-  qc.mo_spec = MOClass(qc.mo_spec)
   qc.mo_spec.get_spinstate()
   return qc

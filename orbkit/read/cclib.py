@@ -62,6 +62,8 @@ def convert_cclib(ccData, all_mo=False, spin=None):
   '''
   # Initialize the variables 
   qc = QCinfo()
+  qc.ao_spec = AOClass([])
+  qc.mo_spec = MOClass([])
   
   # Converting all information concerning atoms and geometry
   qc.geo_spec = ccData.atomcoords[0] * aa2a0
@@ -201,6 +203,5 @@ def convert_cclib(ccData, all_mo=False, spin=None):
       if qc.mo_spec[i]['occ_num'] < 0.0000001:
         del qc.mo_spec[i]
 
-  qc.mo_spec = MOClass(qc.mo_spec)
   qc.mo_spec.get_spinstate()
   return qc

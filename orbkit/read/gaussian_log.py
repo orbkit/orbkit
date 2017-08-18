@@ -187,6 +187,8 @@ def read_gaussian_log(fname,all_mo=False,spin=None,orientation='standard',
   old_ao = -1
   orb_sym = []
   qc = QCinfo()
+  qc.ao_spec = AOClass([])
+  qc.mo_spec = MOClass([])
   index = []
   
   # Go through the file line by line 
@@ -218,7 +220,7 @@ def read_gaussian_log(fname,all_mo=False,spin=None,orientation='standard',
         # The section containing information about 
         # the atomic orbitals begins
         if i_ao == c_ao:
-          qc.ao_spec = []
+          qc.ao_spec = AOClass([])
           if not cartesian_basis:
             qc.ao_spec.spherical = True
           sec_flag = 'ao_info'
@@ -235,7 +237,7 @@ def read_gaussian_log(fname,all_mo=False,spin=None,orientation='standard',
         if (i_mo == c_mo):
           sec_flag = 'mo_info'
           mo_type = count['molecular orbitals'][i_mo]
-          qc.mo_spec = []
+          qc.mo_spec = MOClass([])
           offset = 0
           add = ''
           orb_spin = []
@@ -383,6 +385,5 @@ def read_gaussian_log(fname,all_mo=False,spin=None,orientation='standard',
   # Convert geo_info and geo_spec to numpy.ndarrays
   qc.format_geo(is_angstrom=True)
 
-  qc.mo_spec = MOClass(qc.mo_spec)
   qc.mo_spec.get_spinstate()
   return qc
