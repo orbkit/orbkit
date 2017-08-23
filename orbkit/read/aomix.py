@@ -198,6 +198,7 @@ def read_aomix(fname, all_mo=False, spin=None, i_md=-1, interactive=True,
               qc.ao_spec.append({'atom': at_num,
                               'type': i_ao,
                               'pnum': pnum,
+                              'ao_spherical': None,
                               'coeffs': numpy.zeros((pnum, 2))
                               })
           else:
@@ -318,3 +319,4 @@ def read_aomix(fname, all_mo=False, spin=None, i_md=-1, interactive=True,
 
   qc.mo_spec.update()
   qc.ao_spec.update()
+  return qc

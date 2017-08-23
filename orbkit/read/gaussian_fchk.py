@@ -310,3 +310,4 @@ def read_gaussian_fchk(fname, all_mo=False, spin=None, **kwargs):
   qc.mo_spec = MOClass(qc.mo_spec)
   qc.mo_spec.update()
   qc.ao_spec.update()
+  return qc

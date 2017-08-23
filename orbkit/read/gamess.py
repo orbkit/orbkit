@@ -410,3 +410,4 @@ def read_gamess(fname, all_mo=False, spin=None, read_properties=False,
 
   qc.mo_spec.update()
   qc.ao_spec.update()
+  return qc

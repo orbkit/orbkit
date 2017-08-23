@@ -60,6 +60,7 @@ def read_wfn(fname, all_mo=False, spin=None, **kwargs):
               'pnum': -1,
               'coeffs': None,
               'exp_list': None,
+              'ao_spherical': None
               })
     elif 'TYPE ASSIGNMENTS' in line:
       thisline = line[18:].split()
@@ -107,3 +108,4 @@ def read_wfn(fname, all_mo=False, spin=None, **kwargs):
   
   qc.mo_spec.update()
   qc.ao_spec.update()
+  return qc

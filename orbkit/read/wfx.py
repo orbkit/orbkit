@@ -89,6 +89,7 @@ def read_wfx(fname, all_mo=False, spin=None, **kwargs):
                     'pnum': -1,
                     'coeffs': None,
                     'exp_list': None,
+                    'ao_spherical': None
                     } for i in range(ao_num)])
     elif '<Primitive Centers>' in line:
       sec_flag = 'ao_center'
@@ -153,3 +154,4 @@ def read_wfx(fname, all_mo=False, spin=None, **kwargs):
 
   qc.mo_spec.update()
   qc.ao_spec.update()
+  return qc

@@ -6,6 +6,7 @@ folder = os.path.join(tests_home, 'outputs_for_testing')
 
 files = {'fchk': 'h2o_rhf_cart.fchk',
          'gaussian_log': 'h2o_rhf_cart.inp.log',
+         'gamess': 'formaldehyde.log',
          'molden': 'h2o_rhf_sph.molden',
          'aomix': 'aomix.in',
          'wfx': '1.wfx',

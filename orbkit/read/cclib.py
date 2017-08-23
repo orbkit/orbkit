@@ -205,3 +205,4 @@ def convert_cclib(ccData, all_mo=False, spin=None):
 
   qc.mo_spec.update()
   qc.ao_spec.update()
+  return qc

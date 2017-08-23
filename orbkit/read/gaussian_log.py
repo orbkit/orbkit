@@ -387,3 +387,4 @@ def read_gaussian_log(fname,all_mo=False,spin=None,orientation='standard',
 
   qc.mo_spec.update()
   qc.ao_spec.update()
+  return qc
