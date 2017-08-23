@@ -346,15 +346,18 @@ class CIinfo:
       self.coeffs = self.coeffs[i]
       self.occ = self.occ[i]
   def copy(self):
-    ciinfo = self.__class__(method=self.method)
-    if self.coeffs != []:
-      ciinfo.coeffs = numpy.copy(self.coeffs)
-    if self.occ != []:
-      ciinfo.occ = numpy.copy(self.occ)
-    if self.info is not None:
-      ciinfo.info = self.info.copy()    
-    if self.moocc is not None:
-      ciinfo.moocc = self.moocc.copy()    
+    from copy import deepcopy
+    ciinfo = deepcopy(self)
+#This seems to work just fine...
+#    ciinfo = self.__class__(method=self.method)
+#    if self.coeffs != []:
+#      ciinfo.coeffs = numpy.copy(self.coeffs)
+#    if self.occ != []:
+#      ciinfo.occ = numpy.copy(self.occ)
+#    if self.info is not None:
+#      ciinfo.info = self.info.copy()    
+#    if self.moocc is not None:
+#      ciinfo.moocc = self.moocc.copy()    
     return ciinfo
   def todict(self):
     return self.__dict__
