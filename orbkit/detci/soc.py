@@ -14,24 +14,31 @@ https://doi.org/10.1016/j.cpc.2013.10.014
 
 import os
 import numpy
+from orbkit.detci import occ_check
 
 class SOC:
-  def __init__(self, qc_bra, qc_ket, ci_bra, ci_ket):
+  def __init__(self, qc_bra, ci_bra, qc_ket=None, ci_ket=None):
     self.qc_bra = qc_bra
-    self.qc_ket = qc_ket
+    if not qc_ket:
+      self.qc_ket = qc_bra.copy()
+    else:
+      self.qc_ket = qc_ket
+
     self.ci_bra = ci_bra
-    self.ci_ket = ci_ket
+    if not qc_ket:
+      self.ci_ket = ci_bra.copy()
+    else:
+      self.ci_ket = ci_ket
 
     if not self.qc_ket:
       self.qc_ket = self.qc_bra
 
     if not self.qc_bra.charge == self.qc_ket.charge:
       raise ValueError('Bra and Ket states must have the same total charge!')
-
     if not self.qc_bra.ao_spec == self.qc_ket.ao_spec:
       raise ValueError('Bra and Ket states must have the same basis set!')
 
-    if not self.qc_bra.comp_geo_info(self.qc_ket.geo_info) or not numpy.allclose(self.qc_bra.geo_spec, self.qc_ket.geo_spec):
+    if not self.qc_bra.comp_geo_info(self.qc_ket.geo_info):# or not numpy.allclose(self.qc_bra.geo_spec, self.qc_ket.geo_spec):
       raise ValueError('Bra and Ket states must have the same atomic positions!')
 
 
@@ -43,14 +50,15 @@ class SOC:
     else:
       #Orbital discoincidence can be direct if the excitaion happens in alpha -
       #or indirect if it happens in beta
-      occ_bra = self.qc_bra.get_occ(self, return_alpha_beta=True)
-      occ_ket = self.qc_ket.get_occ(self, return_alpha_beta=True)
+      occ_bra = self.qc_bra.mo_spec.get_occ(return_alpha_beta=True)
+      occ_ket = self.qc_ket.mo_spec.get_occ(return_alpha_beta=True)
 
       diff_alpha = numpy.linalg.norm(occ_bra[0] - occ_ket[0])
       diff_beta = numpy.linalg.norm(occ_bra[1] - occ_ket[1])
-
       # Should there be a tolerance for this?
-      if diff_alpha != 0 and diff_beta == 0.:
+      if diff_alpha == 0 and diff_beta == 0.:
+        return 'D'
+      elif diff_alpha != 0 and diff_beta == 0.:
         return 'D'
       elif diff_alpha == 0 and diff_beta != 0.:
         return 'R'
@@ -88,7 +96,7 @@ Sandro Giuseppe Chiodo (sandro.chiodo@unicz.it) or Monica Leopoldini (sgchiodo@g
 Turbomole Angstrom'''
 
     if full_det:
-      if not qc_bra == qc_ket:
+      if not self.qc_bra == self.qc_ket:
         raise ValueError('If full CI/TD-DFT are to be used, the same MO`s must be used for bra- and ket-states!')
       header += '  Alter Nobiortho'
 
@@ -141,13 +149,16 @@ Turbomole Angstrom'''
     geom += 'End'
     out = header + geom
 
+    if full_det:
+      self.construct_alter_section()
+
     with open(os.path.join(path, 'molsoc.inp'), 'wb') as fd:
       print(out, file=fd)
 
   def construct_alter_section(self):
     '''Constructs the alteration section of MolSOC
     '''
-    zero, sing = detci.occ_check.compare(self.ci_bra, self.ci_ket)
+    zero, sing = occ_check.compare(self.ci_bra, self.ci_ket)
     alter = ''
     for trans in sing[1]:
       print(trans)
@@ -259,9 +270,9 @@ Turbomole Angstrom'''
           spin_index = qc.mo_spec.get_spin(spin)
           eigen = eigen[spin_index]
           coeff = coeff[spin_index]
-          out += write_mo(eigen, coeff)
+          out += self.write_mo(eigen, coeff)
       else:
-        out += write_mo(eigen, coeff)
+        out += self.write_mo(eigen, coeff)
 
       out += '$end'
       with open(os.path.join(path, files[iqc]), 'wb') as fd:

@@ -316,5 +316,5 @@ def read_aomix(fname, all_mo=False, spin=None, i_md=-1, interactive=True,
     for ii in range(len(qc.mo_spec)):
       qc.mo_spec[ii]['coeffs'] = mo[ii]
 
-  qc.mo_spec.get_spinstate()
-  return qc
+  qc.mo_spec.update()
+  qc.ao_spec.update()

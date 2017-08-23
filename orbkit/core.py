@@ -82,11 +82,10 @@ def ao_creator(geo_spec,ao_spec,drv=None,
   x = require(x, dtype='f')
   y = require(y, dtype='f')
   z = require(z, dtype='f') 
-  
+
   geo_spec = require(geo_spec, dtype='f')
   lxlylz,assign = ao_spec.get_lxlylz(get_assign=True,bincount=True)
   ao_coeffs,pnum_list,atom_indices = prepare_ao_calc(ao_spec)
-  
   is_normalized = each_ao_is_normalized(ao_spec)
   drv = validate_drv(drv)
   
@@ -154,11 +153,12 @@ def cartesian2spherical(ao_list,ao_spec):
   '''
 
   lxlylz, assign = ao_spec.get_lxlylz(get_assign=True)
-  ao_spherical = ao_spec.get_old_ao_spherical()  
+  ao_spherical = ao_spec.get_old_ao_spherical()
 
   l = [[] for i in ao_spec]
   for i,j in enumerate(assign):
     l[j].append(i) 
+
   shape = list(ao_list.shape)
   shape[0] = len(ao_spherical)
   ao_list_sph = numpy.zeros(shape)

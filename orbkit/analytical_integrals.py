@@ -124,7 +124,6 @@ def get_ao_overlap(coord_a, coord_b, ao_spec, lxlylz_b=None,
   if ao_spec.spherical:
     # Convert the overlap matrix to the real-valued spherical harmonic basis.
     ao_overlap_matrix = cartesian2spherical_aoom(ao_overlap_matrix,ao_spec)
-
   return ao_overlap_matrix
 
 def cartesian2spherical_aoom(ao_overlap_matrix,ao_spec):
@@ -151,16 +150,15 @@ def cartesian2spherical_aoom(ao_overlap_matrix,ao_spec):
     Only supported up to g atomic orbitals and only for contracted 
     atomic orbitals.
   '''
-  
+
   # Get the exponents of the Cartesian basis functions
   exp_list,assign = ao_spec.get_lxlylz(get_assign=True)
   ao_spherical  = ao_spec.get_old_ao_spherical()
-
   if ao_overlap_matrix.shape != (len(exp_list),len(exp_list)):
     raise IOError('No contraction is currently not supported for a '+ 
                   'spherical harmonics. Please come back'+
                   ' manually after calling `contract_ao_overlap_matrix()`.')
-  
+
   l = [[] for i in ao_spec]
   for i,j in enumerate(assign):
     l[j].append(i) 
@@ -174,7 +172,9 @@ def cartesian2spherical_aoom(ao_overlap_matrix,ao_spec):
         if tuple(exp_list[j]) == sph0[0][c0]:
           indices.append(i + l[j0][0])
       c += 1
-
+  if len(indices) == 0:
+    print('Here\n',ao_spec.up2date)
+    exit()
   c = 0
   aoom_sph = numpy.zeros((len(ao_spherical),len(ao_spherical)))
   for i0,(j0,k0) in enumerate(ao_spherical):

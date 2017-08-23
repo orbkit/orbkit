@@ -57,9 +57,11 @@ class QCinfo:
       data = self.read(filename)
       self.geo_spec = data['geo_spec']
       self.geo_info = data['geo_info']
-
-    self.ao_spec = AOClass(restart=data)
-    self.mo_spec = MOClass(restart=data)
+      self.ao_spec = AOClass(restart=data)
+      self.mo_spec = MOClass(restart=data)
+    else:
+      self.ao_spec = AOClass()
+      self.mo_spec = MOClass()
 
   def __eq__(self, other):
     if not isinstance(other, QCinfo):
@@ -70,14 +72,17 @@ class QCinfo:
     self.mo_spec == other.mo_spec]
     return all(same)
 
+  def update(self):
+    self.ao_spec.update()
+    self.mo_spec.update()
+
   def comp_geo_info(self, geo2):
     same = True
     for atom1, atom2 in zip(self.geo_info, geo2):
       if not len(atom1) == len(atom2):
         raise ValueError('Atom object are of different length!')
-      for i in range(len(self.geo_info)):
+      for i in range(len(atom1)):
         if atom1[i] != atom2[i]:
-          print(i,atom1[i], atom2[i] )
           same = False
     return same
 
@@ -119,6 +124,7 @@ class QCinfo:
   def copy(self):
     from copy import deepcopy
     qcinfo = deepcopy(self)
+    qcinfo.update()
     return qcinfo
   
   def format_geo(self, is_angstrom=False):
@@ -135,21 +141,6 @@ class QCinfo:
     self.geo_spec = numpy.array(self.geo_spec,dtype=float)
     if is_angstrom:
       self.geo_spec *= aa2a0
-
-  def get_mo_labels(self):
-    return ['MO %(sym)s, Occ=%(occ_num).2f, E=%(energy)+.4f E_h' % 
-                  i for i in self.mo_spec]
-  
-  def get_mo_energies(self):
-    mo_eig = numpy.array([i['energy'] for i in self.mo_spec], dtype=numpy.float64)
-    return copy(mo_eig)
-  
-  def get_occ(self):
-    mo_occ = numpy.array([i['occ_num'] for i in self.mo_spec], dtype=numpy.intc)
-    return copy(mo_occ)
-  
-  def get_nmoocc(self):
-    return sum(self.get_occ())
   
   def get_com(self,nuc_list=None):
     '''Computes the center of mass.

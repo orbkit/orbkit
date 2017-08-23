@@ -156,8 +156,6 @@ def read_molden(fname, all_mo=False, spin=None, i_md=-1, interactive=True,
       # Initialize the variables 
       if i_md == count:
         qc = QCinfo()
-        qc.ao_spec = AOClass([])
-        qc.mo_spec = MOClass([])
         sec_flag = False           # A Flag specifying the current section 
         start_reading = True       # Found the selected section
       else:
@@ -351,6 +349,7 @@ def read_molden(fname, all_mo=False, spin=None, i_md=-1, interactive=True,
       cca = ommited_cca_norm(qc.ao_spec.get_lxlylz())
       for mo in qc.mo_spec:
         mo['coeffs'] *= cca
-  
-  qc.mo_spec.get_spinstate()
+
+  qc.mo_spec.update()
+  qc.ao_spec.update()
   return qc

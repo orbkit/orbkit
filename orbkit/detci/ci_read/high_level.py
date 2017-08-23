@@ -76,7 +76,7 @@ def main_ci_read(qc,fname,itype='psi4_detci',threshold=0.0,
     display('Available reader (`itype`) are:\n  ' + ', '.join(reader.keys()))
     raise NotImplementedError("itype='%s' not implemented!"%itype)
   
-  kwargs['nmoocc'] = qc.get_nmoocc()
+  kwargs['nmoocc'] = qc.mo_spec.get_occ(sum_occ=True)
   
   ci = reader[itype](fname,select_state=select,threshold=threshold, 
                      select_run=select,                 # PSI4/MOLPRO specific
@@ -86,7 +86,7 @@ def main_ci_read(qc,fname,itype='psi4_detci',threshold=0.0,
   # Get a copy of qc
   qc = qc.copy()
   if itype in ['tmol_tddft','gamess_cis']: # CIS-like
-    moocc = qc.get_mo_occ()
+    moocc = qc.mo_spec.get_occ(return_int=True)
   elif itype in ['psi4_detci','molpro_mcscf']: # detCI-like
     # Reorder qc.mo_spec
     irreps=None if 'irreps' not in ci[0].info.keys() else ci[0].info['irreps']                                                

@@ -1,5 +1,7 @@
-from .tools import descriptor_from_file
+import numpy
+from .tools import *
 from orbkit.qcinfo import QCinfo
+from orbkit.display import display
 from orbkit.orbitals import AOClass, MOClass
 
 def read_gamess(fname, all_mo=False, spin=None, read_properties=False,
@@ -404,7 +406,7 @@ def read_gamess(fname, all_mo=False, spin=None, read_properties=False,
         del qc.mo_spec[i]
     
   # Convert geo_info and geo_spec to numpy.ndarrays
-  qc.format_geo(angstrom=angstrom)
+  qc.format_geo(is_angstrom=angstrom)
 
-  qc.mo_spec.get_spinstate()
-  return qc
+  qc.mo_spec.update()
+  qc.ao_spec.update()

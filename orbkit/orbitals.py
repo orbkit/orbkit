@@ -1,5 +1,6 @@
 import numpy
 from os import path
+from copy import copy
 
 try:
   from UserList import UserList
@@ -42,6 +43,7 @@ class AOClass(UserList):
     self.contspher = None
     self.pao = None
     self.lxlylz = None
+    self.assign_lxlylz = None
     self.lmpao = None
     self.lmprim2cont = None
     self.normalized = False
@@ -53,6 +55,7 @@ class AOClass(UserList):
       self.contspher = restart['contspher']
       self.pao = restart['pao']
       self.lxlylz = restart['lxlylz']
+      self.assign_lxlylz = restart['assign_lxlylz']
       self.lmpao = None
       self.lmprim2cont = None
       self.normalized = False
@@ -64,7 +67,8 @@ class AOClass(UserList):
             'pao': self.pao,
             'spherical': self.spherical,
             'contspher': self.contspher,
-            'lxlylz': self.lxlylz}
+            'lxlylz': self.lxlylz,
+            'assign_lxlylz': self.assign_lxlylz}
     return data
   def __getitem__(self, item):
     return UserList.__getitem__(self, item)
@@ -210,7 +214,7 @@ class AOClass(UserList):
       if all(conts_are_norm) != any(conts_are_norm):
         raise ValueError('Either all or none of the atomic orbitals have to be normalized!')
       self.normalized = all(conts_are_norm)
-    return self.normalized
+    return copy(self.normalized)
 
 #This should really die sooner or later...
 #For now there are still a few calls to it
@@ -245,7 +249,7 @@ class AOClass(UserList):
           for lm in cont['ao_spherical']:
             self.contspher.append(lm)
     self.contspher = numpy.array(self.contspher, dtype=numpy.intc)
-    return self.contspher
+    return copy(self.contspher)
   def get_cont2atoms(self):
     '''Get mapping between contracted GTO's and atoms.
 
@@ -257,7 +261,7 @@ class AOClass(UserList):
       self.cont2atoms = numpy.zeros(shape=(len(self.data)), dtype=numpy.intc)
       for ic, contracted in enumerate(self.data):
         self.cont2atoms[ic] = contracted['atom']
-    return self.cont2atoms
+    return copy(self.cont2atoms)
   def get_pao(self):
     '''Get exponents and contraction coefficients for primitive GTO's.
 
@@ -271,7 +275,7 @@ class AOClass(UserList):
         for ip, prim in enumerate(contracted['coeffs']):
           self.pao.append(prim)
     self.pao = numpy.array(self.pao, dtype=numpy.float64)
-    return self.pao
+    return copy(self.pao)
   def get_l(self, contracted):
     if 'exp_list' in contracted:
       l = contracted['exp_list']
@@ -291,7 +295,7 @@ class AOClass(UserList):
         for l in self.get_l(contracted):
           self.lmpao.extend(contracted['coeffs'])
     self.lmpao = numpy.array(self.lmpao, dtype=numpy.float64)
-    return self.lmpao
+    return copy(self.lmpao)
   def get_prim2cont(self):
     '''Get mapping between primitive and contracted GTO's.
 
@@ -305,7 +309,7 @@ class AOClass(UserList):
         for ipc in range(len(contracted['coeffs'])):
           self.prim2cont.append(ic)
     self.prim2cont = numpy.array(self.prim2cont, dtype=numpy.intc)
-    return self.prim2cont
+    return copy(self.prim2cont)
   #This array is nice to have becaus it allows for efficient indexing of pao's
   #We do not set it as an attribute though as it might bocome very large e.g.
   #in the case of CI/TD-DFT calculations
@@ -356,7 +360,8 @@ class AOClass(UserList):
         ipl = numpy.array(ipl, dtype=numpy.intc)
         return numpy.array([[i,j] for i, j in zip(self.lmprim2cont, ipl)], dtype=numpy.intc)
     else:
-      return self.lmprim2cont
+      return copy(self.lmprim2cont)
+
   def get_lxlylz(self, get_assign=False, bincount=False, get_label=False):
     '''Extracts the exponents lx, ly, lz for the Cartesian Gaussians.
 
@@ -369,31 +374,34 @@ class AOClass(UserList):
 
     lxlylz : numpy.ndarray, dtype=numpy.intc, shape = (NAO,3)
       Contains the expontents lx, ly, lz for the Cartesian Gaussians.
-    assign : list of int, optional
+    assign_lxlylz : list of int, optional
       Contains the index of the atomic orbital in ao_spec.
     '''
+    if get_label:
+      get_assign = True
     if not self.up2date:
       self.lxlylz = []
-    assign = []
-    for sel_ao in range(len(self.data)):
-      if 'exp_list' in self.data[sel_ao].keys():
-        l = self.data[sel_ao]['exp_list']
-      else:
-        l = exp[lquant[self.data[sel_ao]['type']]]
-      if not self.up2date:
+      self.assign_lxlylz = []
+      for sel_ao in range(len(self.data)):
+        if 'exp_list' in self.data[sel_ao].keys():
+          l = self.data[sel_ao]['exp_list']
+        else:
+          l = exp[lquant[self.data[sel_ao]['type']]]
         self.lxlylz.extend(l)
-      assign.extend([sel_ao]*len(l))
-    if not self.up2date:
-      self.lxlylz = numpy.array(self.lxlylz,dtype=numpy.intc,order='C')
-    assign = numpy.array(assign,dtype=numpy.intc,order='C')
-    if get_label:
-      return 1000*assign + (self.lxlylz * numpy.array([100,10,1])).sum(axis=1,dtype=numpy.intc)
-    elif get_assign:
-      if bincount:
-        assign = numpy.bincount(assign)
-      return (self.lxlylz,assign)
-    return self.lxlylz
+        self.assign_lxlylz.extend([sel_ao]*len(l))
 
+      self.lxlylz = numpy.array(self.lxlylz,dtype=numpy.intc,order='C')
+      self.assign_lxlylz = numpy.array(self.assign_lxlylz,dtype=numpy.intc,order='C')
+
+    if get_assign and get_label:
+      return copy(1000*self.assign_lxlylz + (self.lxlylz * numpy.array([100,10,1])).sum(axis=1,dtype=numpy.intc))
+    elif get_assign and not get_label:
+      if bincount:
+        return (copy(self.lxlylz), copy(numpy.bincount(self.assign_lxlylz)))
+      else:
+        return (copy(self.lxlylz), copy(self.assign_lxlylz))
+    else:
+      return copy(self.lxlylz)
 
 
 class MOClass(UserList):
@@ -580,6 +588,9 @@ class MOClass(UserList):
     if self.sym[0].split('_') > 0:
       if self.sym[0].split('_')[-1] in ['a', 'b']:
         self.spinpolarized = True
+  def get_labels(self):
+    return ['MO %(sym)s, Occ=%(occ_num).2f, E=%(energy)+.4f E_h' % 
+                  i for i in self.data]
   def set_template(self, array, item):
     '''Template for updating Numpy-style data.
     '''
@@ -635,7 +646,7 @@ class MOClass(UserList):
       self.coeff = numpy.zeros(shape=(len(self.data), len(self.data[0]['coeffs'])), dtype=numpy.float64)
       for imo, mo in enumerate(self.data):
         self.coeff[imo] = mo['coeffs']
-    return self.coeff
+    return copy(self.coeff)
   def get_eig(self):
     '''Get function for numpy array version of molecular orbital energies.
 
@@ -647,14 +658,18 @@ class MOClass(UserList):
       self.eig = numpy.zeros(shape=(len(self.data)), dtype=numpy.float64)
       for imo, mo in enumerate(self.data):
         self.eig[imo] = mo['energy']
-    return self.eig
-  def get_occ(self, return_alpha_beta=False):
+    return copy(self.eig)
+  def get_occ(self, return_alpha_beta=False, return_int=False, tol_int=1e-5, sum_occ=False):
     '''Get function for numpy array version of molecular orbital occupancies.
 
        **Parameters:**
 
         return_alpha_beta: bool, optional, determines whether occupancies should be
-        returned as a shape = (NMO) array (False) or a shape = (2,NMO/2) array (True)-
+        returned as a shape = (NMO) array (False) or a shape = (2,NMO/2) array (True)
+        return_int: bool, optional, determines whether occupancies should be
+        returned as a numpy.intc array. Raises an error if there are partially occupied orbitals.
+        tol_int: float, optional, defines the tolerance for when an occupation number is considered an integer
+        sum_occ: bool, optional, determines whether occupancies should be summed over
 
        **Note:**
 
@@ -668,10 +683,26 @@ class MOClass(UserList):
       self.occ = numpy.zeros(shape=(len(self.data)), dtype=numpy.float64)
       for imo, mo in enumerate(self.data):
         self.occ[imo] = mo['occ_num']
-    if not return_alpha_beta or not self.spinpolarized:
-      return self.occ
+    if return_int:
+      for f in self.occ:
+        self.get_spinstate()
+        if self.spinpolarized and 0. > f < 1.-tol_int:
+          raise ValueError('Occupation numbers are not integers')
+        elif not self.spinpolarized and 0. > f < 2.-tol_int:
+          raise ValueError('Occupation numbers are not integers')
+    if sum_occ:
+      return sum(self.get_occ(return_int=True))
     else:
-      return numpy.rashape(self.occ, (2,-1))
+      if not return_alpha_beta or not self.spinpolarized:
+        if not return_int:
+          return copy(self.occ)
+        else:
+          return copy(numpy.array(self.occ, dtype=numpy.intc))
+      else:
+        if not return_int:
+          return copy(numpy.rashape(self.occ, (2,-1)))
+        else:
+          return copy(numpy.array(numpy.rashape(self.occ, (2,-1)), dtype=numpy.intc))
 
   def get_sym(self):
     '''Get function for numpy array version of molecular orbital symmetries.
@@ -685,7 +716,7 @@ class MOClass(UserList):
       for imo, mo in enumerate(self.data):
         self.sym.append(mo['sym'])
       self.sym = numpy.array(self.sym, dtype=str)
-    return self.sym
+    return copy(self.sym)
 
   def get_spin(self, spin):
     '''Function used to select MO's by spin. A numpy.ndarray is returned

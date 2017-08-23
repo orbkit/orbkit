@@ -203,5 +203,5 @@ def convert_cclib(ccData, all_mo=False, spin=None):
       if qc.mo_spec[i]['occ_num'] < 0.0000001:
         del qc.mo_spec[i]
 
-  qc.mo_spec.get_spinstate()
-  return qc
+  qc.mo_spec.update()
+  qc.ao_spec.update()
