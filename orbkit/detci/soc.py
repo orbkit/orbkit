@@ -1,4 +1,9 @@
 from __future__ import print_function
+import os
+import numpy
+
+from orbkit.detci import occ_check
+from orbkit.display import display
 '''Interface to MolSOC code by Sandro Giuseppe Chiodo and Monica Leopoldini
 
 The code can be obtained here
@@ -12,9 +17,26 @@ Comput. Phys. Commun. 185(2014)676
 https://doi.org/10.1016/j.cpc.2013.10.014
 '''
 
-import os
-import numpy
-from orbkit.detci import occ_check
+class TDDFT_SOC:
+  def __init__(self, qc_bra=None, ci_bra=None, ci_gs=None, qc_ket=None, ci_ket=None):
+#    if 
+    self.soc = SOC(qc_bra, ci_bra, qc_ket=None, ci_ket=None)
+    self.zero_bra, self.sing_bra = occ_check.compare(self.ci_gs, self.ci_bra)
+    self.zero_ket, self.sing_ket = occ_check.compare(self.ci_gs, self.ci_ket)
+
+  def iterate_slater_determinant(self, i_bra, i_ket):
+    self.soc.write_molsoc_inp(path=path, full_det=True, Zeff=Zeff, Multipole=Multipole, sing_bra=None, sing_ket=None)
+
+
+  def run_tddft_soc(self, path='.', Zeff=False, Multipole=None):
+    from itertools import product
+    elements = product(range(len(self.zero_bra)), range(len(self.zero_ket)))
+    maxel = len(list(elements))
+    i_el = 0
+    for i_bra, i_ket in elements:
+      display('Calculating Slater determinant {0} out of {1}'.format(i_el+1, maxel))
+      self.iterate_slater_determinant(i_bra, i_ket)
+      i_el += 1
 
 class SOC:
   def __init__(self, qc_bra, ci_bra, qc_ket=None, ci_ket=None):
@@ -66,7 +88,7 @@ class SOC:
         raise NotImplementedError('''Don`t know how to handle this... Maybe ask
 Sandro Giuseppe Chiodo (sandro.chiodo@unicz.it) or Monica Leopoldini (sgchiodo@gmail.com)?''')
 
-  def write_molsoc_inp(self, path='.', full_det=False, Zeff=False, Multipole=None):
+  def write_molsoc_inp(self, path='.', full_det=False, Zeff=False, Multipole=None, sing_bra=None, sing_ket=None):
     '''Writes molsoc.inp file.
     
     **Parameters:**
@@ -150,19 +172,16 @@ Turbomole Angstrom'''
     out = header + geom
 
     if full_det:
-      self.construct_alter_section()
+      self.get_alter_section()
 
     with open(os.path.join(path, 'molsoc.inp'), 'wb') as fd:
       print(out, file=fd)
 
-  def construct_alter_section(self):
+  def get_alter_section(self):
     '''Constructs the alteration section of MolSOC
     '''
-    zero, sing = occ_check.compare(self.ci_bra, self.ci_ket)
     alter = ''
-    for trans in sing[1]:
-      print(trans)
-      exit()
+    print(trans)
 
   def write_molsoc_basis(self, path='.'):
     '''Writes molsoc_basis file.

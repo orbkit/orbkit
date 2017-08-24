@@ -306,7 +306,7 @@ class QCinfo:
     visualize.view(self.get_ase_atoms(bbox=bbox,**kwargs)[select])
     
 
-class CIinfo:
+class CIinfo():
   '''Class managing all information from the from the output 
   files of quantum chemical software for CI calculations.
   
@@ -347,8 +347,8 @@ class CIinfo:
       self.occ = self.occ[i]
   def copy(self):
     from copy import deepcopy
-    ciinfo = deepcopy(self)
 #This seems to work just fine...
+    ciinfo = deepcopy(self)
 #    ciinfo = self.__class__(method=self.method)
 #    if self.coeffs != []:
 #      ciinfo.coeffs = numpy.copy(self.coeffs)
