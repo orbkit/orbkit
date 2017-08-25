@@ -12,7 +12,7 @@ class DM:
   def __init__(self, zero, sing, qc):
     zero = numpy.array(zero)
     self.qc = qc
-    self.Tij = numpy.zeros((len(self.qc.mo_spec),len(self.qc.mo_spec)))
+    self.Tij = numpy.matrix(numpy.zeros((len(self.qc.mo_spec),len(self.qc.mo_spec))))
     #build the trace of Tij
     zero0 = zero[0].flatten()
     zero1 = zero[1].flatten()
@@ -23,7 +23,7 @@ class DM:
       self.Tij[it[0],it[1]] += sing[0][imo]
 
   def get_Diag(self):
-    return numpy.diagonal(self.Tij)
+    return self.Tij.diagonal()
 
 class DMstates(UserList):
   def __init__(self, seq = [], fullci=None, qc=None):
@@ -33,7 +33,7 @@ class DMstates(UserList):
       zero, sing = occ_check.compare(fullci[i], fullci[j])
       self.append(DM(zero=zero, sing=sing, qc=qc))
 
-class FullCI(UserList):
+class CIFock(UserList):
   '''This is a wrapper for CIinfo instances. Its main use
 (for now) consists in the implementation of reduce density matrix based features'''
   def __init__(self, seq = [], qc=None):

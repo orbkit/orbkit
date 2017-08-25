@@ -19,7 +19,6 @@ https://doi.org/10.1016/j.cpc.2013.10.014
 
 class TDDFT_SOC:
   def __init__(self, qc_bra=None, ci_bra=None, ci_gs=None, qc_ket=None, ci_ket=None):
-#    if 
     self.soc = SOC(qc_bra, ci_bra, qc_ket=None, ci_ket=None)
     self.zero_bra, self.sing_bra = occ_check.compare(self.ci_gs, self.ci_bra)
     self.zero_ket, self.sing_ket = occ_check.compare(self.ci_gs, self.ci_ket)

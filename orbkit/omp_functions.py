@@ -3,7 +3,7 @@
 '''
 '''
 orbkit
-Gunter Hermann, Vincent Pohl, and Axel Schild
+Gunter Hermann, Vincent Pohl, Axel Schild, and Lukas Eugen Marsoner Steinkasserer
 
 Institut fuer Chemie und Biochemie, Freie Universitaet Berlin, 14195 Berlin, Germany
 

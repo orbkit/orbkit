@@ -38,7 +38,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'ORBKIT'
-copyright = u'2017, Gunter Hermann, Vincent Pohl, and Axel Schild'
+copyright = u'2017, Gunter Hermann, Vincent Pohl, Axel Schild, and Lukas Eugen Marsoner Steinkasserer'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -187,7 +187,7 @@ htmlhelp_basename = 'orbkitdoc'
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
   ('toctree', 'orbkit.tex', u'ORBKIT Documentation',
-   u'Gunter Hermann, Vincent Pohl, and Axel Schild', 'manual'),
+   u'Gunter Hermann, Vincent Pohl, Axel Schild, and Lukas Eugen Marsoner Steinkasserer', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
