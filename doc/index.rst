@@ -10,7 +10,7 @@ ORBKIT
 ORBKIT is a parallel Python program package for post-processing 
 wave function data from output files of quantum chemical programs.
 
-:ORBKIT: Copyright (C) 2017, Gunter Hermann, Vincent Pohl, and Axel Schild.
+:ORBKIT: Copyright (C) 2017, Gunter Hermann, Vincent Pohl, Axel Schild, and Lukas Eugen Marsoner Steinkasserer.
 :Website: https://github.com/orbkit/orbkit
 
 The computational capabilities of ORBKIT range from grid-based quantities, e.g., molecular orbitals or 
@@ -32,6 +32,12 @@ Tutorials for the calculation of grid-based and non grid-based quantities are gi
 Supplementary, a detailed description of the existing options, main variables, and functions 
 is given in :doc:`./refs/index`.
 Finally, some additional applications of ORBKIT are presented in :doc:`./adtutorials/index`. 
+
+**Refactoring** : A major refactoring of the code has recently been undertaken. The most importand changes include:
+
+- Reorganization of AO and MO data into dedicated classes (see  :doc:`./refs/cvars`). 
+- Refactoring of readers which amongst other remove sthe need to specify the ``itype`` of a file and allows to read data from compressed (.tar, .tar.gz, tar.bz2) files. 
+- The QCinfo class now has a save and read function which allows to save QCinfo instances to file restart from files directly.
 
 **NEW:** :ref:`detCI\@ORBKIT` extends ORBKIT's functionality to multi-determinantal wave functions.
 
@@ -67,7 +73,7 @@ __ http://dx.doi.org/10.1002/jcc.24358
 Contact
 -------
 
-The ORBKIT support team, Axel, Gunter, and Vincent, welcomes every new
+The ORBKIT support team, Axel, Gunter, Vincent, and Lukas, welcomes every new
 user and will be available to answer your questions. For any change
 requests, do not hesitate to contact the ORBKIT support team via
 

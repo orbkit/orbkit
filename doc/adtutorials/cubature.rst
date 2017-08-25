@@ -44,7 +44,7 @@ First, we have to import some modules and set some of ORBKITs options::
 Then, we have to read the input file::
 
   # Open molden file and read parameters
-  qc = orbkit.main_read('h2o.molden',itype='molden',all_mo=False)
+  qc = orbkit.main_read('h2o.molden',all_mo=False)
 
 Setting up a Function for Cubature 
 ----------------------------------

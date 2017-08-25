@@ -33,7 +33,7 @@ Here, you have one function for each quantum chemistry input type converting
 the input to the ``QCinfo`` class (cf. :ref:`Central Variables`). These 
 functions are managed by::
 
-  qc = read.main_read(filename,itype='molden',all_mo=False,spin=None,**kwargs) 
+  qc = read.main_read(filename,all_mo=False,spin=None,**kwargs) 
 
 Besides choosing the filename and the input type, you can specify, if the function
 should read the occupied *and* the virtual molecular orbitals (``all_mo``).

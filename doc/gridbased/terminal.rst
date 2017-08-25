@@ -34,14 +34,14 @@ console:
     $ orbkit -i INPUT 
 
 The only option required by ORBKIT is the definition of the input file with 
-:literal:`-i INPUT`. Unless otherwise stated, ORBKIT assumes a Molden input file
-(:literal:`--itype=molden`) and an HDF5 file as output type (:literal:`--otype=h5`). 
+:literal:`-i INPUT`. Unless otherwise stated, ORBKIT will attempt to automatically
+determine the filetype of the input file and use HDF5 file as output type (:literal:`--otype=h5`). 
 As output name (:literal:`-o OUTPUTNAME`) it assumes 
 the base name of :literal:`INPUT`. The file extension of the output is 
 automatically added by the program. In order to produce different output types 
 within one run, multiple calls of the option :literal:`--otype=OTYPE` are possible.
 
-The available input file types (``--itype=ITYPE``) are **molden** (default), 
+The available input file types (``--itype=ITYPE``) are: **auto** (default), **molden** (Molden file), 
 **aomix** (AOMix file), **gamess** (GAMESS-US output file), **gaussian.log** 
 (GAUSSIAN output file), **gaussian.fchk** (GAUSSIAN formatted checkpoint file),
 **wfn** and **wfx** files. 

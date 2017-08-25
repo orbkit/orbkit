@@ -3,12 +3,18 @@
 Central Variables
 =================
 
+.. note::
+
+  There have recently been major changes to the code involved int this section.
+  All old functionality has been preserved as far as possible but there are some major new
+  features which are layed-out below.
+
 In ORBKIT, all central variables are extracted from quantum chemistry outputs
 (cf. :mod:`orbkit.read`) and organized within the class 
 :mod:`orbkit.qcinfo.QCinfo`. The corresponding command reads::
 
   from orbkit import read
-  qc = read.main_read('h2o.md',itype='molden')
+  qc = read.main_read('h2o.md')
 
 This class stores all the information required for subsequent
 computations and is organized as follows:
@@ -19,12 +25,6 @@ computations and is organized as follows:
 | `qc.geo_info`_    | ``numpy.ndarray`` (dtype= ``str``)| (N\ :sub:`atoms`, 3)                          |
 +-------------------+-----------------------------------+-----------------------------------------------+
 | `qc.geo_spec`_    | ``numpy.ndarray`` (dtype= ``str``)| (N\ :sub:`atoms`, 3)                          |
-+-------------------+-----------------------------------+-----------------------------------------------+
-| `qc.ao_spec`_     | ``list`` of ``dict``              | "pnum", "atom", "type", "coeffs", ("exp_list")|
-+-------------------+-----------------------------------+-----------------------------------------------+
-| `qc.ao_spherical`_| ``list`` of ``tuple``             | (N\ :sub:`spherical AOs`, 2)                  |
-+-------------------+-----------------------------------+-----------------------------------------------+
-| `qc.mo_spec`_     | ``list`` of ``dict``              | "energy", "occ_num", "sym", "coeffs"          |
 +-------------------+-----------------------------------+-----------------------------------------------+
 
 .. _`qc.geo_info`:
@@ -45,6 +45,36 @@ computations and is organized as follows:
 
   * Contains the atom positions in units of Bohr radii.
   * The three columns correspond to the *x-*, *y-*, and *z-*\ coordinates.
+
+New API:
+--------
+
+Though with the exception of ``qc.ao_spherical``, "old-style" APIs are still supported, the suggested way to access AO and MO data is now to 
+use the new AOClass and MOClass classes which provide methods to directly obtain the data as numpy arrays. See the module documentation for more details.
+
+.. autofunction:: orbkit.orbitals.AOClass
+
+.. autofunction:: orbkit.orbitals.MOClass
+
+
+Old API:
+--------
+
+.. danger::
+
+  ``qc.ao_spherical`` is **no longer supported** - rather than in a central variable the relevatn information is
+  now saved locally for each AO i.e. for the n'th AO the corresponding ao_spherical data can be accsessed as:
+  ``qc.ao_spec[n]['spherical']``. If you are in desperate need of the old format use: ``qc.ao_spec.get_old_ao_spherical()``.
+  Note though that this is only a compatibility function and might well be depreciated in the future.
+
++-------------------+-----------------------------------+-----------------------------------------------+
+| Member            | Type                              | Shape/Members                                 |
++===================+===================================+===============================================+
++-------------------+-----------------------------------+-----------------------------------------------+
+| `qc.ao_spec`_     | ``list`` of ``dict``              | "pnum", "atom", "type", "coeffs", ("exp_list")|
++-------------------+-----------------------------------+-----------------------------------------------+
+| `qc.mo_spec`_     | ``list`` of ``dict``              | "energy", "occ_num", "sym", "coeffs"          |
++-------------------+-----------------------------------+-----------------------------------------------+
 
 .. _`qc.ao_spec`:
 
@@ -71,17 +101,6 @@ computations and is organized as follows:
       * Only present if the order of the exponents deviate from the standard 
         molden order
       * ``list`` of ``tuple``, i.e., ``[(l_x1,l_y1,l_z1), (l_x2,l_y2,l_z2), ...]``
-
-
-.. _`qc.ao_spherical`:
-
-:qc.ao_spherical:
-
-  * Contains the order of the spherical harmonic basis functions within the
-    input file
-  * ``list`` of ``tuple``, i.e., ``[(l_1,m_1), (l_2,m_2), ...]`` with
-    the angular momentum quantum number ``m`` and the magnetic quantum number 
-    ``l``
 
 .. _`qc.mo_spec`:
 
