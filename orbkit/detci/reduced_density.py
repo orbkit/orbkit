@@ -1,4 +1,5 @@
-import numpy
+from __future__ import division
+import numpy, scipy
 from itertools import product
 
 from orbkit.detci import occ_check
@@ -24,6 +25,15 @@ class DM:
 
   def get_Diag(self):
     return self.Tij.diagonal()
+
+  def get_entropy(self):
+    '''Computes the von Neumann Entropy as S = -tr( Ai * log(Ai) ) where Ai is the vector
+       of eigenvalues of Tij.'''
+    Ai, _ = scipy.linalg.eigh(self.Tij)
+    if not self.qc.mo_spec.spinpolarized:
+      Ai /= 2
+    Ai = Ai[numpy.where(Ai > 0)]
+    return -1 * sum(Ai * numpy.log(Ai))
 
 class DMstates(UserList):
   def __init__(self, seq = [], fullci=None, qc=None):
