@@ -220,7 +220,8 @@ def get_mo_overlap(mo_a,mo_b,ao_overlap_matrix):
     raise ValueError('The coefficients of mo_b have to be a vector of the ' + 
                      'length of the ao_overlap_matrix.')
 
-  return cy_overlap.mooverlap(mo_a,mo_b,ao_overlap_matrix)
+  return cy_overlap.mooverlap(require(mo_a,dtype='f'),require(mo_b,dtype='f'),
+                              ao_overlap_matrix)
 
 def initializer(gargs):
   global global_args

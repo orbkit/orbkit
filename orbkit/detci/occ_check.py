@@ -6,25 +6,18 @@ import numpy
 def slice_occ(ij):
   '''Compares a slice of occupation patterns.
   '''
-  identical_states = multici['cia'] == multici['cib']
   if any([multici['cia'].method == i for i in ['mcscf','detci','fci','ci']]):
     ab_sorting = multici['cia'].method == 'mcscf' # Alternating alpha beta orbitals
     zero,sing = cy_occ_check.mcscf_ab(ij[0],ij[1],
                                       multici['cia'].coeffs,multici['cia'].occ,
                                       multici['cib'].coeffs,multici['cib'].occ,
                                       multici['moocc'],
-                                      identical_states,
                                       ab_sorting)
   elif any([multici['cia'].method == i for i in ['cis','tddft']]):
-    if identical_states:
-      zero,sing = cy_occ_check.cis_aa(ij[0],ij[1],
-                                      multici['cia'].coeffs,multici['cia'].occ,
-                                      multici['moocc'])
-    else:
-      zero,sing = cy_occ_check.cis_ab(ij[0],ij[1],
-                                      multici['cia'].coeffs,multici['cia'].occ,
-                                      multici['cib'].coeffs,multici['cib'].occ,
-                                      multici['moocc'])
+    zero,sing = cy_occ_check.cis_ab(ij[0],ij[1],
+                                    multici['cia'].coeffs,multici['cia'].occ,
+                                    multici['cib'].coeffs,multici['cib'].occ,
+                                    multici['moocc'])
   return zero,sing
 
 
