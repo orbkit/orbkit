@@ -2,7 +2,7 @@
 '''Module containing and processing all orbkit options.'''
 
 lgpl = '''ORBKIT
-Gunter Hermann, Vincent Pohl, Axel Schild, and Lukas Eugen Marsoner Steinkasserer
+Gunter Hermann, Vincent Pohl, Lukas Eugen Marsoner Steinkasserer, Axel Schild, and Jean Christophe Tremblay
 
 Institut fuer Chemie und Biochemie, Freie Universitaet Berlin, 14195 Berlin, Germany
 
@@ -23,7 +23,7 @@ License along with ORBKIT.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
 lgpl_short = '''This is ORBKIT.
-Copyright (C) 2017 Gunter Hermann, Vincent Pohl, Axel Schild, and Lukas Eugen Marsoner Steinkasserer. 
+Copyright (C) 2017 Gunter Hermann, Vincent Pohl, Lukas Eugen Marsoner Steinkasserer, Axel Schild, and Jean Christophe Tremblay. 
 This program comes with ABSOLUTELY NO WARRANTY. 
 This is free software, and you are welcome to redistribute it 
 under certain conditions. Type '-l' for details.

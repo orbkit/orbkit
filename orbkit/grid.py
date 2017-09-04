@@ -3,7 +3,7 @@
 are performed.'''
 '''
 orbkit
-Gunter Hermann, Vincent Pohl, Axel Schild, and Lukas Eugen Marsoner Steinkasserer
+Gunter Hermann, Vincent Pohl, Lukas Eugen Marsoner Steinkasserer, Axel Schild, and Jean Christophe Tremblay
 
 This file is part of orbkit.
 
