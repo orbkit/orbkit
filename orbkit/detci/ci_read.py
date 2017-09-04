@@ -162,12 +162,14 @@ def psi4_detci(filename,select_run=None,threshold=0.0,**kwargs):
   start_reading = False
   
   occ_types = ['core','closed','active','external']
-  synonyms = {'frozen docc': 'core',
+  synonyms = {'dropped docc': 'core',
+              'frozen docc': 'core',
               'restricted docc': 'closed',
               'ras ': 'active',
               'active': 'active',
               'restricted uocc': 'external',
-              'frozen uocc': 'external'}
+              'frozen uocc': 'external',
+              'dropped uocc': 'external'  }
   irreps = []
   fist_active_mo = []
   index_active_mo = []
@@ -207,29 +209,36 @@ def psi4_detci(filename,select_run=None,threshold=0.0,**kwargs):
         elif 'FCI          =' in line and line.endswith('yes'):
           method = 'fci'
         elif 'REF SYM       =' in line:
-          info['sym'] = thisline[3] 
+          info['sym'] = thisline[-1]#3] 
           if info['sym'] != 'auto':
             info['sym'] = irreps[int(info['sym'])]
-        elif 'S             =' in  line:
+        elif ' S     ' in line and ' =' in  line:
           info['spin'] = multiplicity[int(2*float(thisline[2])+1)]
-        elif 'NUM ALP      =' in line:
-          info['nel'] = int(thisline[3]) + int(thisline[-1])
+        elif 'Electrons    =' in line: #'NUM ALP      =' in line:
+          info['nel'] = int(thisline[-1])#int(thisline[3]) + int(thisline[-1])
         elif 'ORBS IN CI   =' in line: 
           orbs_in_ci = int(thisline[-1])
-        elif '=' in line and any([i in line.lower() for i in synonyms.keys()]):
+        elif  any([i in line.lower() for i in synonyms.keys()]):
           for i in synonyms.keys():
             if i in line.lower():
               occ_info[synonyms[i]] += numpy.array(thisline[-nIRREP:],
                                                    dtype=numpy.intc)
-        elif '* ROOT' in line and 'CI total energy' in line:
+        
+        elif ('* ROOT' in line and 'CI total energy' in line) or 'CI Root' in line and 'energy' in line:
+          if '*' in line:
+            state = '%s.%s'%(thisline[2],info['sym'])
+            energy = float(thisline[7])
+          else:
+            state = '%s.%s'%(int(thisline[2])+1,info['sym'])
+            energy = float(thisline[-1])
           ci[index_run].append(CIinfo(method=method))
           ci[index_run][-1].info = copy(general_information) 
           ci[index_run][-1].info['fileinfo'] += '@%d' % index_run
           ci[index_run][-1].info['irreps'] = irreps
-          ci[index_run][-1].info['state'] = '%s.%s'%(thisline[2],info['sym'])
-          ci[index_run][-1].info['energy'] = float(thisline[7])
+          ci[index_run][-1].info['state'] = state
+          ci[index_run][-1].info['energy'] = energy
           ci[index_run][-1].info['spin'] = info['spin']
-          ci[index_run][-1].info['nel'] = info['nel']
+          ci[index_run][-1].info['nel'] = sum(rhf_occ)#info['nel']
           ci[index_run][-1].info['occ_info'] = occ_info
           closed = []
           active = {}

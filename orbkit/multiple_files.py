@@ -48,7 +48,7 @@ mo_coeff_tck  = []
 mo_energy_tck = []
 mo_occ_tck    = []
 
-def read(fid_list,itype='molden',all_mo=True,nosym=False,**kwargs):
+def read(fid_list,itype='molden',all_mo=True,nosym=False,**kwargs_all):
   '''Reads a list of input files.
   
   **Parameters:**
@@ -78,7 +78,8 @@ def read(fid_list,itype='molden',all_mo=True,nosym=False,**kwargs):
   n_r = len(fid_list)
   
   for i,filename in enumerate(fid_list):
-    qc = main_read(filename, itype=itype, all_mo=all_mo,**kwargs)
+    kwargs = kwargs_all['kwargs'][i] if 'kwargs' in kwargs_all.keys() else kwargs_all
+    qc = main_read(filename, itype=itype, all_mo=all_mo,interactive=False,**kwargs)
     # Geo Section
     if i > 0 and (geo_old != qc.geo_info).sum():
       raise IOError('qc.geo_info has changed!')
@@ -813,7 +814,7 @@ def plot(mo_matrix,symmetry='1',title='All',x_label='index',
   
   shape = numpy.shape(mo_matrix)
   
-  colors = 'bgrcmyk'
+  #colors = 'bgrcmyk'
   
   def plot_mo(i):
     fig=plt.figure()
@@ -828,7 +829,7 @@ def plot(mo_matrix,symmetry='1',title='All',x_label='index',
       else:
         X = x_grid
       if max(numpy.abs(Y)) > thresh:
-        curves.append(ax.plot(X,Y, colors[ij%len(colors)]+'.-' ,linewidth=1.5))
+        curves.append(ax.plot(X,Y, '.-' ,linewidth=1.5)) #colors[ij%len(colors)]+
     
     
     plt.xlabel(x_label, fontsize=16);
@@ -838,6 +839,7 @@ def plot(mo_matrix,symmetry='1',title='All',x_label='index',
     #ax.xaxis.set_minor_locator(MultipleLocator(1))
     #ax.xaxis.grid(grid, which='minor')
     #ax.grid(grid, which='both')
+    plt.tight_layout()
     return fig
   
   if output_format == 'pdf':

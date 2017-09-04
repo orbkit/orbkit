@@ -1049,7 +1049,7 @@ def create_mo_coeff(mo,name='mo'):
     for i in mo:
       tmp.append(i['coeffs'])
     mo = tmp
-  mo = numpy.array(mo, dtype=numpy.float64)  
+  mo = require(mo,dtype='f')
   if mo.ndim != 2:
     raise ValueError('%s has to be 2-dimensional.'%name)  
   return mo

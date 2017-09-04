@@ -183,7 +183,7 @@ def set_boundaries(is_regular=False,Nx=None,Ny=None,Nz=None):
   if is_regular:
     N_ = [len(x),len(y),len(z)]
     delta_ = [x[1]-x[0],y[1]-y[0],z[1]-z[0]]
-  elif all([Nx,Ny,Nz]) is not None:
+  elif all([Nx,Ny,Nz]):
     N_ = [Nx,Ny,Nz]
     grid = numpy.array([x,y,z]).reshape(3,Nx,Ny,Nz)
     delta_ = [grid[1,0,0]-grid[0,0,0],

@@ -106,7 +106,12 @@ def read_molden(filename, all_mo=False, spin=None, i_md=-1, interactive=True,
   fid.close()                      # Close the file
   
   # Is this really a molden file? 
-  if not '[Molden Format]\n' in flines:
+  ismd = False
+  for line in flines:
+    if '[molden format]' in line.lower():
+      ismd = True
+  
+  if not ismd:
     display('The input file %s is no valid molden file!\n\nIt does'  % filename+
           ' not contain the keyword: [Molden Format]\n')
     raise IOError('Not a valid input file')
