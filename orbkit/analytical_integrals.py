@@ -8,7 +8,7 @@ adapted from
 '''
 '''
 orbkit
-Gunter Hermann, Vincent Pohl, Axel Schild, and Lukas Eugen Marsoner Steinkasserer
+Gunter Hermann, Vincent Pohl, Lukas Eugen Marsoner Steinkasserer, Axel Schild, and Jean Christophe Tremblay
 
 Institut fuer Chemie und Biochemie, Freie Universitaet Berlin, 14195 Berlin, Germany
 
