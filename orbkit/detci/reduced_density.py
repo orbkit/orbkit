@@ -1,5 +1,6 @@
 from __future__ import division
 import numpy, scipy
+from copy import deepcopy
 from itertools import product
 
 from orbkit.detci import occ_check
@@ -14,6 +15,9 @@ class DM:
     zero = numpy.array(zero)
     self.qc = qc
     self.Tij = numpy.matrix(numpy.zeros((len(self.qc.mo_spec),len(self.qc.mo_spec))))
+    #Ai and Ei contain eigenvalues and eigenvectors of Tij
+    self.Ai = None
+    self.Vi = None
     #build the trace of Tij
     zero0 = zero[0].flatten()
     zero1 = zero[1].flatten()
@@ -23,13 +27,20 @@ class DM:
     for imo, it in enumerate(sing[1]):
       self.Tij[it[0],it[1]] += sing[0][imo]
 
-  def get_Diag(self):
-    return self.Tij.diagonal()
+  def diagonalize(self):
+    if self.Ai is not None:
+      self.Ai, self.Vi = scipy.linalg.eigh(self.Tij)
+      self.Ai = require(self.Ai,dtype='f')
+      self.Vi = require(self.Vi,dtype='f')
+
+  def get_eigenvalues(self):
+    return deepcopy(self.Ai)
 
   def get_entropy(self):
     '''Computes the von Neumann Entropy as S = -tr( Ai * log(Ai) ) where Ai is the vector
        of eigenvalues of Tij.'''
-    Ai, _ = scipy.linalg.eigh(self.Tij)
+    self.diagonalize()
+    Ai = deepcopy(self.Ai)
     if not self.qc.mo_spec.spinpolarized:
       Ai /= 2
     Ai = Ai[numpy.where(Ai > 0)]
