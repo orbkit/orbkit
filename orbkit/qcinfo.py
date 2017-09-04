@@ -3,7 +3,7 @@
 software. '''
 '''
 orbkit
-Gunter Hermann, Vincent Pohl, and Axel Schild
+Gunter Hermann, Vincent Pohl, Axel Schild, and Lukas Eugen Marsoner Steinkasserer
 
 Institut fuer Chemie und Biochemie, Freie Universitaet Berlin, 14195 Berlin, Germany
 
@@ -50,15 +50,18 @@ class QCinfo:
     self.states         = {'multiplicity' : None,
                            'energy'       : None}
     self.dipole_moments = None
+    self.charge = self.get_charge()
 
     data = None
     if filename:
       data = self.read(filename)
       self.geo_spec = data['geo_spec']
       self.geo_info = data['geo_info']
-
-    self.ao_spec = AOClass(restart=data)
-    self.mo_spec = MOClass(restart=data)
+      self.ao_spec = AOClass(restart=data)
+      self.mo_spec = MOClass(restart=data)
+    else:
+      self.ao_spec = AOClass()
+      self.mo_spec = MOClass()
 
   def __eq__(self, other):
     if not isinstance(other, QCinfo):
@@ -69,12 +72,16 @@ class QCinfo:
     self.mo_spec == other.mo_spec]
     return all(same)
 
+  def update(self):
+    self.ao_spec.update()
+    self.mo_spec.update()
+
   def comp_geo_info(self, geo2):
     same = True
     for atom1, atom2 in zip(self.geo_info, geo2):
       if not len(atom1) == len(atom2):
         raise ValueError('Atom object are of different length!')
-      for i in range(len(self.geo_info)):
+      for i in range(len(atom1)):
         if atom1[i] != atom2[i]:
           same = False
     return same
@@ -117,6 +124,7 @@ class QCinfo:
   def copy(self):
     from copy import deepcopy
     qcinfo = deepcopy(self)
+    qcinfo.update()
     return qcinfo
   
   def format_geo(self, is_angstrom=False):
@@ -133,21 +141,6 @@ class QCinfo:
     self.geo_spec = numpy.array(self.geo_spec,dtype=float)
     if is_angstrom:
       self.geo_spec *= aa2a0
-
-  def get_mo_labels(self):
-    return ['MO %(sym)s, Occ=%(occ_num).2f, E=%(energy)+.4f E_h' % 
-                  i for i in self.mo_spec]
-  
-  def get_mo_energies(self):
-    mo_eig = numpy.array([i['energy'] for i in self.mo_spec], dtype=numpy.float64)
-    return copy(mo_eig)
-  
-  def get_occ(self):
-    mo_occ = numpy.array([i['occ_num'] for i in self.mo_spec], dtype=numpy.intc)
-    return copy(mo_occ)
-  
-  def get_nmoocc(self):
-    return sum(self.get_occ())
   
   def get_com(self,nuc_list=None):
     '''Computes the center of mass.
@@ -162,6 +155,15 @@ class QCinfo:
       total_mass += nuc_mass
     self.com = self.com/total_mass
     return self.com
+
+  def get_charge(self):
+    '''Computes total charge of the system.
+    '''
+    self.charge = 0.
+    for ii in range(len(self.geo_info)):
+      nuc_charge    = float(self.geo_info[ii][2])
+      self.charge += nuc_charge
+    return self.charge
 
   def get_coc(self):
     '''Computes the center of charge.
@@ -220,6 +222,9 @@ class QCinfo:
       # Rename MOs according to spin
       for mo in self.mo_spec:      
         mo['sym'] += '_%s' % mo['spin'][0]
+      if not isinstance(self.mo_spec, MOClass):
+        self.mo_spec = MOClass(self.mo_spec)
+        self.mo_spec.get_spinstate()
   
   def todict(self):
     '''Converts all essential variables into a dictionary.
@@ -301,7 +306,7 @@ class QCinfo:
     visualize.view(self.get_ase_atoms(bbox=bbox,**kwargs)[select])
     
 
-class CIinfo:
+class CIinfo():
   '''Class managing all information from the from the output 
   files of quantum chemical software for CI calculations.
   
@@ -341,15 +346,18 @@ class CIinfo:
       self.coeffs = self.coeffs[i]
       self.occ = self.occ[i]
   def copy(self):
-    ciinfo = self.__class__(method=self.method)
-    if self.coeffs != []:
-      ciinfo.coeffs = numpy.copy(self.coeffs)
-    if self.occ != []:
-      ciinfo.occ = numpy.copy(self.occ)
-    if self.info is not None:
-      ciinfo.info = self.info.copy()    
-    if self.moocc is not None:
-      ciinfo.moocc = self.moocc.copy()    
+    from copy import deepcopy
+#This seems to work just fine...
+    ciinfo = deepcopy(self)
+#    ciinfo = self.__class__(method=self.method)
+#    if self.coeffs != []:
+#      ciinfo.coeffs = numpy.copy(self.coeffs)
+#    if self.occ != []:
+#      ciinfo.occ = numpy.copy(self.occ)
+#    if self.info is not None:
+#      ciinfo.info = self.info.copy()    
+#    if self.moocc is not None:
+#      ciinfo.moocc = self.moocc.copy()    
     return ciinfo
   def todict(self):
     return self.__dict__

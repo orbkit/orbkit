@@ -1,4 +1,5 @@
 from orbkit.qcinfo import QCinfo
+from orbkit.orbitals import AOClass, MOClass
 from orbkit.tools import *
 import numpy
 
@@ -25,6 +26,8 @@ def read_wfn(fname, all_mo=False, spin=None, **kwargs):
   
   # Initialize the variables 
   qc = QCinfo()
+  qc.ao_spec = AOClass([])
+  qc.mo_spec = MOClass([])
   sec_flag = None                 # A Flag specifying the current section
   is_wfn = False                  # Check type of file
   ao_num = 0                      # Number of AO
@@ -57,6 +60,7 @@ def read_wfn(fname, all_mo=False, spin=None, **kwargs):
               'pnum': -1,
               'coeffs': None,
               'exp_list': None,
+              'ao_spherical': None
               })
     elif 'TYPE ASSIGNMENTS' in line:
       thisline = line[18:].split()
@@ -102,4 +106,6 @@ def read_wfn(fname, all_mo=False, spin=None, **kwargs):
   # Convert geo_info and geo_spec to numpy.ndarrays
   qc.format_geo(is_angstrom=False)
   
+  qc.mo_spec.update()
+  qc.ao_spec.update()
   return qc

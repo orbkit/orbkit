@@ -2,6 +2,7 @@ import re
 import numpy
 
 from orbkit.qcinfo import QCinfo
+from orbkit.orbitals import AOClass, MOClass
 from orbkit.core import l_deg, lquant
 from orbkit.display import display
 
@@ -128,6 +129,8 @@ def read_aomix(fname, all_mo=False, spin=None, i_md=-1, interactive=True,
       # Initialize the variables 
       if i_md == count:
         qc = QCinfo()
+        qc.ao_spec = AOClass([])
+        qc.mo_spec = MOClass([])
         sec_flag = False           # A Flag specifying the current section 
         start_reading = True       # Found the selected section
       else:
@@ -195,6 +198,7 @@ def read_aomix(fname, all_mo=False, spin=None, i_md=-1, interactive=True,
               qc.ao_spec.append({'atom': at_num,
                               'type': i_ao,
                               'pnum': pnum,
+                              'ao_spherical': None,
                               'coeffs': numpy.zeros((pnum, 2))
                               })
           else:
@@ -289,7 +293,7 @@ def read_aomix(fname, all_mo=False, spin=None, i_md=-1, interactive=True,
   qc.select_spin(restricted[i_md],spin=spin)
   
   # Convert geo_info and geo_spec to numpy.ndarrays
-  qc.format_geo(is_angstrom=False)
+  qc.format_geo(is_angstrom=angstrom)
   
   if is_tmol_cart and created_by_tmol:
     display('\nFound a Cartesian basis set in the AOMix file.')
@@ -312,6 +316,7 @@ def read_aomix(fname, all_mo=False, spin=None, i_md=-1, interactive=True,
         mo[:,i] *= numpy.sqrt(norm)   
     for ii in range(len(qc.mo_spec)):
       qc.mo_spec[ii]['coeffs'] = mo[ii]
- 
+
+  qc.mo_spec.update()
+  qc.ao_spec.update()
   return qc
-  # read_aomix

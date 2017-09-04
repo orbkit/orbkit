@@ -52,8 +52,8 @@ molist = molist[0]                                     # MOs
 
 aoom = get_ao_overlap(qc.geo_spec,qc.geo_spec,qc.ao_spec,
                       drv=[None,'x','y','z'])
-dm_aoom = get_ao_dipole_matrix(qc,component=['x','y','z'])
 
+dm_aoom = get_ao_dipole_matrix(qc,component=['x','y','z'])
 coeff = qc.mo_spec.get_coeff()
 moom = get_mo_overlap_matrix(coeff,coeff,aoom[0],
                              numproc=numproc)          # <m|n>
@@ -91,7 +91,6 @@ for a in range(len(ci)):
 filepath = os.path.join(tests_home, 'refdata_h3+.npz')
 
 #numpy.savez('refdata_h3+.npz', rho_01=rho_01, j_01=j_01, nabla_j_01=nabla_j_01, mu_01=mu_01)
-
 with open(filepath, 'r') as fd:
   refdata = numpy.load(fd)
   equal(rho_01, refdata['rho_01'])

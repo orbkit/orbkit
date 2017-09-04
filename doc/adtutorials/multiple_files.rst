@@ -42,7 +42,7 @@ Here, we have used the ``os`` module to get sure that all input files exist.
 
 The input files can be read with::
 
-  multiple_files.read(fid_list,itype='molden',all_mo=True,nosym=False)
+  multiple_files.read(fid_list,all_mo=True,nosym=False)
 
 Now, all input variables are global values in the module ``multiple_files``.
 These variables are named according to their analogue in the ``QCinfo`` class 

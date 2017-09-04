@@ -2,6 +2,7 @@ import numpy
 import re
 
 from orbkit.qcinfo import QCinfo
+from orbkit.orbitals import AOClass, MOClass
 from orbkit.display import display
 from orbkit.core import l_deg, lquant
 from orbkit.read.tools import set_ao_spherical
@@ -172,12 +173,9 @@ def read_molden(fname, all_mo=False, spin=None, i_md=-1, interactive=True,
         # the molecular geometry begins 
         sec_flag = 'geo_info'
         if 'Angs' in line:
-          # The length are given in Angstroem 
-          # and have to be converted to Bohr radii --
-          aa_to_au = 1/0.52917720859
+          angstrom = True
         else:
-          # The length are given in Bohr radii 
-          aa_to_au = 1.0
+          angstrom = False
       elif '[gto]' in line.lower():
         # The section containing information about 
         # the atomic orbitals begins 
@@ -198,7 +196,7 @@ def read_molden(fname, all_mo=False, spin=None, i_md=-1, interactive=True,
         if sec_flag == 'geo_info' and thisline != []:
           # Geometry section 
           qc.geo_info.append(thisline[0:3])
-          qc.geo_spec.append([float(ii)*aa_to_au for ii in thisline[3:]])
+          qc.geo_spec.append([float(ii) for ii in thisline[3:]])
         if sec_flag == 'ao_info':
           # Atomic orbital section 
           def check_int(i):
@@ -287,10 +285,11 @@ def read_molden(fname, all_mo=False, spin=None, i_md=-1, interactive=True,
                 # If it cannot be converted print error message 
                 raise ValueError('Error in coefficient %d of MO %s!' % (index, 
                       qc.mo_spec[-1]['sym']) + '\nSetting this coefficient to zero...')
-  
+
   # Spherical basis?
   if not cartesian_basis[i_md]:
     set_ao_spherical(qc.ao_spec,p=[1,0])
+    qc.ao_spec.spherical = True
   if max_l > 2 and mixed_warning[i_md]:
     raise IOError('The input file %s contains ' % filename +
                   'mixed spherical and Cartesian function (%s).' %  mixed_warning[i_md] + 
@@ -325,7 +324,7 @@ def read_molden(fname, all_mo=False, spin=None, i_md=-1, interactive=True,
       qc.mo_spec[i]['sym'] = '%d.%s' % (i+1,sym)
   
   # Convert geo_info and geo_spec to numpy.ndarrays
-  qc.format_geo()
+  qc.format_geo(is_angstrom=angstrom)
   
   # Check the normalization
   from orbkit.analytical_integrals import get_ao_overlap
@@ -350,6 +349,7 @@ def read_molden(fname, all_mo=False, spin=None, i_md=-1, interactive=True,
       cca = ommited_cca_norm(qc.ao_spec.get_lxlylz())
       for mo in qc.mo_spec:
         mo['coeffs'] *= cca
-  
+
+  qc.mo_spec.update()
+  qc.ao_spec.update()
   return qc
-  

@@ -135,6 +135,9 @@ def get_cart2sph(l,m):
   '''
   return cart2sph[l][l+m]
 
+def remove_from_list(inlist, value):
+  return [item for item in inlist if item != value]
+
 def validate_drv(drv):
   if drv is None or drv == 'None' or drv == '': return 0
   elif drv == 'x': return 1

@@ -63,10 +63,6 @@ The input filename can be specified by::
 
   ok.options.filename = 'h2o.molden'
 
-The file type has to be specified via::
-
-  ok.options.itype = 'molden'
-
 The available file types are **'molden'** (default), **'aomix'** (AOMix file),
 **'gamess'** (GAMESS-US output file), **'gaussian.log'** (GAUSSIAN output file), 
 **'gaussian.fchk'** (GAUSSIAN formatted checkpoint file),

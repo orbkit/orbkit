@@ -1,4 +1,6 @@
 from orbkit.read.tools import set_ao_spherical
+from orbkit.qcinfo import QCinfo
+from orbkit.orbitals import AOClass, MOClass
 
 def read_with_cclib(filename, cclib_parser=None, all_mo=False, spin=None, 
                     **kwargs):
@@ -60,6 +62,8 @@ def convert_cclib(ccData, all_mo=False, spin=None):
   '''
   # Initialize the variables 
   qc = QCinfo()
+  qc.ao_spec = AOClass([])
+  qc.mo_spec = MOClass([])
   
   # Converting all information concerning atoms and geometry
   qc.geo_spec = ccData.atomcoords[0] * aa2a0
@@ -135,6 +139,7 @@ def convert_cclib(ccData, all_mo=False, spin=None):
     elif restricted:
       raise IOError('The keyword `spin` is only supported for unrestricted calculations.')
     else:
+      qc.mo_spec.spinpola
       display('Converting only molecular orbitals of spin %s.' % spin)
   
   sym = {}
@@ -185,6 +190,7 @@ def convert_cclib(ccData, all_mo=False, spin=None):
     
     c = qc.mo_spec.get_coeff().shape[-1]
     if c != c_cart and c == c_sph: # Spherical basis
+      qc.ao_spec.spherical = True
       set_ao_spherical(qc.ao_spec,p=[0,1])
     elif c != c_cart:
       display('Warning: The basis set type does not match with pure spherical ' +
@@ -197,4 +203,6 @@ def convert_cclib(ccData, all_mo=False, spin=None):
       if qc.mo_spec[i]['occ_num'] < 0.0000001:
         del qc.mo_spec[i]
 
+  qc.mo_spec.update()
+  qc.ao_spec.update()
   return qc

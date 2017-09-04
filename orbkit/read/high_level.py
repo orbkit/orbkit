@@ -17,8 +17,8 @@ from orbkit.display import display
 from .tools import find_itype, descriptor_from_file, check_mo_norm
 
 readers = {'fchk': read_gaussian_fchk, 'wfx': read_wfx, 'wfn': read_wfn, 
-           'cclib': read_with_cclib, 'molden': read_molden, 'gamess': read_gaussian_log, 
-           'aomix': read_aomix}
+           'cclib': read_with_cclib, 'molden': read_molden, 'gaussian_log': read_gaussian_log, 
+           'aomix': read_aomix, 'gamess': read_gamess}
 
 def main_read(fname, all_mo=False, spin=None, itype='auto', check_norm=False, **kwargs):
   '''
