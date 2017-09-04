@@ -49,7 +49,7 @@ mo_coeff_tck  = []
 mo_energy_tck = []
 mo_occ_tck    = []
 
-def read(fid_list,itype='all',all_mo=True,nosym=False, sort=True, **kwargs):
+def read(fid_list,itype='all',all_mo=True,nosym=False, sort=True, **kwargs_all):
   '''Reads a list of input files.
   
   **Parameters:**
@@ -89,6 +89,7 @@ def read(fid_list,itype='all',all_mo=True,nosym=False, sort=True, **kwargs):
   n_r = len(fid_list)
   
   for i,fname in enumerate(fid_list):
+    kwargs = kwargs_all['kwargs'][i] if 'kwargs' in kwargs_all.keys() else kwargs_all
     qc = main_read(fname, itype=itypes[i], all_mo=all_mo, **kwargs)
     # Geo Section
     if i > 0 and (geo_old != qc.geo_info).sum():
@@ -817,7 +818,6 @@ def plot(mo_matrix,symmetry='1',title='All',x_label='index',
   
   shape = numpy.shape(mo_matrix)
   
-  colors = 'bgrcmyk'
   
   def plot_mo(i):
     fig=plt.figure()
@@ -832,16 +832,15 @@ def plot(mo_matrix,symmetry='1',title='All',x_label='index',
       else:
         X = x_grid
       if max(numpy.abs(Y)) > thresh:
-        curves.append(ax.plot(X,Y, colors[ij%len(colors)]+'.-' ,linewidth=1.5))
+        curves.append(ax.plot(X,Y, '.-' ,linewidth=1.5))
     
     
     plt.xlabel(x_label, fontsize=16);
     plt.ylabel(y_label, fontsize=16);
     plt.title('%s: %d.%s'%  (title,i+1,symmetry))
     plt.ylim(ylim)
-    #ax.xaxis.set_minor_locator(MultipleLocator(1))
-    #ax.xaxis.grid(grid, which='minor')
-    #ax.grid(grid, which='both')
+    
+    plt.tight_layout()
     return fig
   
   if output_format == 'pdf':
