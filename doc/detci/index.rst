@@ -19,12 +19,15 @@ the transient :ref:`detCI:Electronic Flux Density` (also called Current Density)
 For the theoretical background, details on the implementation, and the robustness of these quantities, see 
 
   Vincent Pohl, Gunter Hermann, and Jean Christophe Tremblay,
-  "An Open-Source Framework of Analyzing *N*-electron Dynamics: I. Multi-Determinantal Wave Functions", 
-  `arXiv:1701.06885`__ (2017).
+  `"An Open-Source Framework for Analyzing N-Electron Dynamics. I. Multideterminantal Wave Functions" <http://dx.doi.org/10.1002/jcc.24792>`_, 
+  *J. Comput. Chem.* **2017**, *38*, 1515-1527.
 
-__ http://arxiv.org/abs/1701.06885
+  Vincent Pohl, Gunter Hermann, and Jean Christophe Tremblay,
+  `"An Open-Source Framework for Analyzing N-Electron Dynamics. II. Hybrid Density Functional Theory/Configuration Interaction Methodology" <http://dx.doi.org/10.1002/jcc.24896>`_, 
+  *J. Comput. Chem.* **2017**, `DOI:10.1002/jcc.24896 <http://dx.doi.org/10.1002/jcc.24896>`_.
 
 Please cite this publication, if you use detCI\@ORBKIT in your work. 
+
 
 We provide well documented example files for both model systems described in this publication in the `examples folder`__.
 The procedure of how to operate detCI\@ORBKIT is described in detail in the following chapters.
@@ -37,6 +40,11 @@ __ https://github.com/orbkit/orbkit/tree/cython/examples/detci
    :maxdepth: 4
 
    detci
+
+   
+.. hint::
+
+  The paper is also freely available on arXiv: `detCI\@ORBKIT_I <https://arxiv.org/abs/1701.06885>`_ and `detCI\@ORBKIT_II <https://arxiv.org/abs/1704.08137>`_.
 
 .. note::
   

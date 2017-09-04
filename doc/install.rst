@@ -3,8 +3,7 @@
 Installation Instructions
 =========================
 
-In this section, we present the manual installation of ORBKIT on a Unix-like
-system.
+In this section, we present the manual installation of ORBKIT.
 
 .. contents:: Table of Contents:
   :local:

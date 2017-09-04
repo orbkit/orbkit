@@ -19,7 +19,7 @@ output files. Futhermore, an interface to cclib, a parser for quantum chemical l
 
 __ http://orbkit.github.io/detci/index.html
 
-ORBKIT's documentation may be found at http://ORBKIT.github.io
+ORBKIT's documentation may be found at http://orbkit.github.io
 
 
 Support
@@ -35,25 +35,20 @@ Citation
 
 If you use ORBKIT in your work, please cite:
 
-Gunter Hermann, Vincent Pohl, Jean Christophe Tremblay, Beate Paulus, Hans-Christian Hege, and Axel Schild,
-"ORBKIT: A Modular Python Toolbox for Cross-Platform Postprocessing of Quantum Chemical Wavefunction Data", 
-*J. Comput. Chem.* **2016**, *37*, 1511-1520, `DOI: 10.1002/jcc.24358`__.
-
-__ http://dx.doi.org/10.1002/jcc.24358
+  Gunter Hermann, Vincent Pohl, Jean Christophe Tremblay, Beate Paulus, Hans-Christian Hege, and Axel Schild,
+  `"ORBKIT: A Modular Python Toolbox for Cross-Platform Postprocessing of Quantum Chemical Wavefunction Data" <http://dx.doi.org/10.1002/jcc.24358>`_, 
+  *J. Comput. Chem.* **2016**, *37*, 1511-1520.
 
 If you use detCI\@ORBKIT in your work, please additionally cite:
 
-Vincent Pohl, Gunter Hermann, and Jean Christophe Tremblay,
-“An Open-Source Framework for Analyzing *N*-Electron Dynamics. I. Multideterminantal Wave Functions”, 
-*J. Comput. Chem.* **2017**, *38*, 1515-1527, `DOI: 10.1002/jcc.24792`__.
+  Vincent Pohl, Gunter Hermann, and Jean Christophe Tremblay,
+  `"An Open-Source Framework for Analyzing N-Electron Dynamics. I. Multideterminantal Wave Functions" <http://dx.doi.org/10.1002/jcc.24792>`_, 
+  *J. Comput. Chem.* **2017**, *38*, 1515-1527.
 
-__ http://dx.doi.org/10.1002/jcc.24792
+  Vincent Pohl, Gunter Hermann, and Jean Christophe Tremblay,
+  `"An Open-Source Framework for Analyzing N-Electron Dynamics. II. Hybrid Density Functional Theory/Configuration Interaction Methodology" <http://dx.doi.org/10.1002/jcc.24896>`_, 
+  *J. Comput. Chem.* **2017**, `DOI:10.1002/jcc.24896 <http://dx.doi.org/10.1002/jcc.24896>`_.
 
-Vincent Pohl, Gunter Hermann, and Jean Christophe Tremblay,
-“An Open-Source Framework for Analyzing *N*-Electron Dynamics. II. Hybrid Density Functional Theory/Configuration Interaction Methodology”, 
-*J. Comput. Chem.* **2017**, `DOI: 10.1002/jcc.24358`__.
-
-__ http://dx.doi.org/10.1002/jcc.24896
 
 
   The papers are also freely available on arXiv (`ORBKIT <https://arxiv.org/abs/1601.03069>`_, `detCI\@ORBKIT_I <https://arxiv.org/abs/1701.06885>`_, and `detCI\@ORBKIT_II <https://arxiv.org/abs/1704.08137>`_) and a BibTex file may be
