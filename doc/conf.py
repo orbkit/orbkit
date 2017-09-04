@@ -45,7 +45,7 @@ copyright = u'2017, Gunter Hermann, Vincent Pohl, and Axel Schild'
 # built documents.
 #
 # The short X.Y version.
-version = 'cython v0.5'
+version = 'v1.0 (stable)'
 # The full version, including alpha/beta/rc tags.
 release = ''
 
