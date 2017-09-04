@@ -190,6 +190,12 @@ latex_documents = [
    u'Gunter Hermann, Vincent Pohl, and Axel Schild', 'manual'),
 ]
 
+html_context = {
+    'current_version': '3.13.0',
+    'versions':
+        [('3.14.0b1 (development)', 'https://wiki.fysik.dtu.dk/ase/dev'),
+         ('3.13.0 (latest stable)', 'https://wiki.fysik.dtu.dk/ase')]}
+
 # The name of an image file (relative to this directory) to place at the top of
 # the title page.
 #latex_logo = None

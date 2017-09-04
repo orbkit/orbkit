@@ -27,6 +27,12 @@ setup(
                     include_dirs=[numpy.get_include()],
                     depends=[join('orbkit', '*.h')],
                     ),
+                   Extension("orbkit.dynkit.functions",
+                   sources=["orbkit/dynkit/cy_functions.pyx"],
+                   extra_compile_args=['-fopenmp'],
+                   extra_link_args=['-fopenmp'],
+                   include_dirs=[numpy.get_include()]
+                   ),
                    # detCI@ORBKIT
                    Extension("orbkit.detci.cy_occ_check",
                     sources=["orbkit/detci/cy_occ_check.pyx"],
