@@ -172,7 +172,7 @@ def set_grid(xnew,ynew,znew,is_vector=None):
     setattr(sys.modules[__name__],'is_vector',is_vector)
     info_string += ('\n\nThe variable `grid.is_vector` has been set to %s.' % 
                     is_vector)
-  set_boundaries(is_regular=(is_vector==False))
+  #set_boundaries(is_regular=(is_vector==False))
   return info_string
   # set_grid 
 
