@@ -491,7 +491,7 @@ def read(filename, comment='#'):
   **Hint:** If a line starts with '#', it will be skipped. Please, do not use '#' at the end of a line!
   '''
   # All grid related variables should be globals 
-  global x, y, z, min_, max_, N_, is_initialized, is_regular, is_vector
+  global x, y, z, min_, max_, N_, delta_, is_initialized, is_regular, is_vector
   
   def check(i, is_vector):
     if (len(i) == 3) and (is_vector is None or is_vector == True):
@@ -503,6 +503,7 @@ def read(filename, comment='#'):
 
   # Go through the file line by line 
   is_vector = None
+  is_dx = [False for i in range(3)] # Last column grid spacing not number of points
 
   grid = [[] for i in range(3)]
   dim = 'xyz'
@@ -522,6 +523,7 @@ def read(filename, comment='#'):
               grid[index[i]].append(j)
         else:                  
           grid[dim.find(cl[0].lower())] = cl[1:]
+          is_dx[dim.find(cl[0].lower())] = '.' in cl[-1]
 
   # Convert the variables 
   grid = numpy.array(grid,dtype=numpy.float64)
@@ -534,7 +536,11 @@ def read(filename, comment='#'):
   else:
     min_ = grid[:,0]
     max_ = grid[:,1]
-    N_   = numpy.array(grid[:,2],dtype=int)
+    for i in range(3):
+      if is_dx[i]:
+        delta_[i] = grid[i,2]
+      else:
+        N_[i] = int(grid[i,2])
   
   return is_vector   
 

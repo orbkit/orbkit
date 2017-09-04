@@ -802,10 +802,10 @@ def view_with_mayavi(x,y,z,data,is_vectorfield=False,geo_spec=None,datalabels=No
   '''
   try:
     from enthought.traits.api import HasTraits, Range, Instance, on_trait_change, Bool, Str,List,Button
-    from enthought.traitsui.api import View, Item, Group, ListStrEditor,HSplit
+    from enthought.traitsui.api import View, Item, Group, ListStrEditor,HSplit,VSplit
   except ImportError:
     from traits.api import HasTraits, Range, Instance, on_trait_change, Bool, Str,List,Button
-    from traitsui.api import View, Item, Group, ListStrEditor,HSplit
+    from traitsui.api import View, Item, Group, ListStrEditor,HSplit,VSplit
   
   try:
     from enthought.mayavi import mlab
@@ -860,7 +860,7 @@ def view_with_mayavi(x,y,z,data,is_vectorfield=False,geo_spec=None,datalabels=No
                         opacity=self.opacity,colormap='blue-red',
                         vmin=-1e-8,vmax=1e-8)
           else:
-            self.plot0 = self.scene.mlab.quiver3d(X,Y,Z,*data[self.select],vmin=iso_min,vmax=iso_max) 
+            self.plot0 = self.scene.mlab.quiver3d(X,Y,Z,*data[self.select]) #flow
           self.plot0.scene.background = (1,1,1)
         elif self.select != self.last_select:
           if not is_vectorfield:
@@ -908,11 +908,11 @@ def view_with_mayavi(x,y,z,data,is_vectorfield=False,geo_spec=None,datalabels=No
                        show_label=False,style='readonly',width=300
                        ),)
             items0 = HSplit(items0,items1)
-        items += (Group('_',Item('label',label='Selected Data',style='readonly', show_label=True),'_'),
+        items += (Group(Item('label',label='Selected Data',style='readonly', show_label=True),'_'),
                items0,)
       else:
         items += items0
-      view = View(*items,
+      view = View(VSplit(items[0],items[1:]),
                   resizable=True
                   )
   
