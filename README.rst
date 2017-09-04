@@ -21,19 +21,6 @@ __ http://orbkit.github.io/detci/index.html
 
 ORBKIT's documentation may be found at http://ORBKIT.github.io
 
-Citation
---------
-
-If you use ORBKIT in your work, please cite it as follows:
-
-Gunter Hermann, Vincent Pohl, Jean Christophe Tremblay, Beate Paulus, Hans-Christian Hege, and Axel Schild,
-"ORBKIT: A Modular Python Toolbox for Cross-Platform Postprocessing of Quantum Chemical Wavefunction Data", 
-*J. Comput. Chem.* **2016**, `DOI: 10.1002/jcc.24358`__.
-
-  The paper is also freely available on `arXiv <https://arxiv.org/abs/1601.03069>`_ and a BibTex file may be
-  found in `doc/orbkit.bib <doc/orbkit.bib>`_.
-
-__ http://dx.doi.org/10.1002/jcc.24358
 
 Support
 -------
@@ -42,6 +29,36 @@ If you need help for the usage of ORBKIT, please do not hesitate to contact the
 ORBKIT support team via 
 
 https://github.com/orbkit/orbkit/issues
+
+Citation
+--------
+
+If you use ORBKIT in your work, please cite:
+
+Gunter Hermann, Vincent Pohl, Jean Christophe Tremblay, Beate Paulus, Hans-Christian Hege, and Axel Schild,
+"ORBKIT: A Modular Python Toolbox for Cross-Platform Postprocessing of Quantum Chemical Wavefunction Data", 
+*J. Comput. Chem.* **2016**, *37*, 1511-1520, `DOI: 10.1002/jcc.24358`__.
+
+__ http://dx.doi.org/10.1002/jcc.24358
+
+If you use detCI\@ORBKIT in your work, please additionally cite:
+
+Vincent Pohl, Gunter Hermann, and Jean Christophe Tremblay,
+“An Open-Source Framework for Analyzing *N*-Electron Dynamics. I. Multideterminantal Wave Functions”, 
+*J. Comput. Chem.* **2017**, *38*, 1515-1527, `DOI: 10.1002/jcc.24792`__.
+
+__ http://dx.doi.org/10.1002/jcc.24792
+
+Vincent Pohl, Gunter Hermann, and Jean Christophe Tremblay,
+“An Open-Source Framework for Analyzing *N*-Electron Dynamics. II. Hybrid Density Functional Theory/Configuration Interaction Methodology”, 
+*J. Comput. Chem.* **2017**, `DOI: 10.1002/jcc.24358`__.
+
+__ http://dx.doi.org/10.1002/jcc.24896
+
+
+  The papers are also freely available on arXiv (`ORBKIT <https://arxiv.org/abs/1601.03069>`_, `detCI\@ORBKIT_I <https://arxiv.org/abs/1701.06885>`_, and `detCI\@ORBKIT_II <https://arxiv.org/abs/1704.08137>`_) and a BibTex file may be
+  found in `doc/orbkit.bib <doc/orbkit.bib>`_.
+
 
 
 Installation Requirements
@@ -171,4 +188,4 @@ PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more details.
 You should have received a copy of the GNU Lesser General Public License along 
 with ORBKIT. If not, see <http://www.gnu.org/licenses/>.
 
-Copyright (C) 2017, Gunter Hermann, Vincent Pohl, and Axel Schild.
+Copyright (C) 2017, Gunter Hermann, Vincent Pohl, Lukas Eugen Marsoner Steinkasserer, and Axel Schild.
