@@ -1,7 +1,6 @@
 from __future__ import division
 import numpy, scipy
 from itertools import product
-
 from orbkit.detci import occ_check
 
 try:
@@ -10,16 +9,19 @@ except ImportError:
   from collections import UserList
 
 class DM:
-  def __init__(self, zero, sing, qc):
+  def __init__(self, cia, cib, qc):
+    
+    # Comparison of Slater-determinants of state a and b
+    zero, sing = occ_check.compare(cia,cib)
     zero = numpy.array(zero)
     self.qc = qc
     self.Tij = numpy.matrix(numpy.zeros((len(self.qc.mo_spec),len(self.qc.mo_spec))))
-    #build the trace of Tij
+    # Build the trace of Tij
     zero0 = zero[0].flatten()
     zero1 = zero[1].flatten()
     for imo, it in enumerate(zero1):
       self.Tij[it,it] += zero0[imo]
-    #build the extradiagonal elements of Tij
+    # Build the off-diagonal elements of Tij
     for imo, it in enumerate(sing[1]):
       self.Tij[it[0],it[1]] += sing[0][imo]
 

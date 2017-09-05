@@ -1068,7 +1068,7 @@ def molden_writer(qc,filename='new'):
     string += ' Sym= %s\n'              % qc.mo_spec[i]['sym']
     string += ' Ene= %10.8f\n'          % qc.mo_spec[i]['energy']
     string += ' Spin= %s\n'             % qc.mo_spec[i]['spin']
-    string += ' Occup= %10.8f\n'        % qc.mo_spec[i]['occ_num']
+    string += ' Occup= %10.8f\n'        % qc.mo_spec[i]['occ']
     for j in range(len(qc.mo_spec[i]['coeffs'])):
       string += '%10i %18.10E\n'        % (j+1, qc.mo_spec[i]['coeffs'][j]) 
   
