@@ -1018,3 +1018,61 @@ def xyz_creator(geo_info,geo_spec,filename='new',mode='w',charges=None,comments=
   
   # Close the file
   fid.close()
+  
+def molden_writer(qc,filename='new'):
+  '''Creates a molden file with information concerning the molecular 
+  structure, basis set, and molecular expansion coefficients. 
+  
+  **Parameters:**
+  
+  qc : class or dict
+    QCinfo class or dictionary containing the following attributes/keys.
+    See :ref:`Central Variables` for details.
+  filename : str
+    Contains the base name of the output file.
+  '''
+
+  # Open an empty file 
+  fid = open('%(f)s.molden' % {'f': filename},'w')
+  
+  #Write HEADER
+  fid.write('[Molden Format]\n')
+  
+  #Write GEOMETRY SPECIFICATION
+  fid.write('[Atoms] AU\n')
+  string = ''
+  for i in range(len(qc.geo_spec)):
+    string += '%3s %5s %5s %12.8f %12.8f %12.8f\n' %  (qc.geo_info[i][0],qc.geo_info[i][1],
+                                                     qc.geo_info[i][2],qc.geo_spec[i][0],
+                                                     qc.geo_spec[i][1],qc.geo_spec[i][2])
+  fid.write(str(string))
+  
+  #Write BASIS SET
+  fid.write('[GTO]')
+  anum = 0
+  string = ''
+  for i in range(len(qc.ao_spec)):
+    if anum != (qc.ao_spec[i]['atom']+1):
+      string += '\n%5i 0\n' % (qc.ao_spec[i]['atom']+1)
+    string += '%2s %6i 1.00\n' % (qc.ao_spec[i]['type'],qc.ao_spec[i]['pnum'])
+    for j in range(len(qc.ao_spec[i]['coeffs'])):
+      string += '%18.10E %18.10E\n' % (qc.ao_spec[i]['coeffs'][j][0],qc.ao_spec[i]['coeffs'][j][1])
+    anum = (qc.ao_spec[i]['atom']+1)
+
+  fid.write(str(string) + '\n')
+  
+  #Write MOs
+  fid.write('[MO]\n')
+  string = ''
+  for i in range(len(qc.mo_spec)):
+    string += ' Sym= %s\n'              % qc.mo_spec[i]['sym']
+    string += ' Ene= %10.8f\n'          % qc.mo_spec[i]['energy']
+    string += ' Spin= %s\n'             % qc.mo_spec[i]['spin']
+    string += ' Occup= %10.8f\n'        % qc.mo_spec[i]['occ_num']
+    for j in range(len(qc.mo_spec[i]['coeffs'])):
+      string += '%10i %18.10E\n'        % (j+1, qc.mo_spec[i]['coeffs'][j]) 
+  
+  fid.write(str(string))
+  
+  #Close the file 
+  fid.close()
