@@ -56,7 +56,6 @@ use the new AOClass and MOClass classes which provide methods to directly obtain
 
 .. autofunction:: orbkit.orbitals.MOClass
 
-
 Old API
 -------
 
