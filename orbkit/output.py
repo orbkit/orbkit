@@ -1064,13 +1064,21 @@ def molden_writer(qc,filename='new'):
   #Write MOs
   fid.write('[MO]\n')
   string = ''
-  for i in range(len(qc.mo_spec)):
-    string += ' Sym= %s\n'              % qc.mo_spec[i]['sym']
-    string += ' Ene= %10.8f\n'          % qc.mo_spec[i]['energy']
-    string += ' Spin= %s\n'             % qc.mo_spec[i]['spin']
-    string += ' Occup= %10.8f\n'        % qc.mo_spec[i]['occ']
-    for j in range(len(qc.mo_spec[i]['coeffs'])):
-      string += '%10i %18.10E\n'        % (j+1, qc.mo_spec[i]['coeffs'][j]) 
+  sym = qc.mo_spec.get_sym()
+  ene = qc.mo_spec.get_eig()
+  occ = qc.mo_spec.get_occ()
+  coeff = qc.mo_spec.get_coeff()
+  spindic = {0: 'alpha', 1: 'beta'}
+  alpha = qc.mo_spec.get_spin_index('alpha')
+  beta = qc.mo_spec.get_spin_index('beta')
+  for i_s, spin in enumerate([alpha, beta]):
+    for i in spin:
+      string += ' Sym= %s\n'              % sym[i]
+      string += ' Ene= %10.8f\n'          % ene[i]
+      string += ' Spin= %s\n'             % spindic[i_s]
+      string += ' Occup= %10.8f\n'        % occ[i]
+      for j, c in enumerate(coeff[i]):
+        string += '%10i %18.10E\n'        % (j+1, coeff[i,j]) 
   
   fid.write(str(string))
   

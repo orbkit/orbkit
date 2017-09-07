@@ -594,7 +594,7 @@ class MOClass(UserList):
   def set_template(self, array, item):
     '''Template for updating Numpy-style data.
     '''
-    if not numpy.allclose(array, item):
+    if not array.shape == item.shape:
       raise ValueError('Old and new arrays need to be of the same size!')
     array = item
     self.new2old()
@@ -626,11 +626,11 @@ class MOClass(UserList):
     require(item, dtype=numpy.float64)
     self.set_template(self.eig, item)
   def set_sym(self, item):
-    '''Set function for numpy array version of molecular orbital coefficients.
+    '''Set function for numpy array version of molecular orbital symmetries.
 
        **Parameters:**
 
-        coeff: numpy.ndarray, dtype=numpy.float64, shape = (NMO, NAO)
+        coeff: numpy.ndarray, dtype=str, shape = (NMO)
     '''
     require(item, dtype=str)
     self.set_template(self.sym, item)
@@ -718,7 +718,7 @@ class MOClass(UserList):
       self.sym = numpy.array(self.sym, dtype=str)
     return copy(self.sym)
 
-  def get_spin(self, spin):
+  def get_spin_index(self, spin):
     '''Function used to select MO's by spin. A numpy.ndarray is returned
        which contains the indexes of MO's of the selected spin.
 
@@ -739,7 +739,10 @@ class MOClass(UserList):
           indexes.append(imo)
       return numpy.array(indexes, dtype=numpy.intc)
     else:
-        return numpy.array(range(len(self.data)), dtype=numpy.intc)
+        if spin == 'alpha':
+          return numpy.array(range(len(self.data)), dtype=numpy.intc)
+        else:
+          return numpy.array([], dtype=numpy.intc)
 
   def select(self, fid_mo_list, flatten_input=True):
     '''Selects molecular orbitals from an external file or a list of molecular 
@@ -895,16 +898,16 @@ class MOClass(UserList):
     def parse_spin(item):
       if isinstance(item, str):
         if 'alpha' in item:
-          return item.replace('alpha', ''), self.get_spin('alpha')
+          return item.replace('alpha', ''), self.get_spin_index('alpha')
         elif 'beta' in item:
-          return item.replace('beta', ''), self.get_spin('beta')
+          return item.replace('beta', ''), self.get_spin_index('beta')
         else:
           return item, None
       elif isinstance(item, list):
         if 'alpha' in item:
-          return remove_from_list(item, 'alpha'), self.get_spin('alpha')
+          return remove_from_list(item, 'alpha'), self.get_spin_index('alpha')
         elif 'beta' in item:
-          return remove_from_list(item, 'beta'), self.get_spin('beta')
+          return remove_from_list(item, 'beta'), self.get_spin_index('beta')
         else:
           return item, None
 
