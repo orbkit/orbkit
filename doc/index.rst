@@ -100,6 +100,7 @@ Contents:
    adtutorials/index 
    detci/index
    refs/index
+   literature/literature
    licence
    impressum
 
