@@ -28,12 +28,12 @@ module ``orbkit.analytical_integrals``::
 The atomic orbital overlap matrix can be computed using::
 
   ao_overlap_matrix = analytical_integrals.get_ao_overlap(coord_a,coord_b,
-                  ao_spec,lxlylz_b=None,drv=None,ao_spherical=ao_spherical)
+                  ao_spec,lxlylz_b=None,drv=None)
 
 where ``coord_a`` and ``coord_b`` are the coordinates (:ref:`geo_spec <qc.geo_spec>`) 
 of the atomic orbital set **a** and **b**, respectively.
-The variables :ref:`geo_spec <qc.geo_spec>`, :ref:`ao_spec <qc.ao_spec>` and 
-:ref:`ao_spherical <qc.ao_spherical>` are members of ORBKIT's :ref:`Central Variables`.
+The variables :ref:`geo_spec <qc.geo_spec>` and :ref:`ao_spec <qc.ao_spec>` 
+are members of ORBKIT's :ref:`Central Variables`.
 
 In order to apply operators to the atomic orbitals, it might be necessary to
 change the exponents :math:`(l_x,l_y,l_z)` of the Ket atomic orbitals. This can

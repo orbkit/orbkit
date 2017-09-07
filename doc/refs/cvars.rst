@@ -46,8 +46,8 @@ computations and is organized as follows:
   * Contains the atom positions in units of Bohr radii.
   * The three columns correspond to the *x-*, *y-*, and *z-*\ coordinates.
 
-New API:
---------
+New API
+-------
 
 Though with the exception of ``qc.ao_spherical``, "old-style" APIs are still supported, the suggested way to access AO and MO data is now to 
 use the new AOClass and MOClass classes which provide methods to directly obtain the data as numpy arrays. See the module documentation for more details.
@@ -57,8 +57,8 @@ use the new AOClass and MOClass classes which provide methods to directly obtain
 .. autofunction:: orbkit.orbitals.MOClass
 
 
-Old API:
---------
+Old API
+-------
 
 .. danger::
 

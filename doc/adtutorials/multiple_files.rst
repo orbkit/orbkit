@@ -42,8 +42,6 @@ These variables are named according to their analogue in the ``QCinfo`` class
 +-----------------+------------------------------------------------------------------------------------------------------+
 |``ao_spec``      | See :ref:`ao_spec <qc.ao_spec>` in :ref:`Central Variables`.                                         |
 +-----------------+------------------------------------------------------------------------------------------------------+
-|``ao_spherical`` | See :ref:`ao_spherical <qc.ao_spherical>` in :ref:`Central Variables`.                               |
-+-----------------+------------------------------------------------------------------------------------------------------+
 |``mo_coeff_all`` | Contains all molecular orbital **coefficients**. List of ``numpy.ndarray``.                          |
 +-----------------+------------------------------------------------------------------------------------------------------+
 |``mo_energy_all``| Contains all molecular orbital **energies**. List of ``numpy.ndarray``.                              |

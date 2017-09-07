@@ -96,7 +96,7 @@ class Bibliography:
   def wirte_csv(self):
     with open('citations.csv', 'w') as fd:
       for i, entry in enumerate(self.unique_entries):
-        print('{0},"`{1} ({2}) {3}`__"\n'.format(i+1,entry['journal'], entry['year'], entry['url']), file=fd)
+        print('{0},"`{1} {2} ({3}) <{4}>`__"'.format(i+1, entry['author'], entry['journal'], entry['year'], entry['url']), file=fd)
 
   def plot(self):
     '''Creates a plot from the .csv files containing the bibliographic data.
