@@ -90,7 +90,7 @@ Grid Related Options
 --------------------
 
 There are two ways to specify the grid when calling ORBKIT via the Terminal. 
-On the one hand, you can adapt the grid to the molecular geometry: 
+You can adapt the grid to the molecular geometry: 
 
 .. code-block:: bash
 
@@ -99,7 +99,7 @@ On the one hand, you can adapt the grid to the molecular geometry:
 Here, ORBKIT creates a grid with a grid spacing of ``X`` a\ :sub:`0` and the size
 of the molecule plus ``D`` a\ :sub:`0` in each direction.
 
-On the other hand, you can modify the grid via an external plain text file 
+Alternatively you can also modify the grid via an external plain text file 
 (:literal:`GRID_FILE`):
 
 .. code-block:: bash
@@ -158,7 +158,7 @@ in symmetry one, or you choose it by the
 
 .. hint:: 
   
-  For Gaussian_ and Gamess-US_, the symmetry labels are used, 
+  For Gaussian_ and Gamess-US_, the symmetry labels used are different, 
   e.g., ``3.A1`` for the third orbital in symmetry A1.
 
 .. note:: 
@@ -167,8 +167,9 @@ in symmetry one, or you choose it by the
   for alpha and by ``_b`` for beta molecular orbitals, e.g., ``3.A1_b``.
 
 In the latter case, you can additionally use the keywords ``homo`` (highest occupied 
-molecular orbital) and ``lumo`` (lowest unoccupied molecular orbital), and
-you can select a range of orbitals, e.g., ``--calc_mo=1:homo-1``, which evokes the 
+molecular orbital), ``lumo`` (lowest unoccupied molecular orbital),
+as well as ``last_bound`` (highest-lying orbital with negative orbital energy) 
+You can further select a range of orbitals, e.g., ``--calc_mo=1:homo-1``, which evokes the 
 computation of the molecular orbitals 1, 2, 3, ..., and homo-2.
 
 +-------------------+--------------------------------------------------------------+------------------------------------------------------------------+
@@ -260,13 +261,14 @@ Additional Options
 ------------------
 
 In the following, two additional features are highlighted. 
-On the one hand, the atom-projected electron density can be computed by
+
+Firstly, the atom-projected electron density can be computed by
 
 .. code-block:: bash
 
     $ orbkit -i INPUT --atom_projected_density=INDEX
 
-which is the integrand of the Mulliken charges, and on the other hand, ORBKIT 
+which is the integrand of the Mulliken charges, and secondly, ORBKIT 
 is capable of calculating the molecular orbital transition electronic flux density 
 (components :literal:`x`, :literal:`y`, and :literal:`z`) between the orbitals 
 :literal:`I` and :literal:`J`:
@@ -282,7 +284,7 @@ you can call
 
     $ orbkit -i INPUT --calc_ao
 
-Here, the calculation of only one derivative at once is possible.
+Here, it is only possible to compute one derivative at a time.
 
 .. _HDF5: http://www.hdfgroup.org/HDF5/
 .. _HDFVIEW: http://www.hdfgroup.org/products/java/hdf-java-html/hdfview/

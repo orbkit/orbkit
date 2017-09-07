@@ -19,7 +19,7 @@ installed the Python interface to cubature_.
 
 .. hint::
   
-  This tutorial explains a part of the example file 
+  This tutorial explains part of the example file 
   ``$ORBKITPATH/examples/basic_examples/interface_to_cubature.py``.
 
 Initialization of the Program
@@ -44,7 +44,7 @@ First, we have to import some modules and set some of ORBKITs options::
 Then, we have to read the input file::
 
   # Open molden file and read parameters
-  qc = orbkit.main_read('h2o.molden',all_mo=False)
+  qc = orbkit.main_read('h2o.molden')
 
 Setting up a Function for Cubature 
 ----------------------------------
@@ -52,8 +52,8 @@ Setting up a Function for Cubature
 Cubature requires a function with a special structure. It provides a 1d array
 for the grid which we have bring into ORBKIT's shape. Then, we have to call 
 ORBKIT's main computational function ``orbkit.rho_compute`` with the respective
-options, i.e., we compute the norm of all occupied molecular orbitals in this 
-example. Finally, we have to reshape ORBKIT's output::
+options, i.e., in this example, computing the norm of all occupied 
+molecular orbitals. Finally, we have to reshape ORBKIT's output::
 
   def func(x_array,*args):
     '''Calls orbkit.

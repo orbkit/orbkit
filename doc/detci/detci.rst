@@ -11,10 +11,10 @@ to compute expectation values of different one-electron operators of two Configu
   = \sum_{p,q} C_p^{a}C_q^{b} \left\langle \phi_p \middle| \hat{F} \middle| \phi_q\right\rangle 
 
 where :math:`\left|\phi_p\right\rangle` are the Slater determinants and :math:`C_p^{a}` are the respective CI coefficients.
-The Slater determinats itself are built up from the molecular orbitals :math:`\left|\varphi_m\right\rangle`.
+The Slater determinats themselves are built up from the molecular orbitals :math:`\left|\varphi_m\right\rangle`.
 
 For specific examples, please refer to the ORBKIT `examples folder`__.
-Here, you can find two tutorials: one for a complex superposition states of :math:`{\rm H}_3^+` and 
+There, you can find two tutorials: one for a complex superposition states of :math:`{\rm H}_3^+` and 
 one for a superposition state of :math:`{\rm LiH}`.
 They describe how to reproduce the results shown in
 
@@ -66,7 +66,7 @@ After importing the ``orbkit.read`` module and the detCI\@ORBKIT module, i.e.::
 we can read the ground state quantum chemistry data, i.e., 
 the molecular geometry and the atomic and molecular orbital data::
 
-  qc = read.main_read(fid_molden,itype='molden',all_mo=True) 
+  qc = read.main_read(fid_molden,all_mo=True) 
 
 Here, the quantum chemistry output is parsed into an instance of the ``QCinfo`` class 
 (cf. :ref:`Central Variables`). Please note that we have to read the occupied 
@@ -77,7 +77,7 @@ In a similar manner, we can read the Configuration Interaction (CI) output::
   qc,ci = detci.ci_read.main_ci_read(qc,fid_psi4,itype='psi4_detci',threshold=0.0)
 
 where ``threshold`` specifies a read threshold for the CI coefficients,
-which can considerably reduce the computional time. 
+which can considerably reduce computional time.
 The output variable is a list of instances of the ``CIinfo`` class, which contains
 
   - ``ci[a].info``: A dictionary with several information on the electronic state such as the state energy, name, multiplicity, etc. 
@@ -128,13 +128,14 @@ require several expectation values, i.e., :math:`\langle\varphi_m|\varphi_n\rang
                             'x','y','z'])               # First derviatives
   dm_aoom = get_ao_dipole_matrix(qc,component=['x','y','z'])
 
-  moom = get_mo_overlap_matrix(qc.mo_spec,qc.mo_spec,aoom[0],
+  coeff = qc.mo_spec.get_coeff()
+  moom = get_mo_overlap_matrix(coeff,coeff,aoom[0],
                                numproc=4)               # <m|n>
   omr = numpy.zeros((3,) + moom.shape)                  # <m|r|n>
   omv = numpy.zeros((3,) + moom.shape)                  # <m|\vec{\nabla}|n>
   for i in range(3):
-    omr[i] = get_mo_overlap_matrix(qc.mo_spec,qc.mo_spec,dm_aoom[i],numproc=4)
-    omv[i] = get_mo_overlap_matrix(qc.mo_spec,qc.mo_spec,aoom[i+1] ,numproc=4)
+    omr[i] = get_mo_overlap_matrix(coeff,coeff,dm_aoom[i],numproc=4)
+    omv[i] = get_mo_overlap_matrix(coeff,coeff,aoom[i+1] ,numproc=4)
 
 
 How to Compare CI States
@@ -231,16 +232,16 @@ electonic continuity equation
 
   \frac{\partial \rho_{ab}({\bf r})}{\partial t} = - \vec{\nabla} \cdot j_{ab}({\bf r})
 
-This relation may be reformulated to a convergence test:
+This relation may be reformulated into a convergence test:
 
 .. math::
 
   - \vec{\nabla} \cdot \mbox{Im}\left[j_{ab}\right]({\bf r}) = -\frac{(E_b-E_a)}{\hbar} \rho_{ab}
 
 Please note that the missing cusp relation for Gaussian basis sets leads to a  poor convergence around the nuclei, 
-as shown in `arXiv:XXX.XXXXX`__.
+as shown in `arXiv:1701.06885`__.
 
-__ http://arxiv.org/abs/XXX.XXXXX
+__ http://arxiv.org/abs/1701.06885
 
 .. _`detCI:Electronic Dipole Moment`:
 
@@ -276,6 +277,7 @@ All three quantities can be calculated via::
   mu_ab = detci.ci_core.mu(ci[a],ci[b],qc,zero,sing,omr,omv)
 
 Here, ``mu_ab[0]`` is :math:`\left\langle\mu_r\right\rangle_{ab}`, ``mu_ab[1]`` corresponds to :math:`\left\langle\mu_v\right\rangle_{ab}`, and 
-``mu_ab[2]`` is :math:`\left\langle(\mu_v)_r\right\rangle_{ab}`. 
+``mu_ab[2]`` is :math:`\left\langle(\mu_v)_r\right\rangle_{ab}`.
+
 For identical states, the latter is not defined., and besides, 
 the permanent dipole moment of the molecule, i.e., including the nuclear contributions, is computed in that case.

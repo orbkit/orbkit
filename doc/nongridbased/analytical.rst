@@ -20,7 +20,7 @@ like partial charges or dipole moments, analytically.
 Computational Functions
 -----------------------
 
-The computation of analytical integrals is organized by the 
+The computation of analytical integrals is organized in the 
 module ``orbkit.analytical_integrals``::
 
   from orbkit import analytical_integrals
@@ -44,28 +44,24 @@ The format of ``lxlylz_b`` is the same as the ``exp_list`` in
 :ref:`qc.ao_spec <qc.ao_spec>` (Central Variables). 
 To get the original list of exponents, use::
   
-  from orbkit.core import get_lxlylz
-  lxlylz_b = get_lxlylz(ao_spec)
+  lxlylz = ao_spec.get_lxlylz()
 
 The analytical overlap between two molecular orbitals **a** and **b** can be
 computed with::
 
-  mo_overlap = analytical_integrals.get_mo_overlap(mo_a,mo_b,ao_overlap_matrix)
+  coeff_a = mo_a.get_coeff()
+  coeff_b = mo_b.get_coeff()
+  mo_overlap = analytical_integrals.get_mo_overlap(coeff_a,coeff_b,ao_overlap_matrix)
 
-where ``mo_a`` and ``mo_b`` are either entries of :ref:`qc.mo_spec <qc.mo_spec>` 
-or vectors of molecular orbital coefficients.
+where ``mo_a`` and ``mo_b`` are two instances of ``orbkit.orbitals.MOClass``.
 
 The complete molecular orbital overlap matrix between two sets of molecular
 orbital coefficients **a** and **b** may be computed with::
 
-  mo_overlap_matrix = analytical_integrals.get_mo_overlap_matrix(mo_a,mo_b,
+  coeff_a = mo_a.get_coeff()
+  coeff_b = mo_b.get_coeff()
+  mo_overlap_matrix = analytical_integrals.get_mo_overlap_matrix(coeff_a,coeff_b,
 			    ao_overlap_matrix,numproc=1)
-
-with ``mo_a`` and ``mo_b`` being instances of :ref:`qc.mo_spec <qc.mo_spec>` or 
-``numpy.ndarrays``. The latter can be constructed from an instance of 
-:ref:`qc.mo_spec <qc.mo_spec>` (Central Variables) with::
-  
-  mo_coeff = analytical_integrals.create_mo_coeff(qc.mo_spec)
 
 Computing the Dipole Moment Analytically
 ----------------------------------------
@@ -76,13 +72,15 @@ To obtain the dipole moment, you can call the function::
 
 which basically calls and combines the electronic with the nuclear dipole moment.
 
-First, it computes the atomic orbital dipole matrix for each components::
+First, it computes the atomic orbital dipole matrix for each component::
 
   ao_dipole_matrix = analytical_integrals.get_ao_dipole_matrix(qc,component='x')
 
 Then, it obtains the molecular orbital dipole moment with::
 
-  mo_dm = analytical_integrals.get_mo_overlap(mo_a,mo_b,ao_dipole_matrix)
+  coeff_a = mo_a.get_coeff()
+  coeff_b = mo_b.get_coeff()
+  mo_dm = analytical_integrals.get_mo_overlap(coeff_a,coeff_b,ao_dipole_matrix)
 
 Finally, it calculates the nuclear dipole moment::
 
@@ -116,12 +114,12 @@ with :math:`r_l = \sqrt{(x-X_l)^2 + (y-Y_l)^2 + (z - Z_l)^2)}`. In python
 this would look like::
 
   from orbkit.core import get_lxlylz,l_deg
-  from orbkit.analytical_integrals import get_ao_overlap,get_mo_overlap
+  from orbkit.analytical_integrals import get_ao_overlap
   component = 2 #: z-component  
   # Compute the first part of the expectation value:
   # Get the the exponents lx, ly, lz for the primitive Cartesian Gaussians of
   # the `Ket` basis set, and increase lz by one.
-  lxlylz_b = get_lxlylz(qc.ao_spec)
+  lxlylz_b = qc.ao_spec.get_lxlylz()
   lxlylz_b[:,component] += 1
 
   ao_part_1 = get_ao_overlap(qc.geo_spec,qc.geo_spec,qc.ao_spec,

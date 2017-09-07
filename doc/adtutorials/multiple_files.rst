@@ -8,9 +8,9 @@ Tutorial for Processing Multiple Input Files
 
 We assume that you have followed the :ref:`installation-instructions` and that
 you have navigated to the folder ``$ORBKITPATH/examples/basic_examples``. 
-Please note that the input files are compressed in .tar.gz file in the examples 
-folder (``$ORBKITPATH/examples/basic_examples/NaCl_molden_files.tar.gz``) and need to be 
-decompressed before performing this tutorial.
+The input files you will need for this tutorial are compressed in .tar.gz 
+file in the examples folder (``$ORBKITPATH/examples/basic_examples/NaCl_molden_files.tar.gz``).
+There is no need to extract the files as ORBKIT is able to read them directly from the .tar.gz archive.
 
 .. hint::
   
@@ -24,25 +24,10 @@ As a starting point, you have to import the ORBKIT module for processing
 multiple files::
   
   from orbkit import multiple_files
-  
-Now, we have to create a list of input file names::
 
-  import os
-  path = 'NaCl_molden_files'  
-  # How are input files formatted?
-  fid = 'nacl.%03d.molden'
-  fid_list = []
-  for i in range(0,16,1):
-    f = os.path.join(path,fid % i)
-    if not os.path.exists(f):
-      raise IOError('%s does not exist!' % f)
-    fid_list.append(f)
+The input files can then be read with::
 
-Here, we have used the ``os`` module to get sure that all input files exist.
-
-The input files can be read with::
-
-  multiple_files.read(fid_list,all_mo=True,nosym=False)
+  multiple_files.read('NaCl_molden_files.tar.gz',all_mo=True,nosym=False)
 
 Now, all input variables are global values in the module ``multiple_files``.
 These variables are named according to their analogue in the ``QCinfo`` class 
@@ -83,8 +68,7 @@ This procedure is a black box procedure and can be called with::
 
   index_list, mo_overlap = multiple_files.order_using_analytical_overlap(None)
 
-The input argument ``None`` has been used since we have read already the 
-input files.
+The input argument ``None`` is used since we have already read the input files.
 
 This function changes all global variables and returns an index list containing
 the new indices of the molecular orbitals. 
@@ -95,7 +79,7 @@ the new indices of the molecular orbitals.
 
 Moreover, it returns the molecular orbital
 overlap matrix between the molecular orbitals of two neighboring
-geometries, i.e., ``mo_overlap[i,j,k]`` corresponds to overlap between the 
+geometries, i.e., ``mo_overlap[i,j,k]`` which corresponds to overlap between the 
 :math:`j` th molecular orbital at geometry :math:`i` to the :math:`k` th molecular orbital at 
 geometry :math:`(i+1)`. 
 
@@ -130,7 +114,7 @@ with simple contour plots::
 How to Perform a Standard ORBKIT Computation for One Molecular Structures
 -------------------------------------------------------------------------
 
-You can cast the global variables of ``multiple_files`` automatically to a list 
+You can automatically cast the global variables of ``multiple_files`` to a list 
 of ``QCinfo`` classes (cf. :ref:`Central Variables`) by::
   
   QC = multiple_files.construct_qc()
@@ -138,20 +122,18 @@ of ``QCinfo`` classes (cf. :ref:`Central Variables`) by::
 Now, you can access every data point separately and perform ORBKIT calculations,
 e.g.::
 
-  import orbkit as ok
-
   r = 0                    # Index to be calculated
   out_fid = 'nacl_r%d' % r # Specifies the name of the output file
 
   # Initialize orbkit with default parameters and options
-  ok.init()
+  orbkit.init()
 
   # Set some options
   ok.options.adjust_grid= [5, 0.5]                # adjust the grid to the geometry
-  ok.options.otype      = 'mayavi'                  # output file (base) name
+  orbkit.options.otype      = 'mayavi'            # output file (base) name
 
   # Run orbkit with one instance of qc as input
-  ok.run_orbkit(QC[10])
+  orbkit.run_orbkit(QC[10])
 
 How to Process Data of Two or More dimensions 
 ---------------------------------------------
@@ -169,6 +151,6 @@ of dimensions:
 
 .. attention::
   
-  Please make always sure that the ordering procedure was successful by plotting
+  Please always make sure that the ordering procedure was successful by plotting
   and checking the final molecular orbital overlaps and molecular orbital 
   coefficients!
