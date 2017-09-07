@@ -27,7 +27,7 @@ class AOIntegrals():
     self.env.extend(qc.geo_spec.flatten())
     for center in qc.geo_info:
       # tuple for each center: (charge, coords offset, 0, 0, 0, 0)
-      self.atm.append((int(float(center[2])), ienv, 0, 0, 0, 0))
+      self.atm.append((float(center[2]), ienv, 0, 0, 0, 0))
       ienv += 3
 
     # build bas
@@ -128,7 +128,7 @@ class AOIntegrals():
     for i in range(self.nbas.value):
       jj = ii
       for j in range(i,self.nbas.value):
-        res = self.libcint1e('ovlp', i, j)
+        res = self.libcint1e(operator, i, j)
         di, dj = res.shape
         mat[ii:ii+di,jj:jj+dj] = res
         mat[jj:jj+dj,ii:ii+di] = res.transpose()
@@ -140,7 +140,7 @@ class AOIntegrals():
 
     return mat
 
-  def int2e(self, asMO=True):
+  def int2e(self, operator, asMO=True):
     '''Calculates two-electron integrals <ij|operator|kl>.
 
       **Parameters:**
@@ -173,7 +173,7 @@ class AOIntegrals():
               continue
 
             # calculate integrals
-            res = self.libcint2e('', i, j, k, l)
+            res = self.libcint2e(operator, i, j, k, l)
 
             # store/replicate results
             mat[ii:ii+di,jj:jj+dj,kk:kk+dk,ll:ll+dl] = res
