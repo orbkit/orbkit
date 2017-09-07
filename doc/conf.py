@@ -121,7 +121,7 @@ from orbkit import __version__
 html_context = {
     'current_version': __version__,
     'versions':
-        [('1.1 (development)', 'https://orbkit.github.io/'),
+        [('1.1 (development)', 'https://orbkit.github.io/dev'),
          ('1.0 (stable)', 'https://orbkit.github.io/')]}
 
 # The name for this set of Sphinx documents.  If None, it defaults to
