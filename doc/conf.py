@@ -12,6 +12,7 @@
 # serve to show the default.
 
 import sys, os
+from orbkit import __version__
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -22,10 +23,14 @@ sys.path.append(os.path.abspath('../orbkit'))
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc', 'sphinx.ext.todo', 'sphinx.ext.imgmath']
+extensions = ['sphinx.ext.autodoc', 
+              'sphinx.ext.todo',
+              'sphinx.ext.viewcode',
+              'sphinx.ext.intersphinx',
+              'sphinx.ext.mathjax']
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+templates_path = ['templates']
 
 # The suffix of source filenames.
 source_suffix = '.rst'
@@ -38,14 +43,14 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'ORBKIT'
-copyright = u'2017, Gunter Hermann, Vincent Pohl, and Axel Schild'
+copyright = u'2017, Gunter Hermann, Vincent Pohl, Lukas Eugen Marsoner Steinkasserer, Axel Schild, and Jean Christophe Tremblay'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
 # built documents.
 #
 # The short X.Y version.
-version = 'v1.0 (stable)'
+version = 'v' + __version__
 # The full version, including alpha/beta/rc tags.
 release = ''
 
@@ -113,7 +118,11 @@ if not on_rtd:
 # documentation.
 #html_theme_options = {}
 
-
+html_context = {
+    'current_version': __version__,
+    'versions':
+        [('1.1 (development)', 'https://orbkit.github.io/dev'),
+         ('1.0 (stable)', 'https://orbkit.github.io/')]}
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
