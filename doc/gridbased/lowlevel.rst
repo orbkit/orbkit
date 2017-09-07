@@ -3,8 +3,8 @@
 ORBKIT's Low-Level Interface
 ============================
 
-This section is addressed to more advanced users, who want to use the
-modules of ORBKIT in their own programs. 
+This section adresses more advanced users, who want to use the
+modules of ORBKIT within their own programs. 
 
 Please refer to the :ref:`Function Reference` to get information about 
 all modules and functions available.
@@ -35,8 +35,8 @@ functions are managed by::
 
   qc = read.main_read(filename,all_mo=False,spin=None,**kwargs) 
 
-Besides choosing the filename and the input type, you can specify, if the function
-should read the occupied *and* the virtual molecular orbitals (``all_mo``).
+Besides choosing the filename (and optinally the input type via ``itype``), you can specify, if the function
+should read only the occupied orbitals (default), or the occupied *and* the virtual molecular orbitals (``all_mo``).
 Moreover, ``read.main_read`` forwards all additional keyword arguments (``**kwargs``)
 to the specific reading function, e.g., you can disable the interactive mode 
 in ``read.read_molden``.
@@ -57,7 +57,7 @@ Initializing the Grid
 ---------------------
 
 The ``orbkit.grid`` module organizes all grid related features of ORBKIT, 
-of which some will be discussed in this section.
+some of which will be discussed in this section.
 
 If you want to initialize a standard regular (vector) grid you have to
 set the grid parameters which are global values within this module::
@@ -83,11 +83,11 @@ To invoke the creation of a **vector** grid, i.e.,
 :math:`N_{\sf data points} = N_{\sf x} = N_{\sf y} = N_{\sf z}` 
 (see :ref:`grid` (Usage via the Terminal)), the variable ``is_vector`` has to 
 set to ``True``. If you want to change the grid, e.g., for a subsequent 
-calculation, you have either to set::
+calculation, you have to either set::
 
   grid.is_initialized=False
 
-or to call::
+or call::
 
   grid.grid_init(force=True)
 
@@ -98,7 +98,7 @@ or to call::
     print(grid.get_grid())
 
 Another way to automatically set the grid parameters according to 
-the molecular geometry is calling::
+the molecular geometry is by calling::
   
   grid.adjust_to_geo(qc,extend=5.0,step=0.1)
 
@@ -197,7 +197,7 @@ slicing of the grid, you can use::
                                    return_components=False,
                                    is_vector=None,x=None,y=None,z=None)
 
-Here, you can even return the atomic orbitals (and/or their derivatives) as well
+Here, you can return the atomic orbitals (and/or their derivatives) as well
 with ``return_components``.
 Furthermore, you can specify the grid (``x``, ``y``, ``z``, and ``is_vector``) 
 without using the ``orbkit.grid`` module.
@@ -234,7 +234,7 @@ Output Functions
 
 The output functionalities of ORBKIT are handled by the module ``orbkit.output``.
 
-In this module, there are functions for every output type. These functions 
+Within this module, there are functions for every output type. These functions 
 are managed by::
 
   output.main_output(data,geo_info,geo_spec,outputname='new',otype='h5',

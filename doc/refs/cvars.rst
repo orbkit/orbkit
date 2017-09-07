@@ -5,7 +5,7 @@ Central Variables
 
 .. note::
 
-  There have recently been major changes to the code involved int this section.
+  There have recently been major changes to the code involved in this section.
   All old functionality has been preserved as far as possible but there are some major new
   features which are layed-out below.
 
@@ -62,9 +62,10 @@ Old API:
 
 .. danger::
 
-  ``qc.ao_spherical`` is **no longer supported** - rather than in a central variable the relevatn information is
-  now saved locally for each AO i.e. for the n'th AO the corresponding ao_spherical data can be accsessed as:
-  ``qc.ao_spec[n]['spherical']``. If you are in desperate need of the old format use: ``qc.ao_spec.get_old_ao_spherical()``.
+  ``qc.ao_spherical`` is **no longer supported** - rather than in a central variable this information is
+  now saved locally for each AO i.e. for the n'th AO, its ao_spherical data to can be accsessed as:
+  ``qc.ao_spec[n]['spherical']``. 
+  If you are in desperate need of the old format use: ``qc.ao_spec.get_old_ao_spherical()``.
   Note though that this is only a compatibility function and might well be depreciated in the future.
 
 +-------------------+-----------------------------------+-----------------------------------------------+

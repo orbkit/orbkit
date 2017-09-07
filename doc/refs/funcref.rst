@@ -11,6 +11,11 @@ orbkit.qcinfo
 .. automodule:: orbkit.qcinfo 
     :members:
 
+orbkit.orbitals
+--------------
+.. automodule:: orbkit.orbitals 
+    :members:
+
 orbkit.options
 --------------
 .. automodule:: orbkit.options 
