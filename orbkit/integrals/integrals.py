@@ -2,10 +2,15 @@ from orbkit.tools import lquant
 import numpy
 import ctypes
 
-# TODO search library: from ctypes.util import find_library
-import os.path
-dirname = os.path.dirname(os.path.abspath(__file__))
-libcint = ctypes.cdll.LoadLibrary(os.path.abspath(os.path.join(dirname, 'libcint.so')))
+# search and load libcint from $PATH
+import os
+libcint = None
+for dirname in os.environ['PATH'].split(':'):
+  if os.path.isfile(os.path.join(dirname, 'libcint.so')):
+    libcint = ctypes.cdll.LoadLibrary(os.path.abspath(os.path.join(dirname, 'libcint.so')))
+    break
+if libcint is None:
+  raise ImportError("libcint not found: please add to PATH environment variable")
 
 ############################
 ###  external interface  ###
