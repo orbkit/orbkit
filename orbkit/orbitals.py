@@ -751,11 +751,15 @@ class MOClass(UserList):
   def get_spin_index(self, spin):
     '''Function used to select MO's by spin. A numpy.ndarray is returned
        which contains the indexes of MO's of the selected spin.
-    **Parameters:**
+    
+      **Parameters:**
      
       spin : 'str', can be either 'alpha' or 'beta'
-       **Returns:**
-        alpha: numpy.ndarray, dtype=numpy.intc
+      
+      **Returns:**
+
+      alpha : numpy.ndarray, dtype=numpy.intc
+
     '''
     if self.spinpolarized:
       spindic = {'alpha': 'a', 'beta': 'b'}

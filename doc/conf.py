@@ -12,6 +12,7 @@
 # serve to show the default.
 
 import sys, os
+from orbkit import __version__
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -49,7 +50,7 @@ copyright = u'2017, Gunter Hermann, Vincent Pohl, Lukas Eugen Marsoner Steinkass
 # built documents.
 #
 # The short X.Y version.
-version = 'v1.0 (stable)'
+version = 'v' + __version__
 # The full version, including alpha/beta/rc tags.
 release = ''
 
@@ -117,7 +118,6 @@ if not on_rtd:
 # documentation.
 #html_theme_options = {}
 
-from orbkit import __version__
 html_context = {
     'current_version': __version__,
     'versions':
