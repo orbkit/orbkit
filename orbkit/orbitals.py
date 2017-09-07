@@ -585,7 +585,7 @@ class MOClass(UserList):
     if not self.up2date:
       self.get_sym()
     self.spinpolarized = False
-    if self.sym[0].split('_') > 0:
+    if len(self.sym[0].split('_')) > 0:
       if self.sym[0].split('_')[-1] in ['a', 'b']:
         self.spinpolarized = True
   def get_labels(self):
