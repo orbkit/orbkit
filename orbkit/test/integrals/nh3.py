@@ -1,5 +1,4 @@
 import numpy
-from scipy.linalg import norm
 from orbkit import read, integrals
 from orbkit import options
 from orbkit.test.tools import equal
@@ -36,19 +35,19 @@ occupation = [2, 2, 2, 2, 2, 0, 0, 0]
 # density matrix
 P = numpy.zeros(S.shape)
 for i in range(ao.Norb):
-    for j in range(i,ao.Norb):
-        for k in range(ao.Norb):
-            P[i,j] += occupation[k]*qc.mo_spec.coeff[k,i]*qc.mo_spec.coeff[k,j]
-        P[j,i] = P[i,j]
+  for j in range(i,ao.Norb):
+    for k in range(ao.Norb):
+      P[i,j] += occupation[k]*qc.mo_spec.coeff[k,i]*qc.mo_spec.coeff[k,j]
+    P[j,i] = P[i,j]
 
 # build Fock operator
 G = numpy.zeros(S.shape)
 for i in range(ao.Norb):
-    for j in range(i,ao.Norb):
-        for k in range(ao.Norb):
-            for l in range(ao.Norb):
-                G[i,j] += P[k,l]*(Vee[i,j,k,l]-0.5*Vee[i,l,k,j])
-        G[j,i] = G[i,j]
+  for j in range(i,ao.Norb):
+    for k in range(ao.Norb):
+      for l in range(ao.Norb):
+        G[i,j] += P[k,l]*(Vee[i,j,k,l]-0.5*Vee[i,l,k,j])
+    G[j,i] = G[i,j]
 
 Hcore = T + V
 F = Hcore + G
@@ -60,18 +59,9 @@ for i in range(ao.Norb):
   EHF += 0.5*P[i,i]*(Hcore[i,i]+F[i,i])
   # offdiagonal elements
   for j in range(i+1,ao.Norb):
-      EHF += P[i,j]*(Hcore[i,j]+F[i,j])
+    EHF += P[i,j]*(Hcore[i,j]+F[i,j])
 
-# calculate nuclear repulsion
-Vnn = 0
-Natoms = qc.geo_spec.shape[0]
-for a in range(Natoms):
-  Za = float(qc.geo_info[a,2])
-  Ra = qc.geo_spec[a,:].astype(float)
-  for b in range(a+1, Natoms):
-        Zb = float(qc.geo_info[b,2])
-        Rb = qc.geo_spec[b,:].astype(float)
-        Vnn += Za*Zb / norm(Ra-Rb)
+Vnn = qc.get_nuclear_repulsion()
 
 # compare
 equal(Vnn, 11.73717604)
