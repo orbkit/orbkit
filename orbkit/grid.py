@@ -273,7 +273,7 @@ def mv2g(**kwargs):
   for i,j in kwargs.items():
     j = numpy.asarray(j,dtype=float)
     shape = numpy.shape(j)
-    where = numpy.argwhere(shape==numpy.product(N_))
+    where = numpy.argwhere(shape==numpy.product(N_))[0,0]
     return_val[i] = numpy.zeros(shape[:where]+tuple(N_)+shape[where+1:])
     for key in itertools.product(*[range(k) for k in (shape[:where] + shape[where+1:])]):
       obj = [slice(k,k+1) for k in key]

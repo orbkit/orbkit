@@ -1,6 +1,25 @@
 import numpy
 import string
 
+def get_first_discoincidence(array_a, array_b):
+  i_df = 0
+  for i,j in zip(array_a, array_b):
+    if i != j:
+      return i_df
+    i_df += 1
+
+# Compatability function for old numpy versions
+def moveaxis(array, source, target):
+  source = numpy.array(source)
+  target = numpy.array(target)
+
+  while not numpy.allclose(source, target):
+    i_df = get_first_discoincidence(source, target)
+    i_t = numpy.argwhere(source == target[i_df])[0,0]
+    array = numpy.swapaxes(array, i_df, i_t)
+    source[[i_df, i_t]] = source[[i_t, i_df]]
+  return array
+
 # Assign the quantum number l to every AO symbol (s,p,d,etc.) 
 orbit = 'spd' + string.ascii_lowercase[5:].replace('s','').replace('p','')
 lquant = dict([(j, i) for i,j in enumerate(orbit)])
