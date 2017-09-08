@@ -14,7 +14,11 @@ def equal(a, b, tol=1e-5):
   if isinstance(a, (int, float)) and isinstance(b, (int, float)):
     assert abs(a-b) <= tol
   elif isinstance(a, numpy.ndarray) and isinstance(b, numpy.ndarray):
-    assert numpy.allclose(a, b, rtol=tol*1e2, atol=tol)
+    if a.dtype in [float, int, numpy.intc, numpy.float64] and b.dtype in [float, int, numpy.intc, numpy.float64]:
+      assert numpy.allclose(a, b, rtol=tol*1e2, atol=tol)
+    else:
+      for i,j in zip(a.flatten(), b.flatten()):
+        assert i == j
   elif isinstance(a, QCinfo) and isinstance(b, QCinfo):
     assert a == b
   elif isinstance(a, AOClass) and isinstance(b, AOClass):

@@ -26,7 +26,7 @@ def mulliken(qc):
   S = get_ao_overlap(qc.geo_spec,qc.geo_spec,qc.ao_spec)
 
   # Get MO-coefficients
-  mo = qc.mo_spec.get_coeff()
+  mo = qc.mo_spec.get_coeffs()
   mo_dim,ao_dim = mo.shape
 
   # Calculate density matrix  
@@ -75,7 +75,7 @@ def lowdin(qc):
   S = get_ao_overlap(qc.geo_spec,qc.geo_spec,qc.ao_spec)
 
   # Get MO-coefficients
-  mo = qc.mo_spec.get_coeff()
+  mo = qc.mo_spec.get_coeffs()
   mo_dim,ao_dim = mo.shape
   
   # Orthogonalize basis set
