@@ -284,6 +284,7 @@ def ao2mo(mat, coeffs):
     return numpy.dot(coeffs, numpy.dot(mat, coeffs.transpose()))
   elif len(mat.shape) == 4:
     # 2-electron integrals
+    coeffs = coeffs.transpose()
     D = numpy.tensordot(coeffs, coeffs, 0)
     mat = numpy.tensordot(mat, D, ((1,3), (0,2)))
     mat = numpy.tensordot(D, mat, ((0,2), (0,1)))

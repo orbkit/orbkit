@@ -24,7 +24,7 @@ Vee_mo = ao.Vee(asMO=1)
 ref = numpy.load(os.path.join(tests_home, 'nh3.npz'))
 
 equal(S, ref['S'])
-equal(S_mo, ref['S_mo'])
+equal(S_mo, numpy.eye(ao.Norb))
 equal(T, ref['T'])
 equal(V, ref['V'])
 equal(Vee, ref['Vee'])
