@@ -122,9 +122,9 @@ def mo_creator(ao_list,mo_spec):
   ao_list = require(ao_list,dtype='f')
   shape = ao_list.shape
   ao_list.shape = (shape[0],-1)
-  mo_coeff = mo_spec.get_coeff()
-  mo_list = cy_core.mocreator(ao_list,mo_coeff).reshape(
-                                                 ((len(mo_coeff),) + shape[1:]),
+  mo_coeffs = mo_spec.get_coeffs()
+  mo_list = cy_core.mocreator(ao_list,mo_coeffs).reshape(
+                                                 ((len(mo_coeffs),) + shape[1:]),
                                                  order='C')
   ao_list.shape = shape
   return mo_list
@@ -430,7 +430,7 @@ def rho_compute(qc,calc_mo=False,drv=None,laplacian=False,
             % numproc)
 
   display("\nThere are %d contracted %s AOs and %d MOs to be calculated." %
-          (len(Spec['mo_spec'].get_coeff()),
+          (len(Spec['mo_spec'].get_coeffs()),
            'Cartesian' if not Spec['ao_spec'].spherical else 'spherical', 
            mo_num))
   

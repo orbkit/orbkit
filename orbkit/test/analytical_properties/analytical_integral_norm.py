@@ -16,8 +16,6 @@ qc = read.main_read(filepath, all_mo=True)
 
 ao_overlap_matrix = ai.get_ao_overlap(qc.geo_spec,qc.geo_spec,qc.ao_spec)
 
-
-coeff = qc.mo_spec.get_coeff()
-moom = ai.get_mo_overlap_matrix(coeff,coeff,ao_overlap_matrix,numproc=options.numproc)
+moom = ai.get_mo_overlap_matrix(qc.mo_spec,qc.mo_spec,ao_overlap_matrix,numproc=options.numproc)
 
 equal(moom, numpy.eye(len(moom)))
