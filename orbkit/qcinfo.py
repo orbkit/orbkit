@@ -29,6 +29,7 @@ from copy import copy
 
 from orbkit.display import display
 from .units import u2me, aa2a0
+from .tools import inv_molden_order
 from orbkit.read.tools import get_atom_symbol, standard_mass
 from .orbitals import AOClass, MOClass
 
