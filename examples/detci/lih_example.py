@@ -97,14 +97,13 @@ aoom = get_ao_overlap(qc.geo_spec,qc.geo_spec,qc.ao_spec,
                       drv=[None,'x','y','z'])
 dm_aoom = get_ao_dipole_matrix(qc,component=['x','y','z'])
 
-coeff = qc.mo_spec.get_coeff()
-moom = get_mo_overlap_matrix(coeff,coeff,aoom[0],
+moom = get_mo_overlap_matrix(qc.mo_spec,qc.mo_spec,aoom[0],
                              numproc=numproc)          # <m|n>
 omr = numpy.zeros((3,) + moom.shape)                   # <m|r|n>
 omv = numpy.zeros((3,) + moom.shape)                   # <m|\nabla|n>
 for i in range(3):
-  omr[i] = get_mo_overlap_matrix(coeff,coeff,dm_aoom[i],numproc=numproc)
-  omv[i] = get_mo_overlap_matrix(coeff,coeff,aoom[i+1],numproc=numproc)
+  omr[i] = get_mo_overlap_matrix(qc.mo_spec,qc.mo_spec,dm_aoom[i],numproc=numproc)
+  omv[i] = get_mo_overlap_matrix(qc.mo_spec,qc.mo_spec,aoom[i+1],numproc=numproc)
 
 print('''
 ==========================================

@@ -1,7 +1,8 @@
 Grid-Based Calculation
 ======================
 
-In this chapter, the features and options for calculating grid-based quantities are provided.
+In this chapter provides the features and options for calculating grid-based quantities using ORBKIT.
+
 Detailed tutorials for the three variants of executing ORBKIT, i.e., 
 as a standalone program via the Terminal (:doc:`./terminal`),
 with a Python script setting options and calling the main function of ORBKIT (:doc:`./highlevel`),

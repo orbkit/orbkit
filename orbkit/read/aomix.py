@@ -14,25 +14,25 @@ def read_aomix(fname, all_mo=False, spin=None, i_md=-1, interactive=True,
   
   **Parameters:**
   
-  fname: str, file descriptor
+  fname : str, file descriptor
     Specifies the filename for the input file.
     fname can also be used with a file descriptor instad of a filename.
-    all_mo : bool, optional
-      If True, all molecular orbitals are returned.
-    spin : {None, 'alpha', or 'beta'}, optional
-      If not None, returns exclusively 'alpha' or 'beta' molecular orbitals.
-    i_md : int, default=-1
-      Selects the `[AOMix Format]` section of the output file.
-    interactive : bool
-      If True, the user is asked to select the different sets.
-    created_by_tmol : bool
-      If True and if Cartesian basis set is found, the molecular orbital 
-      coefficients will be converted.
+  all_mo : bool, optional
+    If True, all molecular orbitals are returned.
+  spin : {None, 'alpha', or 'beta'}, optional
+    If not None, returns exclusively 'alpha' or 'beta' molecular orbitals.
+  i_md : int, default=-1
+    Selects the `[AOMix Format]` section of the output file.
+  interactive : bool
+    If True, the user is asked to select the different sets.
+  created_by_tmol : bool
+    If True and if Cartesian basis set is found, the molecular orbital 
+    coefficients will be converted.
   
   **Returns:**
   
-    qc (class QCinfo) with attributes geo_spec, geo_info, ao_spec, mo_spec, etot :
-        See :ref:`Central Variables` for details.
+  qc (class QCinfo) with attributes geo_spec, geo_info, ao_spec, mo_spec, etot :
+    See :ref:`Central Variables` for details.
   '''
   
   aomix_regex = re.compile(r"\[[ ]{,}[Aa][Oo][Mm]ix[ ]+[Ff]ormat[ ]{,}\]")
@@ -308,7 +308,7 @@ def read_aomix(fname, all_mo=False, spin=None, i_md=-1, interactive=True,
       else:
         return n * dfact(n-2)
 
-    mo = qc.mo_spec.get_coeff()
+    mo = qc.mo_spec.get_coeffs()
     for i,j in enumerate(qc.ao_spec.get_lxlylz()):
       norm = (dfact(2*j[0] - 1) * dfact(2*j[1] - 1) * dfact(2*j[2] - 1))
       j = sum(j)

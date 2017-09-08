@@ -37,7 +37,7 @@ P = numpy.zeros(S.shape)
 for i in range(ao.Norb):
   for j in range(i,ao.Norb):
     for k in range(ao.Norb):
-      P[i,j] += occupation[k]*qc.mo_spec.coeff[k,i]*qc.mo_spec.coeff[k,j]
+      P[i,j] += occupation[k]*qc.mo_spec.coeffs[k,i]*qc.mo_spec.coeffs[k,j]
     P[j,i] = P[i,j]
 
 # build Fock operator

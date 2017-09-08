@@ -188,7 +188,7 @@ def convert_cclib(ccData, all_mo=False, spin=None):
     c_cart = sum([l_deg(l=ao['type'], cartesian_basis=True) for ao in qc.ao_spec])
     c_sph = sum([l_deg(l=ao['type'], cartesian_basis=False) for ao in qc.ao_spec])
     
-    c = qc.mo_spec.get_coeff().shape[-1]
+    c = qc.mo_spec.get_coeffs().shape[-1]
     if c != c_cart and c == c_sph: # Spherical basis
       qc.ao_spec.spherical = True
       set_ao_spherical(qc.ao_spec,p=[0,1])

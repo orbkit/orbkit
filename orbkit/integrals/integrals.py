@@ -141,7 +141,7 @@ class AOIntegrals():
       ii += di
 
     if asMO:
-      mat = ao2mo(mat, self.qc.mo_spec.coeff)
+      mat = ao2mo(mat, self.qc.mo_spec.coeffs)
 
     return mat
 
@@ -199,7 +199,7 @@ class AOIntegrals():
 
 
     if asMO:
-      mat = ao2mo(mat, self.qc.mo_spec.coeff)
+      mat = ao2mo(mat, self.qc.mo_spec.coeffs)
 
     return mat
 

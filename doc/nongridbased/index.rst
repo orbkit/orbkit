@@ -1,8 +1,8 @@
 Non Grid-Based Calculation
 ==========================
 
-In this chapter, a description for calculating grid-independent quantities with 
-the :doc:`../gridbased/lowlevel` is given.
+In this chapter gives a description for calculating grid-independent quantities with 
+the :doc:`../gridbased/lowlevel`.
 
 
 **Table of Contents:**

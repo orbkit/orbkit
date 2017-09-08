@@ -5,7 +5,7 @@ Central Variables
 
 .. note::
 
-  There have recently been major changes to the code involved int this section.
+  There have recently been major changes to the code involved in this section.
   All old functionality has been preserved as far as possible but there are some major new
   features which are layed-out below.
 
@@ -46,8 +46,8 @@ computations and is organized as follows:
   * Contains the atom positions in units of Bohr radii.
   * The three columns correspond to the *x-*, *y-*, and *z-*\ coordinates.
 
-New API:
---------
+New API
+-------
 
 Though with the exception of ``qc.ao_spherical``, "old-style" APIs are still supported, the suggested way to access AO and MO data is now to 
 use the new AOClass and MOClass classes which provide methods to directly obtain the data as numpy arrays. See the module documentation for more details.
@@ -56,15 +56,15 @@ use the new AOClass and MOClass classes which provide methods to directly obtain
 
 .. autofunction:: orbkit.orbitals.MOClass
 
-
-Old API:
---------
+Old API
+-------
 
 .. danger::
 
-  ``qc.ao_spherical`` is **no longer supported** - rather than in a central variable the relevatn information is
-  now saved locally for each AO i.e. for the n'th AO the corresponding ao_spherical data can be accsessed as:
-  ``qc.ao_spec[n]['spherical']``. If you are in desperate need of the old format use: ``qc.ao_spec.get_old_ao_spherical()``.
+  ``qc.ao_spherical`` is **no longer supported** - rather than in a central variable this information is
+  now saved locally for each AO i.e. for the n'th AO, its ao_spherical data to can be accsessed as:
+  ``qc.ao_spec[n]['spherical']``. 
+  If you are in desperate need of the old format use: ``qc.ao_spec.get_old_ao_spherical()``.
   Note though that this is only a compatibility function and might well be depreciated in the future.
 
 +-------------------+-----------------------------------+-----------------------------------------------+

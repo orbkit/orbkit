@@ -33,7 +33,7 @@ from multiprocessing import Pool
 from . import cy_overlap
 from .tools import *
 from .omp_functions import slicer
-from .orbitals import AOClass
+from .orbitals import AOClass, MOClass
 
 def get_ao_overlap(coord_a, coord_b, ao_spec, lxlylz_b=None,
                    drv=None):
@@ -103,7 +103,7 @@ def get_ao_overlap(coord_a, coord_b, ao_spec, lxlylz_b=None,
     rb = numpy.append(rb,coord_b[cont['atom']][numpy.newaxis,:],axis=0)
 
 
-  coeff = ao_spec.get_lmpao()
+  coeffs = ao_spec.get_lmpao()
   index = ao_spec.get_lmprim2cont(return_l=True)
 
   ra = require(ra,dtype='f')
@@ -115,7 +115,7 @@ def get_ao_overlap(coord_a, coord_b, ao_spec, lxlylz_b=None,
 
   ao_overlap_matrix = cy_overlap.aooverlap(ra,rb,
                                            lxlylz_a,lxlylz_b,
-                                           coeff,index,
+                                           coeffs,index,
                                            drv,int(ao_spec.normalized))
   if 'N' in ao_spec[0]:
     for i in range(len(ao_overlap_matrix)):
@@ -196,10 +196,10 @@ def get_mo_overlap(mo_a,mo_b,ao_overlap_matrix):
   
   **Parameters:**
   
-  mo_a : numpy.ndarray, shape = (NAO,)
-     Contains the molecular orbital coefficients of the `Bra` orbital.  
-  mo_b : numpy.ndarray, shape = (NAO,)
-     Contains the molecular orbital coefficients of the `Ket` orbital.  
+  mo_a : numpy.ndarray with shape = (,NAO)
+     Contains the molecular orbital coefficients of all `Bra` orbitals.
+  mo_b : numpy.ndarray with shape = (,NAO)
+     Contains the molecular orbital coefficients of all `Ket` orbitals.
   ao_overlap_matrix : numpy.ndarray, shape = (NAO,NAO)
     Contains the overlap matrix of the basis set.
   
@@ -208,6 +208,7 @@ def get_mo_overlap(mo_a,mo_b,ao_overlap_matrix):
   mo_overlap : float
     Contains the overlap of the two input molecular orbitals.
   '''
+
   shape = numpy.shape(ao_overlap_matrix)
   if isinstance(mo_a,dict):
     mo_a = numpy.array(mo_a['coeffs'])
@@ -236,9 +237,9 @@ def get_mo_overlap_matrix(mo_a,mo_b,ao_overlap_matrix,numproc=1):
   
   **Parameters:**
   
-  mo_a : numpy.ndarray with shape = (NMO,NAO) or mo_spec (cf. :ref:`Central Variables`)
+  mo_a : numpy.ndarray with shape = (NMO,NAO), dict, or MOClass instance
      Contains the molecular orbital coefficients of all `Bra` orbitals.
-  mo_b : numpy.ndarray with shape = (NMO,NAO) or mo_spec (cf. :ref:`Central Variables`)
+  mo_b : numpy.ndarray with shape = (NMO,NAO), dict, or MOClass instance
      Contains the molecular orbital coefficients of all `Ket` orbitals.
   ao_overlap_matrix : numpy.ndarray, shape = (NAO,NAO)
     Contains the overlap matrix of the basis set.
@@ -250,6 +251,16 @@ def get_mo_overlap_matrix(mo_a,mo_b,ao_overlap_matrix,numproc=1):
   mo_overlap_matrix : numpy.ndarray, shape = (NMO,NMO)
     Contains the overlap matrix between the two sets of input molecular orbitals.
   '''
+  if isinstance(mo_a, MOClass):
+    mo_a = mo_a.get_coeffs()
+  elif isinstance(mo_a,dict):
+    mo_a = numpy.array(mo_a['coeffs'])
+
+  if isinstance(mo_b, MOClass):
+    mo_b = mo_b.get_coeffs()
+  elif isinstance(mo_b,dict):
+    mo_b = numpy.array(mo_b['coeffs'])
+
   global_args = {'mo_a': mo_a,
                  'mo_b': mo_b,
                  'ao_overlap_matrix': ao_overlap_matrix}
@@ -307,8 +318,8 @@ def get_moom_atoms(atoms,qc,mo_a,mo_b,ao_overlap_matrix,numproc=1):
   mo_overlap_matrix : numpy.ndarray, shape = (NMO,NMO)
     Contains the overlap matrix between the two sets of input molecular orbitals.
   '''
-  mo_a = mo_a.get_coeff()
-  mo_b = mo_b.get_coeff()
+  mo_a = mo_a.get_coeffs()
+  mo_b = mo_b.get_coeffs()
   indices = get_lc(atoms,get_atom2mo(qc),strict=True)
   ao_overlap_matrix = numpy.ascontiguousarray(ao_overlap_matrix[:,indices])
   return get_mo_overlap_matrix(numpy.ascontiguousarray(mo_a),
@@ -337,13 +348,13 @@ def get_dipole_moment(qc,component=['x','y','z']):
     component = [component]
   
   dipole_moment = numpy.zeros((len(component),))
-  coeff = qc.mo_spec.get_coeff()
+  coeffs = qc.mo_spec.get_coeffs()
   occ = qc.mo_spec.get_occ()
   for i_d,c in enumerate(component):
     ao_dipole_matrix = get_ao_dipole_matrix(qc,component=c)
     for i_mo in range(len(qc.mo_spec)):
-      dipole_moment[i_d] -= occ[i_mo] * get_mo_overlap(coeff[i_mo,:],
-                                                       coeff[i_mo,:],
+      dipole_moment[i_d] -= occ[i_mo] * get_mo_overlap(coeffs[i_mo,:],
+                                                       coeffs[i_mo,:],
                                                        ao_dipole_matrix)
 
     # Add the nuclear part

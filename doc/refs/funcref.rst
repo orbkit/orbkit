@@ -11,6 +11,12 @@ orbkit.qcinfo
 .. automodule:: orbkit.qcinfo 
     :members:
 
+orbkit.orbitals
+---------------
+.. automodule:: orbkit.orbitals 
+    :members:
+    :noindex:
+
 orbkit.options
 --------------
 .. automodule:: orbkit.options 
@@ -56,7 +62,7 @@ orbkit.analytical_integrals
 
 orbkit.multiple_files
 ---------------------
-.. automodule:: orbkit.multiple_files 
+.. automodule:: orbkit.read.multiple_files 
     :members:
 
 orbkit.display

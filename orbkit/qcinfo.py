@@ -86,25 +86,36 @@ class QCinfo:
           same = False
     return same
 
-  def save(self, filename=None):
+  def get_savedic(self):
+    '''Returns the dictionary that is used to save QCinfo instance
+    '''
     import time
     date = time.strftime("%d/%m/%Y")
     time = time.strftime("%H:%M:%S")
     date_time = date + time
 
+    data = self.ao_spec.todict()
+    data.update(self.mo_spec.todict())
+    data['geo_spec'] = self.geo_spec
+    data['geo_info'] = self.geo_info
+    data['date'] = date
+    data['time'] = time
+
+    import hashlib
+    fingerprint = hashlib.md5()
+    fingerprint.update(str(data))
+    data['fingerprint'] = fingerprint.hexdigest()
+    return data
+
+  def save(self, filename=None):
     if not filename:
       filename = 'default_output'
     if '.npz' not in filename:
       filename += '.npz'
 
-    data = self.ao_spec.todict()
-    data.update(self.mo_spec.todict())
+    data = self.get_savedic()
 
     numpy.savez_compressed(filename,
-                           date=date,
-                           time=time,
-                           geo_spec=self.geo_spec,
-                           geo_info=self.geo_info,
                            **data)
     return
 
