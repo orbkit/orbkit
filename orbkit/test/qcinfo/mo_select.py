@@ -37,3 +37,12 @@ for case in usecases:
   refmo = MOClass([qc.mo_spec[i] for i in usecases[case]])
   refmo.update()
   equal(qc.mo_spec.select(case, flatten_input=True), refmo)
+
+# Test lists
+refmo = MOClass([qc.mo_spec[i] for i in [0,1,2,3]])
+refmo.update()
+equal(qc.mo_spec.select(['1.A1_a', '2.A1_a', '1.B2_a', '3.A1_a', 'alpha'], flatten_input=True), refmo)
+
+refmo = MOClass([qc.mo_spec[i] for i in [0,1,2,3]])
+refmo.update()
+equal(qc.mo_spec.select([['1.A1_a', '2.A1_a'], ['1.B2_a', '3.A1_a', 'alpha']], flatten_input=True), refmo)
