@@ -971,6 +971,8 @@ class MOClass(UserList):
       if isinstance(fid_mo_list, list):
         for i in fid_mo_list:
           if not isinstance(i, list):
+            if isinstance(i, int) or isinstance(i, float):
+              i = str(int(i))
             i = re.sub(' +',' ', i)
             i = regsplit.split(i) if isinstance(i,str) else [i]
           mo_in_file.append(map(str,i))
