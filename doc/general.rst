@@ -3,8 +3,10 @@ General Aspects
 
 This section lists all available input formats from the several quantum chemistry programs and the 
 requirements for their proper processing with ORBKIT.
+
 Alongside to the available program output files, there is an `interface to cclib`_.
 This platform can extract the data from additional computational chemistry packages.
+
 At the end of this section, all existing quantities, features and output formats of ORBKIT are introduced.
 
 .. note:: 
@@ -37,7 +39,7 @@ At the end of this section, all existing quantities, features and output formats
 Supported Input File Formats
 ----------------------------
 
-Subsequently, you can find a brief overview of all available input file formats 
+Subsequently, you find a brief overview of all available input file formats 
 and some advices for the input file preparation.
 
 .. _`Molden File`:
@@ -151,22 +153,23 @@ wfn/wfx Files
 Interface to cclib Library
 ..........................
 
-The cclib_ library is an open source Python package which allows for the parsing and interpreting data of quantum chemistry packages.
+The cclib_ library is an open source Python package which allows for the parsing and interpretation of data stemming from different quantum chemistry packages.
 It is well checked for multiple versions of different programs.
 The interface for cclib_ that we have implemented converts data extracted with cclib into the data structure of ORBKIT.
 A tutorial for the usage of this interface is given in :doc:`./adtutorials/cclib`.
 
 .. hint: 
 
-  The cclib interface is only tested for a few example. If anything does not properly work, please contact us.
+  The cclib interface is only tested for a few examples. If anything does not work properly, please contact us.
   
 Capabilities of ORBKIT
 ----------------------
 
 ORBKIT is designed with a modular structure. This allows to use it not only 
-as a standalone version but also to combine its individual  modules or functions 
-in user-written Python programs. Each module consists of different functions 
-accomplishing specific tasks. 
+as a standalone program but also to combine its individual  modules or functions 
+into new, user-written Python programs. 
+
+Each module consists of different functions accomplishing specific tasks. 
 Thus, there are three ways to use ORBKIT:
 
 1. As a standalone program via the Terminal (:doc:`./gridbased/terminal`)
@@ -176,8 +179,9 @@ Thus, there are three ways to use ORBKIT:
 3. With a user-written Python program using the built-in functions of ORBKIT (:doc:`./gridbased/lowlevel`)
 
 Detailed tutorials for the three variants are given in the respective sections. 
-All grid-based quantities and most of the options can be applied in each of these variants.
-The non grid-based quantities are solely available via the low-level interface.
+All grid-based quantities and most of the options can be applied in each of these variants while
+non grid-based quantities are solely available via the low-level interface.
+
 The complete list of all quantities, options, and output formats can be seen below.
 
 .. |cm| unicode:: U+2714 .. Check Mark
@@ -207,7 +211,7 @@ Computable Quantities
 +------------------------------------+------------------------+--------------------------+-------------------------+
 | **Nuclear Dipole Moment**          |          |bm|          |           |bm|           |           |cm|          |
 +------------------------------------+------------------------+--------------------------+-------------------------+
-| **Mulliken and Löwdin Charges**    |          |bm|          |           |bm|           |           |cm|          |
+| **Mulliken and Lowdin Charges**    |          |bm|          |           |bm|           |           |cm|          |
 +------------------------------------+------------------------+--------------------------+-------------------------+
 | **Center of Charge and Mass**      |          |bm|          |           |bm|           |           |cm|          |
 +------------------------------------+------------------------+--------------------------+-------------------------+
@@ -278,9 +282,9 @@ While ORBKIT internally uses the former type, it is able to handle the latter us
 Cartesian Harmonic Gaussian Basis Sets
 ......................................
 
-Internally, ORBKIT works with Cartesian Harmonic Gaussian basis sets. Unless 
-otherwise stated (cf. :ref:`Central Variables <qc.ao_spec>` for details), it 
-assumes the standard Molden basis function order for the exponents 
+Internally, ORBKIT works with cartesian harmonic Gaussian basis sets. Unless the exponents are explicitly defined using "exp_list" 
+(cf. :ref:`Central Variables <qc.ao_spec>` for details), it assumes the standard Molden basis function order for the exponents 
+
 :math:`(l_x,l_y,l_z)`:
 
   * s:
@@ -304,9 +308,7 @@ assumes the standard Molden basis function order for the exponents
 
 .. hint:: 
 
-  Unless the exponents are not defined explicitly using "exp_list" in 
-  ``qc.ao_spec`` (cf. :ref:`Central Variables <qc.ao_spec>` for details), 
-  ORBKIT is restricted to s, p, d, f, and g atomic orbitals (Molden file 
+  Also note that ORBKIT is restricted to s, p, d, f, and g atomic orbitals (Molden file 
   limitation).
 
 .. _`Real-Valued (Pure) Spherical Harmonic`:

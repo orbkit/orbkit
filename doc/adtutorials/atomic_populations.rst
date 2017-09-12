@@ -27,7 +27,7 @@ and for a **Löwdin Population Analysis**::
   
   pop = atomic_populations.lowdin(qc)
 
-The return value ``pop`` is a dictionary, which contains information of 
+The return value ``pop`` is a dictionary, which contains information about the 
 population analysis and has following members:
 
 +-----------------+----------------------------------------+

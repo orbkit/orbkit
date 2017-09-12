@@ -13,10 +13,10 @@ def read_gaussian_fchk(fname, all_mo=False, spin=None, **kwargs):
 
   **Parameters:**
   
-  fname: str, file descriptor
+  fname : str, file descriptor
     Specifies the filename for the input file.
     fname can also be used with a file descriptor instad of a filename.
-    all_mo : bool, optional
+  all_mo : bool, optional
       If True, all molecular orbitals are returned.
   
   **Returns:**

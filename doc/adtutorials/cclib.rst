@@ -80,7 +80,7 @@ ORBKIT's Low-Level Interface
 ----------------------------
 
 For ORBKIT's low-level interface, there are two possible ways to use cclib.
-You can either tell ORBKIT, what ``cclib.parser`` shall be used::
+You can either tell ORBKIT, that it should use the ``cclib.parser`` ::
 
   from orbkit import read
 
