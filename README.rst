@@ -17,9 +17,9 @@ output files. Futhermore, an interface to cclib, a parser for quantum chemical l
 
 **NEW:** `detCI\@ORBKIT`__ extends ORBKIT's functionality to multi-determinantal wave functions.
 
-__ http://orbkit.github.io/detci/index.html
+__ http://orbkit.github.io/dev/detci/index.html
 
-ORBKIT's documentation may be found at http://orbkit.github.io
+ORBKIT's documentation may be found at `http://orbkit.github.io <http://orbkit.github.io/dev>`_
 
 
 Support

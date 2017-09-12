@@ -50,34 +50,47 @@ The source code and multiple example files of ORBKIT can be freely downloaded fr
 
 For installation instructions, please check :doc:`./install`.
 
-Citation
---------
-
-If you use ORBKIT in your work, please cite it as follows:
-
-Gunter Hermann, Vincent Pohl, Jean Christophe Tremblay, Beate Paulus, Hans-Christian Hege, and Axel Schild,
-"ORBKIT: A Modular Python Toolbox for Cross-Platform Postprocessing of Quantum Chemical Wavefunction Data", 
-*J. Comput. Chem.* **2016**, `DOI: 10.1002/jcc.24358`__.
-
-.. note::
-
-  The paper is also freely available on `arXiv <https://arxiv.org/abs/1601.03069>`_.
-
-BibTex (:download:`orbkit.bib`):
-
-.. literalinclude:: orbkit.bib
-
-__ http://dx.doi.org/10.1002/jcc.24358
-
-
 Contact
 -------
 
-The ORBKIT support team, Axel, Gunter, Vincent, and Lukas, welcomes every new
+The ORBKIT support team, Axel, Lukas, Gunter, and Vincent, welcomes every new
 user and will be available to answer your questions. For any change
 requests, do not hesitate to contact the ORBKIT support team via
 
 https://github.com/orbkit/orbkit/issues
+
+Citation
+--------
+
+If you use ORBKIT in your work, please cite:
+
+  Gunter Hermann, Vincent Pohl, Jean Christophe Tremblay, Beate Paulus, Hans-Christian Hege, and Axel Schild,
+  `"ORBKIT: A Modular Python Toolbox for Cross-Platform Postprocessing of Quantum Chemical Wavefunction Data" <http://dx.doi.org/10.1002/jcc.24358>`_, 
+  *J. Comput. Chem.* **2016**, *37*, 1511-1520.
+
+If you use detCI\@ORBKIT in your work, please additionally cite:
+
+  Vincent Pohl, Gunter Hermann, and Jean Christophe Tremblay,
+  `"An Open-Source Framework for Analyzing N-Electron Dynamics. I. Multideterminantal Wave Functions" <http://dx.doi.org/10.1002/jcc.24792>`_, 
+  *J. Comput. Chem.* **2017**, *38*, 1515-1527.
+
+  Vincent Pohl, Gunter Hermann, and Jean Christophe Tremblay,
+  `"An Open-Source Framework for Analyzing N-Electron Dynamics. II. Hybrid Density Functional Theory/Configuration Interaction Methodology" <http://dx.doi.org/10.1002/jcc.24896>`_, 
+  *J. Comput. Chem.* **2017**, `DOI:10.1002/jcc.24896 <http://dx.doi.org/10.1002/jcc.24896>`_.
+
+
+.. note::
+
+  The paper is also freely available on arXiv: 
+  
+    * `ORBKIT <https://arxiv.org/abs/1601.03069>`_
+    * `detCI\@ORBKIT_I <https://arxiv.org/abs/1701.06885>`_
+    * `detCI\@ORBKIT_II <https://arxiv.org/abs/1704.08137>`_
+  
+BibTex (:download:`orbkit.bib`):
+
+.. literalinclude:: orbkit.bib
+
 
 Contents:
 ---------

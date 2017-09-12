@@ -308,7 +308,7 @@ def read_aomix(fname, all_mo=False, spin=None, i_md=-1, interactive=True,
       else:
         return n * dfact(n-2)
 
-    mo = qc.mo_spec.get_coeff()
+    mo = qc.mo_spec.get_coeffs()
     for i,j in enumerate(qc.ao_spec.get_lxlylz()):
       norm = (dfact(2*j[0] - 1) * dfact(2*j[1] - 1) * dfact(2*j[2] - 1))
       j = sum(j)

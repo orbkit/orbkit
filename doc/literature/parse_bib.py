@@ -7,7 +7,7 @@ class Bibliography:
     self.unique_entries = None
     self.entries = []
     self.filenames = []
-    self.keys = ['ym', 'year', 'month', 'title', 'author', 'journal', 'url']
+    self.keys = [key for key in self.get_template()]
     self.months = {'jan': 0, 'feb': 1, 'mar': 2,  'apr': 3,
               'may': 4, 'jun': 5, 'jul': 6,  'aug': 7,
               'sep': 8, 'oct': 9, 'nov': 10, 'dec': 11,}
@@ -31,7 +31,10 @@ class Bibliography:
             'ym': None,
             'title': None,
             'author': None,
+            'volume': None,
+            'number': None,
             'journal': None,
+            'pages': None,
             'doi': None,
             'url': None
            }
@@ -56,12 +59,16 @@ class Bibliography:
                   splitline[1] = splitline[1][:-1]
               entry[-1][key] = splitline[1]
     for i in range(len(entry)):
+      if len(entry[i]['author'].split('and')) == 1:
+        entry[i]['author'] = entry[i]['author'].split('and')[0] + ' '
+      else:
+        entry[i]['author'] = entry[i]['author'].split('and')[0] + ' *et al.* '
       if 'arXiv' in entry[i]['journal']:
-        entry[i]['journal'] = 'arXiv'
+        entry[i]['pages'] = entry[i]['journal'].split()[-1]
+        entry[i]['journal'] = 'arXiv preprint'
       else:
         entry[i]['journal'] = self.journals[entry[i]['journal']]
-      entry[i]['ym'] = int(entry[i]['year']) + self.months[entry[i]['month']] / 12
-
+      entry[i]['ym'] = int(entry[i]['year']) + self.months[entry[i]['month'].lower()] / 12
     self.entries.append(entry)
     self.filenames.append(filename)
 
@@ -79,10 +86,10 @@ class Bibliography:
   
       self.entries[ie] = entry_sort
 
-  def url_exists(self, doi):
+  def url_exists(self, url):
     exists = False
     for entry in self.unique_entries:
-      if entry['url'] == doi:
+      if entry['url'] == url:
         return True
 
   def clean(self):
@@ -96,7 +103,12 @@ class Bibliography:
   def wirte_csv(self):
     with open('citations.csv', 'w') as fd:
       for i, entry in enumerate(self.unique_entries):
-        print('{0},"`{1} {2} ({3}) <{4}>`__"'.format(i+1, entry['author'], entry['journal'], entry['year'], entry['url']), file=fd)
+        if 'arxiv' in entry['journal'].lower():
+          print('{0},"{1} `{2} <{5}>`__ {3} ({4})"'.format(i+1, entry['author'], entry['journal'], entry['pages'], entry['year'], entry['url']), file=fd)
+        elif entry['volume'] is None or entry['pages'] is None:
+          print('{0},"{1} `{2} <{4}>`__ ({3})"'.format(i+1, entry['author'], entry['journal'], entry['year'], entry['url']), file=fd)
+        else:
+          print('{0},"{1} `{2} <{6}>`__ **{3}**, {4} ({5})"'.format(i+1, entry['author'], entry['journal'], entry['volume'], entry['pages'], entry['year'], entry['url']), file=fd)
 
   def plot(self):
     '''Creates a plot from the .csv files containing the bibliographic data.

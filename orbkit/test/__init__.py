@@ -19,6 +19,8 @@ tests = ['units',
          'detci/h3+',
          'qcinfo/new_qcinfo_save_function',
          'qcinfo/mo_select',
+         'qcinfo/mo_spec',
+         'qcinfo/ao_spec',
          'analytical_properties/analytical_integral_norm',
          'analytical_properties/dipole',
          'grid_based/rho_compute']

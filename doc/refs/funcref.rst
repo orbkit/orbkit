@@ -15,6 +15,7 @@ orbkit.orbitals
 ---------------
 .. automodule:: orbkit.orbitals 
     :members:
+    :noindex:
 
 orbkit.options
 --------------
@@ -61,7 +62,7 @@ orbkit.analytical_integrals
 
 orbkit.multiple_files
 ---------------------
-.. automodule:: orbkit.multiple_files 
+.. automodule:: orbkit.read.multiple_files 
     :members:
 
 orbkit.display

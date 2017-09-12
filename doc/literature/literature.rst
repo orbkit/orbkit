@@ -6,7 +6,7 @@ Literature
    :align: center
 
 
-Complete list of papers citing ORBKIT and detCI@ORBKIT:
+Complete list of papers citing ORBKIT and detCI\@ORBKIT:
 
 .. csv-table::
    :file: citations.csv
