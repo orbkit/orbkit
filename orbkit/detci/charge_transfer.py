@@ -49,25 +49,6 @@ def get_nto(qc,ci,md_filename=None):
     ntos['val'] = numpy.zeros(len(qc.mo_spec))
     dmat = DM(ci[0],ci[i],qc)
     rdm = (1/numpy.sqrt(2))*dmat.Tij[:LUMO,LUMO:]
-    # Calculate reduced density matrix
-    T = rdm
-    U = numpy.dot(T,T.T)
-    V = numpy.dot(T.T,T)
-
-    u_val, u_vec = numpy.linalg.eigh(U)
-    v_val, v_vec = numpy.linalg.eigh(V)
-    v_val = v_val[::-1]
-
-    occ_nto = numpy.dot(occ_mo.transpose(),u_vec)
-    occ_nto = (occ_nto).transpose()
-    ntos['vec'][:LUMO] = occ_nto
-    virt_nto = numpy.dot(virt_mo.T,v_vec)
-    virt_nto = virt_nto.T
-    virt_nto = virt_nto[::-1]
-    ntos['vec'][LUMO:] = virt_nto
-    
-    dmat = DM(ci[0],ci[i],qc)
-    rdm = (1/numpy.sqrt(2))*dmat.Tij[:LUMO,LUMO:]
     
     # Eigenvalue equation
     (u_vec, sqrtlmbd, v_vec) = numpy.linalg.svd(rdm)
@@ -91,6 +72,6 @@ def get_nto(qc,ci,md_filename=None):
     qc_nto[-1].mo_spec.set_occ(ntos['val'])
     qc_nto[-1].mo_spec.set_sym(sym)
     if md_filename:
-      molden_writer(qc,filename='nto_%s_%s' % (md_filename,i))
+      molden_writer(qc_nto[-1],filename='nto_%s_%s' % (md_filename,i))
 
   return qc_nto
