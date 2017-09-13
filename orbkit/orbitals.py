@@ -71,7 +71,27 @@ class AOClass(UserList):
             'assign_lxlylz': self.assign_lxlylz}
     return data
   def __getitem__(self, item):
-    return UserList.__getitem__(self, item)
+    if isinstance(item, int):
+      return UserList.__getitem__(self, item)
+    elif isinstance(item, (list,numpy.ndarray)):
+      item = numpy.array(item)
+      if item.ndim > 1:
+        raise ValueError('Only 1D arrays can be used for indexing!')
+      data_out = []
+      for i, c in enumerate(item):
+        if isinstance(c, numpy.bool_):
+          if c:
+            data_out.append(self.data[i])
+        else:
+          data_out.append(self.data[c])
+      ao_out = AOClass(data_out)
+      ao_out.update()
+      del data_out
+      return ao_out
+    else:
+      raise NotImplementedError('Only lists and arrays of integers and booleans are supported for array indexing!')
+
+    
   def __eq__(self, other):
     cases = [isinstance(other, AOClass), other == [], other is None]
     if not any(cases):
@@ -427,7 +447,8 @@ class MOClass(UserList):
       occ : numpy.ndarray, dtype=float64, shape = (NMO)
         Occupation numbers for molecular orbitals.
       eig : numpy.ndarray, dtype=float64, shape = (NMO)
-        Eigenvalues for molecular orbitals.
+        Eigenvalues for molecular orbitals.      print(len(data_out))
+
       sym : numpy.ndarray, dtype=str, shape = (NMO)
         MOLPRO-like symmetry label of molecular orbitals.
 
@@ -470,7 +491,25 @@ class MOClass(UserList):
     return data
 
   def __getitem__(self, item):
-    return UserList.__getitem__(self, item)
+    if isinstance(item, int):
+      return UserList.__getitem__(self, item)
+    elif isinstance(item, (list,numpy.ndarray)):
+      item = numpy.array(item)
+      if item.ndim > 1:
+        raise ValueError('Only 1D arrays can be used for indexing!')
+      data_out = []
+      for i, c in enumerate(item):
+        if isinstance(c, numpy.bool_):
+          if c:
+            data_out.append(self.data[i])
+        else:
+          data_out.append(self.data[c])
+      mo_out = MOClass(data_out)
+      mo_out.update()
+      del data_out
+      return mo_out
+    else:
+      raise NotImplementedError('Only lists and arrays of integers and booleans are supported for array indexing!')
 
   def __setitem__(self, i, item):
     self.data[i] = item
