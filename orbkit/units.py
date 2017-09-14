@@ -22,8 +22,11 @@ _aa = 1e-10 #Angstrom
 _ha = _hbar**2 / (_me*_a0**2) #Hartree
 _statC = 1. / 2997924580 #Statcoulomb
 _debye = 1e-20*_statC # Debye
-                                                                        
-#Conversion factors                                                     
+
+#Conversion factors  
+sec2atu = _hbar / _ha # Seconds to atomic time units
+atu2sec = 1. / sec2atu
+                                                                                                                           
 a02aa = _a0 / _aa                                                       
 aa2a0 = _aa / _a0                                                       
                                                                         
@@ -35,3 +38,5 @@ ha2ev = _ha / _e
 
 debye2ea0 = _debye / (_e * _a0)
 ea02debye = _e * _a0 / _debye
+
+c_in_au = _c / _a0 * sec2atu # Speed of light in atomic units
