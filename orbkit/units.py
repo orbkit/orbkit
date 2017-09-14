@@ -24,7 +24,7 @@ _statC = 1. / 2997924580 #Statcoulomb
 _debye = 1e-20*_statC # Debye
 
 #Conversion factors  
-sec2atu = _hbar / _ha # Seconds to atomic time units
+sec2atu = _ha / _hbar # Seconds to atomic time units
 atu2sec = 1. / sec2atu
                                                                                                                            
 a02aa = _a0 / _aa                                                       
