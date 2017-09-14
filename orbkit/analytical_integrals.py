@@ -304,10 +304,10 @@ def get_moom_atoms(atoms,qc,mo_a,mo_b,ao_overlap_matrix,numproc=1):
   
   atoms : int or list of int
     Contains the indices of the selected atoms.
-  mo_a : numpy.ndarray with shape = (NMO,NAO) or mo_spec (cf. :ref:`Central Variables`)
-     Contains the molecular orbital coefficients of all `Bra` orbitals.  
-  mo_b : numpy.ndarray with shape = (NMO,NAO) or mo_spec (cf. :ref:`Central Variables`)
-     Contains the molecular orbital coefficients of all `Ket` orbitals.  
+  mo_a : numpy.ndarray with shape = (NMO,NAO), dict, or MOClass instance
+     Contains the molecular orbital coefficients of all `Bra` orbitals.
+  mo_b : numpy.ndarray with shape = (NMO,NAO), dict, or MOClass instance
+     Contains the molecular orbital coefficients of all `Ket` orbitals.
   ao_overlap_matrix : numpy.ndarray, shape = (NAO,NAO)
     Contains the overlap matrix of the basis set.
   numproc : int
@@ -318,8 +318,16 @@ def get_moom_atoms(atoms,qc,mo_a,mo_b,ao_overlap_matrix,numproc=1):
   mo_overlap_matrix : numpy.ndarray, shape = (NMO,NMO)
     Contains the overlap matrix between the two sets of input molecular orbitals.
   '''
-  mo_a = mo_a.get_coeffs()
-  mo_b = mo_b.get_coeffs()
+  if isinstance(mo_a, MOClass):
+    mo_a = mo_a.get_coeffs()
+  elif isinstance(mo_a,dict):
+    mo_a = numpy.array(mo_a['coeffs'])
+
+  if isinstance(mo_b, MOClass):
+    mo_b = mo_b.get_coeffs()
+  elif isinstance(mo_b,dict):
+    mo_b = numpy.array(mo_b['coeffs'])
+
   indices = get_lc(atoms,get_atom2mo(qc),strict=True)
   ao_overlap_matrix = numpy.ascontiguousarray(ao_overlap_matrix[:,indices])
   return get_mo_overlap_matrix(numpy.ascontiguousarray(mo_a),
