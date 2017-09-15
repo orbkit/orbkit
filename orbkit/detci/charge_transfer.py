@@ -3,14 +3,16 @@ Module for the analysis of the charge transfer character of a molecular system.
 '''
 
 # Import general modules
-import numpy
+import numpy,h5py
 
 # Import orbkit modules
 from .density_matrix import DM
 from orbkit.output import molden_writer
+from orbkit import grid,core,output
+from orbkit.display import display, init_display
 
 
-def get_nto(qc,ci,md_filename=None):
+def compute_nto(qc,ci,Tij=[],md_filename=None):
   ''' 
   Function to calculate natural transition orbitals (NTO) for CIS-type wavefunctions 
   according to R.L. Martin, J. Chem. Phys. 2003, 118(11), 4775.
@@ -20,6 +22,8 @@ def get_nto(qc,ci,md_filename=None):
        See :ref:`Central Variables` for details.
   qc : class QCinfo
        See :ref:`Central Variables` for details.
+  Tij : Transition density matrix.
+       
     
   **Returns:**
     qc_nto is a list of qc instances containing attributes for geo_spec, geo_info, 
@@ -27,15 +31,16 @@ def get_nto(qc,ci,md_filename=None):
        See :ref:`Central Variables` for details of the QC Class.
       
   '''
+  display('Calculate natural transition orbitals.')
   # Creates matrix for occupied and virtual orbitals
   LUMO = qc.mo_spec.get_lumo()
-  mo_coeffs = qc.mo_spec.get_coeff()
+  mo_coeffs = qc.mo_spec.get_coeffs()
   occ_mo = mo_coeffs[:LUMO]
   virt_mo = mo_coeffs[LUMO:]
   
   #Creation of symmetry and spin labels for NTOs
-  sym = numpy.array([['NTO_h']*len(qc.mo_spec)][0], dtype=str)
-  sym[LUMO:] = 'NTO_p'
+  sym = ['%d.NTO_h' % (i) for i in range(LUMO,0,-1)]
+  sym += ['%d.NTO_p' % (i-LUMO+1) for i in range(LUMO,len(qc.mo_spec))]
   
   #Initialize QC Class for NTOs
   qc_nto = []
@@ -47,8 +52,11 @@ def get_nto(qc,ci,md_filename=None):
     ntos = {}
     ntos['vec'] = numpy.zeros((mo_coeffs.shape))
     ntos['val'] = numpy.zeros(len(qc.mo_spec))
-    dmat = DM(ci[0],ci[i],qc)
-    rdm = (1/numpy.sqrt(2))*dmat.Tij[:LUMO,LUMO:]
+    if Tij == []:
+      dmat = DM(ci[0],ci[i],qc)
+      rdm = (1/numpy.sqrt(2))*dmat.Tij[:LUMO,LUMO:]
+    else:
+      rdm = Tij[i]
     
     # Eigenvalue equation
     (u_vec, sqrtlmbd, v_vec) = numpy.linalg.svd(rdm)
@@ -68,10 +76,128 @@ def get_nto(qc,ci,md_filename=None):
     
     # Write new molden-Files
     qc_nto.append(qc.copy())
-    qc_nto[-1].mo_spec.set_coeff(ntos['vec'])
+    qc_nto[-1].mo_spec.set_coeffs(ntos['vec'])
     qc_nto[-1].mo_spec.set_occ(ntos['val'])
-    qc_nto[-1].mo_spec.set_sym(sym)
+    qc_nto[-1].mo_spec.set_sym(numpy.array(sym))
     if md_filename:
       molden_writer(qc_nto[-1],filename='nto_%s_%s' % (md_filename,i))
 
   return qc_nto
+
+def compute_p_h_rho(qc_nto,min_val=1e-6,numproc=1,slice_length=1e4,hdf5_fid=None):
+  
+  display('Calculate particle and hole densities.')
+  # Initialize grid
+  if not grid.is_initialized:
+    grid.adjust_to_geo(qc_nto[0],extend=5.0,step=0.4)
+    display('\nSetting up the grid...')
+    grid.grid_init(is_vector=False)
+    display(grid.get_grid())   # Display the grid
+    slice_length = grid.N_[1]*grid.N_[2]/2
+
+  rho_h = []
+  rho_p = []
+  for i in range(len(qc_nto)):
+    
+    # MO selection
+    qc = qc_nto[i].copy()
+    if numpy.sum(qc.mo_spec.get_occ()) != 0.0:
+      bmo = abs(qc.mo_spec.get_occ()) >= min_val
+      qc.mo_spec = qc.mo_spec[bmo]
+      
+      # Get indices for HOMO and LUMO
+      sym = qc.mo_spec.get_sym()
+      LUMO = numpy.sum([1 if s[-1]=='h' else 0 for s in sym])
+      HOMO = LUMO - 1
+      
+      # Calculate MOs
+      display('\nCalculating molecular orbitals...\n')
+      molist = core.rho_compute(qc,calc_mo=True,drv=None,numproc=numproc)
+
+      # Calculate hole and particle density
+      rh = numpy.zeros(molist.shape[1:])
+      rp = numpy.zeros(molist.shape[1:])
+      for j in range(LUMO):
+        rh += abs(qc.mo_spec[j]['occ_num'])*molist[j]*molist[j]
+      for j in range(LUMO,len(qc.mo_spec)):
+        rp += abs(qc.mo_spec[j]['occ_num'])*molist[j]*molist[j]
+      rho_p.append(rp)
+      rho_h.append(rh)
+  
+  rho_h = numpy.array(rho_h)
+  rho_p = numpy.array(rho_p)
+  
+  if grid.is_vector:
+    rho_p = rho_p.reshape(grid.N_)
+    rho_h = rho_h.reshape(grid.N_)
+  
+  if hdf5_fid:
+    display('Save densities in HDF5 file...\n')
+    # Initialize HDF5-File
+    fid = hdf5_fid if hdf5_fid.endswith('.h5') else '%s.h5' % hdf5_fid
+    output.hdf5_write(fid,mode='w',gname='general_info',x=grid.x,y=grid.y,z=grid.z,N=grid.N_,
+            geo_spec=qc.geo_spec,geo_info=qc.geo_info,
+            grid_info=numpy.array(grid.is_vector,dtype=int))
+    f = h5py.File(fid, 'a')
+    f['rho_p'] = rho_p
+    f['rho_h'] = rho_h
+    f.close()
+
+  return rho_p,rho_h
+
+def compute_nto_j(qc_nto,min_val=1e-6,numproc=1,slice_length=1e4,hdf5_fid=None):
+  
+  display('Calculate flux density from natural transition orbitals.')
+
+  # Initialize grid
+  if not grid.is_initialized:
+    grid.adjust_to_geo(qc_nto[0],extend=5.0,step=0.4)
+    display('\nSetting up the grid...')
+    grid.grid_init(is_vector=False)
+    display(grid.get_grid())   # Display the grid
+    slice_length = grid.N_[1]*grid.N_[2]/2
+    
+  # Calculate MOs
+  j_nto = []
+  for i in range(len(qc_nto)):
+    
+    # MO selection
+    qc = qc_nto[i].copy()
+    if numpy.sum(qc.mo_spec.get_occ()) != 0.0:
+      bmo = abs(qc.mo_spec.get_occ()) >= min_val
+      qc.mo_spec = qc.mo_spec[bmo]
+      
+      # Get indices for HOMO and LUMO
+      sym = qc.mo_spec.get_sym()
+      LUMO = numpy.sum([1 if s[-1]=='h' else 0 for s in sym])
+      HOMO = LUMO - 1
+      
+      display('\nCalculating molecular orbitals and derivatives thereof...\n')
+      molist = core.rho_compute(qc,calc_mo=True,drv=None,numproc=numproc)
+      molistdrv = core.rho_compute(qc,calc_mo=True,drv=['x','y','z'],numproc=numproc)
+
+      # Calculate hole and particle density
+      j_tmp = numpy.zeros(((3,) + molist.shape[1:]))
+      for j in range(LUMO):
+        for k in range(LUMO,len(qc.mo_spec)):
+          for xyz in range(3):
+            j_tmp[xyz] += 0.5*abs(qc.mo_spec[j]['occ_num'])*abs(qc.mo_spec[k]['occ_num'])*(molist[j]*molistdrv[xyz,k] - molist[k]*molistdrv[xyz,j])
+      j_nto.append(j_tmp)
+
+  j_nto = numpy.array(j_nto)
+  
+  if grid.is_vector:
+    j_nto = j_nto.reshape((len(qc_nto),3,)+tuple(grid.N_))
+
+  if hdf5_fid:
+    display('Save flux densities in HDF5 file...\n')
+    # Initialize HDF5-File
+    fid = hdf5_fid if hdf5_fid.endswith('.h5') else '%s.h5' % hdf5_fid
+    output.hdf5_write(fid,mode='w',gname='general_info',x=grid.x,y=grid.y,z=grid.z,N=grid.N_,
+            geo_spec=qc.geo_spec,geo_info=qc.geo_info,
+            grid_info=numpy.array(grid.is_vector,dtype=int))
+    f = h5py.File(fid, 'a')
+    f['j_nto'] = j_nto
+    f.close()
+  
+  return j_nto
