@@ -66,8 +66,9 @@ class RPAClass:
             signal[xyz] += (4*pi*eta*(-docc)/volume)*(1/((xx-mo_ene[jj]+mo_ene[kk])**2+(eta**2)))*(dm[xyz,jj,kk]/(mo_ene[jj]-mo_ene[kk]))**2
   
     # Calculate absorption spectra
-    for xyz in range(len(q)):
-      signal[xyz] *= volume*xx/c_in_au
+    if True in pbc:
+      for xyz in range(len(q)):
+        signal[xyz] *= volume*xx/c_in_au
       
     if hdf5_fid and not self.hdf5_input:
       fid = hdf5_fid if hdf5_fid.endswith('.h5') else '%s.h5' % hdf5_fid
@@ -80,7 +81,7 @@ class RPAClass:
 
     return signal
   
-  def get_Tij_otos(Erange=numpy.array([0.0,1.0])*ev2ha,pbc=[False, False, False],hdf5_fid=None,numproc=4):
+  def get_Tij_otos(self,dE,pbc=[False, False, False],numproc=4):
     
     # Get MO energies and coefficients
     qc = self.qc
@@ -108,12 +109,17 @@ class RPAClass:
         dm = numpy.array(dm)
     
     # Calculating transition dipole matrix
-    Tij = numpy.zeros((LUMO,len(qc.mo_spec)-LUMO))
+    display('Calculating density matrix for OTOs.\n')
+    Tij = numpy.zeros((len(dE),LUMO,len(qc.mo_spec)-LUMO))
     qc = self.qc
-    for xyz in range(len(q)):
-      for jj in range(LUMO):
-        for kk in range(LUMO,len(qc.mo_spec)):
-          if abs(mo_ene[jj] - mo_ene[kk]) >= Erange[0] and abs(mo_ene[jj] - mo_ene[kk]) <= Erange[0]:
-            Tij[xyz] += dm[xyz,jj,kk]
+    for thr in range(len(dE)):
+      for xyz in range(len(q)):
+        for jj in range(LUMO):
+          for kk in range(LUMO,len(qc.mo_spec)):
+            if abs(mo_ene[jj] - mo_ene[kk]) >= dE[thr,0] and abs(mo_ene[jj] - mo_ene[kk]) <= dE[thr,1]:
+              Tij[thr,jj,kk-LUMO] += dm[xyz,jj,kk]
+            
+      norm = numpy.linalg.norm(Tij[thr])
+      Tij[thr] /= norm
     
     return Tij
