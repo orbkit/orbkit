@@ -81,14 +81,14 @@ class RPAClass:
 
     return signal
   
-  def get_Tij_otos(self,dE,pbc=[False, False, False],numproc=4):
+  def get_Tij_otos(self,dE,pbc=[False, False, False],q = 'xyz',numproc=4):
     
     # Get MO energies and coefficients
     qc = self.qc
     mo_ene = qc.mo_spec.get_eig()
     HOMO = qc.mo_spec.get_homo()
     LUMO = HOMO + 1
-    q = 'xyz'
+    #q = 'xyz'
     
     # Calculate dipole moments in velocity gauge
     dm = self.dm
