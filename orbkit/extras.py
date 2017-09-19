@@ -329,43 +329,17 @@ def calc_ao(qc, drv=None, otype=None, ofid=None):
     ofid = options.outputname
   dstr = '' if drv is None else '_d%s' % drv
   
-  ao_spec = []
-  lxlylz = []
-  datalabels = []
-  for sel_ao in range(len(qc.ao_spec)):
-    if 'exp_list' in qc.ao_spec[sel_ao].keys():
-      l = qc.ao_spec[sel_ao]['exp_list']
-    else:
-      l = core.exp[core.lquant[qc.ao_spec[sel_ao]['type']]]
-    lxlylz.extend(l)
-    for i in l:
-      ao_spec.append(qc.ao_spec[sel_ao].copy())
-      ao_spec[-1]['exp_list'] = [i]
-      datalabels.append('lxlylz=%s,atom=%d' %(i,ao_spec[-1]['atom']))
-  
-  global_args = {'geo_spec':qc.geo_spec,
-                 'geo_info':qc.geo_info,
-                 'ao_spec':ao_spec,
-                 'drv':drv,
-                 'x':grid.x,
-                 'y':grid.y,
-                 'z':grid.z,
-                 'is_vector':grid.is_vector,
-                 'otype':otype,
-                 'ofid':ofid}
-  display('Starting the computation of the %d atomic orbitals'%len(ao_spec)+
-         (' using %d subprocesses.' % options.numproc if options.numproc > 1 
-          else '.' )
-          )
-  ao = run(get_ao,x=numpy.arange(len(ao_spec)).reshape((-1,1)),
-           numproc=options.numproc,display=display,
-           initializer=initializer,global_args=global_args)
-    
+  if qc.ao_spherical is None: 
+    lxlylz,assign = core.get_lxlylz(qc.ao_spec,get_assign=True)
+    datalabels = ['lxlylz=%s,atom=%d' % (lxlylz[i],qc.ao_spec[assign[i]]['atom']) for i in range(len(lxlylz))]
+  else:
+    datalabels = ['l,m=%s' % i for i in qc.ao_spherical]
+  ao_list = core.rho_compute(qc,
+                             calc_ao=True,
+                             drv=drv,
+                             slice_length=options.slice_length,
+                             numproc=options.numproc)
   if otype is None or 'h5' in otype or 'mayavi' in otype:   
-    ao_list = []
-    for i in ao:
-      ao_list.extend(i)      
-    ao_list = numpy.array(ao_list)
     if otype is None or options.no_output:
       return ao_list
     
