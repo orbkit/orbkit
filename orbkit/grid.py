@@ -126,10 +126,13 @@ def get_shape():
 def set_grid(xnew,ynew,znew,is_vector=None):
   '''Sets the x-, y-, z-grid.
   '''
-  global x, y, z, is_initialized
+  global x, y, z, is_initialized,is_regular
   coord = ['x', 'y', 'z']  
   NumberTypes = (int, float) #: Contains the supported types.
-  
+
+  # Making sure we have a clean new grid to work with
+  reset_grid()
+
   length = []
   grid = [xnew,ynew,znew]
   for i,c in enumerate(grid):
@@ -170,25 +173,23 @@ def set_grid(xnew,ynew,znew,is_vector=None):
   is_initialized = True
   if isinstance(is_vector,bool):
     setattr(sys.modules[__name__],'is_vector',is_vector)
+    is_regular = not is_vector
     info_string += ('\n\nThe variable `grid.is_vector` has been set to %s.' % 
                     is_vector)
-  #set_boundaries(is_regular=(is_vector==False))
+  set_boundaries()
   return info_string
   # set_grid 
 
-def set_boundaries(is_regular=False,Nx=None,Ny=None,Nz=None):
+def set_boundaries():
   global is_vector, min_, max_, delta_, N_
   min_ = [x.min(),y.min(),z.min()]
   max_ = [x.max(),y.max(),z.max()]
-  if is_regular:
-    N_ = [len(x),len(y),len(z)]
-    delta_ = [x[1]-x[0],y[1]-y[0],z[1]-z[0]]
-  elif all([Nx,Ny,Nz]):
-    N_ = [Nx,Ny,Nz]
-    grid = numpy.array([x,y,z]).reshape(3,Nx,Ny,Nz)
-    delta_ = [grid[1,0,0]-grid[0,0,0],
-              grid[0,1,0]-grid[0,0,0],
-              grid[0,0,1]-grid[0,0,0]]
+  N_ = [len(x),len(y),len(z)]
+  if not is_vector:
+    delta_ = [1.,1.,1.]
+    for i,d in enumerate([x,y,z]):
+      if len(d) > 1 :
+        delta_[i] = d[1] - d[0]
 
 def get_bbox():
   bbox = numpy.zeros(6)
