@@ -247,7 +247,10 @@ def slice_rho(xx):
     drv = Spec['Derivative']
     calc_mo = Spec['calc_mo']
     if Spec['calc_ao']:
-      mo_creator = lambda x,y: x
+      _mo_creator = lambda x,y: x
+    else: 
+      _mo_creator = mo_creator
+      
     
     # Set up Grid
     x = grid.x[xx[0]:xx[1]]
@@ -261,11 +264,11 @@ def slice_rho(xx):
         # Calculate the derivatives of the AOs and MOs for this slice 
         delta_ao_list = ao_creator(geo_spec,ao_spec,ao_spherical=ao_spherical,drv=ii_d,
                     x=x,y=y,z=z,is_vector=True)
-        delta_mo_list.append(mo_creator(delta_ao_list,mo_spec))
+        delta_mo_list.append(_mo_creator(delta_ao_list,mo_spec))
       return numpy.array(delta_mo_list)
     # Calculate the MOs and AOs for this slice 
     ao_list = ao_creator(geo_spec,ao_spec,ao_spherical=ao_spherical,x=x,y=y,z=z,is_vector=True)
-    mo_list = mo_creator(ao_list,mo_spec)
+    mo_list = _mo_creator(ao_list,mo_spec)
     
     if calc_mo:
       return numpy.array(mo_list)
@@ -426,7 +429,7 @@ def rho_compute(qc,calc_ao=False,calc_mo=False,drv=None,laplacian=False,
       mo_num = len(lxlylz)
     else:
       mo_num = len(Spec['ao_spherical'])
-      labels = ['l,m=%s' % i for i in Spec['ao_spherical']]
+      labels = ['l,m=%s,atom=%d' % (j,Spec['ao_spec'][i]['atom']) for i,j in Spec['ao_spherical']]
   else:
     mo_num = len(Spec['mo_spec'])
     labels = [ii_mo['sym'] for ii_mo in Spec['mo_spec']]
@@ -464,8 +467,8 @@ def rho_compute(qc,calc_ao=False,calc_mo=False,drv=None,laplacian=False,
     display('The calculation will be carried out with %d subprocesses.' 
             % numproc)
   display('\nThere are %d contracted %s AOs' % (len(Spec['mo_spec'][0]['coeffs']),
-          'Cartesian' if not Spec['ao_spherical'] else 'spherical')
-          + '' if calc_ao else ' and %d MOs to be calculated.' % mo_num )
+          'Cartesian' if not Spec['ao_spherical'] else 'spherical')+ 
+          ('' if calc_ao else ' and %d MOs to be calculated.' % mo_num) )
   
   # Initialize some additional user information 
   status_old = 0
@@ -737,10 +740,9 @@ def rho_compute_no_slice(qc,calc_ao=False,calc_mo=False,drv=None,
     drv = ['xx','yy','zz']
   
   display('\nStarting the calculation without slicing the grid...')
-  display('\nThere are %d contracted %s AOs and %d MOs to be calculated.' %
-          (len(mo_spec[0]['coeffs']),
-           'Cartesian' if not ao_spherical else 'spherical', 
-           len(mo_spec)))
+  display('\nThere are %d contracted %s AOs' % (len(Spec['mo_spec'][0]['coeffs']),
+          'Cartesian' if not Spec['ao_spherical'] else 'spherical')+ 
+          ('' if calc_ao else ' and %d MOs to be calculated.' % mo_num) )
   
   
   if drv is not None:
@@ -758,8 +760,10 @@ def rho_compute_no_slice(qc,calc_ao=False,calc_mo=False,drv=None,
       delta_ao_list[i] = ao_creator(geo_spec,ao_spec,ao_spherical=ao_spherical,
                                       drv=ii_d,
                                       is_vector=True,x=x,y=y,z=z)
-      delta_mo_list[i] =  mo_creator(delta_ao_list[i],mo_spec)                     
+      if not calc_ao: delta_mo_list[i] =  mo_creator(delta_ao_list[i],mo_spec)                     
     delta_ao_list = convert(delta_ao_list,was_vector,N)
+    if calc_ao: 
+      return delta_ao_list
     delta_mo_list = convert(delta_mo_list,was_vector,N)
     if calc_mo:  
       return ((delta_ao_list,delta_mo_list) if return_components 
@@ -787,8 +791,10 @@ def rho_compute_no_slice(qc,calc_ao=False,calc_mo=False,drv=None,
   # Calculate the AOs and MOs 
   ao_list = ao_creator(geo_spec,ao_spec,ao_spherical=ao_spherical,
                        is_vector=True,x=x,y=y,z=z)
-  mo_list = convert(mo_creator(ao_list,mo_spec),was_vector,N)
   ao_list = convert(ao_list,was_vector,N)
+  if calc_ao: 
+    return ao_list
+  mo_list = convert(mo_creator(ao_list,mo_spec),was_vector,N)
   if not was_vector:
     # Print the norm of the MOs 
     display('\nNorm of the MOs:')

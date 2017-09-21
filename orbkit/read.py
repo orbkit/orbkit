@@ -1074,16 +1074,40 @@ def read_gaussian_fchk(filename, all_mo=False, spin=None, **kwargs):
   # Look for SP atomic orbitals
   if ao_sp_coeffs:
     ao_new = []
+    ao_spherical_new = []
+    count = 0
     for i,ao in enumerate(qc.ao_spec):
       if ao['type'] == 'p' and sum(numpy.abs(ao_sp_coeffs[i])) > 0:
         ao_new.append(copy.deepcopy(ao))
         ao_new[-1]['type'] = 's'
         ao_new.append(ao)
         ao_new[-1]['type'] = 'p'
-        ao_new[-1]['coeffs'][:,1] = numpy.array(ao_sp_coeffs[i])        
+        ao_new[-1]['coeffs'][:,1] = numpy.array(ao_sp_coeffs[i])    
       else:
         ao_new.append(ao)
+    
+    if not cartesian_basis:
+      ao_spherical_new = [] 
+      count = 0
+      for i,ao in enumerate(qc.ao_spec):
+        if ao['type'] == 'p' and sum(numpy.abs(ao_sp_coeffs[i])) > 0: 
+          ao_spherical_new.append([count,(0,0)])
+          count += 1 
+          for m in (1, -1, 0):
+            ao_spherical_new.append([count,(1,m)])
+          count += 1 
+        else:
+          l = lquant[ao['type']]
+          for m in (range(0,l+1) if l != 1 else [1,0]):
+            ao_spherical_new.append([count,(l,m)])
+            if m != 0:
+              ao_spherical_new.append([count,(l,-m)])
+          count += 1
+      assert count == len(ao_new)
+      qc.ao_spherical = ao_spherical_new
+      
     qc.ao_spec = ao_new   
+    
     
   # Are all MOs requested for the calculation? 
   if not all_mo:
