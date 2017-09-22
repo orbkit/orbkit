@@ -46,8 +46,8 @@ def calc_mo(qc, fid_mo_list, drv=None, otype=None, ofid=None,
       Specifies the filename of the molecular orbitals list or list of molecular
       orbital labels (cf. :mod:`orbkit.read.mo_select` for details). 
       If fid_mo_list is 'all_mo', creates a list containing all molecular orbitals.
-    drv : int or string, {None, 'x', 'y', 'z', 0, 1, 2}, optional
-      If not None, a derivative calculation of the atomic orbitals 
+    drv : string or list of strings {None,'x','y', 'z', 'xx', 'xy', ...}, optional
+      If not None, a derivative calculation of the molecular orbitals 
       is requested.
     otype : str or list of str, optional
       Specifies output file type. See :data:`otypes` for details.
@@ -147,9 +147,8 @@ def mo_set(qc, fid_mo_list, drv=None, laplacian=None,
     ofid : str, optional
       Specifies output file name. If None, the filename will be based on
       :mod:`orbkit.options.outputname`.
-    drv : int or string, {None, 'x', 'y', 'z', 0, 1, 2}, optional
-      If not None, a derivative calculation of the atomic orbitals 
-      is requested.
+    drv : string or list of strings {None,'x','y', 'z', 'xx', 'xy', ...}, optional
+      If not None, a derivative calculation is requested.
     return_all : bool
       If False, no data will be returned.
     numproc : int, optional
@@ -288,6 +287,97 @@ def mo_set(qc, fid_mo_list, drv=None, laplacian=None,
     return datasets, delta_datasets
   # mo_set 
 
+
+def calc_ao(qc, drv=None, otype=None, ofid=None,
+            numproc=None, slice_length=None):
+  '''Calculates and saves the selected molecular orbitals or the derivatives thereof.
+  **Parameters:**
+   
+    qc.geo_spec, qc.geo_info, qc.ao_spec, qc.mo_spec :
+      See :ref:`Central Variables` for details.
+    fid_mo_list : str
+      Specifies the filename of the molecular orbitals list or list of molecular
+      orbital labels (cf. :mod:`orbkit.read.mo_select` for details). 
+      If fid_mo_list is 'all_mo', creates a list containing all molecular orbitals.
+    drv : string or list of strings {None,'x','y', 'z', 'xx', 'xy', ...}, optional
+      If not None, a derivative calculation of the molecular orbitals 
+      is requested.
+    otype : str or list of str, optional
+      Specifies output file type. See :data:`otypes` for details.
+    ofid : str, optional
+      Specifies output file name. If None, the filename will be based on
+      :mod:`orbkit.options.outputname`.
+    numproc : int, optional
+      Specifies number of subprocesses for multiprocessing. 
+      If None, uses the value from :mod:`options.numproc`.
+    slice_length : int, optional
+      Specifies the number of points per subprocess.
+      If None, uses the value from :mod:`options.slice_length`.
+    
+  **Returns:**
+    ao_list : numpy.ndarray, shape=((NMO,) + N)
+      Contains the NMO=len(qc.mo_spec) molecular orbitals on a grid.
+  '''
+  slice_length = options.slice_length if slice_length is None else slice_length
+  numproc = options.numproc if numproc is None else numproc
+
+  # Calculate the AOs and MOs 
+  ao_list = core.rho_compute(qc,
+                             calc_ao=True,
+                             drv=drv,
+                             slice_length=slice_length,
+                             numproc=numproc)
+  
+  if otype is None:
+    return ao_list
+  
+  if ofid is None:
+    ofid = '%s_MO' % (options.outputname)
+  
+  if not options.no_output:
+    if 'h5' in otype:    
+      output.main_output(ao_list,qc.geo_info,qc.geo_spec,data_id='MO',
+                    outputname=ofid,
+                    mo_spec=qc_select.mo_spec,drv=drv,is_mo_output=True)
+    # Create Output     
+    cube_files = []
+    for i in range(len(qc_select.mo_spec)):
+      outputname = '%s_%s' % (ofid,qc_select.mo_spec.selected_mo[i])
+      comments = ('%s,Occ=%.1f,E=%+.4f' % (qc_select.mo_spec.selected_mo[i],
+                                           qc_select.mo_spec.get_occ()[i],
+                                           qc_select.mo_spec.get_eig()[i]))
+      index = numpy.index_exp[:,i] if drv is not None else i
+      output_written = output.main_output(ao_list[index],
+                                      qc.geo_info,qc.geo_spec,
+                                      outputname=outputname,
+                                      comments=comments,
+                                      otype=otype,omit=['h5','vmd','mayavi'],
+                                      drv=drv)
+      
+      for i in output_written:
+        if i.endswith('.cb'):
+          cube_files.append(i)
+    
+    if 'vmd' in otype and cube_files != []:
+      display('\nCreating VMD network file...' +
+                      '\n\t%(o)s.vmd' % {'o': ofid})
+      output.vmd_network_creator(ofid,cube_files=cube_files)
+  if 'mayavi' in otype:
+    datalabels = ['MO %(sym)s, Occ=%(occ_num).2f, E=%(energy)+.4f E_h' % 
+                  i for i in qc_select.mo_spec]
+    if drv is not None:
+      tmp = []
+      for i in drv:
+        for j in datalabels:
+          tmp.append('d/d%s of %s' % (i,j))
+      datalabels = tmp
+    data = ao_list.reshape((-1,) + grid.get_shape())
+    
+    output.main_output(data,qc.geo_info,qc.geo_spec,
+                       otype='mayavi',datalabels=datalabels)
+  
+  return ao_list
+# calc_ao
 def calc_ao(qc, drv=None, otype=None, ofid=None):  
   '''Computes and saves all atomic orbital or a derivative thereof.
   

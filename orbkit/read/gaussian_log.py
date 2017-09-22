@@ -384,7 +384,7 @@ def read_gaussian_log(fname,all_mo=False,spin=None,orientation='standard',
   
   # Convert geo_info and geo_spec to numpy.ndarrays
   qc.format_geo(is_angstrom=True)
-
+  print qc.ao_spec,type(qc.ao_spec)
   qc.mo_spec.update()
   qc.ao_spec.update()
   return qc

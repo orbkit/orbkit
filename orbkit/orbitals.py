@@ -414,7 +414,16 @@ class AOClass(UserList):
         return (copy(self.lxlylz), copy(self.assign_lxlylz))
     else:
       return copy(self.lxlylz)
-
+  def get_labels(self):
+    print self.lxlylz,
+    print self.contspher
+    #if Spec['ao_spherical'] is None: 
+      #lxlylz,assign = get_lxlylz(Spec['ao_spec'],get_assign=True)
+      #labels = ['lxlylz=%s,atom=%d' % (lxlylz[i],Spec['ao_spec'][assign[i]]['atom']) for i in range(len(lxlylz))]
+      #mo_num = len(lxlylz)
+    #else:
+      #mo_num = len(Spec['ao_spherical'])
+      #labels = ['l,m=%s,atom=%d' % (j,Spec['ao_spec'][i]['atom']) for i,j in Spec['ao_spherical']]
 
 class MOClass(UserList):
   '''MO base class which contains all information on atomic orbitals.
