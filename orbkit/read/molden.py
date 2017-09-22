@@ -326,29 +326,29 @@ def read_molden(fname, all_mo=False, spin=None, i_md=-1, interactive=True,
   # Convert geo_info and geo_spec to numpy.ndarrays
   qc.format_geo(is_angstrom=angstrom)
   
-  # Check the normalization
-  from orbkit.analytical_integrals import get_ao_overlap
-  spher_tmp = qc.ao_spec.spherical
-  qc.ao_spec.spherical = False #Don't know what's going on here - we seem to need this though...
-  norm = numpy.diagonal(get_ao_overlap(qc.geo_spec,qc.geo_spec,qc.ao_spec))
-  qc.ao_spec.spherical = spher_tmp #Let's put things back as they where before this terrible hack
+  ## Check the normalization
+  #from orbkit.analytical_integrals import get_ao_overlap
+  #spher_tmp = qc.ao_spec.spherical
+  #qc.ao_spec.spherical = False #Don't know what's going on here - we seem to need this though...
+  #norm = numpy.diagonal(get_ao_overlap(qc.geo_spec,qc.geo_spec,qc.ao_spec))
+  #qc.ao_spec.spherical = spher_tmp #Let's put things back as they where before this terrible hack
 
-  if sum(numpy.abs(norm-1.)) > 1e-8:
-    display('The atomic orbitals are not normalized correctly, renormalizing...\n')
-    if not by_orca[i_md]: 
-      j = 0
-      for i in range(len(qc.ao_spec)):
-        qc.ao_spec[i]['coeffs'][:,1] /= numpy.sqrt(norm[j])
-        for n in range(l_deg(lquant[qc.ao_spec[i]['type']],cartesian_basis=True)):
-          j += 1
-    else:
-      qc.ao_spec[0]['N'] = 1/numpy.sqrt(norm[:,numpy.newaxis])
+  #if sum(numpy.abs(norm-1.)) > 1e-8:
+    #display('The atomic orbitals are not normalized correctly, renormalizing...\n')
+    #if not by_orca[i_md]: 
+      #j = 0
+      #for i in range(len(qc.ao_spec)):
+        #qc.ao_spec[i]['coeffs'][:,1] /= numpy.sqrt(norm[j])
+        #for n in range(l_deg(lquant[qc.ao_spec[i]['type']],cartesian_basis=True)):
+          #j += 1
+    #else:
+      #qc.ao_spec[0]['N'] = 1/numpy.sqrt(norm[:,numpy.newaxis])
 
-    if cartesian_basis[i_md]:
-      from orbkit.cy_overlap import ommited_cca_norm
-      cca = ommited_cca_norm(qc.ao_spec.get_lxlylz())
-      for mo in qc.mo_spec:
-        mo['coeffs'] *= cca
+    #if cartesian_basis[i_md]:
+      #from orbkit.cy_overlap import ommited_cca_norm
+      #cca = ommited_cca_norm(qc.ao_spec.get_lxlylz())
+      #for mo in qc.mo_spec:
+        #mo['coeffs'] *= cca
 
   qc.mo_spec.update()
   qc.ao_spec.update()
