@@ -617,7 +617,7 @@ def save_hdf5(fid,variables=['geo_info',
   additional :literal:`kwargs` to an HDF5 file. 
   '''
   
-  from orbkit.output import hdf5_open,hdf5_append
+  from orbkit.write import hdf5_open,hdf5_append
   
   # Save HDF5 File
   display('Saving Hierarchical Data Format file (HDF5) to %s...' % fid)
@@ -653,7 +653,7 @@ def read_hdf5(fid,variables=['geo_info',
   this module. 
   '''
   
-  from orbkit.output import hdf5_open,hdf52dict
+  from orbkit.write import hdf5_open,hdf52dict
   
   # Read HDF5 File
   display('Reading Hierarchical Data Format file (HDF5) File from %s' % fid)

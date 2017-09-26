@@ -20,7 +20,7 @@ usecases = {'homo-1:lumo+2': [3,4,5,6],
             'homo': [4],
             'homo,lumo:lastbound+4': [4,5,6,7], #Last bound is HOMO
             'all_mo': range(len(qc.mo_spec)),
-            '1.A1_a 2.A1_a 1.B2_a 3.A1_a': [0,1,2,3],
+            '1.A1 2.A1 1.B2 3.A1': [0,1,2,3,25,26,27,28],
             '0 1 2 3': [0,1,2,3],
             '0       1            2 3': [0,1,2,3], #Test spaces and tabs
             '0,1 2:4': [0,1,2,3],
@@ -28,7 +28,8 @@ usecases = {'homo-1:lumo+2': [3,4,5,6],
             ':2': [0,1],
             '2:': range(2,len(qc.mo_spec)),
             '0:5:2': [0,2,4],
-            '1.A1_a 2.A1_a 1.B2_a 3.A1_a alpha': [0,1,2,3],
+            '1.A1 2.A1 1.B2 3.A1 alpha': [0,1,2,3],
+            '1.A1 2.A1 1.B2 3.A1 beta': [25,26,27,28],
             'homo,lumo alpha': [4,5],
             'all_mo alpha': list(range(len(qc.mo_spec)//2))
            }
@@ -36,25 +37,40 @@ usecases = {'homo-1:lumo+2': [3,4,5,6],
 for case in usecases:
   refmo = MOClass([qc.mo_spec[i] for i in usecases[case]])
   refmo.update()
-  equal(qc.mo_spec.select(case, flatten_input=True), refmo)
+  equal(qc.mo_spec[case], refmo)
 
 # Test lists of strings
 refmo = MOClass([qc.mo_spec[i] for i in [0,1,2,3]])
 refmo.update()
-equal(qc.mo_spec.select(['1.A1_a', '2.A1_a', '1.B2_a', '3.A1_a', 'alpha'], flatten_input=True), refmo)
+equal(qc.mo_spec[['1.A1', '2.A1', '1.B2', '3.A1', 'all_alpha']], refmo)
 
-refmo = MOClass([qc.mo_spec[i] for i in [0,1,2,3]])
+refmo = MOClass([qc.mo_spec[i] for i in [0,1,2,3,25,26]])
 refmo.update()
-equal(qc.mo_spec.select([['1.A1_a', '2.A1_a'], ['1.B2_a', '3.A1_a', 'alpha']], flatten_input=True), refmo)
+equal(qc.mo_spec[[['1.A1', '2.A1'], ['1.B2', '3.A1', 'alpha']]], refmo)
+
+refmo = MOClass([qc.mo_spec[i] for i in range(12)])
+refmo.update()
+
+equal(qc.mo_spec[map(str,list(range(12)))], refmo)
 
 # Test lists of integers
 refmo = MOClass([qc.mo_spec[i] for i in range(12)])
 refmo.update()
-equal(qc.mo_spec.select(list(range(12)), flatten_input=True), refmo)
+equal(qc.mo_spec[range(12)], refmo)
 
 refmo = MOClass([qc.mo_spec[i] for i in range(12)])
 refmo.update()
-equal(qc.mo_spec.select([list(range(5)), list(range(5,12))], flatten_input=True), refmo)
+equal(qc.mo_spec[[range(5), range(5,12)]], refmo)
+
+# Test mixed lists
+refmo = MOClass([qc.mo_spec[i] for i in range(12)])
+refmo.update()
+equal(qc.mo_spec[[['1.A1','2.A1','1.B2','3.A1', 'all_alpha'] + range(4,12)]], refmo)
+
+refmo = MOClass([qc.mo_spec[i] for i in range(12)])
+refmo.update()
+equal(qc.mo_spec[[['1.A1','2.A1','1.B2','3.A1'] + ['all_alpha'] + range(4,7)+ map(str,list(range(7,10))) + range(10,12)]], refmo)
+
 
 
 

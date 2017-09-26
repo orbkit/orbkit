@@ -17,7 +17,7 @@ mayavi_yes = False
 
 # import the functions of orbkit (import function 
 # ok that imports all other functions)
-import orbkit as ok
+import orbkit
 
 # name and type of input file
 fid_in  = 'h2o.molden'
@@ -27,18 +27,18 @@ itype   = 'molden'
 numproc = 4
 
 # set grid parameters 
-ok.grid.N_   = [  50,   52,   54]
-ok.grid.max_ = [ 6.5,  6.5,   6.5]
-ok.grid.min_ = [-6.5, -6.5,  -6.5]
+orbkit.grid.N_   = [  50,   52,   54]
+orbkit.grid.max_ = [ 6.5,  6.5,   6.5]
+orbkit.grid.min_ = [-6.5, -6.5,  -6.5]
 
 # open molden file and read parameters
-qc = ok.main_read(fid_in,itype=itype)
+qc = orbkit.main_read(fid_in,itype=itype)
 
 # initialize grid
-ok.grid_init()
+orbkit.grid_init()
 
 # print grid information
-print(ok.get_grid())
+print(orbkit.get_grid())
 
 # define the molecular orbital to be calculated
 selected_MO = ['3.1']
@@ -51,12 +51,12 @@ qc_select.mo_spec = qc_select.mo_spec.select(selected_MO)
 qc_select = qc.todict()
 
 # calculate MO
-mo_list = ok.rho_compute(qc_select,calc_mo=True,numproc=numproc)    
+mo_list = orbkit.rho_compute(qc_select,calc_mo=True,numproc=numproc)    
 
 # plot the results
-x = ok.grid.x
-y = ok.grid.y
-z = ok.grid.z
+x = orbkit.grid.x
+y = orbkit.grid.y
+z = orbkit.grid.z
 
 # if selected, use mayavi2 to make isosurface plot
 maya = False
@@ -83,12 +83,12 @@ elif mayavi_yes == True:
 
 # use matplotlib to show cuts of the molecular orbitals
 import matplotlib.pyplot as plt
-import numpy as np
+import numpy
 
 # select cuts
-xd = mo_list[0][ok.grid.N_[0]/2-1,:,:]
-yd = mo_list[0][:,ok.grid.N_[1]/2-1,:]
-zd = mo_list[0][:,:,ok.grid.N_[2]/2-1]
+xd = mo_list[0][orbkit.grid.N_[0]/2-1,:,:]
+yd = mo_list[0][:,orbkit.grid.N_[1]/2-1,:]
+zd = mo_list[0][:,:,orbkit.grid.N_[2]/2-1]
 
 # plot cuts
 f, (pic1, pic2, pic3) = \
@@ -103,7 +103,7 @@ pic2.contour(z,x,yd,50,linewidths=0.5,colors='k')
 pic2.contourf(\
     z,x,yd,50,cmap=plt.cm.rainbow,vmax=abs(yd).max(),vmin=-abs(yd).max())    
 pic2.set_xlabel('z')
-pic2.set_ylabel('x')    
+pic2.set_ylabel('x')
 
 pic3.contour(y,x,zd,50,linewidths=0.5,colors='k')
 pic3.contourf(\
@@ -112,8 +112,8 @@ pic3.set_xlabel('y')
 pic3.set_ylabel('x')     
 
 # following options applied for all subplots as they share x- and y-axis
-pic1.xaxis.set_ticks(np.arange(-5,6,5))
-pic1.yaxis.set_ticks(np.arange(-5,6,5))
+pic1.xaxis.set_ticks(numpy.arange(-5,6,5))
+pic1.yaxis.set_ticks(numpy.arange(-5,6,5))
 pic1.set_aspect('equal')
 
 # plot

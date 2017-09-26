@@ -44,13 +44,8 @@ class ScriptTestCase(unittest.TestCase):
     def __str__(self):
         return self.filename.split('/')[-1][:-3]
 
-    def id(self):
-        return self.filename
-
 
 def test():
-
-  ts = unittest.TestSuite()
 
   if options.numproc == 1:
     display('----------------------------------------------------------------------')
@@ -61,6 +56,8 @@ def test():
     display('             Testing parallel ORBKIT functionality                    ')
     display('----------------------------------------------------------------------\n')
 
+
+  ts = unittest.TestSuite()
   tsrun = unittest.TextTestRunner(verbosity=2)
 
   tests_home = __file__.split('__')[0] + 'test/'

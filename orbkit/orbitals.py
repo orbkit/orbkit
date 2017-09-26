@@ -1,6 +1,7 @@
 import numpy
 from os import path
 from copy import copy
+import sys
 
 try:
   from UserList import UserList
@@ -60,6 +61,7 @@ class AOClass(UserList):
       self.lmprim2cont = None
       self.normalized = False
       self.new2old()
+
   def todict(self):
     self.update()
     data = {'cont2atoms': self.cont2atoms,
@@ -70,8 +72,28 @@ class AOClass(UserList):
             'lxlylz': self.lxlylz,
             'assign_lxlylz': self.assign_lxlylz}
     return data
+
   def __getitem__(self, item):
-    return UserList.__getitem__(self, item)
+    if isinstance(item, int):
+      return UserList.__getitem__(self, item)
+    elif isinstance(item, (list,numpy.ndarray)):
+      item = numpy.array(item)
+      if item.ndim > 1:
+        raise ValueError('Only 1D arrays can be used for indexing!')
+      data_out = []
+      for i, c in enumerate(item):
+        if isinstance(c, numpy.bool_):
+          if c:
+            data_out.append(self.data[i])
+        else:
+          data_out.append(self.data[c])
+      ao_out = AOClass(data_out)
+      ao_out.update()
+      del data_out
+      return ao_out
+    else:
+      raise NotImplementedError('Only lists and arrays of integers and/or booleans are supported for array indexing!')
+
   def __eq__(self, other):
     cases = [isinstance(other, AOClass), other == [], other is None]
     if not any(cases):
@@ -101,25 +123,30 @@ class AOClass(UserList):
     self.is_normlized()
     self.up2date = True
     return
+
   def __setitem__(self, i, item):
     self.data[i] = item
     self.up2date = False
   def __delitem__(self, i):
     del self.data[i]
     self.up2date = False
+
   def append(self, item):
     if 'ao_spherical' not in item:
       item['ao_spherical'] = []
     UserList.append(self, item)
     self.up2date = False
+
   def extend(self, item):
     if 'ao_spherical' not in item:
       item['ao_spherical'] = []
     UserList.extend(self, item)
     self.up2date = False
+
   def remove(self, item):
     UserList.remove(self, item)
     self.up2date = False
+
   def ao_template(self):
     template = {'atom': None,
                 'pnum': None,
@@ -447,6 +474,8 @@ class MOClass(UserList):
     self.spinpolarized = False
     self.selection_string = None
     self.selected_mo = None
+    self.alpha_index = None
+    self.beta_index = None
     if restart is not None:
       self.up2date = True
       self.coeffs = restart['coeffs']
@@ -455,6 +484,8 @@ class MOClass(UserList):
       self.eig = restart['eig']
       self.spinpolarized = restart['spinpolarized']
       self.selection_string = restart['selection_string']
+      self.alpha_index = restart['alpha_index']
+      self.beta_index = restart['beta_index']
       self.selected_mo = restart['selected_mo']
       self.new2old()
 
@@ -462,6 +493,8 @@ class MOClass(UserList):
     self.update()
     data = {'coeffs': self.coeffs,
             'selection_string': self.selection_string,
+            'alpha_index': self.alpha_index,
+            'beta_index': self.beta_index,
             'selected_mo': self.selected_mo,
             'spinpolarized': self.spinpolarized,
             'occ': self.occ,
@@ -470,8 +503,36 @@ class MOClass(UserList):
     return data
 
   def __getitem__(self, item):
-    return UserList.__getitem__(self, item)
-
+    parse_directly = False
+    if isinstance(item, int):
+      return UserList.__getitem__(self, item)
+    elif isinstance(item, (list, numpy.ndarray)) or \
+         (sys.version_info.major == 3 and isinstance(item, range)):
+      if isinstance(item, numpy.ndarray):
+        parse_directly = item.dtype in [int, numpy.int_, numpy.intc, bool, numpy.bool_]
+      else:
+        parse_directly = True
+        for it in item:
+          if not isinstance(it, (int, numpy.int_, numpy.intc, bool, numpy.bool_)):
+            parse_directly = False
+            break
+    if parse_directly:
+      item = numpy.array(item)
+      if item.ndim > 1:
+        raise ValueError('Only 1D arrays can be used for indexing!')
+      data_out = []
+      for i, c in enumerate(item):
+        if isinstance(c, numpy.bool_):
+          if c:
+            data_out.append(self.data[i])
+        else:
+          data_out.append(self.data[c])
+      mo_out = MOClass(data_out)
+      mo_out.update()
+      del data_out
+    else:
+      mo_out = self.select(item)
+    return mo_out
   def __setitem__(self, i, item):
     self.data[i] = item
     self.up2date = False
@@ -605,20 +666,29 @@ class MOClass(UserList):
     self.get_occ()
     self.get_eig()
     self.get_sym()
-    self.get_spinstate()
     self.up2date = True
+    if self.alpha_index is None and self.beta_index is None:
+      self.get_spinstate()
     return
 
   def get_spinstate(self):
-    '''Determines whether the MOClass has alpha and beta spins.
+    '''Determines whether the MOClass has alpha and beta spins and removes the _a/_b spin labels.
+    For spin-paired calculations all spins are set to 'alpha'.
     '''
     if not self.up2date:
       self.get_sym()
     self.spinpolarized = False
-    spins = []
-    for sy in self.sym:
-      spins.append(sy.split('_')[-1])
-    if len(spins) == len(self.sym) and 'a' in spins and 'b' in spins:
+    self.alpha_index = []
+    self.beta_index = []
+    spindic = {'a': self.alpha_index, 'b': self.beta_index}
+    for isym in range(len(self.sym)):
+      split_label = self.sym[isym].split('_')
+      if len(split_label) == 2:
+        spindic[split_label[-1]].append(isym)
+        self.sym[isym] = split_label[0]
+      else:
+        spindic['a'].append(isym)
+    if len(self.beta_index) != 0:
       self.spinpolarized = True
 
   def get_labels(self):
@@ -743,10 +813,14 @@ class MOClass(UserList):
         else:
           return copy(numpy.array(self.occ, dtype=numpy.intc))
       else:
+        occ_alpha = self.occ[self.alpha_index]
+        occ_beta = self.occ[self.beta_index]
         if not return_int:
-          return copy(numpy.rashape(self.occ, (2,-1)))
+          return copy(numpy.array([occ_alpha,occ_beta]))
         else:
-          return copy(numpy.array(numpy.rashape(self.occ, (2,-1)), dtype=numpy.intc))
+          occ_alpha = numpy.array(occ_alpha, dtype=numpy.intc)
+          occ_beta = numpy.array(occ_beta, dtype=numpy.intc)
+          return copy(numpy.array([occ_alpha,occ_beta]))
 
   def get_sym(self):
     '''Get function for numpy array version of molecular orbital symmetries.
@@ -775,21 +849,10 @@ class MOClass(UserList):
       alpha : numpy.ndarray, dtype=numpy.intc
 
     '''
-    if self.spinpolarized:
-      spindic = {'alpha': 'a', 'beta': 'b'}
-      indexes = []
-      for imo, mo in enumerate(self.data):
-        mo_spin = mo['sym'].split('_')[-1]
-        if mo_spin == spindic[spin]:
-          indexes.append(imo)
-      return numpy.array(indexes, dtype=numpy.intc)
-    else:
-        if spin == 'alpha':
-          return numpy.array(range(len(self.data)), dtype=numpy.intc)
-        else:
-          return numpy.array([], dtype=numpy.intc)
+    spindic = {'alpha': self.alpha_index, 'beta': self.alpha_index}
+    return numpy.array(spindic[spin], dtype=numpy.intc)
 
-  def select(self, fid_mo_list, flatten_input=True):
+  def select(self, fid_mo_list, flatten_input=True, sort_indices=True):
     '''Selects molecular orbitals from an external file or a list of molecular 
        orbital labels.
 
@@ -804,12 +867,15 @@ class MOClass(UserList):
           orbital labels.
 
       flatten_input : boolean, optional
-        Specifies wheter lists of lists should be flattened so a single MOClass instance can be returned rather than a list of MOClass instances
+        Specifies wheter lists of lists should be flattened so a single MOClass instance can be returned rather than a list of MOClass instances.
+
+      sort_indices : boolean, optional
+        Specifies wheter list of indexes should be sorted before it is returned. This is only supported if flatten_input is set to ``True``.
         
 
     **Supported Formats:**
     
-      Integer List (Counting from **ONE**!)::
+      Integer List (Counting from **Zero**!)::
       
         1       2       3
         5       4
@@ -820,23 +886,19 @@ class MOClass(UserList):
         1.1     2.1     1.3
         1.1     4.1
         4.1     2.3     2.1
+
+      ``alpha`` and ``beta`` can be used together with symmetry labels to restrict the selection to orbitals of that symmetry.
+      This option is not supported for integer lists. Note also that ``alpha`` and ``beta`` only restrict selection within one
+      string of inputs. If you which to spin-restrict orbitlas given as a list of strings please use ``all_alpha`` or ``all_beta``.
     
     **Returns:**
     
       List of MOClass instances containing the selected orbitals as well as further information on the selection criteria used
-      If a sinlge list is used as in input and/or flatten_input=True, an MOClass instance is returned instead
-    
-    ..attention:
-      
-      For **unrestricted** calculations, orbkit adds `_a` (alpha) or `_b` (beta) to
-      the symmetry labels, e.g., `1.1_a`. 
-      If you have specified the option `alpha` or `beta`, only the 
-      alpha or the beta orbitals are taken into account for the counting 
-      within the Integer List.
+      If a sinlge list is used as in input and/or flatten_input=True, an MOClass instance is returned instead.
     '''
     import re
     display('\nProcessing molecular orbital list...')
-    if flatten_input:
+    if flatten_input and isinstance(fid_mo_list[0], (list, numpy.ndarray)):
        display('\nWarning! Flattening of input lists requested!')
     
     mo_in_file = []
@@ -937,29 +999,48 @@ class MOClass(UserList):
                       'to the MOLPRO nomenclature, e.g., `5.1` or `5.A1`.' +
                       '\n\tHint: You cannot mix integer numbering and MOLPRO\'s ' +
                       'symmetry labels')
-      tmp.extend(list(numpy.argwhere(self.get_sym() == item)[0]))
+      for i in numpy.argwhere(self.get_sym() == item):
+        tmp.extend(i)
       return tmp
 
-    def parse_spin(item):
+    def parse_spin(item, all_alpha_beta):
+      spindic = {0: 'all_alpha', 1: 'all_beta'}
       if isinstance(item, str):
-        if 'alpha' in item:
-          return item.replace('alpha', ''), self.get_spin_index('alpha')
-        elif 'beta' in item:
-          return item.replace('beta', ''), self.get_spin_index('beta')
+        for i_s in range(2):
+          if spindic[i_s] in item:
+            all_alpha_beta[i_s] = True
+            item = item.replace(spindic[i_s], '')
+        if numpy.any(all_alpha_beta):
+          return all_alpha_beta, item, None
         else:
-          return item, None
+          if 'alpha' in item:
+            return all_alpha_beta, item.replace('alpha', ''), self.get_spin_index('alpha')
+          elif 'beta' in item:
+            return all_alpha_beta, item.replace('beta', ''), self.get_spin_index('beta')
+          else:
+            return all_alpha_beta, item, None
       elif isinstance(item, list):
-        if 'alpha' in item:
-          return remove_from_list(item, 'alpha'), self.get_spin_index('alpha')
-        elif 'beta' in item:
-          return remove_from_list(item, 'beta'), self.get_spin_index('beta')
+        for i_s in range(2):
+          if spindic[i_s] in item:
+            all_alpha_beta[i_s] = True
+            item = remove_from_list(item, spindic[i_s])
+        if numpy.any(all_alpha_beta):
+          return all_alpha_beta, item, None
         else:
-          return item, None
+          if 'alpha' in item:
+            return all_alpha_beta, remove_from_list(item, 'alpha'), self.get_spin_index('alpha')
+          elif 'beta' in item:
+            return all_alpha_beta, remove_from_list(item, 'beta'), self.get_spin_index('beta')
+          else:
+            return all_alpha_beta, item, None
 
     regsplit = re.compile(r"[\s,;]")
 
+    # We set these variables here for later reference
+    all_alpha_beta = [False, False]
+
     if isinstance(fid_mo_list,str) and 'all_mo' in fid_mo_list.lower():
-      fid_mo_list, srec = parse_spin(fid_mo_list)
+      all_alpha_beta, fid_mo_list, srec = parse_spin(fid_mo_list, all_alpha_beta)
       spinrestructions = [srec]
       mo_in_file_new = [[i for i in range(len(self.data))]]
     else:
@@ -999,7 +1080,7 @@ class MOClass(UserList):
       mo_in_file_new = []
       spinrestructions = []
       for sublist in mo_in_file:
-        sublist, srec = parse_spin(sublist)
+        all_alpha_beta, sublist, srec = parse_spin(sublist, all_alpha_beta)
         spinrestructions.append(srec)
         tmp = []
         for item in sublist:
@@ -1014,17 +1095,28 @@ class MOClass(UserList):
 
     mo_in_file = []
     for isub, sublist in enumerate(mo_in_file_new):
-      if spinrestructions[isub] is not None:
-        selected = []
-        for isel in range(len(sublist)):
-          if sublist[isel] in spinrestructions[isub]:
-            selected.append(isel)
+      if numpy.any(all_alpha_beta):
+        spindic = {0: 'alpha', 1: 'beta'}
+        for i_s, all_spin in enumerate(all_alpha_beta):
+          if all_spin:
+            selected = []
+            for isel in range(len(sublist)):
+              if sublist[isel] in self.get_spin_index(spindic[i_s]):
+                selected.append(isel)
       else:
-        selected = range(len(sublist))
+        if spinrestructions[isub] is not None:
+          selected = []
+          for isel in range(len(sublist)):
+            if sublist[isel] in spinrestructions[isub]:
+              selected.append(isel)
+        else:
+          selected = range(len(sublist))
       mo_in_file.append([sublist[i] for i in selected])
 
     if flatten_input:
       mo_in_file = [[item for sublist in mo_in_file for item in sublist]]
+      if sort_indices:
+        mo_in_file = [numpy.sort([item for sublist in mo_in_file for item in sublist])]
 
     if len(mo_in_file) == 1:
       mo_spec = MOClass([])

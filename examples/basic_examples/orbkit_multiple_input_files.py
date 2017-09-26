@@ -9,7 +9,7 @@ using analytical integrals.
 Moreover, it shows...
   - how to read a list of files
   - how to order the molecular orbital coefficients
-  - how to save and read the information obtained to and from an HDF5-file
+  - how to save and read the information obtained to and from an hdf5-file
   - how to depict several molecular orbitals
   - how to perform a standard orbkit computation for one molecular structures
 
@@ -44,11 +44,6 @@ run_id = ['Reading',
 init_display(name = 'mo_ordering')  # Specify a filename for the oklog file 
 
 t = [time()]
-
-# Create a list containing the filenames of the input files
-path = 'NaCl_molden_files'
-if not os.path.exists(path):
-  raise IOError('%s does not exist! Please extract NaCl_molden_files.tar.gz' % path)
 
 #How are input files formatted?
 fid_list = 'NaCl_molden_files.tar.gz'
@@ -116,9 +111,9 @@ if create_plots:
 
 t.append(time())
 
-hdf5_fid = 'nacl.h5' # Specifies the filename of the HDF5 file
+hdf5_fid = 'nacl.h5' # Specifies the filename of the hdf5 file
 
-# Save the results to a HDF5 file
+# Save the results to a hdf5 file
 mult.save_hdf5(hdf5_fid)
 
 # Reset the `orbkit.multiple_files` module
@@ -142,20 +137,20 @@ r = 0                    # Index to be calculated
 out_fid = 'nacl_r%d' % r # Specifies the name of the output file
 
 display('Running orbkit for the structure %d' % r)
-import orbkit as ok
+import orbkit
 
 
 # Initialize orbkit with default parameters and options
-ok.init(reset_display=False)
+orbkit.init(reset_display=False)
 
 # Set some options
-ok.options.adjust_grid= [5, 0.1]                # adjust the grid to the geometry
-ok.options.outputname = out_fid                 # output file (base) name
-ok.options.otype      = 'h5'                    # output file type [default]
-ok.options.numproc    = 4                       # number of processes
+orbkit.options.adjust_grid= [5, 0.1]                # adjust the grid to the geometry
+orbkit.options.outputname = out_fid                 # output file (base) name
+orbkit.options.otype      = 'h5'                    # output file type [default]
+orbkit.options.numproc    = 4                       # number of processes
 
 # Run orbkit with qc as input
-ok.run_orbkit(QC[r])
+orbkit.run_orbkit(QC[r])
 
 t.append(time())
 
