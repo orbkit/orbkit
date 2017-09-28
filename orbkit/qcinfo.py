@@ -317,7 +317,8 @@ class QCinfo:
     from ase import visualize
     visualize.view(self.get_ase_atoms(bbox=bbox,**kwargs)[select])
 
-  def get_nuclear_repulsion(self):
+  @property
+  def nuclear_repulsion(self):
     '''Calculates nuclear repulsion energy.'''
     from scipy.linalg import norm
     Vnn = 0
