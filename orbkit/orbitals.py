@@ -37,16 +37,23 @@ class AOClass(UserList):
   def __init__(self, seq = [], restart=None):
     UserList.__init__(self, seq)
     self.up2date = False
+    self.normalized = False
     self.spherical = False
+    
+    self.lxlylz = None
+    self.assign_lxlylz = None
+    self.bincount_lxlylz = None
+    self.ao_coeffs = None
+    self.pnum_list = None
+    self.atom_indices = None
+    
     self.cont2atoms = None
     self.prim2cont = None
     self.contspher = None
     self.pao = None
-    self.lxlylz = None
-    self.assign_lxlylz = None
     self.lmpao = None
     self.lmprim2cont = None
-    self.normalized = False
+    
     if restart is not None:
       self.up2date = True
       self.spherical = restart['spherical']
@@ -91,6 +98,9 @@ class AOClass(UserList):
       else:
         return False
   def update(self):
+    '''Transfers UserList data dictionary to internal variables
+    '''
+    
     self.get_contspher()
     self.get_cont2atoms()
     self.get_pao()
@@ -100,7 +110,49 @@ class AOClass(UserList):
     self.get_lxlylz()
     self.is_normlized()
     self.up2date = True
-    return
+  
+  def update_lxlylz(self):
+    '''Extracts the exponents lx, ly, lz for the Cartesian Gaussians.
+
+    **Parameters:**
+
+    get_assign : bool, optional
+      Specifies, if the index of the atomic orbital shall be returned as well.
+
+    **Returns:**
+
+    lxlylz : numpy.ndarray, dtype=numpy.intc, shape = (NAO,3)
+      Contains the expontents lx, ly, lz for the Cartesian Gaussians.
+    assign_lxlylz : list of int, optional
+      Contains the index of the atomic orbital in ao_spec.
+    '''
+    if get_label:
+      get_assign = True
+    if not self.up2date:
+      self.lxlylz = []
+      self.assign_lxlylz = []
+      for sel_ao in range(len(self.data)):
+        if 'exp_list' in self.data[sel_ao].keys():
+          l = self.data[sel_ao]['exp_list']
+        else:
+          l = exp[lquant[self.data[sel_ao]['type']]]
+        self.lxlylz.extend(l)
+        self.assign_lxlylz.extend([sel_ao]*len(l))
+
+      self.lxlylz = numpy.array(self.lxlylz,dtype=numpy.intc,order='C')
+      self.assign_lxlylz = numpy.array(self.assign_lxlylz,dtype=numpy.intc,order='C')
+
+    if get_assign and get_label:
+      return copy(1000*self.assign_lxlylz + (self.lxlylz * numpy.array([100,10,1])).sum(axis=1,dtype=numpy.intc))
+    elif get_assign and not get_label:
+      if bincount:
+        return (copy(self.lxlylz), copy(numpy.bincount(self.assign_lxlylz)))
+      else:
+        return (copy(self.lxlylz), copy(self.assign_lxlylz))
+    else:
+      return copy(self.lxlylz)
+    
+  
   def __setitem__(self, i, item):
     self.data[i] = item
     self.up2date = False
@@ -414,6 +466,7 @@ class AOClass(UserList):
         return (copy(self.lxlylz), copy(self.assign_lxlylz))
     else:
       return copy(self.lxlylz)
+  
   def get_labels(self):
     print self.lxlylz,
     print self.contspher

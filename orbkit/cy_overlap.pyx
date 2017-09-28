@@ -17,7 +17,7 @@ cdef extern from "c_non-grid-based.h":
           int l[3]
           double R[3]
   double get_overlap(S_Primitive *pA, S_Primitive *pB)
-
+  
 @cython.boundscheck(False)
 @cython.wraparound(False)
 def ommited_cca_norm(np.ndarray[int, ndim=2, mode="c"] lxlylz not None):
@@ -113,8 +113,8 @@ def aooverlap(np.ndarray[double, ndim=2, mode="c"] ra           not None,
 
 
 
-#@cython.boundscheck(False)
-#@cython.wraparound(False)
+@cython.boundscheck(False)
+@cython.wraparound(False)
 def aooverlap2(np.ndarray[double, ndim=2, mode="c"] geo_spec_a   not None,
                np.ndarray[double, ndim=2, mode="c"] geo_spec_b   not None,
                np.ndarray[int,    ndim=2, mode="c"] lxlylz_a     not None,
@@ -126,7 +126,7 @@ def aooverlap2(np.ndarray[double, ndim=2, mode="c"] geo_spec_a   not None,
                int drv,
                int is_normalized): 
   """
-  aooverlap(ra,rb,lxlylz_a,lxlylz_b,coeff_list,index,is_normalized)
+  aooverlap(geo_spec_a,geo_spec_b,lxlylz_a,lxlylz_b,assign,ao_coeffs,pnum_list,atom_indices,drv,is_normalized)
   drv : type int
     0 - No derivative  
     1 - d/dx
@@ -139,82 +139,66 @@ def aooverlap2(np.ndarray[double, ndim=2, mode="c"] geo_spec_a   not None,
                                                                dtype=np.float64)
   cdef np.ndarray[double, ndim=1, mode="c"] norm = np.zeros([nindex],
                                                                dtype=np.float64)
-  cdef int i,j,c,c2,l_tmp
-  cdef int c_ao = 0 # counter for aos
-  cdef int c_p = 0  # counter for primitves 
-  cdef int c_ao2 = 0 # counter for aos
-  cdef int c_p2 = 0  # counter for primitves 
+  cdef np.ndarray[int,    ndim=2, mode="c"] index = np.zeros([nindex,3],
+                                                               dtype=np.intc)
+  cdef int i, j, rr
+  cdef int c_ao = 0 # counter for contracted aos
+  cdef int c_p = 0  # counter for primitves of each contracted ao
+  cdef int c = 0 # absolute counter for primitves
   
-  cdef int i_l, j_l,rr  
+  cdef int i_ao, i_p # indices for primitves of each contracted ao
+  cdef int i_l, j_l  # absolute indices for primitves
   
-  cdef int i_ao, j_ao
-  cdef int p_ao, p_ao2
+  cdef S_Primitive A, B # structs for primitves
   
-  
-  cdef S_Primitive A,B
-  #c = 0
-
-  #for i in range(assign.shape[0]):    
-        #for i_ao in range(assign[i]):   
-              #for p_ao in range(pnum_list[i]):  
-                #print c, sum(assign[:i]*pnum_list[:i])+i_ao+p_ao
-                #c+=1
-
-  c = 0
   for i in range(assign.shape[0]):    
     for i_ao in range(assign[i]):   
-      for p_ao in range(pnum_list[i]):  
+      for i_p in range(pnum_list[i]):  
         norm[c] = ao_norm(lxlylz_a[c_ao+i_ao,0],lxlylz_a[c_ao+i_ao,1],lxlylz_a[c_ao+i_ao,2],
-                          ao_coeffs[c_p+p_ao,0],is_normalized)
+                          ao_coeffs[c_p+i_p,0],is_normalized)
+        index[c,0] = c_p+i_p
+        index[c,1] = c_ao+i_ao
+        index[c,2] = atom_indices[i]
         c += 1
     c_ao += assign[i]
     c_p += pnum_list[i]
-    
-  c = 0
   
-  c_ao = 0 
-  c_p = 0 
-  for i in range(assign.shape[0]):
-    for i_ao in range(assign[i]):   
-      for p_ao in range(pnum_list[i]):  
-        c_ao2 = 0 # counter for Ket aos
-        c_p2 = 0  # counter for Ket primitves 
-        c2 = 0 
-        for j in range(assign.shape[0]): 
-          for j_ao in range(assign[j]):   
-            for rr in range(3):
-              A.R[rr] = geo_spec_a[atom_indices[i],rr]
-              B.R[rr] = geo_spec_b[atom_indices[j],rr]  
-              A.l[rr] = lxlylz_a[c_ao+i_ao,rr]
-              B.l[rr] = lxlylz_b[c_ao2+j_ao,rr]
-            
-            for p_ao2 in range(pnum_list[j]):  
-              A.alpha = ao_coeffs[c_p+p_ao,0]
-              B.alpha = ao_coeffs[c_p2+p_ao2,0]
-              B.l[drv-1] = lxlylz_b[c_ao2+j_ao,drv-1]
-              if drv <= 0:
-                aoom[c_ao+i_ao,c_ao2+j_ao] += (ao_coeffs[c_p+p_ao,1] * ao_coeffs[c_p2+p_ao2,1] * norm[c] * norm[c2]
-                                  * get_overlap(&A, &B))
-              elif B.l[drv-1] == 0:
-                B.l[drv-1] = lxlylz_b[c_ao2+j_ao,drv-1] + 1
-                aoom[c_ao+i_ao,c_ao2+j_ao] += ((-2 * B.alpha) * ao_coeffs[c_p+p_ao,1] * ao_coeffs[c_p2+p_ao2,1] 
-                                  * norm[c] * norm[c2] * get_overlap(&A, &B))
-              else:
-                B.l[drv-1] = lxlylz_b[c_ao2+j_ao,drv-1] - 1
-                aoom[c_ao+i_ao,c_ao2+j_ao] += (lxlylz_b[c_ao2+j_ao,drv-1] *ao_coeffs[c_p+p_ao,1] * ao_coeffs[c_p2+p_ao2,1] 
-                                  * norm[c] * norm[c2] * get_overlap(&A, &B))
-                B.l[drv-1] = lxlylz_b[c_ao2+j_ao,drv-1] + 1
-                aoom[c_ao+i_ao,c_ao2+j_ao] += ((-2 * B.alpha) * ao_coeffs[c_p+p_ao,1] * ao_coeffs[c_p2+p_ao2,1] 
-                                  * norm[c] * norm[c2] * get_overlap(&A, &B))
+  # Rearange the data
+  ao_coeffs  = np.copy(ao_coeffs[index[:,0]])
+  lxlylz_a   = np.copy(lxlylz_a[index[:,1]])
+  lxlylz_b   = np.copy(lxlylz_b[index[:,1]])
+  geo_spec_a = np.copy(geo_spec_a[index[:,2]])
+  geo_spec_b = np.copy(geo_spec_b[index[:,2]])
   
-             
-              c2 += 1
-          c_ao2 += assign[j]
-          c_p2 += pnum_list[j]
-        c += 1
-    c_ao += assign[i]
-    c_p += pnum_list[i]
+  for i in range(nindex):
+    for j in range(nindex):
+      i_l = index[i,1]
+      j_l = index[j,1]
       
+      for rr in range(3):
+        A.R[rr] = geo_spec_a[i,rr]
+        B.R[rr] = geo_spec_b[j,rr]
+        A.l[rr] = lxlylz_a[i,rr]
+        B.l[rr] = lxlylz_b[j,rr]
+      
+      A.alpha = ao_coeffs[i,0]
+      B.alpha = ao_coeffs[j,0]
+      
+      if drv <= 0:
+        aoom[i_l,j_l] += (ao_coeffs[i,1] * ao_coeffs[j,1] * norm[i] * norm[j]
+                          * get_overlap(&A, &B))
+      elif B.l[drv-1] == 0:
+        B.l[drv-1] = lxlylz_b[j,drv-1] + 1
+        aoom[i_l,j_l] += ((-2 * B.alpha) * ao_coeffs[i,1] * ao_coeffs[j,1] 
+                          * norm[i] * norm[j] * get_overlap(&A, &B))
+      else:
+        B.l[drv-1] = lxlylz_b[j,drv-1] - 1
+        aoom[i_l,j_l] += (lxlylz_b[j,drv-1] *ao_coeffs[i,1] * ao_coeffs[j,1] 
+                          * norm[i] * norm[j] * get_overlap(&A, &B))
+        B.l[drv-1] = lxlylz_b[j,drv-1] + 1
+        aoom[i_l,j_l] += ((-2 * B.alpha) * ao_coeffs[i,1] * ao_coeffs[j,1] 
+                          * norm[i] * norm[j] * get_overlap(&A, &B))
+  
   return aoom
   
 @cython.boundscheck(False)

@@ -68,8 +68,8 @@ def get_ao_overlap(coord_a, coord_b, ao_spec, lxlylz_b=None,
   '''
   if not isinstance(ao_spec, AOClass):
     raise TypeError('ao_spec must be an instance of the AOClass')
-
-  if isinstance(drv, list):
+    
+  if isinstance(drv, list) or (isinstance(drv, str) and len(drv) > 1):
     aoom = []
     for ii_d in drv:
       aoom.append(get_ao_overlap(coord_a,coord_b,ao_spec,
