@@ -50,7 +50,7 @@ def ommited_cca_norm(np.ndarray[int, ndim=2, mode="c"] lxlylz not None):
   
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def aooverlap(np.ndarray[double, ndim=2, mode="c"] ra           not None,
+def aooverlap2(np.ndarray[double, ndim=2, mode="c"] ra           not None,
               np.ndarray[double, ndim=2, mode="c"] rb           not None,
               np.ndarray[int,    ndim=2, mode="c"] lxlylz_a     not None,
               np.ndarray[int,    ndim=2, mode="c"] lxlylz_b     not None,
@@ -115,16 +115,16 @@ def aooverlap(np.ndarray[double, ndim=2, mode="c"] ra           not None,
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def aooverlap2(np.ndarray[double, ndim=2, mode="c"] geo_spec_a   not None,
-               np.ndarray[double, ndim=2, mode="c"] geo_spec_b   not None,
-               np.ndarray[int,    ndim=2, mode="c"] lxlylz_a     not None,
-               np.ndarray[int,    ndim=2, mode="c"] lxlylz_b     not None,
-               np.ndarray[int,    ndim=1, mode="c"] assign       not None,
-               np.ndarray[double, ndim=2, mode="c"] ao_coeffs    not None, 
-               np.ndarray[int,    ndim=1, mode="c"] pnum_list    not None, 
-               np.ndarray[int,    ndim=1, mode="c"] atom_indices not None,
-               int drv,
-               int is_normalized): 
+def aooverlap(np.ndarray[double, ndim=2, mode="c"] geo_spec_a   not None,
+              np.ndarray[double, ndim=2, mode="c"] geo_spec_b   not None,
+              np.ndarray[int,    ndim=2, mode="c"] lxlylz_a     not None,
+              np.ndarray[int,    ndim=2, mode="c"] lxlylz_b     not None,
+              np.ndarray[int,    ndim=1, mode="c"] assign       not None,
+              np.ndarray[double, ndim=2, mode="c"] ao_coeffs    not None, 
+              np.ndarray[int,    ndim=1, mode="c"] pnum_list    not None, 
+              np.ndarray[int,    ndim=1, mode="c"] atom_indices not None,
+              int drv,
+              int is_normalized): 
   """
   aooverlap(geo_spec_a,geo_spec_b,lxlylz_a,lxlylz_b,assign,ao_coeffs,pnum_list,atom_indices,drv,is_normalized)
   drv : type int
@@ -169,6 +169,7 @@ def aooverlap2(np.ndarray[double, ndim=2, mode="c"] geo_spec_a   not None,
   lxlylz_b   = np.copy(lxlylz_b[index[:,1]])
   geo_spec_a = np.copy(geo_spec_a[index[:,2]])
   geo_spec_b = np.copy(geo_spec_b[index[:,2]])
+  
   
   for i in range(nindex):
     for j in range(nindex):

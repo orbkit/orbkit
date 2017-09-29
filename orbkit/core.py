@@ -152,7 +152,8 @@ def cartesian2spherical(ao_list,ao_spec):
     The conversion is currently only supported up to g atomic orbitals.
   '''
 
-  lxlylz, assign = ao_spec.get_lxlylz(get_assign=True)
+  lxlylz = ao_spec.get_lxlylz()
+  assign = ao_spec.get_assign_lxlylz()
   ao_spherical = ao_spec.get_old_ao_spherical()
 
   l = [[] for i in ao_spec]
