@@ -104,23 +104,23 @@ class AOIntegrals():
     return nprim
     return numpy.sum(self.bas[:,2]*self.bas[:,3])
 
-  def overlap(self, asMO=True):
+  def overlap(self, asMO=True, MOrange=None):
     '''Shortcut to calculate overlap integrals <i|j>.'''
-    return self.int1e('ovlp', asMO)
+    return self.int1e('ovlp', asMO, MOrange)
 
-  def kinetic(self, asMO=True):
+  def kinetic(self, asMO=True, MOrange=None):
     '''Shortcut to calculate kinetic energy integrals <i|-0.5*\nabla^2|j>.'''
-    return self.int1e('kin', asMO)
+    return self.int1e('kin', asMO, MOrange)
 
-  def Vne(self, asMO=True):
+  def Vne(self, asMO=True, MOrange=None):
     '''Shortcut to calculate electron-nuclear repulsion integrals \sum_a <i|-Z_a/r|j>.'''
-    return self.int1e('nuc', asMO)
+    return self.int1e('nuc', asMO, MOrange)
 
-  def Vee(self, asMO=True):
+  def Vee(self, asMO=True, MOrange=None):
     '''Shortcut to calculate electron-electron repulsion integrals.'''
-    return self.int2e('', asMO)
+    return self.int2e('', asMO, MOrange)
 
-  def int1e(self, operator, asMO=True):
+  def int1e(self, operator, asMO=True, MOrange=None):
     '''Calculates all one-electron integrals <i|operator|j>.
 
       **Parameters:**
@@ -149,11 +149,11 @@ class AOIntegrals():
       ii += di
 
     if asMO:
-      mat = ao2mo(mat, self.qc.mo_spec.coeffs)
+      mat = ao2mo(mat, self.qc.mo_spec.coeffs, MOrange)
 
     return mat
 
-  def int2e(self, operator, asMO=True):
+  def int2e(self, operator, asMO=True, MOrange=None):
     '''Calculates all two-electron integrals <ij|operator|kl>.
 
       **Parameters:**
@@ -209,7 +209,7 @@ class AOIntegrals():
 
 
     if asMO:
-      mat = ao2mo(mat, self.qc.mo_spec.coeffs)
+      mat = ao2mo(mat, self.qc.mo_spec.coeffs, MOrange)
 
     return mat
 
@@ -369,8 +369,23 @@ class AOIntegrals():
 ###  rescaling and transformations of coefficients  ###
 #######################################################
 
-def ao2mo(mat, coeffs):
-  '''Transforms array of one- or two-electron integrals from AO to MO basis.'''
+def ao2mo(mat, coeffs, MOrange=None):
+  '''Transforms array of one- or two-electron integrals from AO to MO basis.
+
+  **Parameters:**
+
+    mat :  2 or 4 dimensional numpy.ndarray
+      integrals to be transformed
+    coeffs : 2 dimensional numpy.ndarry
+      MO coefficients
+    MOrange: list|range object|None
+      only transform selected MOs
+
+  **Returns:**
+    numpy.ndarray
+  '''
+  if MOrange is not None:
+    coeffs = coeffs[MOrange,:]
   if len(mat.shape) == 2:
     # 1-electron integrals
     return numpy.dot(coeffs, numpy.dot(mat, coeffs.transpose()))
