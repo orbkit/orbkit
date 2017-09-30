@@ -286,6 +286,16 @@ class AOIntegrals():
       N = numpy.tensordot(Ni, Nj, 0)
       mat /= N
 
+    # switch order of basis functions (angl>1)
+    angl = self.bas[i][1]
+    if angl > 1:
+      order = get_order(angl, self.cartesian)
+      mat = mat[order,:]
+    angl = self.bas[j][1]
+    if angl > 1:
+      order = get_order(angl, self.cartesian)
+      mat = mat[:,order]
+
     return mat
 
   def _libcint2e(self, operator, i, j, k, l):
@@ -335,6 +345,24 @@ class AOIntegrals():
       N = numpy.tensordot(numpy.tensordot(Ni, Nj, 0), numpy.tensordot(Nk, Nl, 0), 0)
       mat /= N
 
+    # switch order of basis functions (angl>1)
+    angl = self.bas[i][1]
+    if angl > 1:
+      order = get_order(angl, self.cartesian)
+      mat = mat[order,:,:,:]
+    angl = self.bas[j][1]
+    if angl > 1:
+      order = get_order(angl, self.cartesian)
+      mat = mat[:,order,:,:]
+    angl = self.bas[k][1]
+    if angl > 1:
+      order = get_order(angl, self.cartesian)
+      mat = mat[:,:,order,:]
+    angl = self.bas[l][1]
+    if angl > 1:
+      order = get_order(angl, self.cartesian)
+      mat = mat[:,:,:,order]
+
     return mat
 
 #######################################################
@@ -357,3 +385,18 @@ def ao2mo(mat, coeffs):
 
 def rescale_coeffs_libcint(exps, coeffs, l):
   return [ c*libcint.CINTgto_norm(l, ctypes.c_double(e)) for e, c in zip(exps, coeffs) ]
+
+def get_order(l, cartesian):
+  '''Returns indices to transform libcint order to orbkit order.'''
+  if l < 2:
+    return range(l)
+  order = {
+    # l : (cartesian, spherical)
+    2 : ((0,3,5,1,2,4), range(2)),
+    3 : ((0,6,9,3,1,2,5,8,7,4), range(3)),
+    4 : ((0,10,14,1,2,6,11,9,13,3,5,12,4,7,8), range(4)),
+  }
+  if cartesian:
+    return order[l][0]
+  else:
+    return order[l][1]
