@@ -79,7 +79,30 @@ class AOIntegrals():
     # get some parameters
     self.natm = ctypes.c_int(self.atm.shape[0])
     self.nbas = ctypes.c_int(self.bas.shape[0])
-    self.Norb = self.count()
+    self.Norb = self.count_contractions()
+
+  def count_contractions(self):
+    '''Counts the number of contracted gaussians.'''
+    if self.cartesian:
+      fun = libcint.CINTcgto_cart
+    else:
+      fun = libcint.CINTcgto_spheric
+    ncntr = 0
+    for i in range(self.nbas.value):
+      ncntr += fun(i, self.c_bas)
+    return ncntr
+
+  def count_primitives(self):
+    '''Counts the number of primitive gaussians.'''
+    if self.cartesian:
+      fun = libcint.CINTcgto_cart
+    else:
+      fun = libcint.CINTcgto_spheric
+    nprim = 0
+    for i in range(self.nbas.value):
+      nprim += self.bas[i,2]*self.bas[i,3]*fun(i, self.c_bas)
+    return nprim
+    return numpy.sum(self.bas[:,2]*self.bas[:,3])
 
   def overlap(self, asMO=True):
     '''Shortcut to calculate overlap integrals <i|j>.'''
@@ -194,29 +217,6 @@ class AOIntegrals():
   ###  Interface to libcint  ###
   ##############################
 
-  def count(self):
-    '''Counts the number of contracted gaussians.'''
-    if self.cartesian:
-      fun = libcint.CINTcgto_cart
-    else:
-      fun = libcint.CINTcgto_spheric
-    ncntr = 0
-    for i in range(self.nbas.value):
-      ncntr += fun(i, self.c_bas)
-    return ncntr
-
-  def count_primitives(self):
-    '''Counts the number of primitive gaussians.'''
-    if self.cartesian:
-      fun = libcint.CINTcgto_cart
-    else:
-      fun = libcint.CINTcgto_spheric
-    nprim = 0
-    for i in range(self.nbas.value):
-      nprim += self.bas[i,2]*self.bas[i,3]*fun(i, self.c_bas)
-    return nprim
-    return numpy.sum(self.bas[:,2]*self.bas[:,3])
-
   def _get_dims(self, *indices):
     '''Returns number of basis functions for shell indices'''
     if self.cartesian:
@@ -240,7 +240,7 @@ class AOIntegrals():
     # calculate self overlap
     libcint.cint1e_ovlp_cart.restype = ctypes.c_void_p
     libcint.cint1e_ovlp_cart(mat, shls, self.c_atm, self.natm, self.c_bas, self.nbas, self.c_env)
-    S = numpy.array(mat).reshape(di, di)
+    S = numpy.reshape(mat, (di, di)).transpose()
 
     # take sqrt of diagonal elements
     S = numpy.sqrt(numpy.diag(S))
@@ -277,7 +277,7 @@ class AOIntegrals():
 
     fun.restype = ctypes.c_void_p
     fun(mat, shls, self.c_atm, self.natm, self.c_bas, self.nbas, self.c_env)
-    mat = numpy.array(mat).reshape(di, dj)
+    mat = numpy.reshape(mat, (dj, di)).transpose()
 
     # cartesian integrals need to be rescaled according to overlap matrix
     if self.cartesian:
@@ -323,7 +323,7 @@ class AOIntegrals():
 
     fun.restype = ctypes.c_void_p
     fun(mat, shls, self.c_atm, self.natm, self.c_bas, self.nbas, self.c_env, opt)
-    mat = numpy.array(mat).reshape(dl, dk, dj, di)
+    mat = numpy.reshape(mat, (dl, dk, dj, di))
     mat = moveaxis(mat, (0, 1, 2, 3), (3, 2, 1, 0))
 
     # cartesian integrals need to be rescaled according to overlap matrix
