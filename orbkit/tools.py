@@ -1,6 +1,16 @@
 import numpy
 import string
 
+# Compatability function for old numpy versions
+def moveaxis(array, source, target):
+  transpose = array.transpose
+  order = [n for n in range(array.ndim) if n not in source]
+  for dest, src in sorted(zip(target, source)):
+    order.insert(dest, src)
+  result = transpose(order)
+  return result
+
+
 # Assign the quantum number l to every AO symbol (s,p,d,etc.) 
 orbit = 'spd' + string.ascii_lowercase[5:].replace('s','').replace('p','')
 lquant = dict([(j, i) for i,j in enumerate(orbit)])

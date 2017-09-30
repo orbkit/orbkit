@@ -4,6 +4,11 @@ import ctypes
 from ..tools import lquant
 from ..cy_core import aonorm
 
+try:
+  from numpy import moveaxis
+except:
+  from orbkit.tools import moveaxis
+
 # search and load libcint from $PATH
 import os
 libcint = None
@@ -167,12 +172,12 @@ class AOIntegrals():
 
             mat[jj:jj+dj,ii:ii+di,kk:kk+dk,ll:ll+dl] = numpy.swapaxes(res, 0, 1)
             mat[ii:ii+di,jj:jj+dj,ll:ll+dl,kk:kk+dk] = numpy.swapaxes(res, 2, 3)
-            mat[jj:jj+dj,ii:ii+di,ll:ll+dl,kk:kk+dk] = numpy.moveaxis(res, (0,1,2,3), (1,0,3,2))
+            mat[jj:jj+dj,ii:ii+di,ll:ll+dl,kk:kk+dk] = moveaxis(res, (0,1,2,3), (1,0,3,2))
 
-            mat[kk:kk+dk,ll:ll+dl,ii:ii+di,jj:jj+dj] = numpy.moveaxis(res, (0,1,2,3), (2,3,0,1))
-            mat[ll:ll+dl,kk:kk+dk,ii:ii+di,jj:jj+dj] = numpy.moveaxis(res, (0,1,2,3), (2,3,1,0))
-            mat[kk:kk+dk,ll:ll+dl,jj:jj+dj,ii:ii+di] = numpy.moveaxis(res, (0,1,2,3), (3,2,0,1))
-            mat[ll:ll+dl,kk:kk+dk,jj:jj+dj,ii:ii+di] = numpy.moveaxis(res, (0,1,2,3), (3,2,1,0))
+            mat[kk:kk+dk,ll:ll+dl,ii:ii+di,jj:jj+dj] = moveaxis(res, (0,1,2,3), (2,3,0,1))
+            mat[ll:ll+dl,kk:kk+dk,ii:ii+di,jj:jj+dj] = moveaxis(res, (0,1,2,3), (2,3,1,0))
+            mat[kk:kk+dk,ll:ll+dl,jj:jj+dj,ii:ii+di] = moveaxis(res, (0,1,2,3), (3,2,0,1))
+            mat[ll:ll+dl,kk:kk+dk,jj:jj+dj,ii:ii+di] = moveaxis(res, (0,1,2,3), (3,2,1,0))
 
             ll += dl
           kk += dk
@@ -319,7 +324,7 @@ class AOIntegrals():
     fun.restype = ctypes.c_void_p
     fun(mat, shls, self.c_atm, self.natm, self.c_bas, self.nbas, self.c_env, opt)
     mat = numpy.array(mat).reshape(dl, dk, dj, di)
-    mat = numpy.moveaxis(mat, (0, 1, 2, 3), (3, 2, 1, 0))
+    mat = moveaxis(mat, (0, 1, 2, 3), (3, 2, 1, 0))
 
     # cartesian integrals need to be rescaled according to overlap matrix
     if self.cartesian:
