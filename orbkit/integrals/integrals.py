@@ -1,6 +1,8 @@
-from orbkit.tools import lquant
 import numpy
 import ctypes
+
+from ..tools import lquant
+from ..cy_core import aonorm
 
 # search and load libcint from $PATH
 import os
@@ -12,6 +14,9 @@ for dirname in os.environ['PATH'].split(':'):
 if libcint is None:
   raise ImportError("libcint not found: please add to PATH environment variable")
 
+# set return type
+libcint.CINTgto_norm.restype = ctypes.c_double
+
 ############################
 ###  external interface  ###
 ############################
@@ -20,9 +25,9 @@ class AOIntegrals():
   '''Interface to calculate AO Integrals with libcint.
   https://github.com/sunqm/libcint
   '''
-  def __init__(self, qc):
+  def __init__(self, qc, cartesian=True):
     self.qc = qc
-    self.cartesian = True # TODO: spherical
+    self.cartesian = cartesian
     ienv = 0
     self.env = [0]*ienv
     self.atm = []
@@ -36,67 +41,40 @@ class AOIntegrals():
       ienv += 3
 
     # build bas
-    for ao in qc.ao_spec:
+    for ii, ao in enumerate(qc.ao_spec):
 
-        # TODO: column-wise coefficients for contractions of same exponents
-        l = lquant[ao['type']]
-        exps, coeffs = zip(*ao['coeffs'])
-        coeffs = rescale_coeffs(exps, coeffs, l)
+      # TODO: column-wise coefficients for contractions of same exponents
+      l = lquant[ao['type']]
+      if l > 6:
+        raise ValueError('maximum angular moment supported by libcint is l=6')
+      exps, coeffs = ao['coeffs'].T
 
-        # add exponents and coefficients to env
-        self.env.extend(exps)
-        self.env.extend(coeffs)
+      # scale coefficients
+      coeffs = rescale_coeffs_libcint(exps, coeffs, l)
 
-        # tuple for each contraction:
-        #  (center, l, #prim, #contr, kappa, prim offset, contr offset, 0)
-        self.bas.append((ao['atom'], l, ao['pnum'], 1, 1, ienv, ienv+ao['pnum'], 0))
-        ienv += 2*ao['pnum']
+      # add exponents and coefficients to env
+      self.env.extend(exps.tolist())
+      self.env.extend(coeffs)
 
+      # tuple for each contraction:
+      #  (center, l, #prim, #contr, kappa, prim offset, contr offset, 0)
+      self.bas.append((ao['atom'], l, ao['pnum'], 1, 1, ienv, ienv+ao['pnum'], 0))
+      ienv += 2*ao['pnum']
+
+    # store as arrays
     self.env = numpy.array(self.env)
     self.atm = numpy.array(self.atm, dtype=numpy.int32)
     self.bas = numpy.array(self.bas, dtype=numpy.int32)
 
+    # store ctypes
     self.c_env = self.env.ctypes.data_as(ctypes.c_void_p)
     self.c_atm = self.atm.ctypes.data_as(ctypes.c_void_p)
     self.c_bas = self.bas.ctypes.data_as(ctypes.c_void_p)
 
+    # get some parameters
     self.natm = ctypes.c_int(self.atm.shape[0])
     self.nbas = ctypes.c_int(self.bas.shape[0])
     self.Norb = self.count()
-
-  def count(self):
-    '''Counts the number of contracted gaussians.'''
-    if self.cartesian:
-      fun = libcint.CINTcgto_cart
-    else:
-      fun = libcint.CINTcgto_spheric
-    ncntr = 0
-    for i in range(self.nbas.value):
-      ncntr += fun(i, self.c_bas)
-    return ncntr
-
-  def count_primitives(self):
-    '''Counts the number of primitive gaussians.'''
-    if self.cartesian:
-      fun = libcint.CINTcgto_cart
-    else:
-      fun = libcint.CINTcgto_spheric
-    nprim = 0
-    for i in range(self.nbas.value):
-      nprim += self.bas[i,2]*self.bas[i,3]*fun(i, self.c_bas)
-    return nprim
-    return numpy.sum(self.bas[:,2]*self.bas[:,3])
-
-  def get_dims(self, *indices):
-    '''Returns number of basis functions for shell indices'''
-    if self.cartesian:
-      fun = libcint.CINTcgto_cart
-    else:
-      fun = libcint.CINTcgto_spheric
-    dims = []
-    for ind in indices:
-      dims.append( fun(ind, self.c_bas) )
-    return dims
 
   def overlap(self, asMO=True):
     '''Shortcut to calculate overlap integrals <i|j>.'''
@@ -115,25 +93,27 @@ class AOIntegrals():
     return self.int2e('', asMO)
 
   def int1e(self, operator, asMO=True):
-    '''Calculates one-electron integrals <i|operator|j>.
+    '''Calculates all one-electron integrals <i|operator|j>.
 
       **Parameters:**
 
-        operator : Base name of function/integral in libcint.
-        asMO : if True, transform from AO to MO basis.
+        operator : string
+          Base name of function/integral in libcint.
+        asMO : boolean
+          if True, transform from AO to MO basis.
 
       **Returns:**
 
         Hermitian 2D array of integrals.
     '''
-
+    #TODO: non-hermitian operators
     mat = numpy.zeros((self.Norb, self.Norb))
 
     ii = 0
     for i in range(self.nbas.value):
       jj = ii
       for j in range(i,self.nbas.value):
-        res = self.libcint1e(operator, i, j)
+        res = self._libcint1e(operator, i, j)
         di, dj = res.shape
         mat[ii:ii+di,jj:jj+dj] = res
         mat[jj:jj+dj,ii:ii+di] = res.transpose()
@@ -146,12 +126,14 @@ class AOIntegrals():
     return mat
 
   def int2e(self, operator, asMO=True):
-    '''Calculates two-electron integrals <ij|operator|kl>.
+    '''Calculates all two-electron integrals <ij|operator|kl>.
 
       **Parameters:**
 
-        operator : Base name of function/integral in libcint.
-        asMO : if True, transform from AO to MO basis.
+        operator : string
+          Base name of function/integral in libcint.
+        asMO : boolean
+          if True, transform from AO to MO basis.
 
       **Returns:**
 
@@ -170,7 +152,7 @@ class AOIntegrals():
           for l in range(k,self.nbas.value):
 
             # get number of contractions for given shell
-            di, dj, dk, dl = self.get_dims(i, j, k, l)
+            di, dj, dk, dl = self._get_dims(i, j, k, l)
 
             # exchange of electronic coordinates
             if (i > k):
@@ -178,7 +160,7 @@ class AOIntegrals():
               continue
 
             # calculate integrals
-            res = self.libcint2e(operator, i, j, k, l)
+            res = self._libcint2e(operator, i, j, k, l)
 
             # store/replicate results
             mat[ii:ii+di,jj:jj+dj,kk:kk+dk,ll:ll+dl] = res
@@ -203,7 +185,64 @@ class AOIntegrals():
 
     return mat
 
-  def libcint1e(self, operator, i, j):
+  ##############################
+  ###  Interface to libcint  ###
+  ##############################
+
+  def count(self):
+    '''Counts the number of contracted gaussians.'''
+    if self.cartesian:
+      fun = libcint.CINTcgto_cart
+    else:
+      fun = libcint.CINTcgto_spheric
+    ncntr = 0
+    for i in range(self.nbas.value):
+      ncntr += fun(i, self.c_bas)
+    return ncntr
+
+  def count_primitives(self):
+    '''Counts the number of primitive gaussians.'''
+    if self.cartesian:
+      fun = libcint.CINTcgto_cart
+    else:
+      fun = libcint.CINTcgto_spheric
+    nprim = 0
+    for i in range(self.nbas.value):
+      nprim += self.bas[i,2]*self.bas[i,3]*fun(i, self.c_bas)
+    return nprim
+    return numpy.sum(self.bas[:,2]*self.bas[:,3])
+
+  def _get_dims(self, *indices):
+    '''Returns number of basis functions for shell indices'''
+    if self.cartesian:
+      fun = libcint.CINTcgto_cart
+    else:
+      fun = libcint.CINTcgto_spheric
+    dims = []
+    for ind in indices:
+      dims.append( fun(ind, self.c_bas) )
+    if len(indices) == 1:
+      return dims[0]
+    return dims
+
+  def _norm_cart_shell(self, i):
+    '''Calculates normalization factors for shell i to rescale cartesian integrals.'''
+
+    di = self._get_dims(i)
+    mat = (ctypes.c_double * di*di)()
+    shls = (ctypes.c_int * 2)(i, i)
+
+    # calculate self overlap
+    libcint.cint1e_ovlp_cart.restype = ctypes.c_void_p
+    libcint.cint1e_ovlp_cart(mat, shls, self.c_atm, self.natm, self.c_bas, self.nbas, self.c_env)
+    S = numpy.array(mat).reshape(di, di)
+
+    # take sqrt of diagonal elements
+    S = numpy.sqrt(numpy.diag(S))
+
+    return S
+
+  def _libcint1e(self, operator, i, j):
     '''Calls libcint to evaluate 1-electron integrals over shells i and j.
 
     **Parameters:**
@@ -213,7 +252,7 @@ class AOIntegrals():
 
     **Returns:**
 
-      2D matrix of integrals.
+      2D array of integrals.
 
     '''
 
@@ -227,16 +266,24 @@ class AOIntegrals():
     fun = getattr(libcint, foperator)
 
     # call libcint
-    di, dj = self.get_dims(i, j)
-    buf = (ctypes.c_double * di*dj)()
+    di, dj = self._get_dims(i, j)
+    mat = (ctypes.c_double * di*dj)()
     shls = (ctypes.c_int * 2)(i, j)
 
     fun.restype = ctypes.c_void_p
-    fun(buf, shls, self.c_atm, self.natm, self.c_bas, self.nbas, self.c_env)
+    fun(mat, shls, self.c_atm, self.natm, self.c_bas, self.nbas, self.c_env)
+    mat = numpy.array(mat).reshape(di, dj)
 
-    return numpy.array(buf).reshape(di, dj)
+    # cartesian integrals need to be rescaled according to overlap matrix
+    if self.cartesian:
+      Ni = self._norm_cart_shell(i)
+      Nj = self._norm_cart_shell(j)
+      N = numpy.tensordot(Ni, Nj, 0)
+      mat /= N
 
-  def libcint2e(self, operator, i, j, k, l):
+    return mat
+
+  def _libcint2e(self, operator, i, j, k, l):
     '''Calls libcint to evaluate 2-electron integrals over shells i, j, k and l.
 
     **Parameters:**
@@ -246,7 +293,7 @@ class AOIntegrals():
 
     **Returns:**
 
-      4D matrix of integrals.
+      4D array of integrals.
 
     '''
 
@@ -265,20 +312,32 @@ class AOIntegrals():
     opt = ctypes.POINTER(ctypes.c_void_p)()  # optimizer disabled
 
     # call libcint
-    di, dj, dk, dl = self.get_dims(i, j, k, l)
-    buf = (ctypes.c_double * di*dj*dk*dl)()
+    di, dj, dk, dl = self._get_dims(i, j, k, l)
+    mat = (ctypes.c_double * di*dj*dk*dl)()
     shls = (ctypes.c_int * 4)(i, j, k, l)
 
     fun.restype = ctypes.c_void_p
-    fun(buf, shls, self.c_atm, self.natm, self.c_bas, self.nbas, self.c_env, opt)
+    fun(mat, shls, self.c_atm, self.natm, self.c_bas, self.nbas, self.c_env, opt)
+    mat = numpy.array(mat).reshape(dl, dk, dj, di)
+    mat = numpy.moveaxis(mat, (0, 1, 2, 3), (3, 2, 1, 0))
 
-    # return output
-    buf = numpy.array(buf).reshape(dl, dk, dj, di)
-    buf = numpy.moveaxis(buf, (0, 1, 2, 3), (3, 2, 1, 0))
-    return buf
+    # cartesian integrals need to be rescaled according to overlap matrix
+    if self.cartesian:
+      Ni = self._norm_cart_shell(i)
+      Nj = self._norm_cart_shell(j)
+      Nk = self._norm_cart_shell(k)
+      Nl = self._norm_cart_shell(l)
+      N = numpy.tensordot(numpy.tensordot(Ni, Nj, 0), numpy.tensordot(Nk, Nl, 0), 0)
+      mat /= N
+
+    return mat
+
+#######################################################
+###  rescaling and transformations of coefficients  ###
+#######################################################
 
 def ao2mo(mat, coeffs):
-  '''Transforms matrix of one- or two-electron integrals from AO to MO basis.'''
+  '''Transforms array of one- or two-electron integrals from AO to MO basis.'''
   if len(mat.shape) == 2:
     # 1-electron integrals
     return numpy.dot(coeffs, numpy.dot(mat, coeffs.transpose()))
@@ -291,65 +350,5 @@ def ao2mo(mat, coeffs):
     return numpy.swapaxes(mat, 1, 2)
   raise ValueError("'mat' musst be of size 2 or 4.")
 
-###########################################
-###  Code parts from pyscf              ###
-###  BSD 2-clause "Simplified" License  ###
-###  pyscf/gto/mole.py                  ###
-###########################################
-
-from scipy.special import gamma
-
-def _gaussian_int(n, alpha):
-  r'''int_0^inf x^n exp(-alpha x^2) dx'''
-  n1 = (n + 1) * .5
-  return gamma(n1) / (2. * alpha**n1)
-
-def gto_norm(l, expnt):
-  r'''Normalized factor for GTO radial part   :math:`g=r^l e^{-\alpha r^2}`
-
-  .. math::
-
-    \frac{1}{\sqrt{\int g^2 r^2 dr}}
-    = \sqrt{\frac{2^{2l+3} (l+1)! (2a)^{l+1.5}}{(2l+2)!\sqrt{\pi}}}
-
-  Ref: H. B. Schlegel and M. J. Frisch, Int. J. Quant.  Chem., 54(1995), 83-87.
-
-  Args:
-    l (int):
-      angular momentum
-    expnt :
-      exponent :math:`\alpha`
-
-  Returns:
-    normalization factor
-
-  Examples:
-
-  >>> print gto_norm(0, 1)
-  2.5264751109842591
-  '''
-  if l >= 0:
-    #f = 2**(2*l+3) * math.factorial(l+1) * (2*expnt)**(l+1.5) \
-    #        / (math.factorial(2*l+2) * math.sqrt(math.pi))
-    #return math.sqrt(f)
-    return 1/numpy.sqrt(_gaussian_int(l*2+2, 2*expnt))
-  else:
-    raise ValueError('l should be > 0')
-
-def rescale_coeffs(es, cs, angl):
-  """rescale coefficients"""
-
-  if not isinstance(es, numpy.ndarray):
-    es = numpy.array(es)
-  if not isinstance(cs, numpy.ndarray):
-    cs = numpy.array(cs)
-  if len(cs.shape) < 2:
-    cs = cs.reshape(-1,1)
-
-  cs = numpy.einsum('pi,p->pi', cs, gto_norm(angl, es))
-  ee = es.reshape(-1,1) + es.reshape(1,-1)
-  ee = _gaussian_int(angl*2+2, ee)
-  s1 = 1/numpy.sqrt(numpy.einsum('pi,pq,qi->i', cs, ee, cs))
-  cs = numpy.einsum('pi,i->pi', cs, s1)
-
-  return cs.flatten().tolist()
+def rescale_coeffs_libcint(exps, coeffs, l):
+  return [ c*libcint.CINTgto_norm(l, ctypes.c_double(e)) for e, c in zip(exps, coeffs) ]
