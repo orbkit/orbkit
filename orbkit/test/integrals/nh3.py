@@ -61,7 +61,7 @@ for i in range(ao.Norb):
   for j in range(i+1,ao.Norb):
     EHF += P[i,j]*(Hcore[i,j]+F[i,j])
 
-Vnn = qc.get_nuclear_repulsion()
+Vnn = qc.nuclear_repulsion
 
 # compare
 equal(Vnn, 11.73717604)
