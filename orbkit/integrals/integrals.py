@@ -83,9 +83,13 @@ class AOIntegrals():
     self.c_bas = self.bas.ctypes.data_as(ctypes.c_void_p)
 
     # get some parameters
+    self.Nshells = self.bas.shape[0]
+    self.Norb = self.count_contractions()
     self.natm = ctypes.c_int(self.atm.shape[0])
     self.nbas = ctypes.c_int(self.bas.shape[0])
-    self.Norb = self.count_contractions()
+    self.shell_dims = numpy.array(self._get_dims(*range(self.Nshells)))
+    self.shell_offsets = numpy.zeros((self.Nshells,), dtype=numpy.int)
+    self.shell_offsets[1:] = numpy.cumsum(self.shell_dims[:-1])
 
   def count_contractions(self):
     '''Counts the number of contracted gaussians.'''
@@ -94,7 +98,7 @@ class AOIntegrals():
     else:
       fun = libcint.CINTcgto_spheric
     ncntr = 0
-    for i in range(self.nbas.value):
+    for i in range(self.Nshells):
       ncntr += fun(i, self.c_bas)
     return ncntr
 
@@ -105,7 +109,7 @@ class AOIntegrals():
     else:
       fun = libcint.CINTcgto_spheric
     nprim = 0
-    for i in range(self.nbas.value):
+    for i in range(self.Nshells):
       nprim += self.bas[i,2]*self.bas[i,3]*fun(i, self.c_bas)
     return nprim
     return numpy.sum(self.bas[:,2]*self.bas[:,3])
@@ -143,10 +147,9 @@ class AOIntegrals():
     #TODO: non-hermitian operators
     mat = numpy.zeros((self.Norb, self.Norb))
 
-    ii = 0
-    for i in range(self.nbas.value):
-      jj = ii
-      for j in range(i,self.nbas.value):
+    for i in range(self.Nshells):
+      for j in range(i,self.Nshells):
+        ii, jj = self.shell_offsets[[i, j]]
         res = self._libcint1e(operator, i, j)
         di, dj = res.shape
         mat[ii:ii+di,jj:jj+dj] = res
@@ -176,22 +179,14 @@ class AOIntegrals():
 
     mat = numpy.zeros((self.Norb, self.Norb, self.Norb, self.Norb))
 
-    ii = 0
-    for i in range(self.nbas.value):
-      jj = ii
-      for j in range(i,self.nbas.value):
-        kk = 0
-        for k in range(self.nbas.value):
-          ll = kk
-          for l in range(k,self.nbas.value):
+    for i in range(self.Nshells):
+      for j in range(i,self.Nshells):      # hermitian
+        for k in range(i,self.Nshells):    # exchange of electronic coordinates
+          for l in range(k,self.Nshells):  # hermitian
 
-            # get number of contractions for given shell
-            di, dj, dk, dl = self._get_dims(i, j, k, l)
-
-            # exchange of electronic coordinates
-            if (i > k):
-              ll += dl
-              continue
+            # get number of contractions and offsets for given shells
+            di, dj, dk, dl = self.shell_dims[[i, j, k, l]]
+            ii, jj, kk, ll = self.shell_offsets[[i, j, k, l]]
 
             # calculate integrals
             res = self._libcint2e(operator, i, j, k, l)
@@ -207,12 +202,6 @@ class AOIntegrals():
             mat[ll:ll+dl,kk:kk+dk,ii:ii+di,jj:jj+dj] = moveaxis(res, (0,1,2,3), (2,3,1,0))
             mat[kk:kk+dk,ll:ll+dl,jj:jj+dj,ii:ii+di] = moveaxis(res, (0,1,2,3), (3,2,0,1))
             mat[ll:ll+dl,kk:kk+dk,jj:jj+dj,ii:ii+di] = moveaxis(res, (0,1,2,3), (3,2,1,0))
-
-            ll += dl
-          kk += dk
-        jj += dj
-      ii += di
-
 
     if asMO:
       mat = ao2mo(mat, self.qc.mo_spec.coeffs, MOrange)
@@ -271,7 +260,6 @@ class AOIntegrals():
 
     '''
 
-    # get libcint function
     if self.cartesian:
       ext = 'cart'
     else:
@@ -279,22 +267,19 @@ class AOIntegrals():
 
     foperator = 'cint1e_%s_%s' %(operator, ext)
     fun = getattr(libcint, foperator)
+    fun.restype = ctypes.c_void_p
 
-    # call libcint
-    di, dj = self._get_dims(i, j)
+    di, dj = self.shell_dims[[i, j]]
     mat = (ctypes.c_double * di*dj)()
     shls = (ctypes.c_int * 2)(i, j)
 
-    fun.restype = ctypes.c_void_p
     fun(mat, shls, self.c_atm, self.natm, self.c_bas, self.nbas, self.c_env)
     mat = numpy.reshape(mat, (dj, di)).transpose()
 
     # cartesian integrals need to be rescaled according to overlap matrix
     if self.cartesian:
-      Ni = self._norm_cart_shell(i)
-      Nj = self._norm_cart_shell(j)
-      N = numpy.tensordot(Ni, Nj, 0)
-      mat /= N
+      mat /= self._norm_cart_shell(i).reshape(di,1)
+      mat /= self._norm_cart_shell(j).reshape(1,dj)
 
     # switch order of basis functions (angl>1)
     angl = self.bas[i][1]
@@ -321,8 +306,6 @@ class AOIntegrals():
       4D array of integrals.
 
     '''
-
-    # get libcint function
     if self.cartesian:
       ext = 'cart'
     else:
@@ -334,26 +317,23 @@ class AOIntegrals():
       foperator = 'cint2e_%s' %ext
 
     fun = getattr(libcint, foperator)
+    fun.restype = ctypes.c_void_p
     opt = ctypes.POINTER(ctypes.c_void_p)()  # optimizer disabled
 
-    # call libcint
-    di, dj, dk, dl = self._get_dims(i, j, k, l)
+    di, dj, dk, dl = self.shell_dims[[i, j, k, l]]
     mat = (ctypes.c_double * di*dj*dk*dl)()
     shls = (ctypes.c_int * 4)(i, j, k, l)
 
-    fun.restype = ctypes.c_void_p
     fun(mat, shls, self.c_atm, self.natm, self.c_bas, self.nbas, self.c_env, opt)
     mat = numpy.reshape(mat, (dl, dk, dj, di))
     mat = moveaxis(mat, (0, 1, 2, 3), (3, 2, 1, 0))
 
     # cartesian integrals need to be rescaled according to overlap matrix
     if self.cartesian:
-      Ni = self._norm_cart_shell(i)
-      Nj = self._norm_cart_shell(j)
-      Nk = self._norm_cart_shell(k)
-      Nl = self._norm_cart_shell(l)
-      N = numpy.tensordot(numpy.tensordot(Ni, Nj, 0), numpy.tensordot(Nk, Nl, 0), 0)
-      mat /= N
+      mat /= self._norm_cart_shell(i).reshape(di,1,1,1)
+      mat /= self._norm_cart_shell(j).reshape(1,dj,1,1)
+      mat /= self._norm_cart_shell(k).reshape(1,1,dk,1)
+      mat /= self._norm_cart_shell(l).reshape(1,1,1,dl)
 
     # switch order of basis functions (angl>1)
     angl = self.bas[i][1]
@@ -413,8 +393,10 @@ def rescale_coeffs_libcint(exps, coeffs, l):
 
 def get_order(l, cartesian):
   '''Returns indices to transform libcint order to orbkit order.'''
-  if l < 2:
-    return range(l)
+  if l == 0:
+    return (0,)
+  if l == 1:
+    return (0,1,2)
   order = {
     # l : (cartesian, spherical)
     2 : ((0,3,5,1,2,4), range(2)),
