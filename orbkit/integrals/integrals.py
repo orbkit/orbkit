@@ -2,7 +2,6 @@ import numpy
 import ctypes
 
 from ..tools import lquant
-from ..cy_core import aonorm
 
 try:
   from numpy import moveaxis
@@ -26,6 +25,12 @@ libcint.CINTgto_norm.restype = ctypes.c_double
 ###  external interface  ###
 ############################
 
+# TODO:
+# - reordering for spherical
+# - non-hermitian operators (?)
+# - operators including gradients (return tensors)
+# - symmetry
+
 class AOIntegrals():
   '''Interface to calculate AO Integrals with libcint.
   https://github.com/sunqm/libcint
@@ -37,6 +42,7 @@ class AOIntegrals():
     self.env = [0]*ienv
     self.atm = []
     self.bas = []
+    self.cache_norm = {}  # cache renormalization factors for cartesian integrals
 
     # build atm
     self.env.extend(qc.geo_spec.flatten())
@@ -233,17 +239,21 @@ class AOIntegrals():
   def _norm_cart_shell(self, i):
     '''Calculates normalization factors for shell i to rescale cartesian integrals.'''
 
-    di = self._get_dims(i)
-    mat = (ctypes.c_double * di*di)()
-    shls = (ctypes.c_int * 2)(i, i)
+    # check if cached
+    S = self.cache_norm.get(i, None)
 
-    # calculate self overlap
-    libcint.cint1e_ovlp_cart.restype = ctypes.c_void_p
-    libcint.cint1e_ovlp_cart(mat, shls, self.c_atm, self.natm, self.c_bas, self.nbas, self.c_env)
-    S = numpy.reshape(mat, (di, di)).transpose()
+    if S is None:
+      # calculate square root of self overlap
+      di = self._get_dims(i)
+      mat = (ctypes.c_double * di*di)()
+      shls = (ctypes.c_int * 2)(i, i)
+      libcint.cint1e_ovlp_cart.restype = ctypes.c_void_p
+      libcint.cint1e_ovlp_cart(mat, shls, self.c_atm, self.natm, self.c_bas, self.nbas, self.c_env)
+      S = numpy.reshape(mat, (di, di)).transpose()
+      S = numpy.sqrt(numpy.diag(S))
 
-    # take sqrt of diagonal elements
-    S = numpy.sqrt(numpy.diag(S))
+      # add to cache
+      self.cache_norm[i] = S
 
     return S
 
