@@ -21,6 +21,19 @@ if libcint is None:
 # set return type
 libcint.CINTgto_norm.restype = ctypes.c_double
 
+class CINTOpt(ctypes.Structure):
+  _fields_ = [
+    ('index_xyz_array', ctypes.POINTER(ctypes.POINTER(ctypes.c_int))),
+    ('prim_offset', ctypes.POINTER(ctypes.c_int)),
+    ('non0ctr', ctypes.POINTER(ctypes.c_int)),
+    ('non0idx', ctypes.POINTER(ctypes.POINTER(ctypes.c_int))),
+    ('non0coeff', ctypes.POINTER(ctypes.POINTER(ctypes.c_double))),
+    ('expij', ctypes.POINTER(ctypes.POINTER(ctypes.c_double))),
+    ('rij', ctypes.POINTER(ctypes.POINTER(ctypes.c_double))),
+    ('cceij', ctypes.POINTER(ctypes.POINTER(ctypes.c_int))),
+    ('tot_prim', ctypes.c_int),
+  ]
+
 ############################
 ###  external interface  ###
 ############################
@@ -145,6 +158,15 @@ class AOIntegrals():
         Hermitian 2D array of integrals.
     '''
     #TODO: non-hermitian operators
+    if self.cartesian:
+      ext = 'cart'
+    else:
+      ext = 'sph'
+
+    operator = 'cint1e_%s_%s' %(operator, ext)
+    operator = getattr(libcint, operator)
+    operator.restype = ctypes.c_void_p
+
     mat = numpy.zeros((self.Norb, self.Norb))
 
     for i in range(self.Nshells):
@@ -177,6 +199,26 @@ class AOIntegrals():
         4D array of integrals.
     '''
 
+    if self.cartesian:
+      ext = 'cart'
+    else:
+      ext = 'sph'
+
+    if operator:
+      operator = 'cint2e_%s_%s' %(operator, ext)
+    else:
+      operator = 'cint2e_%s' %ext
+    optimizer = '_'.join((operator, 'optimizer'))
+
+    operator = getattr(libcint, operator)
+    operator.restype = ctypes.c_void_p
+
+    # initialize optimizer
+    opt = CINTOpt()
+    fopt = getattr(libcint, optimizer)
+    fopt(ctypes.byref(opt), self.c_atm, self.natm, self.c_bas, self.nbas, self.c_env)
+    #opt = ctypes.POINTER(ctypes.c_void_p)()  # disables optimizer
+
     mat = numpy.zeros((self.Norb, self.Norb, self.Norb, self.Norb))
 
     for i in range(self.Nshells):
@@ -189,7 +231,7 @@ class AOIntegrals():
             ii, jj, kk, ll = self.shell_offsets[[i, j, k, l]]
 
             # calculate integrals
-            res = self._libcint2e(operator, i, j, k, l)
+            res = self._libcint2e(operator, i, j, k, l, opt)
 
             # store/replicate results
             mat[ii:ii+di,jj:jj+dj,kk:kk+dk,ll:ll+dl] = res
@@ -202,6 +244,9 @@ class AOIntegrals():
             mat[ll:ll+dl,kk:kk+dk,ii:ii+di,jj:jj+dj] = moveaxis(res, (0,1,2,3), (2,3,1,0))
             mat[kk:kk+dk,ll:ll+dl,jj:jj+dj,ii:ii+di] = moveaxis(res, (0,1,2,3), (3,2,0,1))
             mat[ll:ll+dl,kk:kk+dk,jj:jj+dj,ii:ii+di] = moveaxis(res, (0,1,2,3), (3,2,1,0))
+
+    # release optimizer
+    libcint.CINTdel_optimizer(ctypes.byref(opt))
 
     if asMO:
       mat = ao2mo(mat, self.qc.mo_spec.coeffs, MOrange)
@@ -251,7 +296,7 @@ class AOIntegrals():
 
     **Parameters:**
 
-      operator : Name of function/integral in libcint.
+      operator : libcint function to call.
       i, j : Shells for bra and ket vectors.
 
     **Returns:**
@@ -260,20 +305,11 @@ class AOIntegrals():
 
     '''
 
-    if self.cartesian:
-      ext = 'cart'
-    else:
-      ext = 'sph'
-
-    foperator = 'cint1e_%s_%s' %(operator, ext)
-    fun = getattr(libcint, foperator)
-    fun.restype = ctypes.c_void_p
-
     di, dj = self.shell_dims[[i, j]]
     mat = (ctypes.c_double * di*dj)()
     shls = (ctypes.c_int * 2)(i, j)
 
-    fun(mat, shls, self.c_atm, self.natm, self.c_bas, self.nbas, self.c_env)
+    operator(mat, shls, self.c_atm, self.natm, self.c_bas, self.nbas, self.c_env)
     mat = numpy.reshape(mat, (dj, di)).transpose()
 
     # cartesian integrals need to be rescaled according to overlap matrix
@@ -293,38 +329,26 @@ class AOIntegrals():
 
     return mat
 
-  def _libcint2e(self, operator, i, j, k, l):
+  def _libcint2e(self, operator, i, j, k, l, opt):
     '''Calls libcint to evaluate 2-electron integrals over shells i, j, k and l.
 
     **Parameters:**
 
-      operator : Name of function/integral in libcint.
+      operator : libcint function to call.
       i, j, k, l : Shells for bra and ket vectors.
+      opt : libcint optimizer to be passed to operator.
 
     **Returns:**
 
       4D array of integrals.
 
     '''
-    if self.cartesian:
-      ext = 'cart'
-    else:
-      ext = 'sph'
-
-    if operator:
-      foperator = 'cint2e_%s_%s' %(operator, ext)
-    else:
-      foperator = 'cint2e_%s' %ext
-
-    fun = getattr(libcint, foperator)
-    fun.restype = ctypes.c_void_p
-    opt = ctypes.POINTER(ctypes.c_void_p)()  # optimizer disabled
 
     di, dj, dk, dl = self.shell_dims[[i, j, k, l]]
     mat = (ctypes.c_double * di*dj*dk*dl)()
     shls = (ctypes.c_int * 4)(i, j, k, l)
 
-    fun(mat, shls, self.c_atm, self.natm, self.c_bas, self.nbas, self.c_env, opt)
+    operator(mat, shls, self.c_atm, self.natm, self.c_bas, self.nbas, self.c_env, opt)
     mat = numpy.reshape(mat, (dl, dk, dj, di))
     mat = moveaxis(mat, (0, 1, 2, 3), (3, 2, 1, 0))
 
