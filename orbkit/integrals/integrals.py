@@ -416,11 +416,11 @@ def ao2mo(mat, coeffs, MOrange=None):
     return numpy.dot(coeffs, numpy.dot(mat, coeffs.transpose()))
   elif len(mat.shape) == 4:
     # 2-electron integrals
-    coeffs = coeffs.transpose()
-    D = numpy.tensordot(coeffs, coeffs, 0)
-    mat = numpy.tensordot(mat, D, ((1,3), (0,2)))
-    mat = numpy.tensordot(D, mat, ((0,2), (0,1)))
-    return numpy.swapaxes(mat, 1, 2)
+    mat = numpy.tensordot(mat, coeffs, axes=(0, 1))  # i
+    mat = numpy.tensordot(mat, coeffs, axes=(0, 1))  # j
+    mat = numpy.tensordot(mat, coeffs, axes=(0, 1))  # k
+    mat = numpy.tensordot(mat, coeffs, axes=(0, 1))  # l
+    return mat
   raise ValueError("'mat' musst be of size 2 or 4.")
 
 def rescale_coeffs_libcint(exps, coeffs, l):
