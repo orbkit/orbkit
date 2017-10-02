@@ -57,3 +57,12 @@ K = numpy.trace(numpy.trace(Vee_mo[:Nelec//2,:Nelec//2,:Nelec//2,:Nelec//2], axi
 E += 2*J - K
 
 equal(E+Vnn, -108.92022806)
+
+# test AO sclicing
+V = ao.Vee(asMO=1)
+Vs = ao.Vee(asMO=1, max_dims=3)
+equal(V, Vs)
+
+V = ao.Vee(asMO=1, MOrange=range(Nelec//2))
+Vs = ao.Vee(asMO=1, MOrange=range(Nelec//2), max_dims=3)
+equal(V, Vs)
