@@ -50,7 +50,6 @@ class AOIntegrals():
   '''
   def __init__(self, qc, cartesian=True):
     self.qc = qc
-    self.cartesian = cartesian
     ienv = 0
     self.env = [0]*ienv
     self.atm = []
@@ -96,10 +95,23 @@ class AOIntegrals():
     self.c_bas = self.bas.ctypes.data_as(ctypes.c_void_p)
 
     # get some parameters
+    self._cartesian = cartesian
     self.Nshells = self.bas.shape[0]
     self.Norb = self.count_contractions()
     self.natm = ctypes.c_int(self.atm.shape[0])
     self.nbas = ctypes.c_int(self.bas.shape[0])
+    self.shell_dims = numpy.array(self._get_dims(*range(self.Nshells)))
+    self.shell_offsets = numpy.zeros((self.Nshells,), dtype=numpy.int)
+    self.shell_offsets[1:] = numpy.cumsum(self.shell_dims[:-1])
+
+  @property
+  def cartesian(self):
+    return self._cartesian
+
+  @cartesian.setter
+  def cartesian(self, value):
+    self._cartesian = value
+    self.Norb = self.count_contractions()
     self.shell_dims = numpy.array(self._get_dims(*range(self.Nshells)))
     self.shell_offsets = numpy.zeros((self.Nshells,), dtype=numpy.int)
     self.shell_offsets[1:] = numpy.cumsum(self.shell_dims[:-1])
@@ -125,7 +137,6 @@ class AOIntegrals():
     for i in range(self.Nshells):
       nprim += self.bas[i,2]*self.bas[i,3]*fun(i, self.c_bas)
     return nprim
-    return numpy.sum(self.bas[:,2]*self.bas[:,3])
 
   def overlap(self, asMO=True, MOrange=None):
     '''Shortcut to calculate overlap integrals <i|j>.'''
