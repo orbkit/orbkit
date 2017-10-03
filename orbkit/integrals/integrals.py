@@ -156,9 +156,11 @@ class AOIntegrals():
 
   def Vee(self, **kwargs):
     '''Shortcut to calculate electron-electron repulsion integrals.'''
-    return self.int2e('',**kwargs)
+    return self.int2e('', **kwargs)
 
-  def int1e(self, operator, asMO=True, MOrange=None, max_dims=0):
+  def int1e(self, operator, asMO=True, max_dims=0,
+            MOrange=None, MOrangei=None, MOrangej=None
+            ):
     '''Calculates all one-electron integrals <i|operator|j>.
 
       **Parameters:**
@@ -167,16 +169,26 @@ class AOIntegrals():
           Base name of function/integral in libcint.
         asMO : boolean
           if True, transform from AO to MO basis.
-        MOrange: list|range object|None
-          only transform selected MOs
         max_dims : int
-          if set, calculate AO in slices no larger than max_dims dimensions (but at least one shell). Slower, but needs less memory.
+          If > 0, calculate AO in slices no larger than max_dims dimensions (but at least one shell). Slower, but needs less memory.
+        MOrangei, MOrangej : list|range object|None
+          Only transform selected MOs for indices i and j respectively.
+        MOrange : list|range object|None
+          Sets MOrangei and MOrangej to the same range.
 
       **Returns:**
 
         Hermitian 2D array of integrals.
     '''
-    #TODO: non-hermitian operators
+
+    if MOrange is not None:
+      MOrangei = MOrange
+      MOrangej = MOrange
+    if MOrangei is None:
+      MOrangei = range(self.Norb)
+    if MOrangej is None:
+      MOrangej = range(self.Norb)
+
     if self.cartesian:
       ext = 'cart'
     else:
@@ -200,14 +212,16 @@ class AOIntegrals():
         ii += di
 
       if asMO:
-        mat = ao2mo(mat, self.qc.mo_spec.coeffs, MOrange=MOrange)
+        mat = ao2mo(
+          mat,
+          self.qc.mo_spec.coeffs,
+          MOrangei=MOrangei,
+          MOrangej=MOrangej,
+        )
 
     else:
       # slice into smaller pieces to save some memory
-      if MOrange:
-        mat = numpy.zeros((len(MOrange), len(MOrange)))
-      else:
-        mat = numpy.zeros((self.Norb, self.Norb))
+      mat = numpy.zeros((len(MOrangei), len(MOrangej)))
       slices = self._get_slices(max_dims)
       for s in slices:
         Norb = numpy.sum(self.shell_dims[s[0]:s[-1]+1])
@@ -222,12 +236,20 @@ class AOIntegrals():
 
         if asMO:
           AOrange = range(self.shell_offsets[s[0]], self.shell_offsets[s[-1]]+self.shell_dims[s[-1]])
-          mat_s = ao2mo(mat_s, self.qc.mo_spec.coeffs, AOrange=AOrange, MOrange=MOrange)
+          mat_s = ao2mo(
+            mat_s,
+            self.qc.mo_spec.coeffs,
+            AOrange=AOrange,
+            MOrangei=MOrangei,
+            MOrangej=MOrangej,
+          )
           mat += mat_s
 
     return mat
 
-  def int2e(self, operator, asMO=True, MOrange=None, max_dims=0):
+  def int2e(self, operator, asMO=True, max_dims=0,
+            MOrange=None, MOrangei=None, MOrangej=None, MOrangek=None, MOrangel=None
+            ):
     '''Calculates all two-electron integrals <ij|operator|kl>.
 
       **Parameters:**
@@ -236,15 +258,31 @@ class AOIntegrals():
           Base name of function/integral in libcint.
         asMO : boolean
           if True, transform from AO to MO basis.
-        MOrange: list|range object|None
-          only transform selected MOs
         max_dims : int
-          if set, calculate AO in slices no larger than max_dims dimensions (but at least one shell). Slower, but needs less memory.
+          If > 0, calculate AO in slices no larger than max_dims dimensions (but at least one shell). Slower, but needs less memory.
+        MOrangei, MOrangej, MOrangek, MOrangel : list|range object|None
+          Only transform selected MOs for indices i, j, k and l respectively.
+        MOrange : list|range object|None
+          sets MOrangei to MOrangel at the same range.
 
       **Returns:**
 
         4D array of integrals.
     '''
+
+    if MOrange is not None:
+      MOrangei = MOrange
+      MOrangej = MOrange
+      MOrangek = MOrange
+      MOrangel = MOrange
+    if MOrangei is None:
+      MOrangei = range(self.Norb)
+    if MOrangej is None:
+      MOrangej = range(self.Norb)
+    if MOrangek is None:
+      MOrangek = range(self.Norb)
+    if MOrangel is None:
+      MOrangel = range(self.Norb)
 
     if self.cartesian:
       ext = 'cart'
@@ -294,14 +332,17 @@ class AOIntegrals():
               mat[ll:ll+dl,kk:kk+dk,jj:jj+dj,ii:ii+di] = moveaxis(res, (0,1,2,3), (3,2,1,0))
 
       if asMO:
-        mat = ao2mo(mat, self.qc.mo_spec.coeffs, MOrange=MOrange)
+        mat = ao2mo(mat,
+                    self.qc.mo_spec.coeffs,
+                    MOrangei=MOrangei,
+                    MOrangej=MOrangej,
+                    MOrangek=MOrangek,
+                    MOrangel=MOrangel,
+                  )
 
     else:
       # slice into smaller pieces to save some memory
-      if MOrange:
-        mat = numpy.zeros((len(MOrange), len(MOrange), len(MOrange), len(MOrange)))
-      else:
-        mat = numpy.zeros((self.Norb, self.Norb, self.Norb, self.Norb))
+      mat = numpy.zeros((len(MOrangei), len(MOrangej), len(MOrangek), len(MOrangel)))
       slices = self._get_slices(max_dims)
       for s in slices:
         Norb = numpy.sum(self.shell_dims[s[0]:s[-1]+1])
@@ -325,7 +366,14 @@ class AOIntegrals():
 
         if asMO:
           AOrange = range(self.shell_offsets[s[0]], self.shell_offsets[s[-1]]+self.shell_dims[s[-1]])
-          mat_s = ao2mo(mat_s, self.qc.mo_spec.coeffs, AOrange=AOrange, MOrange=MOrange)
+          mat_s = ao2mo(mat_s,
+                        self.qc.mo_spec.coeffs,
+                        AOrange=AOrange,
+                        MOrangei=MOrangei,
+                        MOrangej=MOrangej,
+                        MOrangek=MOrangek,
+                        MOrangel=MOrangel,
+                      )
           mat += mat_s
 
     # release optimizer
@@ -478,7 +526,9 @@ class AOIntegrals():
 ###  rescaling and transformations of coefficients  ###
 #######################################################
 
-def ao2mo(mat, coeffs, AOrange=None, MOrange=None):
+def ao2mo(mat, coeffs, AOrange=None,
+          MOrange=None, MOrangei=None, MOrangej=None, MOrangek=None, MOrangel=None
+          ):
   '''Transforms array of one- or two-electron integrals from AO to MO basis.
 
   **Parameters:**
@@ -489,32 +539,46 @@ def ao2mo(mat, coeffs, AOrange=None, MOrange=None):
       MO coefficients
     AOrange: list|range object|None
       only transform an AO slice
-    MOrange: list|range object|None
-      only transform selected MOs
+    MOrangei, MOrangej, MOrangek, MOrangel : list|range object|None
+      Only transform selected MOs for indices i, j, k and l respectively.
+    MOrange : list|range object|None
+      sets MOrangei to MOrangel at the same range.
 
   **Returns:**
     numpy.ndarray
   '''
+
   if MOrange is not None:
-    coeffs = coeffs[MOrange,:]
+    MOrangei = MOrange
+    MOrangej = MOrange
+    MOrangek = MOrange
+    MOrangel = MOrange
+  if MOrangei is None:
+    MOrangei = range(coeffs.shape[0])
+  if MOrangej is None:
+    MOrangej = range(coeffs.shape[0])
+  if MOrangek is None:
+    MOrangek = range(coeffs.shape[0])
+  if MOrangel is None:
+    MOrangel = range(coeffs.shape[0])
+
   if len(mat.shape) == 2:
     # 1-electron integrals
     if AOrange is None:
-      return numpy.dot(coeffs, numpy.dot(mat, coeffs.transpose()))
+      return numpy.dot(coeffs[MOrangei,:], numpy.dot(mat, coeffs[MOrangej,:].transpose()))
     else:
-      return numpy.dot(coeffs[:,AOrange], numpy.dot(mat, coeffs.transpose()))
+      return numpy.dot(coeffs[MOrangei,:][:,AOrange], numpy.dot(mat, coeffs[MOrangej,:].transpose()))
   elif len(mat.shape) == 4:
     # 2-electron integrals
+    # transform i
     if AOrange is None:
-      mat = numpy.tensordot(mat, coeffs, axes=(0, 1))  # i
-      mat = numpy.tensordot(mat, coeffs, axes=(0, 1))  # j
-      mat = numpy.tensordot(mat, coeffs, axes=(0, 1))  # k
-      mat = numpy.tensordot(mat, coeffs, axes=(0, 1))  # l
+      mat = numpy.tensordot(mat, coeffs[MOrangei,:], axes=(0, 1))
     else:
-      mat = numpy.tensordot(mat, coeffs[:,AOrange], axes=(0, 1))  # i
-      mat = numpy.tensordot(mat, coeffs, axes=(0, 1))             # j
-      mat = numpy.tensordot(mat, coeffs, axes=(0, 1))             # k
-      mat = numpy.tensordot(mat, coeffs, axes=(0, 1))             # l
+      mat = numpy.tensordot(mat, coeffs[MOrangei,:][:,AOrange], axes=(0, 1))
+    # transform j, k and l
+    mat = numpy.tensordot(mat, coeffs[MOrangej,:], axes=(0, 1))
+    mat = numpy.tensordot(mat, coeffs[MOrangek,:], axes=(0, 1))
+    mat = numpy.tensordot(mat, coeffs[MOrangel,:], axes=(0, 1))
     return mat
   raise ValueError("'mat' musst be of size 2 or 4.")
 
