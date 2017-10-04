@@ -4,9 +4,12 @@ import os, inspect
 from orbkit import read
 from orbkit.analytical_integrals import get_dipole_moment
 from orbkit.test.tools import equal
+from orbkit import options
+
+options.quiet = True
 
 tests_home = os.path.dirname(inspect.getfile(inspect.currentframe()))
-folder = os.path.join(tests_home, '../read/outputs_for_testing')
+folder = os.path.join(tests_home, '../outputs_for_testing/molpro')
 filepath = os.path.join(folder, 'h2o_rhf_sph.molden')
 qc = read.main_read(filepath, all_mo=True)
 dip = get_dipole_moment(qc,component=['x','y','z'])
@@ -22,3 +25,54 @@ equal(dip, ref_dip)
 qc.geo_spec[1] += numpy.array([1,1,0])
 dip = get_dipole_moment(qc,component=['x','y','z'])
 equal(dip, [0.25214432, -0.20529275,  1.09887067])
+
+
+
+
+#tests = ['h2o_rhf_cart','h2o_rhf_sph','h2o_uhf_cart','h2o_uhf_sph']
+
+#ok_opt = ['molden',
+          #'gaussian.log',
+          #'cclib',
+          #'gaussian.fchk',
+          #'aomix']
+
+#folder = ['molpro',
+          #'gaussian',
+          #'gaussian',
+          #'gaussian',
+          #'turbomole']
+
+#fileext = ['.molden', 
+           #'.inp.log', 
+           #'.inp.log', 
+           #'.fchk', 
+           #'/aomix.in']
+
+
+#ref_dip
+#tests = ['h2o_rhf_cart']
+
+#ok_opt = ['molden',
+          #'gaussian.log',
+          #'cclib',
+          #'gaussian.fchk',
+          #'aomix']
+
+#folder = ['molpro',
+          #'gaussian',
+          #'gaussian',
+          #'gaussian',
+          #'turbomole']
+
+#fileext = ['.molden', 
+           #'.inp.log', 
+           #'.inp.log', 
+           #'.fchk', 
+           #'/aomix.in']
+
+#for i in range(len(tests)):
+  #for j in range(len(folder)):
+    ## Read the input file
+    #qc = read.main_read('%s/%s%s'%(folder[j],tests[i],fileext[j]),itype=ok_opt[j],
+                        #all_mo=False,spin=None,cclib_parser='Gaussian')

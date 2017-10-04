@@ -4,6 +4,7 @@ from orbkit.qcinfo import QCinfo
 from orbkit.orbitals import AOClass, MOClass
 from orbkit.units import aa2a0
 from orbkit.core import l_deg, lquant
+from orbkit.units import ev2ha
 
 from .tools import get_atom_symbol
 
@@ -175,8 +176,9 @@ def convert_cclib(ccData, all_mo=False, spin=None):
         ue -= 1.0
       else:
         occ_num = 0.0
+        
       qc.mo_spec.append({'coeffs': (ccData.nocoeffs if is_natorb else ccData.mocoeffs[i])[ii],
-              'energy': 0.0 if is_natorb else ccData.moenergies[i][ii],
+              'energy': 0.0 if is_natorb else ccData.moenergies[i][ii]*ev2ha,
               'occ_num': occ_num,
               'sym': '%d.%s' %(sym[a],a)
               })

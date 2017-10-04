@@ -330,7 +330,6 @@ def read_molden(fname, all_mo=False, spin=None, i_md=-1, interactive=True,
   qc.ao_spec.spherical = False 
   norm = numpy.diagonal(get_ao_overlap(qc.geo_spec,qc.geo_spec,qc.ao_spec))
   qc.ao_spec.spherical = spher_tmp 
-
   if sum(numpy.abs(norm-1.)) > 1e-8:
     display('The atomic orbitals are not normalized correctly, renormalizing...\n')
     if not by_orca[i_md]: 
@@ -349,5 +348,5 @@ def read_molden(fname, all_mo=False, spin=None, i_md=-1, interactive=True,
         mo['coeffs'] *= cca
 
   qc.mo_spec.update()
-  qc.ao_spec.update()
+  qc.ao_spec.update(force=True)
   return qc

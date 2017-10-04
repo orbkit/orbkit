@@ -31,6 +31,7 @@ from .tools import *
 from multiprocessing import Pool
 
 # Import orbkit modules
+#from orbkit.qcinfo import QCinfo
 from orbkit import grid,cy_grid,cy_core
 from orbkit.display import display
 
@@ -84,21 +85,13 @@ def ao_creator(geo_spec,ao_spec,drv=None,
   z = require(z, dtype='f') 
 
   geo_spec = require(geo_spec, dtype='f')
-  #lxlylz,assign = ao_spec.get_lxlylz(get_assign=True,bincount=True)
-  #ao_coeffs,pnum_list,atom_indices = prepare_ao_calc(ao_spec)
-  #is_normalized = each_ao_is_normalized(ao_spec)
-  #drv = validate_drv(drv)
   
-  #lxlylz = require(lxlylz,dtype='i')
-  #assign = require(assign,dtype='i')
-  #ao_list = cy_core.aocreator(lxlylz,assign,ao_coeffs,pnum_list,geo_spec,
-                              #atom_indices,x,y,z,drv,is_normalized)
   ao_list = cy_core.aocreator(ao_spec.get_lxlylz(),
-                              ao_spec.get_bincount_lxlylz(),
-                              ao_spec.get_ao_coeffs(),
-                              ao_spec.get_pnum_list(),
+                              ao_spec.get_nlxlylz_per_cont(),
+                              ao_spec.get_prim_coeffs(),
+                              ao_spec.get_nprim_per_cont(),
                               geo_spec,
-                              ao_spec.get_atom_indices(),
+                              ao_spec.get_assign_cont_to_atoms(),
                               x,y,z,
                               validate_drv(drv),
                               ao_spec.get_normalized())
@@ -162,7 +155,7 @@ def cartesian2spherical(ao_list,ao_spec):
   '''
 
   lxlylz = ao_spec.get_lxlylz()
-  assign = ao_spec.get_assign_lxlylz()
+  assign = ao_spec.get_assign_lxlylz_to_cont()
   ao_spherical = ao_spec.get_old_ao_spherical()
 
   l = [[] for i in ao_spec]
@@ -233,10 +226,10 @@ def slice_rho(xx):
   '''
   try:
     # All desired information is stored in the Global variable Spec 
-    geo_spec = Spec['geo_spec']
-    ao_spec = Spec['ao_spec']
-    mo_spec = Spec['mo_spec']
-    drv = Spec['Derivative']
+    geo_spec = Spec['qc'].geo_spec
+    ao_spec = Spec['qc'].ao_spec
+    mo_spec = Spec['qc'].mo_spec
+    drv = Spec['derivative']
     calc_mo = Spec['calc_mo']
     if Spec['calc_ao']:
       _mo_creator = lambda x,y: x
@@ -382,6 +375,8 @@ def rho_compute(qc,calc_ao=False,calc_mo=False,drv=None,laplacian=False,
     Contains the laplacian of the density on a grid, i.e. 
     :math:`\nabla^2 \rho = \nabla^2_x \rho + \nabla^2_y \rho + \nabla^2_z \rho`.
   ''' 
+  #if not isinstance(qc,QCinfo):
+    #raise TypeError('rho_compute argument `qc` has to be a QCinfo class instance')
   if calc_ao and calc_mo:
     raise ValueError('Choose either calc_ao=True or calc_mo=True')
   elif calc_ao:
@@ -406,28 +401,13 @@ def rho_compute(qc,calc_ao=False,calc_mo=False,drv=None,laplacian=False,
       drv = [drv]
   else:
     is_drv = False
-    
-  # Specify the global variable containing all desired information needed 
-  # by the function slice_rho
-  if isinstance(qc,dict):
-    Spec = qc
-  else:
-    Spec = qc.todict()
-
-  Spec['calc_ao'] = calc_ao
-  Spec['calc_mo'] = calc_mo
-  Spec['Derivative'] = drv
+  
   if calc_ao:
-    if Spec['ao_spherical'] is None: 
-      lxlylz,assign = get_lxlylz(Spec['ao_spec'],get_assign=True)
-      labels = ['lxlylz=%s,atom=%d' % (lxlylz[i],Spec['ao_spec'][assign[i]]['atom']) for i in range(len(lxlylz))]
-      mo_num = len(lxlylz)
-    else:
-      mo_num = len(Spec['ao_spherical'])
-      labels = ['l,m=%s,atom=%d' % (j,Spec['ao_spec'][i]['atom']) for i,j in Spec['ao_spherical']]
+    labels = qc.ao_spec.get_labels()
+    mo_num = qc.ao_spec.get_ao_num()
   else:
-    mo_num = len(Spec['mo_spec'])
-    labels = [ii_mo['sym'] for ii_mo in Spec['mo_spec']]
+    mo_num = len(qc.mo_spec)
+    labels = [ii_mo['sym'] for ii_mo in qc.mo_spec]
   
   if not grid.is_initialized:
     display('\nSetting up the grid...')
@@ -461,8 +441,8 @@ def rho_compute(qc,calc_ao=False,calc_mo=False,drv=None,laplacian=False,
   else:
     display('The calculation will be carried out with %d subprocesses.' 
             % numproc)
-  display('\nThere are %d contracted %s AOs' % (len(Spec['mo_spec'][0]['coeffs']),
-          'Cartesian' if not Spec['ao_spherical'] else 'spherical')+ 
+  display('\nThere are %d contracted %s AOs' % (qc.ao_spec.get_ao_num(),
+          'Cartesian' if not qc.ao_spec.spherical else 'spherical')+ 
           ('' if calc_ao else ' and %d MOs to be calculated.' % mo_num))
   
   # Initialize some additional user information 
@@ -495,7 +475,7 @@ def rho_compute(qc,calc_ao=False,calc_mo=False,drv=None,laplacian=False,
   
   if calc_mo:
     mo_list = zeros((mo_num,npts) if drv is None else (len(drv),mo_num,npts),
-                   'ao_list' if calc_ao else 'mo_list',save_hdf5)
+                    'ao_list' if calc_ao else 'mo_list',save_hdf5)
   else:
     rho = zeros(npts,'rho',save_hdf5)
     if is_drv:
@@ -514,6 +494,13 @@ def rho_compute(qc,calc_ao=False,calc_mo=False,drv=None,laplacian=False,
       xx.append((numpy.array([i,i + slice_length],dtype=int)))
     i += slice_length 
   
+  # Specify the global variable containing all desired information needed 
+  # by the function slice_rho
+  Spec = {'qc': qc,
+          'calc_ao': calc_ao,
+          'calc_mo': calc_mo,
+          'derivative': drv
+    }
   # Start the worker processes
   if numproc > 1:
     pool = Pool(processes=numproc, initializer=initializer, initargs=(Spec,))
@@ -690,6 +677,8 @@ def rho_compute_no_slice(qc,calc_ao=False,calc_mo=False,drv=None,
   if calc_ao and calc_mo:
     raise ValueError('calc_ao and calc_mo are mutually exclusive arguments.'+
                      'Use calc_mo and return_components instead!')
+  #if not isinstance(qc,QCinfo):
+    #raise TypeError('rho_compute_no_slice argument `qc` has to be a QCinfo class instance')
   # Create the grid
   if all(v is None for v in [x,y,z,is_vector]) and not grid.is_initialized:
     display('\nSetting up the grid...')
@@ -728,9 +717,9 @@ def rho_compute_no_slice(qc,calc_ao=False,calc_mo=False,drv=None,
     drv = ['xx','yy','zz']
   
   display('\nStarting the calculation without slicing the grid...')
-  display('\nThere are %d contracted %s AOs' % (len(Spec['mo_spec'][0]['coeffs']),
-          'Cartesian' if not Spec['ao_spherical'] else 'spherical')+ 
-          ('' if calc_ao else ' and %d MOs to be calculated.' % len(Spec['mo_spec'])))
+  display('\nThere are %d contracted %s AOs' % (qc.ao_spec.get_ao_num(),
+          'Cartesian' if not qc.ao_spec.spherical else 'spherical')+ 
+          ('' if calc_ao else ' and %d MOs to be calculated.' % len(qc.mo_spec)))
   
   if drv is not None:
     try:

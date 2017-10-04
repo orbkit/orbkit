@@ -36,116 +36,6 @@ from .omp_functions import slicer
 from .orbitals import AOClass, MOClass
 from .display import display
 
-
-def get_ao_overlap2(coord_a,coord_b,ao_spec,ao_spherical=None,lxlylz_b=None,
-                   drv=None):
-  '''Computes the overlap matrix of a basis set, where `Bra` basis set
-  corresponds to the geometry :literal:`coord_a` and `Ket` basis set corresponds 
-  to the geometry :literal:`coord_b`.
-  
-  In order to enable the computation of analytical expectation values, 
-  the exponents lx, ly, lz for the primitive Cartesian Gaussians of the `Ket`
-  basis set can be set manually with :literal:`lxlylz_b`.
-  Please note that for the normalization of the primitive Cartesian Gaussians 
-  the exponents from :literal:`ao_spec` are used.
-  
-  **Parameters:**
-  
-  coord_a : geo_spec
-    Specifies the geometry of the `Bra` basis set. 
-    See :ref:`Central Variables` in the manual for details.  
-  coord_b : geo_spec
-    Specifies the geometry of the `Ket` basis set. 
-    See :ref:`Central Variables` in the manual for details.  
-  ao_spec : 
-    See :ref:`Central Variables` in the manual for details.   
-  ao_spherical : optional
-    Specifies if the input is given in a spherical harmonic Gaussian basis set.
-    See :ref:`Central Variables` in the manual for details.
-  lxlylz_b : numpy.ndarray, dtype=numpy.int64, shape = (NAO,3), optional
-    Contains the expontents lx, ly, lz for the primitive Cartesian Gaussians of
-    the `Ket` basis set. 
-  
-  **Returns:**
-  
-  ao_overlap_matrix : numpy.ndarray, shape = (NAO,NAO)
-    Contains the overlap matrix.
-  '''
-  if isinstance(drv, list):
-    aoom = []
-    for ii_d in drv:
-      aoom.append(get_ao_overlap(coord_a,coord_b,ao_spec,
-                                 ao_spherical=ao_spherical,
-                                 lxlylz_b=lxlylz_b,
-                                 drv=ii_d))
-    return aoom
-  lxlylz_a = ao_spec.get_lxlylz()
-
-  if lxlylz_b is None:
-    lxlylz_b =  numpy.array(lxlylz_a,copy=True)
-  else:
-    try:
-      lxlylz_b = numpy.array(lxlylz_b,dtype=numpy.intc)
-    except ValueError:
-      raise ValueError('The keyword argument `lxlylz` has to be convertable ' + 
-                       'into a numpy integer array.')
-    if lxlylz_a.shape != lxlylz_b.shape:
-      raise ValueError('The exponents lxlylz for basis set a and basis set b ' +
-                      'have to have the same shape.')
-  
-  # Derivative Calculation requested?  
-  drv = validate_drv(drv)
-  if drv > 3:
-    raise ValueError('Only first derivatives are currently supported for ' +
-                     'analytical integrals.')
-  
-  ra = numpy.zeros((0,3))
-  rb = numpy.array(ra, copy=True)
-
-  coeff = numpy.zeros((0,2))
-
-  index = []
-  b = 0
-  is_normalized = []
-  for sel_ao in range(len(ao_spec)):
-    if 'lxlylz' in ao_spec[sel_ao].keys():
-      l = ao_spec[sel_ao]['lxlylz']
-    else:
-      l = exp[lquant[ao_spec[sel_ao]['type']]]
-    is_normalized.append((ao_spec[sel_ao]['pnum'] < 0))
-    ra = numpy.append(ra,coord_a[ao_spec[sel_ao]['atom']][numpy.newaxis,:],axis=0)
-    rb = numpy.append(rb,coord_b[ao_spec[sel_ao]['atom']][numpy.newaxis,:],axis=0)
-    
-    for i in l:
-      coeff = numpy.append(coeff,ao_spec[sel_ao]['coeffs'],axis=0)
-      for j in ao_spec[sel_ao]['coeffs']:
-        index.append([sel_ao,b])
-      b += 1
-  
-  if all(is_normalized) != any(is_normalized):
-    raise ValueError('Either all or none of the atomic orbitals have to be normalized!')
-  is_normalized = all(is_normalized)
-  
-  ra = require(ra,dtype='f')
-  rb = require(rb,dtype='f')
-  lxlylz_a = require(lxlylz_a,dtype='i')
-  lxlylz_b = require(lxlylz_b,dtype='i')
-  coeff = require(coeff,dtype='f')
-  index = require(index,dtype='i')
-  ao_overlap_matrix = cy_overlap.aooverlap2(ra,rb,
-                                           lxlylz_a,lxlylz_b,
-                                           coeff,index,
-                                           drv,int(is_normalized))
-  if 'N' in ao_spec[0]:
-    for i in range(len(ao_overlap_matrix)):
-      ao_overlap_matrix[i,:] *= ao_spec[0]['N'][i]*ao_spec[0]['N'][:,0]
-  
-  if not (ao_spherical is None or ao_spherical == []):
-    # Convert the overlap matrix to the real-valued spherical harmonic basis.
-    ao_overlap_matrix = cartesian2spherical_aoom(ao_overlap_matrix,ao_spec,ao_spherical)
-  
-  return ao_overlap_matrix
-
 def get_ao_overlap(coord_a, coord_b, ao_spec, lxlylz_b=None,
                    drv=None):
   '''Computes the overlap matrix of a basis set, where `Bra` basis set
@@ -212,10 +102,10 @@ def get_ao_overlap(coord_a, coord_b, ao_spec, lxlylz_b=None,
                                            coord_b,
                                            lxlylz_a,
                                            lxlylz_b,
-                                           ao_spec.get_bincount_lxlylz(),
-                                           ao_spec.get_ao_coeffs(),
-                                           ao_spec.get_pnum_list(),
-                                           ao_spec.get_atom_indices(),
+                                           ao_spec.get_nlxlylz_per_cont(),
+                                           ao_spec.get_prim_coeffs(),
+                                           ao_spec.get_nprim_per_cont(),
+                                           ao_spec.get_assign_cont_to_atoms(),
                                            drv,
                                            ao_spec.get_normalized())
 
@@ -255,7 +145,7 @@ def cartesian2spherical_aoom(ao_overlap_matrix,ao_spec):
 
   # Get the exponents of the Cartesian basis functions
   lxlylz = ao_spec.get_lxlylz()
-  assign = ao_spec.get_assign_lxlylz()
+  assign = ao_spec.get_assign_lxlylz_to_cont()
   ao_spherical  = ao_spec.get_old_ao_spherical()
   if ao_overlap_matrix.shape != (len(lxlylz),len(lxlylz)):
     raise IOError('No contraction is currently not supported for a '+ 

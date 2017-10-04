@@ -1,0 +1,22 @@
+*** h2o
+memory,200,m
+gprint,basis
+gprint,orbital
+
+basis,cc-pVDZ
+
+geomtyp=xyz
+geometry={
+3
+
+H    0.0000000000       -0.8901392951        0.5586943229
+O    0.0000000000        0.0000000000       -0.0703939342
+H    0.0000000000        0.8901392951        0.5586943229
+}
+
+{rhf
+wf,10,1,0}
+
+md='h2o_rhf_sph.molden'
+put,molden,$md,NEW;
+
