@@ -1828,7 +1828,6 @@ def read_aomix(filename, all_mo=False, spin=None, i_md=-1, interactive=True,
     display('in order to get normalized orbitals.')
     
     # Convert MO coefficients
-    from orbkit import cSupportCode
     from orbkit.analytical_integrals import create_mo_coeff, get_lxlylz
     def dfact(n):
       if n <= 0:

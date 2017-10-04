@@ -740,9 +740,11 @@ def rho_compute_no_slice(qc,calc_ao=False,calc_mo=False,drv=None,
     drv = ['xx','yy','zz']
   
   display('\nStarting the calculation without slicing the grid...')
-  display('\nThere are %d contracted %s AOs' % (len(Spec['mo_spec'][0]['coeffs']),
-          'Cartesian' if not Spec['ao_spherical'] else 'spherical')+ 
-          ('' if calc_ao else ' and %d MOs to be calculated.' % mo_num) )
+  display('\nThere are %d contracted %s AOs' % 
+          ( len(Spec['mo_spec'][0]['coeffs']),
+            'Cartesian' if not Spec['ao_spherical'] else 'spherical' )
+          + ('' if calc_ao else ' and %d MOs to be calculated.' % mo_num) 
+          )
   
   
   if drv is not None:
