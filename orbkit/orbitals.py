@@ -254,8 +254,8 @@ class AOClass(UserList):
       self.assign_lm = []
       for sel_ao in range(len(self.data)):
         for lm in self.data[sel_ao]['lm']:
-         self.lm.append(lm)
-         self.assign_lm.append(sel_ao)
+          self.lm.append(lm)
+          self.assign_lm.append(sel_ao)
       self.assign_lm = numpy.array(self.assign_lm,dtype=numpy.intc,order='C')
   
   def set_lm_dict(self,p=[1,0]):

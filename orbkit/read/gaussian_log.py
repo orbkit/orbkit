@@ -359,7 +359,8 @@ def read_gaussian_log(fname,all_mo=False,spin=None,orientation='standard',
                 m = 0
               else:
                 m = int(m)
-              qc.ao_spec[j]['lm'].append((l,m))
+                
+              qc.ao_spec[i]['lm'].append((l,m))
             for i,j in enumerate(index):
               qc.mo_spec[j]['coeffs'][int(info[0])-1] = float(coeffs[i])
             if int(info[0]) == basis_count:

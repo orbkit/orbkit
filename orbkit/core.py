@@ -84,15 +84,24 @@ def ao_creator(geo_spec,ao_spec,drv=None,
   z = require(z, dtype='f') 
 
   geo_spec = require(geo_spec, dtype='f')
-  lxlylz,assign = ao_spec.get_lxlylz(get_assign=True,bincount=True)
-  ao_coeffs,pnum_list,atom_indices = prepare_ao_calc(ao_spec)
-  is_normalized = each_ao_is_normalized(ao_spec)
-  drv = validate_drv(drv)
+  #lxlylz,assign = ao_spec.get_lxlylz(get_assign=True,bincount=True)
+  #ao_coeffs,pnum_list,atom_indices = prepare_ao_calc(ao_spec)
+  #is_normalized = each_ao_is_normalized(ao_spec)
+  #drv = validate_drv(drv)
   
-  lxlylz = require(lxlylz,dtype='i')
-  assign = require(assign,dtype='i')
-  ao_list = cy_core.aocreator(lxlylz,assign,ao_coeffs,pnum_list,geo_spec,
-                              atom_indices,x,y,z,drv,is_normalized)
+  #lxlylz = require(lxlylz,dtype='i')
+  #assign = require(assign,dtype='i')
+  #ao_list = cy_core.aocreator(lxlylz,assign,ao_coeffs,pnum_list,geo_spec,
+                              #atom_indices,x,y,z,drv,is_normalized)
+  ao_list = cy_core.aocreator(ao_spec.get_lxlylz(),
+                              ao_spec.get_bincount_lxlylz(),
+                              ao_spec.get_ao_coeffs(),
+                              ao_spec.get_pnum_list(),
+                              geo_spec,
+                              ao_spec.get_atom_indices(),
+                              x,y,z,
+                              validate_drv(drv),
+                              ao_spec.get_normalized())
   if 'N' in ao_spec[0]:
     # Renormalize atomic orbital
     ao_list *= ao_spec[0]['N']

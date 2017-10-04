@@ -311,7 +311,6 @@ def get_mo_overlap(mo_a,mo_b,ao_overlap_matrix):
   mo_overlap : float
     Contains the overlap of the two input molecular orbitals.
   '''
-
   shape = numpy.shape(ao_overlap_matrix)
   if isinstance(mo_a,dict):
     mo_a = numpy.array(mo_a['coeffs'])
@@ -626,13 +625,13 @@ def print2D(x,format='%+.2f ',start='\t',end=''):
     s = start
     for j in range(shape[1]):
       s += format % x[i,j]
-    display(s + end)
+    print(s + end)
 
 def pmat(matrix,vmax=lambda x: numpy.max(numpy.abs(x))):
   import matplotlib.pyplot as plt
   plt.figure()
   if matrix.dtype == complex:
-    display('plotting real part of matrix')
+    print('plotting real part of matrix')
     matrix = matrix.real
   vm = vmax(numpy.abs(matrix)) if callable(vmax) else vmax
   plt.imshow(matrix,interpolation=None,vmin=-vm,vmax=vm,cmap='seismic_r')

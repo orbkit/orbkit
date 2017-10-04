@@ -117,6 +117,8 @@ def read_gaussian_fchk(fname, all_mo=False, spin=None, **kwargs):
       if qc.ao_spec == []:
         for ii in range(ao_num):
           qc.ao_spec.append({})
+          if not cartesian_basis:
+            qc.ao_spec[-1]['lm'] = []
     elif 'Number of primitives per shell' in line:
       sec_flag = 'ao_info'
       index = 'pnum'
@@ -125,6 +127,8 @@ def read_gaussian_fchk(fname, all_mo=False, spin=None, **kwargs):
       if qc.ao_spec == []:
         for ii in range(ao_num):
           qc.ao_spec.append({})
+          if not cartesian_basis:
+            qc.ao_spec[-1]['lm'] = []
     elif 'Shell to atom map' in line:
       sec_flag = 'ao_info'
       index = 'atom'
@@ -216,9 +220,9 @@ def read_gaussian_fchk(fname, all_mo=False, spin=None, **kwargs):
             if not cartesian_basis:
               for m in (range(0,l+1) if l != 1 else [1,0]):
                 #Used to be append so last one should be fine
-                qc.ao_spec[index]['lm'].append((l,m))
+                qc.ao_spec[count]['lm'].append((l,m))
                 if m != 0:
-                  qc.ao_spec[index]['lm'].append((l,-m))
+                  qc.ao_spec[count]['lm'].append((l,-m))
           elif index is 'atom':
             ii -= 1
           qc.ao_spec[count][index] = ii
