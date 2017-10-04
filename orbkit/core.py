@@ -743,7 +743,7 @@ def rho_compute_no_slice(qc,calc_ao=False,calc_mo=False,drv=None,
   display('\nThere are %d contracted %s AOs' % 
           ( len(Spec['mo_spec'][0]['coeffs']),
             'Cartesian' if not Spec['ao_spherical'] else 'spherical' )
-          + ('' if calc_ao else ' and %d MOs to be calculated.' % mo_num) 
+          + ( '' if calc_ao else ' and %d MOs to be calculated.' % len(Spec['mo_spec'])) 
           )
   
   
@@ -793,10 +793,10 @@ def rho_compute_no_slice(qc,calc_ao=False,calc_mo=False,drv=None,
   # Calculate the AOs and MOs 
   ao_list = ao_creator(geo_spec,ao_spec,ao_spherical=ao_spherical,
                        is_vector=True,x=x,y=y,z=z)
+  if not calc_ao: mo_list = convert(mo_creator(ao_list,mo_spec),was_vector,N)
   ao_list = convert(ao_list,was_vector,N)
   if calc_ao: 
     return ao_list
-  mo_list = convert(mo_creator(ao_list,mo_spec),was_vector,N)
   if not was_vector:
     # Print the norm of the MOs 
     display('\nNorm of the MOs:')
