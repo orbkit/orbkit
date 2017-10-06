@@ -2,6 +2,7 @@ import numpy
 import ctypes
 
 from ..tools import lquant
+from itertools import chain
 
 try:
   from numpy import moveaxis
@@ -42,14 +43,21 @@ class CINTOpt(ctypes.Structure):
 # - reordering for spherical
 # - non-hermitian operators (?)
 # - operators including gradients (return tensors)
-# - symmetry
+# - default for asMO=True/False ?
+# - AO slicing for asMO=True
+# - slicing: cache AO blocks, if still needed
 
 class AOIntegrals():
   '''Interface to calculate AO Integrals with libcint.
   https://github.com/sunqm/libcint
   '''
   def __init__(self, qc, cartesian=True):
+
+    # general parameters
     self.qc = qc
+    self.clear_all_blocks()
+
+    # libcint parameters
     ienv = 0
     self.env = [0]*ienv
     self.atm = []
@@ -94,7 +102,7 @@ class AOIntegrals():
     self.c_atm = self.atm.ctypes.data_as(ctypes.c_void_p)
     self.c_bas = self.bas.ctypes.data_as(ctypes.c_void_p)
 
-    # get some parameters
+    # some further parameters
     self._cartesian = cartesian
     self.Nshells = self.bas.shape[0]
     self.Norb = self.count_contractions()
@@ -115,6 +123,7 @@ class AOIntegrals():
     self.shell_dims = numpy.array(self._get_dims(*range(self.Nshells)))
     self.shell_offsets = numpy.zeros((self.Nshells,), dtype=numpy.int)
     self.shell_offsets[1:] = numpy.cumsum(self.shell_dims[:-1])
+    self.clear_all_blocks()
 
   def count_contractions(self):
     '''Counts the number of contracted gaussians.'''
@@ -138,6 +147,10 @@ class AOIntegrals():
       nprim += self.bas[i,2]*self.bas[i,3]*fun(i, self.c_bas)
     return nprim
 
+  ########################
+  ###  some Shortcuts  ###
+  ########################
+
   def overlap(self, **kwargs):
     '''Shortcut to calculate overlap integrals <i|j>.'''
     return self.int1e('ovlp', **kwargs)
@@ -151,17 +164,134 @@ class AOIntegrals():
     return self.int1e('nuc', **kwargs)
 
   def Hcore(self, **kwargs):
-    '''Shortcut to calculate one-electron Hamiltonian H_core = T_e + V_ne '''
-    return self.int1e('kin', **kwargs) + self.int1e('nuc', **kwargs)
+    '''Shortcut to calculate one-electron Hamiltonian H_core = T_e + V_ne.'''
+    T = self.int1e('kin', **kwargs)
+    V = self.int1e('nuc', **kwargs)
+    if isinstance(T, list):
+      return [t+v for t,v in zip(T, V)]
+    else:
+      return T + V
 
   def Vee(self, **kwargs):
     '''Shortcut to calculate electron-electron repulsion integrals.'''
     return self.int2e('', **kwargs)
 
-  def int1e(self, operator, asMO=True, max_dims=0,
-            MOrange=None, MOrangei=None, MOrangej=None
-            ):
+  ########################################
+  ###  set blocks of AO and MO ranges  ###
+  ########################################
+
+  def add_AO_block_1e(self, AOrange=None, AOrangei=None, AOrangej=None, shell=False):
+    '''Specify block of 1-electron AO integrals to be calculated.
+
+      **Parameters:**
+
+        AOrangei, AOrangej : lists or range objects of integers
+          Indices i and j specifing the desired block of AO integrals. If omitted, the whole range is take for the corrresponding index.
+        AOrange : lists or range objects of integers
+          Set same range for i and j.
+        shell : boolean
+          If True, indices i and j specify AO shells, instead of AO basis functions.
+    '''
+    if AOrange is not None:
+      AOrangei = AOrange
+      AOrangej = AOrange
+    if AOrangei is None and AOrangej is None:
+      return
+    if shell:
+      AOrangei = [self._shell2ao(s) for s in AOrangei] if AOrangei is not None else range(self.Norb)
+      AOrangej = [self._shell2ao(s) for s in AOrangej] if AOrangej is not None else range(self.Norb)
+    else:
+      AOrangei = AOrangei if AOrangei is not None else range(self.Norb)
+      AOrangej = AOrangej if AOrangej is not None else range(self.Norb)
+    self.AO_blocks_1e.append((AOrangei, AOrangej))
+
+  def add_AO_block_2e(self, AOrange=None, AOrangei=None, AOrangej=None, AOrangek=None, AOrangel=None, shell=False):
+    '''Specify block of 2-electron AO integrals to be calculated.
+
+      **Parameters:**
+
+        AOrangei, AOrangej, AOrangek, AOrangel : lists or range objects of integers
+          Indices i, j, k and l specifing the desired block of AO integrals. If omitted, the whole range is take for the corrresponding index.
+        AOrange : lists or range objects of integers
+          Set same range for i, j, k and l.
+        shell : boolean
+          If True, indices i, j, k and l specify AO shells, instead of AO basis functions.
+    '''
+    if AOrange is not None:
+      AOrangei = AOrange
+      AOrangej = AOrange
+      AOrangek = AOrange
+      AOrangel = AOrange
+    if AOrangei is None and AOrangej is None and AOrangek is None and AOrangel is None:
+      return
+    if shell:
+      AOrangei = [self._shell2ao(s) for s in AOrangei] if AOrangei is not None else range(self.Norb)
+      AOrangej = [self._shell2ao(s) for s in AOrangej] if AOrangej is not None else range(self.Norb)
+      AOrangek = [self._shell2ao(s) for s in AOrangek] if AOrangek is not None else range(self.Norb)
+      AOrangel = [self._shell2ao(s) for s in AOrangel] if AOrangel is not None else range(self.Norb)
+    else:
+      AOrangei = AOrangei if AOrangei is not None else range(self.Norb)
+      AOrangej = AOrangej if AOrangej is not None else range(self.Norb)
+      AOrangek = AOrangek if AOrangek is not None else range(self.Norb)
+      AOrangel = AOrangel if AOrangel is not None else range(self.Norb)
+    self.AO_blocks_2e.append((AOrangei, AOrangej, AOrangek, AOrangel))
+
+  def add_MO_block_1e(self, MOrangei=None, MOrangej=None):
+    '''Specify block of 2-electron MO integrals to be calculated.
+
+      **Parameters:**
+
+        MOrangei, MOrangei : lists or range objects of integers
+          Indices i and j specifing the desired block of MO integrals. If omitted, the whole range is take for the corrresponding index.
+    '''
+    if MOrangei is None and MOrangej is None:
+      return
+    MOrangei = MOrangei if MOrangei is not None else range(self.Norb)
+    MOrangej = MOrangej if MOrangej is not None else range(self.Norb)
+    self.MO_blocks_1e.append((MOrangei, MOrangej))
+
+  def add_MO_block_2e(self, MOrangei=None, MOrangej=None, MOrangek=None, MOrangel=None):
+    '''Specify block of 2-electron MO integrals to be calculated.
+
+      **Parameters:**
+
+        MOrangei, MOrangej : lists or range objects of integers
+          Indices i, j, k and l specifing the desired block of MO integrals. If omitted, the whole range is take for the corrresponding index.
+    '''
+    if MOrangei is None and MOrangej is None and MOrangek is None and MOrangel is None:
+      return
+    MOrangei = MOrangei if MOrangei is not None else range(self.Norb)
+    MOrangej = MOrangej if MOrangej is not None else range(self.Norb)
+    MOrangek = MOrangek if MOrangek is not None else range(self.Norb)
+    MOrangel = MOrangel if MOrangel is not None else range(self.Norb)
+    self.MO_blocks_2e.append((MOrangei, MOrangej, MOrangek, MOrangel))
+
+  def clear_all_blocks(self):
+    self.clear_AO_blocks_1e()
+    self.clear_AO_blocks_2e()
+    self.clear_MO_blocks_1e()
+    self.clear_MO_blocks_2e()
+
+  def clear_AO_blocks_1e(self):
+    self.AO_blocks_1e = []
+
+  def clear_AO_blocks_2e(self):
+    self.AO_blocks_2e = []
+
+  def clear_MO_blocks_1e(self):
+    self.MO_blocks_1e = []
+
+  def clear_MO_blocks_2e(self):
+    self.MO_blocks_2e = []
+
+  #######################################
+  ###  calculate requested integrals  ###
+  #######################################
+
+  def int1e(self, operator, asMO=True):
     '''Calculates all one-electron integrals <i|operator|j>.
+
+      Use add_AO_block_1e() or add_MO_block_1e() if only a subset of AO or MO integrals is needed.
 
       **Parameters:**
 
@@ -169,88 +299,105 @@ class AOIntegrals():
           Base name of function/integral in libcint.
         asMO : boolean
           if True, transform from AO to MO basis.
-        max_dims : int
-          If > 0, calculate AO in slices no larger than max_dims dimensions (but at least one shell). Slower, but needs less memory.
-        MOrangei, MOrangej : list|range object|None
-          Only transform selected MOs for indices i and j respectively.
-        MOrange : list|range object|None
-          Sets MOrangei and MOrangej to the same range.
 
       **Returns:**
 
-        Hermitian 2D array of integrals.
+        (Hermitian) 2D array of integrals if all or only one block of AOs/MOs is requested, otherwise a list of 2D arrays in the order of blocks specified.
     '''
 
-    if MOrange is not None:
-      MOrangei = MOrange
-      MOrangej = MOrange
-    if MOrangei is None:
-      MOrangei = range(self.Norb)
-    if MOrangej is None:
-      MOrangej = range(self.Norb)
+    # get list of all required AO shells
+    shells = None
+    if asMO:
+      if not self.MO_blocks_1e:
+        AOs = None
+        shells = [range(self.Nshells), range(self.Nshells)]
+        shell_offsets = self.shell_offsets
+      else:
+        MOs = [list(set(chain(*blocks))) for blocks in zip(*self.MO_blocks_1e)]
+        MOs = sorted(set(chain(*MOs)))
+        AOs = numpy.where(~numpy.isclose(self.qc.mo_spec.coeffs[MOs,:], 1e-15).all(axis=0))[0]
+        AOs = [AOs, AOs]  # same AO shells for i and j
+    else:
+      if not self.AO_blocks_1e:
+        AOs = None
+        shells = [range(self.Nshells), range(self.Nshells)]
+        shell_offsets = self.shell_offsets
+      else:
+        AOs = [numpy.array(sorted(set(chain(*blocks)))) for blocks in zip(*self.AO_blocks_1e)]
+    if not shells:
+      shells = [list(set([self._ao2shell(ao) for ao in aos])) for aos in AOs]
 
+    # set up libcint function
     if self.cartesian:
       ext = 'cart'
     else:
       ext = 'sph'
-
     operator = 'cint1e_%s_%s' %(operator, ext)
     operator = getattr(libcint, operator)
     operator.restype = ctypes.c_void_p
 
-    if not asMO or not max_dims:
-      # single slice
+    # loop over shells
+    if AOs is None:
       mat = numpy.zeros((self.Norb, self.Norb))
-      for i in range(self.Nshells):
-        for j in range(i,self.Nshells):
-          ii, jj = self.shell_offsets[[i, j]]
-          res = self._libcint1e(operator, i, j)
-          di, dj = res.shape
-          mat[ii:ii+di,jj:jj+dj] = res
-          mat[jj:jj+dj,ii:ii+di] = res.transpose()
-          jj += dj
-        ii += di
-
-      if asMO:
-        mat = ao2mo(
-          mat,
-          self.qc.mo_spec.coeffs,
-          MOrangei=MOrangei,
-          MOrangej=MOrangej,
-        )
-
     else:
-      # slice into smaller pieces to save some memory
-      mat = numpy.zeros((len(MOrangei), len(MOrangej)))
-      slices = self._get_slices(max_dims)
-      for s in slices:
-        Norb = numpy.sum(self.shell_dims[s[0]:s[-1]+1])
-        mat_s = numpy.zeros((Norb, self.Norb))
-        for i in s:
-          for j in range(self.Nshells):
-            ii = self.shell_offsets[i] - self.shell_offsets[s[0]]
-            jj = self.shell_offsets[j]
-            res = self._libcint1e(operator, i, j)
-            di, dj = res.shape
-            mat_s[ii:ii+di,jj:jj+dj] = res
+      mat = numpy.zeros((len(AOs[0]), len(AOs[1])))
+    for i in shells[0]:
+      for j in shells[1]:
 
-        if asMO:
-          AOrange = range(self.shell_offsets[s[0]], self.shell_offsets[s[-1]]+self.shell_dims[s[-1]])
-          mat_s = ao2mo(
-            mat_s,
-            self.qc.mo_spec.coeffs,
-            AOrange=AOrange,
-            MOrangei=MOrangei,
-            MOrangej=MOrangej,
-          )
-          mat += mat_s
+        # hermitian
+        if j < i:
+          continue
 
-    return mat
+        res = self._libcint1e(operator, i, j)
+        ii, jj = self.shell_offsets[[i, j]]
+        di, dj = res.shape
 
-  def int2e(self, operator, asMO=True, max_dims=0,
-            MOrange=None, MOrangei=None, MOrangej=None, MOrangek=None, MOrangel=None
-            ):
+        if AOs:
+          # discard unnecessary AOs
+          AOi = numpy.array(sorted(set(range(ii, ii+di)).intersection(AOs[0]))) - ii
+          AOj = numpy.array(sorted(set(range(jj, jj+dj)).intersection(AOs[1]))) - jj
+          res = res[AOi,:][:,AOj]
+          di, dj = res.shape
+          ii = numpy.where(AOs[0]>=ii)[0][0]
+          jj = numpy.where(AOs[1]>=jj)[0][0]
+
+        mat[ii:ii+di,jj:jj+dj] = res
+        mat[jj:jj+dj,ii:ii+di] = res.transpose()
+
+    if not asMO:
+      if not self.AO_blocks_1e:
+        return mat
+      else:
+        results = []
+        for block in self.AO_blocks_1e:
+          # indices need to be updated to account for discarded AOs
+          maski, maskj = [numpy.array([False]*self.Norb)]*2
+          maski[block[0]] = True
+          maskj[block[1]] = True
+          results.append(mat[maski[AOs[0]],:][:,maskj[AOs[1]]])
+    else:
+      results = []
+      if AOs is None:
+        AOrange = range(self.Norb)
+      else:
+        AOrange = AOs[0]
+      if not self.MO_blocks_1e:
+        return ao2mo(mat, self.qc.mo_spec.coeffs[:,AOrange])
+      for block in self.MO_blocks_1e:
+        results.append(ao2mo(
+          mat, self.qc.mo_spec.coeffs[:,AOrange],
+          MOrangei=block[0], MOrangej=block[1],
+        ))
+
+    # return results
+    if len(results) == 1:
+      return results[0]
+    return results
+
+  def int2e(self, operator, asMO=True):
     '''Calculates all two-electron integrals <ij|operator|kl>.
+
+      Use add_AO_block_2e() or add_MO_block_2e() if only a subset of AO or MO integrals is needed.
 
       **Parameters:**
 
@@ -258,8 +405,6 @@ class AOIntegrals():
           Base name of function/integral in libcint.
         asMO : boolean
           if True, transform from AO to MO basis.
-        max_dims : int
-          If > 0, calculate AO in slices no larger than max_dims dimensions (but at least one shell). Slower, but needs less memory.
         MOrangei, MOrangej, MOrangek, MOrangel : list|range object|None
           Only transform selected MOs for indices i, j, k and l respectively.
         MOrange : list|range object|None
@@ -270,25 +415,31 @@ class AOIntegrals():
         4D array of integrals.
     '''
 
-    if MOrange is not None:
-      MOrangei = MOrange
-      MOrangej = MOrange
-      MOrangek = MOrange
-      MOrangel = MOrange
-    if MOrangei is None:
-      MOrangei = range(self.Norb)
-    if MOrangej is None:
-      MOrangej = range(self.Norb)
-    if MOrangek is None:
-      MOrangek = range(self.Norb)
-    if MOrangel is None:
-      MOrangel = range(self.Norb)
+    # get list of all required AO shells
+    shells = None
+    if asMO:
+      if not self.MO_blocks_2e:
+        AOs = None
+        shells = [range(self.Nshells), range(self.Nshells), range(self.Nshells), range(self.Nshells)]
+      else:
+        MOs = [list(set(chain(*blocks))) for blocks in zip(*self.MO_blocks_2e)]
+        MOs = list(set(chain(*MOs)))
+        AOs = numpy.where(~numpy.isclose(self.qc.mo_spec.coeffs[MOs,:], 1e-15).all(axis=0))[0]
+        AOs = [AOs, AOs, AOs, AOs]  # same AO shells for i, j, k and l
+    else:
+      if not self.AO_blocks_2e:
+        AOs = None
+        shells = [range(self.Nshells), range(self.Nshells), range(self.Nshells), range(self.Nshells)]
+      else:
+        AOs = [numpy.array(list(set(chain(*blocks)))) for blocks in zip(*self.AO_blocks_2e)]
+    if not shells:
+      shells = [list(set([self._ao2shell(ao) for ao in aos])) for aos in AOs]
 
+    # set up libcint function and optimizer
     if self.cartesian:
       ext = 'cart'
     else:
       ext = 'sph'
-
     if operator:
       operator = 'cint2e_%s_%s' %(operator, ext)
     else:
@@ -304,101 +455,103 @@ class AOIntegrals():
     fopt(ctypes.byref(opt), self.c_atm, self.natm, self.c_bas, self.nbas, self.c_env)
     #opt = ctypes.POINTER(ctypes.c_void_p)()  # disables optimizer
 
-    if not asMO or not max_dims:
-      # single slice
+    # loop over shells
+    if AOs is None:
       mat = numpy.zeros((self.Norb, self.Norb, self.Norb, self.Norb))
-      for i in range(self.Nshells):
-        for j in range(i,self.Nshells):      # hermitian
-          for k in range(i,self.Nshells):    # exchange of electronic coordinates
-            for l in range(k,self.Nshells):  # hermitian
-
-              # get number of contractions and offsets for given shells
-              di, dj, dk, dl = self.shell_dims[[i, j, k, l]]
-              ii, jj, kk, ll = self.shell_offsets[[i, j, k, l]]
-
-              # calculate integrals
-              res = self._libcint2e(operator, i, j, k, l, opt)
-
-              # store/replicate results
-              mat[ii:ii+di,jj:jj+dj,kk:kk+dk,ll:ll+dl] = res
-
-              mat[jj:jj+dj,ii:ii+di,kk:kk+dk,ll:ll+dl] = numpy.swapaxes(res, 0, 1)
-              mat[ii:ii+di,jj:jj+dj,ll:ll+dl,kk:kk+dk] = numpy.swapaxes(res, 2, 3)
-              mat[jj:jj+dj,ii:ii+di,ll:ll+dl,kk:kk+dk] = moveaxis(res, (0,1,2,3), (1,0,3,2))
-
-              mat[kk:kk+dk,ll:ll+dl,ii:ii+di,jj:jj+dj] = moveaxis(res, (0,1,2,3), (2,3,0,1))
-              mat[ll:ll+dl,kk:kk+dk,ii:ii+di,jj:jj+dj] = moveaxis(res, (0,1,2,3), (2,3,1,0))
-              mat[kk:kk+dk,ll:ll+dl,jj:jj+dj,ii:ii+di] = moveaxis(res, (0,1,2,3), (3,2,0,1))
-              mat[ll:ll+dl,kk:kk+dk,jj:jj+dj,ii:ii+di] = moveaxis(res, (0,1,2,3), (3,2,1,0))
-
-      if asMO:
-        mat = ao2mo(mat,
-                    self.qc.mo_spec.coeffs,
-                    MOrangei=MOrangei,
-                    MOrangej=MOrangej,
-                    MOrangek=MOrangek,
-                    MOrangel=MOrangel,
-                  )
-
     else:
-      # slice into smaller pieces to save some memory
-      mat = numpy.zeros((len(MOrangei), len(MOrangej), len(MOrangek), len(MOrangel)))
-      slices = self._get_slices(max_dims)
-      for s in slices:
-        Norb = numpy.sum(self.shell_dims[s[0]:s[-1]+1])
-        mat_s = numpy.zeros((Norb, self.Norb, self.Norb, self.Norb))
-        for i in s:
-          for j in range(self.Nshells):
-            for k in range(self.Nshells):
-              for l in range(k, self.Nshells):  # hermitian
+      mat = numpy.zeros((len(AOs[0]), len(AOs[1]), len(AOs[2]), len(AOs[3])))
+    for i in shells[0]:
+      for j in shells[1]:
+        for k in shells[2]:
+          for l in shells[3]:
 
-                # get number of contractions and offsets for given shells
-                di, dj, dk, dl = self.shell_dims[[i, j, k, l]]
-                ii = self.shell_offsets[i] - self.shell_offsets[s[0]]
-                jj = self.shell_offsets[j]
-                kk = self.shell_offsets[k]
-                ll = self.shell_offsets[l]
+            # hermitian
+            if j < i or l < k:
+              continue
 
-                # calculate integrals
-                res = self._libcint2e(operator, i, j, k, l, opt)
-                mat_s[ii:ii+di,jj:jj+dj,kk:kk+dk,ll:ll+dl] = res
-                mat_s[ii:ii+di,jj:jj+dj,ll:ll+dl,kk:kk+dk] = numpy.swapaxes(res, 2, 3)
+            # exchange of electronic coordinates
+            if (i < k) or (i == k and j < l):
+              continue
 
-        if asMO:
-          AOrange = range(self.shell_offsets[s[0]], self.shell_offsets[s[-1]]+self.shell_dims[s[-1]])
-          mat_s = ao2mo(mat_s,
-                        self.qc.mo_spec.coeffs,
-                        AOrange=AOrange,
-                        MOrangei=MOrangei,
-                        MOrangej=MOrangej,
-                        MOrangek=MOrangek,
-                        MOrangel=MOrangel,
-                      )
-          mat += mat_s
+            res = self._libcint2e(operator, i, j, k, l, opt)
+            di, dj, dk, dl = res.shape
+            ii, jj, kk, ll = self.shell_offsets[[i, j, k, l]]
+
+            if AOs:
+              # discard unnecessary AOs
+              AOi = numpy.array(sorted(set(range(ii, ii+di)).intersection(AOs[0]))) - ii
+              AOj = numpy.array(sorted(set(range(jj, jj+dj)).intersection(AOs[1]))) - jj
+              AOk = numpy.array(sorted(set(range(kk, kk+dk)).intersection(AOs[1]))) - kk
+              AOl = numpy.array(sorted(set(range(ll, ll+dl)).intersection(AOs[1]))) - ll
+              res = res[AOi,:,:,:][:,AOj,:,:][:,:,AOk,:][:,:,:,AOl]
+              di, dj, dk, dl = res.shape
+              ii = numpy.where(AOs[0]>=ii)[0][0]
+              jj = numpy.where(AOs[1]>=jj)[0][0]
+              kk = numpy.where(AOs[2]>=kk)[0][0]
+              ll = numpy.where(AOs[3]>=ll)[0][0]
+
+            # store/replicate results
+            mat[ii:ii+di,jj:jj+dj,kk:kk+dk,ll:ll+dl] = res
+
+            mat[jj:jj+dj,ii:ii+di,kk:kk+dk,ll:ll+dl] = numpy.swapaxes(res, 0, 1)
+            mat[ii:ii+di,jj:jj+dj,ll:ll+dl,kk:kk+dk] = numpy.swapaxes(res, 2, 3)
+            mat[jj:jj+dj,ii:ii+di,ll:ll+dl,kk:kk+dk] = moveaxis(res, (0,1,2,3), (1,0,3,2))
+
+            mat[kk:kk+dk,ll:ll+dl,ii:ii+di,jj:jj+dj] = moveaxis(res, (0,1,2,3), (2,3,0,1))
+            mat[ll:ll+dl,kk:kk+dk,ii:ii+di,jj:jj+dj] = moveaxis(res, (0,1,2,3), (2,3,1,0))
+            mat[kk:kk+dk,ll:ll+dl,jj:jj+dj,ii:ii+di] = moveaxis(res, (0,1,2,3), (3,2,0,1))
+            mat[ll:ll+dl,kk:kk+dk,jj:jj+dj,ii:ii+di] = moveaxis(res, (0,1,2,3), (3,2,1,0))
+
+    if not asMO:
+      if not self.AO_blocks_2e:
+        results = [mat]
+      else:
+        results = []
+        for block in self.AO_blocks_2e:
+          # indices need to be updated to account for discarded AOs
+          maski, maskj, maskk, maskl = [numpy.array([False]*self.Norb)]*4
+          maski[block[0]] = True
+          maskj[block[1]] = True
+          maskk[block[2]] = True
+          maskl[block[3]] = True
+          results.append(
+            mat[maski[AOs[0]],:,:,:][:,maskj[AOs[1]],:,:][:,:,maskk[AOs[2]],:][:,:,:,maskl[AOs[3]]]
+          )
+    else:
+      results = []
+      if AOs is None:
+        AOrange = range(self.Norb)
+      else:
+        AOrange = AOs[0]
+      if not self.MO_blocks_2e:
+        results = [ao2mo(mat, self.qc.mo_spec.coeffs[:,AOrange])]
+      for block in self.MO_blocks_2e:
+        results.append(ao2mo(
+          mat, self.qc.mo_spec.coeffs[:,AOrange],
+          MOrangei=block[0], MOrangej=block[1], MOrangek=block[2], MOrangel=block[3],
+        ))
 
     # release optimizer
     libcint.CINTdel_optimizer(ctypes.byref(opt))
 
-    return mat
+    # return results
+    if len(results) == 1:
+      return results[0]
+    return results
 
-  ##############################
-  ###  Interface to libcint  ###
-  ##############################
+  ############################
+  ###  internal functions  ###
+  ############################
 
-  def _get_slices(self, max_dims):
-    slices = []
-    start, end = 0, 0
-    while end < self.Nshells:
-      end = numpy.where(numpy.cumsum(self.shell_dims[start:]) > max_dims)[0]
-      if len(end) > 0:
-        end = end[0] + start
-      else:
-        end = start + 1
-      if end == start:
-        end += 1
-      slices.append(range(start,end))
-      start = end
-    return slices
+  def _shell2ao(self, i):
+    '''Returns all AO indices for given shell.'''
+    if i == self.Nshells - 1:
+      return range(self.shell_offsets[i], self.Norb)
+    return range(self.shell_offsets[i], self.shell_offsets[i+1])
+
+  def _ao2shell(self, i):
+    '''Returns shell index for given AO.'''
+    return numpy.where(self.shell_offsets <= i)[0][-1]
 
   def _get_dims(self, *indices):
     '''Returns number of basis functions for shell indices'''
@@ -408,7 +561,7 @@ class AOIntegrals():
       fun = libcint.CINTcgto_spheric
     dims = []
     for ind in indices:
-      dims.append( fun(ind, self.c_bas) )
+      dims.append( fun(ctypes.c_int(ind), self.c_bas) )
     if len(indices) == 1:
       return dims[0]
     return dims
@@ -526,9 +679,7 @@ class AOIntegrals():
 ###  rescaling and transformations of coefficients  ###
 #######################################################
 
-def ao2mo(mat, coeffs, AOrange=None,
-          MOrange=None, MOrangei=None, MOrangej=None, MOrangek=None, MOrangel=None
-          ):
+def ao2mo(mat, coeffs, MOrange=None, MOrangei=None, MOrangej=None, MOrangek=None, MOrangel=None):
   '''Transforms array of one- or two-electron integrals from AO to MO basis.
 
   **Parameters:**
@@ -537,16 +688,17 @@ def ao2mo(mat, coeffs, AOrange=None,
       integrals to be transformed
     coeffs : 2 dimensional numpy.ndarry
       MO coefficients
-    AOrange: list|range object|None
-      only transform an AO slice
     MOrangei, MOrangej, MOrangek, MOrangel : list|range object|None
       Only transform selected MOs for indices i, j, k and l respectively.
-    MOrange : list|range object|None
-      sets MOrangei to MOrangel at the same range.
+    MOrange: list|range object|None
+      Set same range for all indices.
 
   **Returns:**
+
     numpy.ndarray
+
   '''
+  assert len(mat.shape) in (2, 4), "'mat' musst be of size 2 or 4."
 
   if MOrange is not None:
     MOrangei = MOrange
@@ -562,25 +714,27 @@ def ao2mo(mat, coeffs, AOrange=None,
   if MOrangel is None:
     MOrangel = range(coeffs.shape[0])
 
+  # discard zero columns in MO coeffs
+  if len(mat.shape) == 2:
+    MOs = list(set(chain(MOrangei, MOrangej)))
+    AOs = numpy.where(~numpy.isclose(coeffs[MOs,:], 1e-15).all(axis=0))[0]
+    mat = mat[AOs,:][:,AOs]
+  elif len(mat.shape) == 4:
+    MOs = list(set(chain(MOrangei, MOrangej, MOrangek, MOrangel)))
+    AOs = numpy.where(~numpy.isclose(coeffs[MOs,:], 1e-15).all(axis=0))[0]
+    mat = mat[AOs,:,:,:][:,AOs,:,:][:,:,AOs,:][:,:,:,AOs]
+  coeffs = coeffs[:,AOs]
+
   if len(mat.shape) == 2:
     # 1-electron integrals
-    if AOrange is None:
-      return numpy.dot(coeffs[MOrangei,:], numpy.dot(mat, coeffs[MOrangej,:].transpose()))
-    else:
-      return numpy.dot(coeffs[MOrangei,:][:,AOrange], numpy.dot(mat, coeffs[MOrangej,:].transpose()))
+    return numpy.dot(coeffs[MOrangei,:], numpy.dot(mat, coeffs[MOrangej,:].transpose()))
   elif len(mat.shape) == 4:
     # 2-electron integrals
-    # transform i
-    if AOrange is None:
-      mat = numpy.tensordot(mat, coeffs[MOrangei,:], axes=(0, 1))
-    else:
-      mat = numpy.tensordot(mat, coeffs[MOrangei,:][:,AOrange], axes=(0, 1))
-    # transform j, k and l
+    mat = numpy.tensordot(mat, coeffs[MOrangei,:], axes=(0, 1))
     mat = numpy.tensordot(mat, coeffs[MOrangej,:], axes=(0, 1))
     mat = numpy.tensordot(mat, coeffs[MOrangek,:], axes=(0, 1))
     mat = numpy.tensordot(mat, coeffs[MOrangel,:], axes=(0, 1))
     return mat
-  raise ValueError("'mat' musst be of size 2 or 4.")
 
 def rescale_coeffs_libcint(exps, coeffs, l):
   return [ c*libcint.CINTgto_norm(l, ctypes.c_double(e)) for e, c in zip(exps, coeffs) ]

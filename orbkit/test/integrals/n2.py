@@ -57,22 +57,3 @@ K = numpy.trace(numpy.trace(Vee_mo[:Nelec//2,:Nelec//2,:Nelec//2,:Nelec//2], axi
 E += 2*J - K
 
 equal(E+Vnn, -108.92022806)
-
-# test AO sclicing
-Hcore = ao.Hcore(asMO=1, MOrange=range(Nelec//2))
-Hs = ao.Hcore(asMO=1, max_dims=3, MOrange=range(Nelec//2))
-equal(Hcore, Hs)
-
-V = ao.Vee(asMO=1, MOrange=range(Nelec//2))
-Vs = ao.Vee(asMO=1, MOrange=range(Nelec//2), max_dims=3)
-equal(V, Vs)
-
-# test individual MOranges
-Hcore = ao.Hcore(asMO=1)
-H_ = numpy.zeros((ao.Norb, ao.Norb))
-c = ao.Norb//2
-H_[:c,:c] = ao.Hcore(asMO=1, MOrangei=range(c), MOrangej=range(c))
-H_[c:,:c] = ao.Hcore(asMO=1, MOrangei=range(c, ao.Norb), MOrangej=range(c))
-H_[:c,c:] = ao.Hcore(asMO=1, MOrangei=range(c), MOrangej=range(c, ao.Norb))
-H_[c:,c:] = ao.Hcore(asMO=1, MOrangei=range(c, ao.Norb), MOrangej=range(c, ao.Norb))
-equal(Hcore, H_)
