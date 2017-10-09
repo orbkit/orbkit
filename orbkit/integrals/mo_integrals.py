@@ -441,7 +441,7 @@ def load(filename='FCIDUMP'):
   OrbSym = [int(m.group()) for m in re.finditer('\d', OrbSym)]
 
   ## create Integrals object
-  integrals = Integrals(
+  integrals = FCIDUMP(
     Norb=Norb, Nelec=Nelec, spin=spin,
     OrbSym=OrbSym, ISym=ISym,
     restricted=restricted,

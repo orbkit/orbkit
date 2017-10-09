@@ -113,4 +113,7 @@ def generate_fcidump(qc, filename='FCIDUMP', core=0, occ=None, sym='c1', orderin
   fcidump.reduce_active_space(core=core)
 
   # write to file
-  fcidump.store(filename)
+  if filename:
+    fcidump.store(filename)
+
+  return fcidump
