@@ -43,7 +43,6 @@ class CINTOpt(ctypes.Structure):
 # - reordering for spherical
 # - non-hermitian operators (?)
 # - operators including gradients (return tensors)
-# - default for asMO=True/False ?
 
 class AOIntegrals():
   '''Interface to calculate AO Integrals with libcint.
@@ -287,7 +286,7 @@ class AOIntegrals():
   ###  calculate requested integrals  ###
   #######################################
 
-  def int1e(self, operator, asMO=True, max_dims=0):
+  def int1e(self, operator, asMO=False, max_dims=0):
     '''Calculates all one-electron integrals <i|operator|j>.
 
       Use add_AO_block_1e() or add_MO_block_1e() if only a subset of AO or MO integrals is needed.
@@ -359,7 +358,7 @@ class AOIntegrals():
             # only keep required AOs
             AOi = numpy.array(sorted(set(range(ii, ii+di)).intersection(AOs[0]))) - ii
             AOj = numpy.array(sorted(set(range(jj, jj+dj)).intersection(AOs[1]))) - jj
-            res = res[AOi,:][:,AOj]
+            res = res[numpy.ix_(AOi, AOj)]
             di, dj = res.shape
             ii = numpy.where(AOs[0]>=ii)[0][0]
             jj = numpy.where(AOs[1]>=jj)[0][0]
@@ -377,7 +376,7 @@ class AOIntegrals():
             maski, maskj = [numpy.array([False]*self.Norb)]*2
             maski[block[0]] = True
             maskj[block[1]] = True
-            results.append(mat[maski[AOs[0]],:][:,maskj[AOs[1]]])
+            results.append(mat[numpy.ix_(maski[AOs[0]], maskj[AOs[1]])])
       else:
         results = []
         if AOs is None:
@@ -425,7 +424,7 @@ class AOIntegrals():
               # only keep required AOs
               AOi = numpy.array(sorted(set(range(ii, ii+di)).intersection(AOs[0]))) - ii
               AOj = numpy.array(sorted(set(range(jj, jj+dj)).intersection(AOs[1]))) - jj
-              res = res[AOi,:][:,AOj]
+              res = res[numpy.ix_(AOi, AOj)]
               di, dj = res.shape
               ii = numpy.where(AOs[0]>=ii)[0][0]
               jj = numpy.where(AOs[1]>=jj)[0][0]
@@ -455,7 +454,7 @@ class AOIntegrals():
       return results[0]
     return results
 
-  def int2e(self, operator, asMO=True, max_dims=0):
+  def int2e(self, operator, asMO=False, max_dims=0):
     '''Calculates all two-electron integrals <ij|operator|kl>.
 
       Use add_AO_block_2e() or add_MO_block_2e() if only a subset of AO or MO integrals is needed.
@@ -545,7 +544,7 @@ class AOIntegrals():
                 AOj = numpy.array(sorted(set(range(jj, jj+dj)).intersection(AOs[1]))) - jj
                 AOk = numpy.array(sorted(set(range(kk, kk+dk)).intersection(AOs[2]))) - kk
                 AOl = numpy.array(sorted(set(range(ll, ll+dl)).intersection(AOs[3]))) - ll
-                res = res[AOi,:,:,:][:,AOj,:,:][:,:,AOk,:][:,:,:,AOl]
+                res = res[numpy.ix_(AOi, AOj, AOk, AOl)]
                 di, dj, dk, dl = res.shape
                 ii = numpy.where(AOs[0]>=ii)[0][0]
                 jj = numpy.where(AOs[1]>=jj)[0][0]
@@ -577,7 +576,7 @@ class AOIntegrals():
             maskk[block[2]] = True
             maskl[block[3]] = True
             results.append(
-              mat[maski[AOs[0]],:,:,:][:,maskj[AOs[1]],:,:][:,:,maskk[AOs[2]],:][:,:,:,maskl[AOs[3]]]
+              mat[numpy.ix_(maski[AOs[0]], maskj[AOs[1]], maskk[AOs[2]], maskl[AOs[3]])]
             )
       else:
         results = []
@@ -638,7 +637,7 @@ class AOIntegrals():
                   AOj = numpy.array(sorted(set(range(jj, jj+dj)).intersection(AOs[1]))) - jj
                   AOk = numpy.array(sorted(set(range(kk, kk+dk)).intersection(AOs[2]))) - kk
                   AOl = numpy.array(sorted(set(range(ll, ll+dl)).intersection(AOs[3]))) - ll
-                  res = res[AOi,:,:,:][:,AOj,:,:][:,:,AOk,:][:,:,:,AOl]
+                  res = res[numpy.ix_(AOi, AOj, AOk, AOl)]
                   di, dj, dk, dl = res.shape
                   ii = numpy.where(AOs[0]>=ii)[0][0]
                   jj = numpy.where(AOs[1]>=jj)[0][0]
@@ -888,11 +887,11 @@ def ao2mo(mat, coeffs, MOrange=None, MOrangei=None, MOrangej=None, MOrangek=None
 
   if len(mat.shape) == 2:
     # 1-electron integrals
-    mat = mat[AOs,:][:,AOs]
+    mat = mat[numpy.ix_(AOs, AOs)]
     return numpy.dot(coeffs[MOrangei,:], numpy.dot(mat, coeffs[MOrangej,:].T))
   elif len(mat.shape) == 4:
     # 2-electron integrals
-    mat = mat[AOs,:,:,:][:,AOs,:,:][:,:,AOs,:][:,:,:,AOs]
+    mat = mat[numpy.ix_(AOs, AOs, AOs, AOs)]
     mat = numpy.tensordot(mat, coeffs[MOrangei,:], axes=(0, 1))
     mat = numpy.tensordot(mat, coeffs[MOrangej,:], axes=(0, 1))
     mat = numpy.tensordot(mat, coeffs[MOrangek,:], axes=(0, 1))
@@ -935,12 +934,12 @@ def _ao2mo_slice(mat, coeffs, AOslice, MOrange=None, MOrangei=None, MOrangej=Non
 
   if len(mat.shape) == 2:
     # 1-electron integrals
-    mat = mat[AOs_mat,:][:,AOs]
-    return numpy.dot(coeffs[MOrangei,:][:,AOs_], numpy.dot(mat, coeffs[MOrangej,:][:,AOs].T))
+    mat = mat[numpy.ix_(AOs_mat,AOs)]
+    return numpy.dot(coeffs[numpy.ix_(MOrangei, AOs_)], numpy.dot(mat, coeffs[numpy.ix_(MOrangej, AOs)].T))
   elif len(mat.shape) == 4:
     # 2-electron integrals
-    mat = mat[AOs_mat,:,:,:][:,AOs,:,:][:,:,AOs,:][:,:,:,AOs]
-    mat = numpy.tensordot(mat, coeffs[MOrangei,:][:,AOs_], axes=(0, 1))
+    mat = mat[numpy.ix_(AOs_mat, AOs, AOs, AOs)]
+    mat = numpy.tensordot(mat, coeffs[numpy.ix_(MOrangei, AOs_)], axes=(0, 1))
     coeffs = coeffs[:,AOs]
     mat = numpy.tensordot(mat, coeffs[MOrangej,:], axes=(0, 1))
     mat = numpy.tensordot(mat, coeffs[MOrangek,:], axes=(0, 1))
