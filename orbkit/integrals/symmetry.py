@@ -6,7 +6,6 @@ from functools import reduce
 # Molpro Ordering: http://www.molpro.net/info/current/doc/manual/node36.html
 # Cotton Ordering: http://www.psicode.org/psi4manual/master/psithonmol.html#table-irrepordering
 
-point_groups = ['d2h', 'c2v', 'c2h', 'd2', 'cs', 'c2', 'ci', 'c1']
 irrep_labels = {
   # cotton ordering
   'd2h' : ('', 'Ag', 'B1g', 'B2g', 'B3g', 'Au', 'B1u', 'B2u', 'B3u'),
@@ -18,6 +17,7 @@ irrep_labels = {
    'ci' : ('', 'Ag', 'Au'),
    'c1' : ('', 'A',),
 }
+
 cotton2molpro = {
   'd2h' : [0, 1, 4, 6, 7, 8, 5, 3, 2],
   'c2v' : [0, 1, 4, 2, 3],
@@ -28,6 +28,9 @@ cotton2molpro = {
   'ci'  : [0, 1, 2],
   'c1'  : [0, 1],
 }
+
+point_groups = irrep_labels.keys()
+Nirreps = {sym:len(irrep_labels[sym])-1 for sym in point_groups}
 
 def irrep_label(point_group, irrep, ordering='molpro'):
   point_group = point_group.lower()
@@ -48,5 +51,33 @@ multiplication_table = numpy.array([
 ])
 
 def irrep_mul(*irreps):
-  """Returns the product of a list of irreps."""
+  '''Returns the product of a list of irreps.'''
   return reduce(lambda i,j: multiplication_table[i-1, j-1], irreps)
+
+labels_psi4 = {
+  'd2h' : ('', 'Ag', 'B1g', 'B2g', 'B3g', 'Au', 'B1u', 'B2u', 'B3u'),
+  'c2v' : ('', 'A1', 'A2', 'B1', 'B2'),
+  'c2h' : ('', 'Ag', 'Bg', 'Au', 'Bu'),
+   'd2' : ('', 'A', 'B1', 'B2', 'B3'),
+   'cs' : ('', 'A', 'A"'),
+   'c2' : ('', 'A', 'B'),
+   'ci' : ('', 'Ag', 'Au'),
+   'c1' : ('', 'A',),
+}
+
+
+def parse_irrep(label, point_group):
+  '''Returns IRREP index in Molpro Ordering.'''
+
+  # try Molpro
+  if label.isdigit():
+    return int(label)
+
+  # try Psi4
+  labels = labels_psi4[point_group]
+  if label in labels.keys():
+    irrep = labels[key]
+    return cotton2molpro[point_group][irrep]
+
+  raise ValueError('unkown symmetry label')
+

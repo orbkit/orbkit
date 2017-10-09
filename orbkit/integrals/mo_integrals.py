@@ -143,6 +143,7 @@ class FCIDUMP(object):
   def set_H(self, H, irrep, spin='alpha'):
     '''Set Hcore for given irrep.'''
     # TODO: normalize indices
+    assert self.initialized, 'Matrices not yet initalized'
     assert irrep in self.OrbSym, 'no orbital(s) specified for IRREP %s' %irrep
 
     orbitals = numpy.array(self.OrbSym) == irrep
@@ -165,6 +166,7 @@ class FCIDUMP(object):
     '''
     # TODO: normalize indices
 
+    assert self.initialized, 'Matrices not yet initalized'
     for irrep in (irrepi, irrepj, irrepk, irrepl):
       assert irrep in self.OrbSym, 'no orbital(s) specified for IRREP %s' %irrep
 
