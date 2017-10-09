@@ -41,16 +41,6 @@ class QCinfo:
   def __init__(self, filename=None):
     self.geo_info = []
     self.geo_spec = []
-    self.etot     = 0.
-    self.com      = 'Center of mass can be calculated with self.get_com().'
-    self.coc      = 'Center of charge can be calculated with self.get_coc().'
-    self.bc      =  'Barycenter of scalar field can be calculated with self.get_bc().'
-    self.pop_ana  = {}
-    # transition dipole information
-    self.states         = {'multiplicity' : None,
-                           'energy'       : None}
-    self.dipole_moments = None
-    self.charge = self.get_charge()
 
     data = None
     if filename:
@@ -66,10 +56,12 @@ class QCinfo:
   def __eq__(self, other):
     if not isinstance(other, QCinfo):
       raise TypeError('Comaring of QCinfo to non QCinfo object not defined')
-    same = [self.comp_geo_info(other.geo_info),
-    numpy.allclose(self.geo_spec, other.geo_spec),
-    self.ao_spec == other.ao_spec,
-    self.mo_spec == other.mo_spec]
+    same = [
+			self.comp_geo_info(other.geo_info),
+            numpy.allclose(self.geo_spec, other.geo_spec),
+            self.ao_spec == other.ao_spec,
+            self.mo_spec == other.mo_spec
+			]
     return all(same)
 
   def update(self):
@@ -167,26 +159,35 @@ class QCinfo:
     self.com = self.com/total_mass
     return self.com
 
-  def get_charge(self):
-    '''Computes total charge of the system.
+  def get_elec_charge(self):
+    '''Computes electronic charge of the system.
+    '''
+    return sum([mo['occ_num'] for mo in self.mo_spec])
+
+  def get_nuc_charge(self):
+    '''Computes nuclear charge of the system.
     '''
     self.charge = 0.
     for ii in range(len(self.geo_info)):
-      nuc_charge    = float(self.geo_info[ii][2])
+      nuc_charge   = float(self.geo_info[ii][2])
       self.charge += nuc_charge
     return self.charge
+
+  def get_charge(self):
+    '''Computes total charge of the system.
+    '''
+    return self.get_nuc_charge() - self.get_elec_charge()
 
   def get_coc(self):
     '''Computes the center of charge.
     '''
-    self.coc     = numpy.zeros(3)
+    coc     = numpy.zeros(3)
     total_charge = 0.
     for ii in range(len(self.geo_info)):
       nuc_charge    = float(self.geo_info[ii][2])
-      self.coc     += numpy.multiply(self.geo_spec[ii],nuc_charge)
+      coc     += numpy.multiply(self.geo_spec[ii],nuc_charge)
       total_charge += nuc_charge
-    self.coc = self.coc/total_charge
-    return self.coc
+    return self.coc/total_charge
 
   def get_bc(self,matrix=None,is_vector=False):
     '''Calculates Barycenter for scalar field

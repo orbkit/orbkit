@@ -23,7 +23,6 @@ def generate_fcidump(qc, filename='FCIDUMP', core=0, occ=None, sym='c1', orderin
 
   assert sym in symmetry.point_groups
   ao = AOIntegrals(qc)
-  Nelec = sum([mo['occ_num'] for mo in qc.mo_spec])
 
   if sym == 'c1':
 
@@ -66,7 +65,7 @@ def generate_fcidump(qc, filename='FCIDUMP', core=0, occ=None, sym='c1', orderin
   else:
     Norb = sum(occ)
 
-  fcidump = FCIDUMP(Norb=Norb, Nelec=Nelec, spin=1)
+  fcidump = FCIDUMP(Norb=Norb, Nelec=qc.get_elec_charge(), spin=1)
   fcidump.set_OrbSym(nmopi)
   fcidump.nuclear_repulsion = qc.nuclear_repulsion
 
