@@ -48,6 +48,30 @@ def ommited_cca_norm(np.ndarray[int, ndim=2, mode="c"] lxlylz not None):
                   )
   return norm
 
+  
+@cython.boundscheck(False)
+@cython.wraparound(False)
+def tmol_aomix_norm(np.ndarray[int, ndim=2, mode="c"] lxlylz not None):
+  """
+  Get basis function normalization used by Turbomole and orca
+    // For Cartesian functions we need to add a basis function normalization
+    // constant of
+    //      _______________________________
+    //    \/ (2lx-1)!! (2ly-1)!! (2lz-1)!!
+  """
+  cdef int ao_num = lxlylz.shape[0]
+  cdef double divisor = 0.0
+  cdef np.ndarray[double, ndim=1, mode="c"] norm = np.zeros([ao_num],
+                                                               dtype=np.float64)
+  for i in range(ao_num):
+    norm[i] = sqrt( doublefactorial(2*lxlylz[i,0] - 1) 
+                  * doublefactorial(2*lxlylz[i,1] - 1) 
+                  * doublefactorial(2*lxlylz[i,2] - 1) 
+                  )
+  return norm
+  
+  
+  
 @cython.boundscheck(False)
 @cython.wraparound(False)
 def aooverlap(np.ndarray[double, ndim=2, mode="c"] geo_spec_a   not None,

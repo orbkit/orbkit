@@ -19,3 +19,36 @@ ao_overlap_matrix = ai.get_ao_overlap(qc.geo_spec,qc.geo_spec,qc.ao_spec)
 moom = ai.get_mo_overlap_matrix(qc.mo_spec,qc.mo_spec,ao_overlap_matrix,numproc=options.numproc)
 
 equal(moom, numpy.eye(len(moom)))
+
+
+
+tests = ['h2o_rhf_cart','h2o_rhf_sph','h2o_uhf_cart','h2o_uhf_sph']
+
+ok_opt = ['molden',
+          'gaussian.log',
+          'cclib',
+          'gaussian.fchk',
+          'aomix']
+
+folder = ['molpro',
+          'gaussian',
+          'gaussian',
+          'gaussian',
+          'turbomole']
+
+fileext = ['.molden', 
+           '.inp.log', 
+           '.inp.log', 
+           '.fchk', 
+           '/aomix.in']
+
+for i in range(len(tests)):
+  for j in range(len(folder)):
+    # Read the input file
+    qc = read.main_read('%s/%s%s'%(folder[j],tests[i],fileext[j]),itype=ok_opt[j],
+                        all_mo=False,spin=None,cclib_parser='Gaussian')
+    ao_overlap_matrix = ai.get_ao_overlap(qc.geo_spec,qc.geo_spec,qc.ao_spec)
+
+    moom = ai.get_mo_overlap_matrix(qc.mo_spec,qc.mo_spec,ao_overlap_matrix,numproc=options.numproc)
+
+    equal(moom, numpy.eye(len(moom)))
