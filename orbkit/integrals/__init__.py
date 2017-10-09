@@ -1,1 +1,1 @@
-from .integrals import AOIntegrals, ao2mo
+from .ao_integrals import AOIntegrals, ao2mo
