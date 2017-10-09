@@ -298,7 +298,7 @@ class AOIntegrals():
         asMO : boolean
           if True, transform from AO to MO basis.
         max_dims : int
-          If > 0, calculate AO in slices no larger than max_dims dimensions (but at least one shell). Slower, but needs less memory.
+          If > 0, calculate AO Integrals in slices containing no more than max_dims AOs (but at least one shell). Slower, but requires less memory.
 
       **Returns:**
 
@@ -469,6 +469,8 @@ class AOIntegrals():
           Only transform selected MOs for indices i, j, k and l respectively.
         MOrange : list|range object|None
           sets MOrangei to MOrangel at the same range.
+        max_dims : int
+          If > 0, calculate AO Integrals in slices containing no more than max_dims AOs (but at least one shell). Slower, but requires less memory.
 
       **Returns:**
 
