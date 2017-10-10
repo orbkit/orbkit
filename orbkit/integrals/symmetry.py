@@ -65,7 +65,6 @@ labels_psi4 = {
    'c1' : ('', 'A',),
 }
 
-
 def parse_irrep(label, point_group):
   '''Returns IRREP index in Molpro Ordering.'''
 

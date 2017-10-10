@@ -8,15 +8,15 @@ def generate_fcidump(qc, filename='FCIDUMP', core=0, occ=None, sym='c1', orderin
 
     **Parameters:**
 
-      filename : string
-      core, occ : int or list of ints
-        active space (core and occupied) orbitals per IRREP
-      sym : string ('d2h', 'c2v', 'c2h', 'd2', 'cs', 'c2', 'ci', 'c1')
-        Do not exploit symmetry.
-      ordering : 'molpro' or 'cotton'
-        IRREP ordering in FCIDUMP file
-      max_dims : int
-        If > 0, calculate AO Integrals in slices containing no more than max_dims AOs (but at least one shell). Slower, but requires less memory.
+    filename : string
+    core, occ : int or list of ints
+      active space (core and occupied) orbitals per IRREP
+    sym : string ('d2h', 'c2v', 'c2h', 'd2', 'cs', 'c2', 'ci', 'c1')
+      Do not exploit symmetry.
+    ordering : 'molpro' or 'cotton'
+      IRREP ordering in FCIDUMP file
+    max_dims : int
+      If > 0, calculate AO Integrals in slices containing no more than max_dims AOs (but at least one shell). Slower, but requires less memory.
   '''
 
   sym = sym.lower()

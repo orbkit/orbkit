@@ -182,12 +182,12 @@ class AOIntegrals():
 
       **Parameters:**
 
-        AOrangei, AOrangej : lists or range objects of integers
-          Indices i and j specifing the desired block of AO integrals. If omitted, the whole range is take for the corrresponding index.
-        AOrange : lists or range objects of integers
-          Set same range for i and j.
-        shell : boolean
-          If True, indices i and j specify AO shells, instead of AO basis functions.
+      AOrangei, AOrangej : lists or range objects of integers
+        Indices i and j specifing the desired block of AO integrals. If omitted, the whole range is take for the corrresponding index.
+      AOrange : lists or range objects of integers
+        Set same range for i and j.
+      shell : boolean
+        If True, indices i and j specify AO shells, instead of AO basis functions.
     '''
     if AOrange is not None:
       AOrangei = AOrange
@@ -207,12 +207,12 @@ class AOIntegrals():
 
       **Parameters:**
 
-        AOrangei, AOrangej, AOrangek, AOrangel : lists or range objects of integers
-          Indices i, j, k and l specifing the desired block of AO integrals. If omitted, the whole range is take for the corrresponding index.
-        AOrange : lists or range objects of integers
-          Set same range for i, j, k and l.
-        shell : boolean
-          If True, indices i, j, k and l specify AO shells, instead of AO basis functions.
+      AOrangei, AOrangej, AOrangek, AOrangel : lists or range objects of integers
+        Indices i, j, k and l specifing the desired block of AO integrals. If omitted, the whole range is take for the corrresponding index.
+      AOrange : lists or range objects of integers
+        Set same range for i, j, k and l.
+      shell : boolean
+        If True, indices i, j, k and l specify AO shells, instead of AO basis functions.
     '''
     if AOrange is not None:
       AOrangei = AOrange
@@ -239,8 +239,8 @@ class AOIntegrals():
 
       **Parameters:**
 
-        MOrangei, MOrangei : lists or range objects of integers
-          Indices i and j specifing the desired block of MO integrals. If omitted, the whole range is take for the corrresponding index.
+      MOrangei, MOrangej : lists or range objects of integers
+        Indices i and j specifing the desired block of MO integrals. If omitted, the whole range is take for the corrresponding index.
     '''
     if MOrangei is None and MOrangej is None:
       return
@@ -253,8 +253,8 @@ class AOIntegrals():
 
       **Parameters:**
 
-        MOrangei, MOrangej : lists or range objects of integers
-          Indices i, j, k and l specifing the desired block of MO integrals. If omitted, the whole range is take for the corrresponding index.
+      MOrangei, MOrangej : lists or range objects of integers
+        Indices i, j, k and l specifing the desired block of MO integrals. If omitted, the whole range is take for the corrresponding index.
     '''
     if MOrangei is None and MOrangej is None and MOrangek is None and MOrangel is None:
       return
@@ -293,16 +293,16 @@ class AOIntegrals():
 
       **Parameters:**
 
-        operator : string
-          Base name of function/integral in libcint.
-        asMO : boolean
-          if True, transform from AO to MO basis.
-        max_dims : int
-          If > 0, calculate AO Integrals in slices containing no more than max_dims AOs (but at least one shell). Slower, but requires less memory.
+      operator : string
+        Base name of function/integral in libcint.
+      asMO : boolean
+        if True, transform from AO to MO basis.
+      max_dims : int
+        If > 0, calculate AO Integrals in slices containing no more than max_dims AOs (but at least one shell). Slower, but requires less memory.
 
       **Returns:**
 
-        (Hermitian) 2D array of integrals if all or only one block of AOs/MOs is requested, otherwise a list of 2D arrays in the order of blocks specified.
+      (Hermitian) 2D array of integrals if all or only one block of AOs/MOs is requested, otherwise a list of 2D arrays in the order of blocks specified.
     '''
 
     # get list of all required AO shells
@@ -461,20 +461,20 @@ class AOIntegrals():
 
       **Parameters:**
 
-        operator : string
-          Base name of function/integral in libcint.
-        asMO : boolean
-          if True, transform from AO to MO basis.
-        MOrangei, MOrangej, MOrangek, MOrangel : list|range object|None
-          Only transform selected MOs for indices i, j, k and l respectively.
-        MOrange : list|range object|None
-          sets MOrangei to MOrangel at the same range.
-        max_dims : int
-          If > 0, calculate AO Integrals in slices containing no more than max_dims AOs (but at least one shell). Slower, but requires less memory.
+      operator : string
+        Base name of function/integral in libcint.
+      asMO : boolean
+        if True, transform from AO to MO basis.
+      MOrangei, MOrangej, MOrangek, MOrangel : list|range object|None
+        Only transform selected MOs for indices i, j, k and l respectively.
+      MOrange : list|range object|None
+        sets MOrangei to MOrangel at the same range.
+      max_dims : int
+        If > 0, calculate AO Integrals in slices containing no more than max_dims AOs (but at least one shell). Slower, but requires less memory.
 
       **Returns:**
 
-        4D array of integrals.
+      4D array of integrals.
     '''
 
     # get list of all required AO shells
@@ -757,12 +757,12 @@ class AOIntegrals():
 
     **Parameters:**
 
-      operator : libcint function to call.
-      i, j : Shells for bra and ket vectors.
+    operator : libcint function to call.
+    i, j : Shells for bra and ket vectors.
 
     **Returns:**
 
-      2D array of integrals.
+    2D array of integrals.
 
     '''
 
@@ -781,11 +781,11 @@ class AOIntegrals():
     # switch order of basis functions (angl>1)
     angl = self.bas[i][1]
     if angl > 1:
-      order = get_order(angl, self.cartesian)
+      order = _get_order(angl, self.cartesian)
       mat = mat[order,:]
     angl = self.bas[j][1]
     if angl > 1:
-      order = get_order(angl, self.cartesian)
+      order = _get_order(angl, self.cartesian)
       mat = mat[:,order]
 
     return mat
@@ -795,13 +795,13 @@ class AOIntegrals():
 
     **Parameters:**
 
-      operator : libcint function to call.
-      i, j, k, l : Shells for bra and ket vectors.
-      opt : libcint optimizer to be passed to operator.
+    operator : libcint function to call.
+    i, j, k, l : Shells for bra and ket vectors.
+    opt : libcint optimizer to be passed to operator.
 
     **Returns:**
 
-      4D array of integrals.
+    4D array of integrals.
 
     '''
 
@@ -823,19 +823,19 @@ class AOIntegrals():
     # switch order of basis functions (angl>1)
     angl = self.bas[i][1]
     if angl > 1:
-      order = get_order(angl, self.cartesian)
+      order = _get_order(angl, self.cartesian)
       mat = mat[order,:,:,:]
     angl = self.bas[j][1]
     if angl > 1:
-      order = get_order(angl, self.cartesian)
+      order = _get_order(angl, self.cartesian)
       mat = mat[:,order,:,:]
     angl = self.bas[k][1]
     if angl > 1:
-      order = get_order(angl, self.cartesian)
+      order = _get_order(angl, self.cartesian)
       mat = mat[:,:,order,:]
     angl = self.bas[l][1]
     if angl > 1:
-      order = get_order(angl, self.cartesian)
+      order = _get_order(angl, self.cartesian)
       mat = mat[:,:,:,order]
 
     return mat
@@ -849,18 +849,18 @@ def ao2mo(mat, coeffs, MOrange=None, MOrangei=None, MOrangej=None, MOrangek=None
 
   **Parameters:**
 
-    mat : 2 or 4 dimensional numpy.ndarray
-      integrals to be transformed
-    coeffs : 2 dimensional numpy.ndarry
-      MO coefficients
-    MOrangei, MOrangej, MOrangek, MOrangel : list|range object|None
-      Only transform selected MOs for indices i, j, k and l respectively.
-    MOrange: list|range object|None
-      Set same range for all indices.
+  mat : 2 or 4 dimensional numpy.ndarray
+    integrals to be transformed
+  coeffs : 2 dimensional numpy.ndarry
+    MO coefficients
+  MOrangei, MOrangej, MOrangek, MOrangel : list|range object|None
+    Only transform selected MOs for indices i, j, k and l respectively.
+  MOrange: list or range object or None
+    Set same range for all indices.
 
   **Returns:**
 
-    numpy.ndarray
+  numpy.ndarray
 
   '''
   assert len(mat.shape) in (2, 4), "'mat' musst be of size 2 or 4."
@@ -951,7 +951,7 @@ def _ao2mo_slice(mat, coeffs, AOslice, MOrange=None, MOrangei=None, MOrangej=Non
 def rescale_coeffs_libcint(exps, coeffs, l):
   return [ c*libcint.CINTgto_norm(l, ctypes.c_double(e)) for e, c in zip(exps, coeffs) ]
 
-def get_order(l, cartesian):
+def _get_order(l, cartesian):
   '''Returns indices to transform libcint order to orbkit order.'''
   if l == 0:
     return (0,)

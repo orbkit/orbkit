@@ -8,13 +8,14 @@ from . import cy_mo_integrals
 # [ij|kl] = \int\int dr1 dr2 \phi_i^*(r1) \phi_j(r1) 1/r12 \phi_k^*(r2) \phi_l(r2)
 
 class FCIDUMP(object):
-
+  '''Stores 1- and 2-electron integrals.
+  '''
   def __init__(self,
         Norb=None, Nelec=None, spin=1,
         OrbSym=None, ISym=1, restricted=True,
     ):
     '''
-    ** paramters:
+    **Parameters:**
 
     Norb : int
       number of orbitals
@@ -46,7 +47,7 @@ class FCIDUMP(object):
   def set_OrbSym(self, nmopi):
     '''Set IRREPs for orbitals.
 
-    **parameters:
+    **Parameters:**
 
     nmopi : list of int
       number of orbitals per IRREP
@@ -86,7 +87,7 @@ class FCIDUMP(object):
       self.nuclear_repulsion = 0.0
 
   def store(self, filename='FCIDUMP', **kwargs):
-    '''Wrapper for store().'''
+    '''Write FCIDUMP file.'''
     store(self, filename, **kwargs)
 
   ########################
@@ -141,7 +142,7 @@ class FCIDUMP(object):
         raise ValueError('Invalid spin '+spin)
 
   def set_H(self, H, irrep, spin='alpha'):
-    '''Set Hcore for given irrep.'''
+    '''Set Hcore block for given irrep.'''
     # TODO: normalize indices
     assert self.initialized, 'Matrices not yet initalized'
     assert irrep in self.OrbSym, 'no orbital(s) specified for IRREP %s' %irrep
@@ -155,9 +156,9 @@ class FCIDUMP(object):
       self.Hbeta[orbitals] = H.flatten()
 
   def set_G(self, V, irrepi, irrepj, irrepk, irrepl, spin='alpha'):
-    '''Set ERI for given irreps.
+    '''Set ERI block for given irreps.
 
-    ** parameters:
+    **Parameters:**
 
     V : numpy.ndarray
       array of integrals (chemists notation)
@@ -187,7 +188,9 @@ class FCIDUMP(object):
       self.Galphabeta[orbitals] = V.flatten()
 
   def get_H(self, i=-1, j=-1, spin='alpha', full=False):
-    '''One-electron integrals in spatial basis.'''
+    '''One-electron integrals in spatial basis.
+    Returns only one matrix element if indices i and j are given.
+    '''
     assert spin in ('alpha', 'beta')
     i, j = int(i), int(j)
 
@@ -210,7 +213,9 @@ class FCIDUMP(object):
     return H
 
   def get_h(self, P=-1, Q=-1, full=False):
-    '''One-electron integrals in spin orbital basis.'''
+    '''One-electron integrals in spin orbital basis.
+    Returns only one matrix element if indices P and Q are given.
+    '''
 
     if not (P == Q == -1):
       ## return only one matrix element
@@ -242,7 +247,9 @@ class FCIDUMP(object):
   get_f = get_h
 
   def get_G(self, i=-1, j=-1, k=-1, l=-1, spin='alpha', full=False):
-    '''Two-electron integrals in spatial basis.'''
+    '''Two-electron integrals in spatial basis.
+    Returns only one matrix element if indices i, j, k and l are given.
+    '''
     # (ij|kl) = \int\int dr1 dr2 \phi_i^*(r1) \phi_j(r1) 1/r12 \phi_k^*(r2) \phi_l(r2)
     assert spin in ('alpha', 'beta', 'alphabeta')
     i, j, k, l = int(i), int(j), int(k), int(l)
@@ -269,7 +276,9 @@ class FCIDUMP(object):
     return g
 
   def get_g(self, P=-1, Q=-1, R=-1, S=-1, full=False):
-    '''Two-electron integrals in spin orbital basis.'''
+    '''Two-electron integrals in spin orbital basis.
+    Returns only one matrix element if indices P, Q, R and S are given.
+    '''
 
     if not (P == Q == R == S == -1):
       ## return only one matrix element
@@ -304,7 +313,15 @@ class FCIDUMP(object):
   #############################
 
   def reduce_active_space(self, core=0, occ=None):
-    '''Reduce to active orbitals.'''
+    '''Reduce to active orbitals.
+
+    **Paramters:**
+
+    occ : int or list of ints
+      A single integer selects the first n MOs. Supply a list of integers to select for each IRREP indivdually.
+    core : int or list of ints
+      Defines core orbitals.
+    '''
     assert self.restricted, 'unrestricted not yet implemented'
 
     self.OrbSym = numpy.array(self.OrbSym)
@@ -377,6 +394,7 @@ class FCIDUMP(object):
   #################################
 
   def change_order(self, order):
+    '''Reorder orbitals by given order.'''
     assert len(set(order)) == len(order), 'duplicate entries in order detected'
     assert max(order) <= self.Norb, 'order contains index exceeding number of orbitals'
 
@@ -405,7 +423,7 @@ class FCIDUMP(object):
     self.OrbSym = numpy.array(self.OrbSym)[order]
 
   def order_irreps(self):
-    '''group orbitals by IRREPs'''
+    '''Reorder orbitals in groups of IRREPs'''
     order = []
     for i in set(self.OrbSym):
       order.extend(numpy.where(self.OrbSym == i)[0])
@@ -416,7 +434,7 @@ class FCIDUMP(object):
 ###############################
 
 def load(filename='FCIDUMP'):
-  '''Read Integrals from an ASCII file.'''
+  '''Read Integrals from an ASCII file. Return a FCIDUMP instance.'''
 
   ## load file
   with open(filename) as fd:
@@ -474,7 +492,7 @@ def store(integrals, filename='FCIDUMP', numerical_zero=0, molpro_format=True):
   '''
   Store all integrals in an ASCII file.
 
-  ** parameters:
+  **Parameters**:
 
   filename : string
   numerical_zero : float
