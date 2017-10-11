@@ -44,7 +44,6 @@ for i in range(len(tests)):
       qc_b = read.main_read(fid,itype=ok_opt[j],
                           all_mo=True,spin=None,i_md=1,interactive=False)
       qc.mo_spec.extend(qc_b.mo_spec)
-      qc.mo_spec.spinpolarized = True
       qc.mo_spec.update()
     else:
       qc = read.main_read(fid ,itype=ok_opt[j],interactive=False,

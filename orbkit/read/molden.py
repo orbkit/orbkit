@@ -348,5 +348,5 @@ def read_molden(fname, all_mo=False, spin=None, i_md=-1, interactive=True,
         mo['coeffs'] *= cca
 
   qc.mo_spec.update()
-  qc.ao_spec.update(force=True)
+  qc.ao_spec.update()
   return qc
