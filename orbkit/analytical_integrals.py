@@ -4,7 +4,7 @@
 Code for the computation of the overlap between primitive atomic basis functions
 adapted from 
 
-  M. Hô, J. M. Hernandez-Perez: "Evaluation of Gaussian Molecular Integrals", DOI:10.3888/tmj.14-3
+  M. HÃ´, J. M. Hernandez-Perez: "Evaluation of Gaussian Molecular Integrals", DOI:10.3888/tmj.14-3
 '''
 '''
 orbkit
@@ -32,9 +32,7 @@ from multiprocessing import Pool
 
 from . import cy_overlap
 from .tools import *
-from .omp_functions import slicer
 from .orbitals import AOClass, MOClass
-from .display import display
 
 def get_ao_overlap(coord_a, coord_b, ao_spec, lxlylz_b=None,
                    drv=None):
