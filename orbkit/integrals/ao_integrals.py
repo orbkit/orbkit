@@ -192,7 +192,7 @@ class AOIntegrals():
     if AOrange is not None:
       AOrangei = AOrange
       AOrangej = AOrange
-    if AOrangei is None and AOrangej is None:
+    if all((AOrangei is None, AOrangej is None)):
       return
     if shell:
       AOrangei = [self._shell2ao(s) for s in AOrangei] if AOrangei is not None else range(self.Norb)
@@ -219,8 +219,7 @@ class AOIntegrals():
       AOrangej = AOrange
       AOrangek = AOrange
       AOrangel = AOrange
-
-    if AOrangei is None and AOrangej is None and AOrangek is None and AOrangel is None:
+    if all((AOrangei is None, AOrangej is None, AOrangek is None, AOrangel is None)):
       return
     if shell:
       AOrangei = [self._shell2ao(s) for s in AOrangei] if AOrangei is not None else range(self.Norb)
@@ -234,29 +233,41 @@ class AOIntegrals():
       AOrangel = AOrangel if AOrangel is not None else range(self.Norb)
     self.AO_blocks_2e.append((AOrangei, AOrangej, AOrangek, AOrangel))
 
-  def add_MO_block_1e(self, MOrangei=None, MOrangej=None):
+  def add_MO_block_1e(self, MOrange=None, MOrangei=None, MOrangej=None):
     '''Specify block of 2-electron MO integrals to be calculated.
 
       **Parameters:**
 
       MOrangei, MOrangej : lists or range objects of integers
         Indices i and j specifing the desired block of MO integrals. If omitted, the whole range is take for the corrresponding index.
+      MOrange : lists or range objects of integers
+        Set same range for i and j.
     '''
-    if MOrangei is None and MOrangej is None:
+    if MOrange is not None:
+      MOrangei = MOrange
+      MOrangej = MOrange
+    if all((MOrangei is None, MOrangej is None)):
       return
     MOrangei = MOrangei if MOrangei is not None else range(self.Norb)
     MOrangej = MOrangej if MOrangej is not None else range(self.Norb)
     self.MO_blocks_1e.append((MOrangei, MOrangej))
 
-  def add_MO_block_2e(self, MOrangei=None, MOrangej=None, MOrangek=None, MOrangel=None):
+  def add_MO_block_2e(self, MOrange=None, MOrangei=None, MOrangej=None, MOrangek=None, MOrangel=None):
     '''Specify block of 2-electron MO integrals to be calculated.
 
       **Parameters:**
 
       MOrangei, MOrangej : lists or range objects of integers
         Indices i, j, k and l specifing the desired block of MO integrals. If omitted, the whole range is take for the corrresponding index.
+      MOrange : lists or range objects of integers
+        Set same range for i, j, k and l.
     '''
-    if MOrangei is None and MOrangej is None and MOrangek is None and MOrangel is None:
+    if MOrange is not None:
+      MOrangei = MOrange
+      MOrangej = MOrange
+      MOrangek = MOrange
+      MOrangel = MOrange
+    if all((MOrangei is None, MOrangej is None, MOrangek is None, MOrangel is None)):
       return
     MOrangei = MOrangei if MOrangei is not None else range(self.Norb)
     MOrangej = MOrangej if MOrangej is not None else range(self.Norb)
