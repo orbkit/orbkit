@@ -16,7 +16,7 @@ The file can be generated from a QCinfo object. Assuming we start from some mold
     >> qc = read.main_read('h2o.molden', all_mo=True)
     >> integrals.generate_fcidump(qc)
 
-This will create a file named `FCIDUMP`. The filename can be controlled by passing the `filename` parameter, an empty string disables writing to file. The return value of the function is a `FCIDUMP` object (see below).
+This will create a file named ``FCIDUMP``. The filename can be controlled by passing the ``filename`` parameter, an empty string disables writing to file. The return value of the function is a ``FCIDUMP`` object (see below).
 
 Furthermore you can pass a point group to exploit symmetry, provided the molecular orbitals in the QCinfo object include an IRREP label.
 
@@ -24,7 +24,7 @@ Furthermore you can pass a point group to exploit symmetry, provided the molecul
 
     >> integrals.generate_fcidump(qc, filename='FCIDUMP_H2O_C2v', sym='c2v')
 
-The active space can be controlled by the optional `occ` and `closed` parameters, which work similar to the corresponding cards in Molpro: They accept a list of integers, one for each IRREP. A given integer `n` then sets the first `n` orbitals in this IRREP to be *occupied* or *core* respectively.
+The active space can be controlled by the optional ``occ`` and ``closed`` parameters, which work similar to the corresponding cards in Molpro: They accept a list of integers, one for each IRREP. A given integer :math:`n` then sets the first :math:`n` orbitals in this IRREP to be *occupied* or *core* respectively.
 
 .. code-block:: python
 
@@ -34,14 +34,14 @@ The active space can be controlled by the optional `occ` and `closed` parameters
 Accessing integrals from the FCIDUMP
 ------------------------------------
 
-The `FCIDUMP` class may also be used to access the MO integrals. First, either calculate them or read them from some FCIDUMP file:
+The ``FCIDUMP`` class may also be used to access the MO integrals. First, either calculate them or read them from some FCIDUMP file:
 
 .. code-block:: python
 
     >> fcidump = integrals.generate_fcidump(qc, filename='')
     >> fcidump = integrals.load_fcidump('FCIDUMP')
 
-The `fcidump` object then gives access to the different integrals. Integrals are internally stored in spatial orbital basis, and only unique integrals are kept. For example `fcidump.get_H()` returns a upper triangular matrix with the 1-electron integrals, while the lower triangular part contains only zeros. If the complete matrix is needed, pass `full=True`. For unrestricted orbitals the parameter `spin='alpha'` (default) or `spin='beta'` controlls the required subset. Integrals in spin orbital basis are obtained by `fcidump.get_h()`.
+The ``fcidump`` object then gives access to the different integrals. Integrals are internally stored in spatial orbital basis, and only unique integrals are kept. For example ``fcidump.get_H()`` returns a upper triangular matrix with the 1-electron integrals, while the lower triangular part contains only zeros. If the complete matrix is needed, pass ``full=True``. For unrestricted orbitals the parameter ``spin='alpha'`` (default) or ``spin='beta'`` controlls the required subset. Integrals in spin orbital basis are obtained by ``fcidump.get_h()``.
 
 .. code-block:: python
 
@@ -50,7 +50,7 @@ The `fcidump` object then gives access to the different integrals. Integrals are
     >> H_beta = fcidump.get_H(full=True, spin='beta')        # integrals for beta orbitals for unrestricted case
     >> H_spin = fcidump.get_h(full=True)                     # integrals over spin orbitals
 
-In a very similar way 2-electron integrals can be accessed by calling `fcidump.get_G()` and `fcidump.get_g()`. The former one accepts for the optional `spin` parameter the values `alpha` (default), `beta` and `alphabeta`.
+In a very similar way 2-electron integrals can be accessed by calling ``fcidump.get_G()`` and ``fcidump.get_g()``. The former one accepts for the optional ``spin`` parameter the values ``alpha`` (default), ``beta`` and ``alphabeta``.
 
 .. code-block:: python
 
@@ -79,6 +79,6 @@ Furthermore the FCIDUMP holds some system parameters:
     >> fcidump.spin                 # total spin of the electrons (=2S)
     >> fcidump.OrbSym               # IRREP of each orbital as a list of integers
 
-It is possible to change the order of the orbitals with `fcidump.change_order(order)`, where `order` is a list of indices. The active space can be reduces with `fcidump.reduce_active_space(core, occ)`, where the parameters `core` and `occ` work as explained above.
+It is possible to change the order of the orbitals with ``fcidump.change_order(order)``, where ``order`` is a list of indices. The active space can be reduces with ``fcidump.reduce_active_space(core, occ)``, where the parameters ``core`` and ``occ`` work as explained above.
 
-These changes can be save to a (new) file by `fcidump.store(filename)'.
+These changes can be save to a (new) file by ``fcidump.store(filename)``.

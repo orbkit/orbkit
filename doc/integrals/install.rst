@@ -27,3 +27,7 @@ and finally, add the library to the PATH environment variable by adding:
     $ export PATH=$PATH:$HOME/libcint/lib
 
 to your `~/.bashrc`.
+
+.. hint::
+
+    There is also an X86 optimized version of libcint, which can be installed in a similar way: https://github.com/sunqm/qcint

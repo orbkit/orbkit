@@ -1,9 +1,9 @@
 .. _`Integrals`:
 
-Integrals with libcint
-======================
+Analytical integrals with libcint
+=================================
 
-Integrals is an extension of ORBKIT for calculating various integrals over atomic or molecular orbitals using libcint.
+*Integrals* is an extension of ORBKIT for calculating various integrals over atomic or molecular orbitals using libcint.
 The obtained integrals can be exported into a FCIDUMP file, which serves as an interface to CI calculations.
 
 For a full list of available integrals and details about libcint, please refere to the GitHub website
