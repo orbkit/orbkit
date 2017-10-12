@@ -302,6 +302,8 @@ def read_gaussian_log(fname,all_mo=False,spin=None,orientation='standard',
                               'pnum': pnum,
                               'coeffs': numpy.zeros((pnum, 2))
                               })
+              if not cartesian_basis:
+                qc.ao_spec[-1]['lm'] = []
           else:
             # Append the AO coefficients 
             coeffs = numpy.array(line.replace('D','e').split(), dtype=numpy.float64)
@@ -357,7 +359,8 @@ def read_gaussian_log(fname,all_mo=False,spin=None,orientation='standard',
                 m = 0
               else:
                 m = int(m)
-              qc.ao_spec[j]['ao_spherical'].append((l,m))
+                
+              qc.ao_spec[i]['lm'].append((l,m))
             for i,j in enumerate(index):
               qc.mo_spec[j]['coeffs'][int(info[0])-1] = float(coeffs[i])
             if int(info[0]) == basis_count:
@@ -384,7 +387,6 @@ def read_gaussian_log(fname,all_mo=False,spin=None,orientation='standard',
   
   # Convert geo_info and geo_spec to numpy.ndarrays
   qc.format_geo(is_angstrom=True)
-
   qc.mo_spec.update()
   qc.ao_spec.update()
   return qc

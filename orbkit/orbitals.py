@@ -10,6 +10,16 @@ except ImportError:
 from .tools import *
 from .display import display
 
+ao_dict_synonyms = {'atom':             'atom',
+                    'pnum':             'pnum',
+                    'type':             'type',
+                    'coeffs':           'coeffs',
+                    'lxlylz':           'lxlylz',
+                    'exp_list':         'lxlylz',
+                    'lm':               'lm',
+                    'ao_spherical':     'lm',
+                    }
+
 class AOClass(UserList):
   '''AO base class which contains all information on atomic orbitals.
   Two types of dataformats are available:
@@ -18,7 +28,7 @@ class AOClass(UserList):
 
       cont2atoms : numpy.ndarray, dtype=numpy.intc, shape = (NAO) 
         Transformation matrix between contracted GTO's and atoms.
-      prim2cont : numpy.ndarray, dtype=numpy.intc, shape = (NPAO)
+      _assign_prim_to_cont : numpy.ndarray, dtype=numpy.intc, shape = (NPAO)
         Transformation matrix between contracted GTO's and primitive GTO's.
       pg_expcont : numpy.ndarray, dtype=float64, shape = (NPAO, 2) 
         Information on primitive GTO's:
@@ -29,49 +39,101 @@ class AOClass(UserList):
         Contains the expontents lx, ly, lz for the Cartesian Gaussians.
 
   2. Lists of dictionaries / list of tuples:
-
-    ao_spec, ao_spherical
+    
+    Member of dict          Content
+    --------------------    -------------------------------------
+    'atom'                  Index of atom
+    'pnum'                  Number of primitives
+    'type'                  Type of AO
+    'coeffs'                AO coefficients
+    'lxlylz'                Exponents of Cartesian Gaussians
+    'lm' (if spherical)     Quantum number of Spherical Gaussians
 
     See :ref:`Central Variables` in the manual for details.
   '''
   def __init__(self, seq = [], restart=None):
     UserList.__init__(self, seq)
-    self.up2date = False
-    self.spherical = False
-    self.cont2atoms = None
-    self.prim2cont = None
-    self.contspher = None
-    self.pao = None
-    self.lxlylz = None
-    self.assign_lxlylz = None
-    self.lmpao = None
-    self.lmprim2cont = None
+    self.up_to_date = False
     self.normalized = False
+    self.spherical = False
+    
+    # prim -> primitives
+    # cont -> contracted
+    
+    self._cont_types = None
+    self._nprim_per_cont = None
+    self._prim_coeffs = None
+    
+    self._assign_prim_to_cont = None
+    self._assign_cont_to_atoms = None
+    
+    self._lxlylz = None
+    self._assign_lxlylz_to_cont = None
+    self._nlxlylz_per_cont = None
+    
+    self._lm = None
+    self._assign_lm_to_cont = None
+    
+        
+    #self.atom_indices = None
+    #self.type_list = None
+    #self.pnum_list = None
+    #self.ao_coeffs = None
+    #self.prim2cont = None
+    
+    #self.lxlylz = None
+    #self.assign_lxlylz = None
+    #self.bincount_lxlylz = None
+    #self.lm = None
+    #self.assign_lm = None
+        
     if restart is not None:
-      self.up2date = True
-      self.spherical = restart['spherical']
-      self.cont2atoms = restart['cont2atoms']
-      self.prim2cont = restart['prim2cont']
-      self.contspher = restart['contspher']
-      self.pao = restart['pao']
-      self.lxlylz = restart['lxlylz']
-      self.assign_lxlylz = restart['assign_lxlylz']
-      self.lmpao = None
-      self.lmprim2cont = None
-      self.normalized = False
-      self.new2old()
+      self.up_to_date = True
+      self.normalized           = restart['normalized']
+      self.spherical            = restart['spherical']
+      
+      self._assign_cont_to_atoms         = restart['_assign_cont_to_atoms']
+      self._cont_types            = restart['_cont_types']   
+      self._nprim_per_cont            = restart['_nprim_per_cont']   
+      self._prim_coeffs            = restart['_prim_coeffs']
+      self._assign_prim_to_cont            = restart['_assign_prim_to_cont']   
+      
+      self._lxlylz               = restart['_lxlylz']      
+      self._assign_lxlylz_to_cont        = restart['_assign_lxlylz_to_cont'] 
+      self._nlxlylz_per_cont      = restart['_nlxlylz_per_cont']
+      self._lm                   = restart['_lm']           
+      self._assign_lm_to_cont            = restart['_assign_lm_to_cont']   
+      
+      self.internal_to_dict()
+      
   def todict(self):
     self.update()
-    data = {'cont2atoms': self.cont2atoms,
-            'prim2cont': self.prim2cont,
-            'pao': self.pao,
-            'spherical': self.spherical,
-            'contspher': self.contspher,
-            'lxlylz': self.lxlylz,
-            'assign_lxlylz': self.assign_lxlylz}
+    data = {'normalized':       self.normalized,
+            'spherical':        self.spherical,
+            
+            '_assign_cont_to_atoms':     self._assign_cont_to_atoms,
+            '_cont_types':        self._cont_types,
+            '_nprim_per_cont':        self._nprim_per_cont,
+            '_prim_coeffs':        self._prim_coeffs,
+            '_assign_prim_to_cont':        self._assign_prim_to_cont,
+            
+            '_lxlylz':           self._lxlylz,
+            '_assign_lxlylz_to_cont':    self._assign_lxlylz_to_cont,
+            '_nlxlylz_per_cont':  self._nlxlylz_per_cont,
+            '_lm':               self._lm,
+            '_assign_lm_to_cont':        self._assign_lm_to_cont
+            }
     return data
+  #def __repr__(self):
+  def __str__(self):
+    return '\n'.join(self.get_labels())
   def __getitem__(self, item):
-    return UserList.__getitem__(self, item)
+    if isinstance(item,int):
+      return UserList.__getitem__(self, item)
+    else:
+      ao_out = AOClass(seq=UserList.__getitem__(self, item))
+      ao_out.update()
+      return ao_out
   def __eq__(self, other):
     cases = [isinstance(other, AOClass), other == [], other is None]
     if not any(cases):
@@ -80,145 +142,84 @@ class AOClass(UserList):
       self.update()
       same = [self.spherical == other.spherical,
               numpy.allclose(self.cont2atoms, other.cont2atoms),
-              numpy.allclose(self.prim2cont, other.prim2cont),
+              numpy.allclose(self._assign_prim_to_cont, other._assign_prim_to_cont),
               numpy.allclose(self.contspher, other.contspher),
               numpy.allclose(self.pao, other.pao),
-              numpy.allclose(self.lxlylz, other.lxlylz)]
+              numpy.allclose(self._lxlylz, other._lxlylz)]
       return all(same)
     else:
       if self.data is None or len(self.data) == 0:
         return True
       else:
         return False
-  def update(self):
-    self.get_contspher()
-    self.get_cont2atoms()
-    self.get_pao()
-    self.get_lmpao()
-    self.get_prim2cont()
-    self.get_lmprim2cont()
-    self.get_lxlylz()
-    self.is_normlized()
-    self.up2date = True
-    return
+  
   def __setitem__(self, i, item):
     self.data[i] = item
-    self.up2date = False
+    self.up_to_date = False
   def __delitem__(self, i):
     del self.data[i]
-    self.up2date = False
+    self.up_to_date = False
   def append(self, item):
-    if 'ao_spherical' not in item:
-      item['ao_spherical'] = []
     UserList.append(self, item)
-    self.up2date = False
+    self.up_to_date = False
   def extend(self, item):
-    if 'ao_spherical' not in item:
-      item['ao_spherical'] = []
     UserList.extend(self, item)
-    self.up2date = False
+    self.up_to_date = False
   def remove(self, item):
     UserList.remove(self, item)
-    self.up2date = False
-  def ao_template(self):
-    template = {'atom': None,
-                'pnum': None,
-                'coeffs': None,
-                'exp_list': None,
-                'ao_spherical': None}
-    return template
-  def new2old(self):
-    '''Transforms Numpy-style data to lists of dictionary style data
-      for compatability.
+    self.up_to_date = False
+ 
+  def update(self):
+    '''Transfers UserList data dictionary to internal variables
     '''
-    if self.cont2atoms is not None:
-      ao_spec = []
-      ispher = 0
-      cont2prim = self.get_cont2prim()
-      for ic in range(len(self.cont2atoms)):
-        ao_spec.append(self.ao_template())
-        ao_spec[-1]['atom'] = self.cont2atoms[ic]
-        ao_spec[-1]['coeffs'] = self.pao[cont2prim[ic]]
-        ao_spec[-1]['pnum'] = len(ao_spec[-1]['coeffs'])
-        ao_spec[-1]['exp_list'] = tuple(self.lxlylz[ic])
-        if self.contspher is not None and len(self.contspher) > 0:
-          lic = self.contspher[ic]['ao_spherical'][0]
-          sphericals = [tuple(cont['ao_spherical']) for cont in self.contspher[ispher:ispher+lic]]
-          for lm in self.contspher[ic]['ao_spherical']:
-            sphericals.append(tuple(lm))
-          ao_spec[-1]['ao_spherical'] = self.contspher[ic]
-      self.data = ao_spec
-
-  def set_contspher(self, item):
-    '''Set function for numpy array version of ao_spherical.
-
-       **Parameters:**
-
-        contspher: numpy.ndarray, dtype=numpy.intc
-    '''
-    require(item, dtype=numpy.intc)
-    if not self.contspher.shape == item.shape:
-      raise ValueError('Old and new arrays need to be of the same size!')
-    self.contspher = item
-    self.new2old()
-
-  def set_cont2atoms(self, item):
-    '''Set mapping between contracted GTO's and atoms.
-
-       **Parameters:**
-
-        cont2atoms: numpy.ndarray, dtype=numpy.intc, shape = (NAO)
-    '''
-    require(item, dtype=numpy.intc)
-    if not self.cont2atoms.shape == item.shape:
-      raise ValueError('Old and new arrays need to be of the same size!')
-    self.cont2atoms = item
-    self.new2old()
-
-  def set_prim2cont(self, item):
-    '''Set mapping between primitive and contracted GTO's.
-
-       **Parameters:**
-
-        prim2cont: numpy.ndarray, dtype=numpy.intc, shape = (NPAO)
-    '''
-    require(item, dtype=numpy.intc)
-    if not self.prim2cont.shape == item.shape:
-      raise ValueError('Old and new arrays need to be of the same size!')
-    self.prim2cont = item
-    self.new2old()
-
-  def set_lxlylz(self, item):
-    '''Set function for the exponents lx, ly, lz for the Cartesian Gaussians.
-
-    **Parameters:**
-
-    lxlylz : numpy.ndarray, dtype=numpy.intc, shape = (NAO,3)
-      Contains the expontents lx, ly, lz for the Cartesian Gaussians.
-    '''
-    require(item, dtype=numpy.intc)
-    if not self.lxlylz.shape == item.shape:
-      raise ValueError('Old and new arrays need to be of the same size!')
-    self.lxlylz = item
-    self.new2old()
-
-  def set_pao(self, item):
-    '''Set exponents and contraction coefficients for primitive GTO's.
-
-       **Parameters:**
-
-        pao: numpy.ndarray, dtype=numpy.float64, shape = (NPAO, 2)
-    '''
-    require(item, dtype=numpy.float64)
-    if not self.pao.shape == item.shape:
-      raise ValueError('Old and new arrays need to be of the same size!')
-    self.pao = item
-    self.new2old()
-
-  def is_normlized(self):
+    self.check_members()
+    self.update_ao_data()
+    self.update_lxlylz()
+    self.update_lm()
+    
+    self.is_normlized(force=True)
+    
+    self.up_to_date = True
+  
+  def check_members(self):
+    if self.data == []:
+      raise ValueError('ao_spec not initialized')
+    for i,j in enumerate(self.data):
+      if not isinstance(j,dict):
+        raise ValueError('ao_spec[{0}] has to be a dictionary'.format(i))
+      missing = []
+      for key in ['atom','type','pnum','coeffs']:
+        if key not in j.keys():
+          missing.append(key)
+      if self.spherical and 'lm' not in j.keys():
+        missing.append('lm')
+      if missing:     
+        raise ValueError('ao_spec[{0}] misses {1}'.format(i,str(missing)))
+  
+  def update_ao_data(self):
+    self._assign_cont_to_atoms = [] 
+    self._cont_types = []
+    self._nprim_per_cont = []
+    self._prim_coeffs = numpy.zeros((0,2))  
+    self._assign_prim_to_cont = []
+    for i,cont in enumerate(self.data):
+      self._assign_cont_to_atoms.append(cont['atom'])
+      self._cont_types.append(cont['type'])
+      cont_coeffs = cont['coeffs']
+      self._nprim_per_cont.append(len(cont_coeffs))
+      self._prim_coeffs = numpy.append(self._prim_coeffs,cont_coeffs,axis=0)
+      self._assign_prim_to_cont.extend([i]*len(cont_coeffs))
+        
+    self._assign_cont_to_atoms = require(self._assign_cont_to_atoms, dtype='i')
+    self._nprim_per_cont = require(self._nprim_per_cont, dtype='i')
+    self._prim_coeffs = require(self._prim_coeffs, dtype='f')
+    self._assign_prim_to_cont = require(self._assign_prim_to_cont, dtype='i')
+  
+  #def get_conts_are_prenormalized
+  def is_normlized(self,force=False):
     '''Check if orbitals in AOClass are normalized.
     '''
-    if not self.up2date:
+    if not self.up_to_date or force:
       self.normalized = False
       conts_are_norm = []
       for cont in self.data:
@@ -227,154 +228,8 @@ class AOClass(UserList):
         raise ValueError('Either all or none of the atomic orbitals have to be normalized!')
       self.normalized = all(conts_are_norm)
     return copy(self.normalized)
-
-#This should really die sooner or later...
-#For now there are still a few calls to it
-#and I don't know how to solve those easily
-  def get_old_ao_spherical(self):
-    '''Compatability funtction to allow access to old-style ao_spherical.
-    '''
-    old_ao_spherical = []
-    li = -1
-    for cont in self.data:
-      if cont['ao_spherical'] is not None:
-        lm1 = None
-        for (l,m) in cont['ao_spherical']:
-          if lm1 != l:
-            lm1 = l
-            li += 1
-          spher = [li, (l,m)]
-          old_ao_spherical.append(spher)
-    return old_ao_spherical
-
-  def get_contspher(self):
-    '''Get function for numpy array version of ao_spherical.
-
-       **Returns:**
-
-        contspher: numpy.ndarray, dtype=numpy.intc, shape = (NSPH)
-    '''
-    if not self.up2date:
-      self.contspher = []
-      for cont in self.data:
-        if cont['ao_spherical'] is not None:
-          for lm in cont['ao_spherical']:
-            self.contspher.append(lm)
-    self.contspher = numpy.array(self.contspher, dtype=numpy.intc)
-    return copy(self.contspher)
-  def get_cont2atoms(self):
-    '''Get mapping between contracted GTO's and atoms.
-
-       **Returns:**
-
-        cont2atoms: numpy.ndarray, dtype=numpy.intc, shape = (NAO)
-    '''
-    if not self.up2date:
-      self.cont2atoms = numpy.zeros(shape=(len(self.data)), dtype=numpy.intc)
-      for ic, contracted in enumerate(self.data):
-        self.cont2atoms[ic] = contracted['atom']
-    return copy(self.cont2atoms)
-  def get_pao(self):
-    '''Get exponents and contraction coefficients for primitive GTO's.
-
-       **Returns:**
-
-        pao: numpy.ndarray, dtype=numpy.float64, shape = (NPAO, 2)
-    '''
-    if not self.up2date:
-      self.pao = []
-      for ic, contracted in enumerate(self.data):
-        for ip, prim in enumerate(contracted['coeffs']):
-          self.pao.append(prim)
-    self.pao = numpy.array(self.pao, dtype=numpy.float64)
-    return copy(self.pao)
-  def get_l(self, contracted):
-    if 'exp_list' in contracted:
-      l = contracted['exp_list']
-    else:
-      l = exp[lquant[contracted['type']]]
-    return l
-  def get_lmpao(self):
-    '''Get exponents and contraction coefficients for each spherical harmonic basis function.
-
-       **Returns:**
-
-        lmpao: numpy.ndarray, dtype=numpy.float64, shape = (NSPH)
-    '''
-    if not self.up2date:
-      self.lmpao = []
-      for ic, contracted in enumerate(self.data):
-        for l in self.get_l(contracted):
-          self.lmpao.extend(contracted['coeffs'])
-    self.lmpao = numpy.array(self.lmpao, dtype=numpy.float64)
-    return copy(self.lmpao)
-  def get_prim2cont(self):
-    '''Get mapping between primitive and contracted GTO's.
-
-       **Returns:**
-
-        prim2cont: numpy.ndarray, dtype=numpy.intc, shape = (NPAO)
-    '''
-    if not self.up2date:
-      self.prim2cont = []
-      for ic, contracted in enumerate(self.data):
-        for ipc in range(len(contracted['coeffs'])):
-          self.prim2cont.append(ic)
-    self.prim2cont = numpy.array(self.prim2cont, dtype=numpy.intc)
-    return copy(self.prim2cont)
-  #This array is nice to have becaus it allows for efficient indexing of pao's
-  #We do not set it as an attribute though as it might bocome very large e.g.
-  #in the case of CI/TD-DFT calculations
-  def get_cont2prim(self):
-    '''Get 2D-matrix mapping between primitive and contracted GTO's.
-
-       **Returns:**
-
-        cont2prim: numpy.ndarray, dtype=bool, shape = (NAO, NPAO)
-    '''
-    if not self.up2date:
-      self.get_prim2cont()
-      self.get_cont2atoms()
-    nc = self.cont2atoms.shape[0]
-    np = self.prim2cont.shape[0]
-    cont2prim = numpy.zeros(shape=(nc, np), dtype=bool)
-    for ic in range(nc):
-      cont2prim[ic, [numpy.argwhere(self.prim2cont == ic)]] = True
-    return cont2prim
-  def get_lmprim2cont(self, return_l=False):
-    '''Get mapping between spherical harmonic basis functions and contracted GTO's.
-
-      **Parameters:**
-     
-        return_l : bool, optional
-          Return also l-index of spherical harmonic basis functions.
-
-       **Returns:**
-
-        return_l = False:
-          lmprim2cont: numpy.ndarray, dtype=numpy.intc, shape = (NSPH)
-        return_l = True:
-          lmprim2cont: numpy.ndarray, dtype=numpy.intc, shape = (NSPH, NSPH)
-    '''
-    if not self.up2date or return_l:
-      self.lmprim2cont = []
-      if return_l:
-        ipl = []
-        il = 0
-      for ic, contracted in enumerate(self.data):
-        for l in self.get_l(contracted):
-          self.lmprim2cont.extend([[ic]*len(contracted['coeffs'])][0])
-          if return_l:
-            ipl.extend([[il]*len(contracted['coeffs'])][0])
-            il += 1
-      self.lmprim2cont = numpy.array(self.lmprim2cont, dtype=numpy.intc)
-      if return_l:
-        ipl = numpy.array(ipl, dtype=numpy.intc)
-        return numpy.array([[i,j] for i, j in zip(self.lmprim2cont, ipl)], dtype=numpy.intc)
-    else:
-      return copy(self.lmprim2cont)
-
-  def get_lxlylz(self, get_assign=False, bincount=False, get_label=False):
+  
+  def update_lxlylz(self):
     '''Extracts the exponents lx, ly, lz for the Cartesian Gaussians.
 
     **Parameters:**
@@ -384,37 +239,147 @@ class AOClass(UserList):
 
     **Returns:**
 
-    lxlylz : numpy.ndarray, dtype=numpy.intc, shape = (NAO,3)
+    _lxlylz : numpy.ndarray, dtype=numpy.intc, shape = (NAO,3)
       Contains the expontents lx, ly, lz for the Cartesian Gaussians.
-    assign_lxlylz : list of int, optional
+    _assign_lxlylz_to_cont : list of int, optional
       Contains the index of the atomic orbital in ao_spec.
     '''
-    if get_label:
-      get_assign = True
-    if not self.up2date:
-      self.lxlylz = []
-      self.assign_lxlylz = []
-      for sel_ao in range(len(self.data)):
-        if 'exp_list' in self.data[sel_ao].keys():
-          l = self.data[sel_ao]['exp_list']
-        else:
-          l = exp[lquant[self.data[sel_ao]['type']]]
-        self.lxlylz.extend(l)
-        self.assign_lxlylz.extend([sel_ao]*len(l))
-
-      self.lxlylz = numpy.array(self.lxlylz,dtype=numpy.intc,order='C')
-      self.assign_lxlylz = numpy.array(self.assign_lxlylz,dtype=numpy.intc,order='C')
-
-    if get_assign and get_label:
-      return copy(1000*self.assign_lxlylz + (self.lxlylz * numpy.array([100,10,1])).sum(axis=1,dtype=numpy.intc))
-    elif get_assign and not get_label:
-      if bincount:
-        return (copy(self.lxlylz), copy(numpy.bincount(self.assign_lxlylz)))
+    
+    self._lxlylz = []
+    self._assign_lxlylz_to_cont = []
+    self._nlxlylz_per_cont = None
+    for sel_ao in range(len(self.data)):
+      if 'lxlylz' in self.data[sel_ao].keys():
+        l = self.data[sel_ao]['lxlylz']
       else:
-        return (copy(self.lxlylz), copy(self.assign_lxlylz))
-    else:
-      return copy(self.lxlylz)
+        l = exp[lquant[self.data[sel_ao]['type']]]
+      self._lxlylz.extend(l)
+      self._assign_lxlylz_to_cont.extend([sel_ao]*len(l))
 
+    self._lxlylz = require(self._lxlylz,dtype='i')
+    self._assign_lxlylz_to_cont = require(self._assign_lxlylz_to_cont, dtype='i')
+    self._nlxlylz_per_cont = require(numpy.bincount(self._assign_lxlylz_to_cont), dtype='i')
+      
+    # Get label 
+    #if get_label: return copy(1000*self._assign_lxlylz_to_cont + (self._lxlylz * numpy.array([100,10,1])).sum(axis=1,dtype=numpy.intc))
+
+  def update_lm(self):
+    if self.spherical:
+      self._lm = []
+      self._assign_lm_to_cont = []
+      for sel_ao in range(len(self.data)):
+        for lm in self.data[sel_ao]['lm']:
+          self._lm.append(lm)
+          self._assign_lm_to_cont.append(sel_ao)
+      self._assign_lm_to_cont = require(self._assign_lm_to_cont, dtype='i')
+  
+  def set_lm_dict(self,p=[1,0]):
+    '''Sets the l,m quantum numbers for the contracted spherical harmonic 
+    Gaussian basis set.
+    '''
+    for sel_ao in range(len(self.data)):
+      self.data[sel_ao]['lm'] = []
+      ii = self.data[sel_ao]['type']
+      l = lquant[ii]
+      for m in (range(0,l+1) if l != 1 else p):
+        self.data[sel_ao]['lm'].append((l,m))
+        if m != 0:
+          self.data[sel_ao]['lm'].append((l,-m))
+    self.spherical = True
+    self.up_to_date = False
+  
+  def internal_to_dict(self):
+    '''Transforms Numpy-style data to lists of dictionary style data
+      for compatability.
+    '''
+    ao_spec = []
+    for ic in range(len(self._assign_cont_to_atoms)):
+      ao_spec.append({'atom': self._assign_cont_to_atoms[ic],
+                      'type': self._cont_types[ic],
+                      'pnum': self._nprim_per_cont[ic],
+                      'coeffs': self._prim_coeffs[self._assign_prim_to_cont == ic],
+                      'lxlylz': self._lxlylz[self._assign_lxlylz_to_cont == ic]
+                      })
+      if self.spherical:
+        ao_spec[-1]['lm'] = [self._lm[i] for i in self._assign_lm_to_cont == ic]
+    self.data = ao_spec
+
+
+  #def get_atom_indices(self):
+  def get_assign_cont_to_atoms(self):
+    if not self.up_to_date: self.update()
+    return copy(self._assign_cont_to_atoms)
+  
+  #def get_type_list(self):
+  def get_cont_types(self):
+    if not self.up_to_date: self.update()
+    return copy(self._cont_types)
+  
+  #def get_pnum_list(self):
+  def get_nprim_per_cont(self):
+    if not self.up_to_date: self.update()
+    return copy(self._nprim_per_cont)
+  
+  #def get_ao_coeffs(self):
+  def get_prim_coeffs(self):
+    if not self.up_to_date: self.update()
+    return copy(self._prim_coeffs)
+  
+  #def get_prim2cont(self):
+  def get_assign_prim_to_cont(self):
+    if not self.up_to_date: self.update()
+    return copy(self._assign_prim_to_cont)
+  
+  def get_lxlylz(self):
+    if not self.up_to_date: self.update()
+    return copy(self._lxlylz)
+  
+  #def get_assign_lxlylz(self):
+  def get_assign_lxlylz_to_cont(self):
+    if not self.up_to_date: self.update()
+    return copy(self._assign_lxlylz_to_cont)
+  
+  #def get_bincount_lxlylz(self):
+  def get_nlxlylz_per_cont(self):
+    if not self.up_to_date: self.update()
+    return copy(self._nlxlylz_per_cont)
+  
+  def get_lm(self):
+    if not self.up_to_date: self.update()
+    return copy(self._lm)
+  
+  #def get_assign_lm(self):
+  def get_assign_lm_to_cont(self):
+    if not self.up_to_date: self.update()
+    return copy(self._assign_lm_to_cont)
+    
+  def get_normalized(self):
+    if not self.up_to_date: self.update()
+    return int(self.normalized)
+    
+
+#This should really die sooner or later...
+#For now there are still a few calls to it
+#and I don't know how to solve those easily
+  def get_old_ao_spherical(self):
+    '''Compatability funtction to allow access to old-style ao_spherical.
+    '''
+    if not self.up_to_date: self.update()
+    return list(zip(self.get_assign_lm_to_cont(),self.get_lm())) if self.spherical else []
+
+  def get_labels(self):
+    if not self.up_to_date: self.update()
+    if self.spherical:
+      labels = ['l,m=%s,atom=%d' % (self.get_lm()[i],self.get_assign_cont_to_atoms()[j]) 
+                for i,j in enumerate(self.get_assign_lm_to_cont())]
+    else:
+      labels = ['lxlylz=%s,atom=%d' % (self.get_lxlylz()[i],self.get_assign_cont_to_atoms()[j]) 
+                for i,j in enumerate(self.get_assign_lxlylz_to_cont())]
+    return labels
+  
+  def get_ao_num(self):
+    if not self.up_to_date: self.update()
+    return len(self.get_lm()) if self.spherical else len(self.get_lxlylz())
 
 class MOClass(UserList):
   '''MO base class which contains all information on atomic orbitals.
@@ -456,7 +421,7 @@ class MOClass(UserList):
       self.spinpolarized = restart['spinpolarized']
       self.selection_string = restart['selection_string']
       self.selected_mo = restart['selected_mo']
-      self.new2old()
+      self.internal_to_dict()
 
   def todict(self):
     self.update()
@@ -590,7 +555,7 @@ class MOClass(UserList):
                 'sym': None}
     return template
 
-  def new2old(self):
+  def internal_to_dict(self):
     self.data = []
     for imo in range(len(self.occ)):
       self.data.append(self.mo_template())
@@ -636,7 +601,7 @@ class MOClass(UserList):
     if not self.coeffs.shape == item.shape:
       raise ValueError('Old and new arrays need to be of the same size!')
     self.coeffs = item
-    self.new2old()
+    self.internal_to_dict()
 
   def set_occ(self, item):
     '''Set function for numpy array version of molecular orbital occupancies.
@@ -649,7 +614,7 @@ class MOClass(UserList):
     if not self.occ.shape == item.shape:
       raise ValueError('Old and new arrays need to be of the same size!')
     self.occ = item
-    self.new2old()
+    self.internal_to_dict()
 
   def set_eig(self, item):
     '''Set function for numpy array version of molecular orbital energies.
@@ -662,7 +627,7 @@ class MOClass(UserList):
     if not self.eig.shape == item.shape:
       raise ValueError('Old and new arrays need to be of the same size!')
     self.eig = item
-    self.new2old()
+    self.internal_to_dict()
 
   def set_sym(self, item):
     '''Set function for numpy array version of molecular orbital symmetries.
@@ -675,7 +640,7 @@ class MOClass(UserList):
     if not self.sym.shape == item.shape:
       raise ValueError('Old and new arrays need to be of the same size!')
     self.sym = item
-    self.new2old()
+    self.internal_to_dict()
 
   def get_coeffs(self):
     '''Get function for numpy array version of molecular orbital coefficients.
