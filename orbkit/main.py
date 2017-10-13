@@ -121,14 +121,9 @@ def run_orbkit(use_qc=None,check_options=True,standalone=False):
   
   # The calculation of all AOs (--calc_ao)
   if options.calc_ao != False:
-    if options.drv is None or not isinstance(options.drv,list):
-      options.drv = [options.drv]
-    
-    data = []
-    for drv in options.drv:
-      data.append(extras.calc_ao(qc,
-                                 drv=drv,
-                                 otype=options.otype))
+    data = extras.calc_ao(qc,
+                          drv=options.drv,
+                          otype=options.otype)
     
     t.append(time.time()) # Final time
     good_bye_message(t)
