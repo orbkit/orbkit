@@ -195,8 +195,8 @@ class AOIntegrals():
     if all((AOrangei is None, AOrangej is None)):
       return
     if shell:
-      AOrangei = [self._shell2ao(s) for s in AOrangei] if AOrangei is not None else range(self.Norb)
-      AOrangej = [self._shell2ao(s) for s in AOrangej] if AOrangej is not None else range(self.Norb)
+      AOrangei = list(chain(*[self._shell2ao(s) for s in AOrangei])) if AOrangei is not None else range(self.Norb)
+      AOrangej = list(chain(*[self._shell2ao(s) for s in AOrangej])) if AOrangej is not None else range(self.Norb)
     else:
       AOrangei = AOrangei if AOrangei is not None else range(self.Norb)
       AOrangej = AOrangej if AOrangej is not None else range(self.Norb)
@@ -222,10 +222,10 @@ class AOIntegrals():
     if all((AOrangei is None, AOrangej is None, AOrangek is None, AOrangel is None)):
       return
     if shell:
-      AOrangei = [self._shell2ao(s) for s in AOrangei] if AOrangei is not None else range(self.Norb)
-      AOrangej = [self._shell2ao(s) for s in AOrangej] if AOrangej is not None else range(self.Norb)
-      AOrangek = [self._shell2ao(s) for s in AOrangek] if AOrangek is not None else range(self.Norb)
-      AOrangel = [self._shell2ao(s) for s in AOrangel] if AOrangel is not None else range(self.Norb)
+      AOrangei = list(chain(*[self._shell2ao(s) for s in AOrangei])) if AOrangei is not None else range(self.Norb)
+      AOrangej = list(chain(*[self._shell2ao(s) for s in AOrangej])) if AOrangej is not None else range(self.Norb)
+      AOrangek = list(chain(*[self._shell2ao(s) for s in AOrangek])) if AOrangek is not None else range(self.Norb)
+      AOrangel = list(chain(*[self._shell2ao(s) for s in AOrangel])) if AOrangel is not None else range(self.Norb)
     else:
       AOrangei = AOrangei if AOrangei is not None else range(self.Norb)
       AOrangej = AOrangej if AOrangej is not None else range(self.Norb)
