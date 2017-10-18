@@ -1,5 +1,6 @@
 from copy import copy
 import numpy
+import sys
 
 from orbkit.display import display
 from orbkit.qcinfo import CIinfo
@@ -67,7 +68,7 @@ def psi4_detci(fname,select_run=None,threshold=0.0,**kwargs):
       ci = []
       for i in select_run:
         ci.append([])
-        if not isinstance(i,int):
+        if not isinstance(i,(int, numpy.int, numpy.int64, numpy.intc)):
           raise IOError(str(i) + ' is not a valid selection for select_run')
     else: 
       raise IOError(str(select_run) + ' is a not valid selection for select_run')    
@@ -101,6 +102,7 @@ def psi4_detci(fname,select_run=None,threshold=0.0,**kwargs):
   occ_symbols = {'A': numpy.array([1,0]),
                  'B': numpy.array([0,1]),
                  'X': numpy.array([1,1])}
+
   with open(filename) as fileobject:
     for line in fileobject:
       thisline = line.split()             # The current line split into segments
@@ -110,8 +112,12 @@ def psi4_detci(fname,select_run=None,threshold=0.0,**kwargs):
         rhf_occ = numpy.zeros(nIRREP,dtype=numpy.intc)
       #--- RHF occupation
       elif 'Final Occupation by Irrep:' in line:
-        irreps = fileobject.next().split()
-        line = fileobject.next()
+        if sys.version_info.major == 2:
+          irreps = fileobject.next().split()
+          line = fileobject.next()
+        else:
+          irreps = fileobject.readline().split()
+          line = fileobject.readline()
         c_occ = line.replace(',','').split()[2:-1]
         for ii in range(len(c_occ)):
           rhf_occ[ii] = int(c_occ[ii])
@@ -177,13 +183,19 @@ def psi4_detci(fname,select_run=None,threshold=0.0,**kwargs):
           ci[index_run][-1].coeffs = [] # numpy.zeros(num_det)
           ci[index_run][-1].occ = [] # numpy.zeros((numpy.sum(occ_info['active']),2),
                                           #dtype=numpy.intc)
-          fileobject.next()
+          if sys.version_info.major == 2:
+            fileobject.next()
+          else:
+            fileobject.readline()
           def rm(s,w='*(,)'):
             for i in w:
               s = s.replace(i,' ')
             return s
-          for i in range(num_det):            
-            thisline = rm(fileobject.next()).split()
+          for i in range(num_det):  
+            if sys.version_info.major == 2:
+              thisline = rm(fileobject.next()).split()
+            else:
+              thisline = rm(fileobject.readline()).split()
             if thisline == []:
               break
             min_c = min(min_c,abs(float(thisline[1])))

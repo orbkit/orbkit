@@ -11,3 +11,4 @@ from .aomix import read_aomix
 from .wfx import read_wfx
 from .wfn import read_wfn
 from .cclib import read_with_cclib
+from .native import read_native

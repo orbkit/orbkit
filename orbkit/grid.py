@@ -281,8 +281,8 @@ def mv2g(**kwargs):
         obj.insert(where,slice(None,None))
       return_val[i][obj] = matrix_vector2grid(j[obj[:where]+obj[where+2:]].reshape((-1,)), 
                                           **dict(zip(['Nx','Ny','Nz'],N_)))
-  
-  return return_val.values()[0] if len(return_val.values()) == 1 else return_val
+
+  return list(return_val.values())[0] if len(return_val.values()) == 1 else return_val
 
 def grid_sym_op(symop):
   '''Executes given symmetry operation on vector grid 

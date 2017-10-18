@@ -5,7 +5,7 @@ Build new ORBKIT io interface
 __all__ = ['main_output','amira_creator_old','cube_creator','hdf5_creator',
            'view_with_mayavi','pdb_creator','vmd_network_creator',
            'pdb_creator','hdf5_append','xyz_creator','amira_creator',
-           'hdf5_write', 'hdf5_open', 'hdf52dict'
+           'hdf5_write', 'hdf5_open', 'hdf52dict', 'native'
            ]
 
 from .high_level import main_output
@@ -16,3 +16,4 @@ from .mayavi import view_with_mayavi
 from .pdb import pdb_creator
 from .vmd import vmd_network_creator
 from .xyz import xyz_creator
+from .native import write_native

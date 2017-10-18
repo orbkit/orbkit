@@ -45,14 +45,21 @@ def get_all_files_from_tar(infile, sort=False):
 #automatically recognize filetypes in the same way the
 #"normal" high_level reader does now.
 def get_file_from_tar(infile, index=0, ci_descriptor=False):
+  one_file = None
   i = 0
   fd = tarfile.open(infile, 'r')
   for tarinfo in fd:
-    if tarinfo.isreg() and i == index:
-      one_file = fd.extractfile(tarinfo)
-      itype = None
-      if not ci_descriptor:
-        itype = find_itype(one_file)
-      one_file = fd.extractfile(tarinfo)
-      break
+    if tarinfo.isreg():
+      if i == index:
+        one_file = fd.extractfile(tarinfo)
+        itype = None
+        if not ci_descriptor:
+          itype = find_itype(one_file)
+        one_file = fd.extractfile(tarinfo)
+        break
+      i += 1
+  if not one_file:
+    raise ValueError('File {} not found'.format(i))
   return one_file, itype
+
+

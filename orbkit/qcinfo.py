@@ -38,28 +38,15 @@ class QCinfo:
   
   See :ref:`Central Variables` in the manual for details.
   '''
-  def __init__(self, filename=None):
-    self.geo_info = []
-    self.geo_spec = []
-    self.etot     = 0.
-    self.com      = 'Center of mass can be calculated with self.get_com().'
-    self.coc      = 'Center of charge can be calculated with self.get_coc().'
-    self.bc      =  'Barycenter of scalar field can be calculated with self.get_bc().'
-    self.pop_ana  = {}
-    # transition dipole information
-    self.states         = {'multiplicity' : None,
-                           'energy'       : None}
-    self.dipole_moments = None
-    self.charge = self.get_charge()
-
-    data = None
-    if filename:
-      data = self.read(filename)
-      self.geo_spec = data['geo_spec']
-      self.geo_info = data['geo_info']
+  def __init__(self, data=None):
+    if data:
+      self.geo_spec = numpy.array(data['geo_spec'], dtype=numpy.float64)
+      self.geo_info = numpy.array(data['geo_info'], dtype=str)
       self.ao_spec = AOClass(restart=data)
       self.mo_spec = MOClass(restart=data)
     else:
+      self.geo_info = []
+      self.geo_spec = []
       self.ao_spec = AOClass()
       self.mo_spec = MOClass()
 
@@ -85,39 +72,6 @@ class QCinfo:
         if atom1[i] != atom2[i]:
           same = False
     return same
-
-  def get_savedic(self):
-    '''Returns the dictionary that is used to save QCinfo instance
-    '''
-    import time
-    date = time.strftime("%d/%m/%Y") 
-    time = time.strftime("%H:%M:%S")
-    date_time = date + time
-
-    data = self.ao_spec.todict()
-    data.update(self.mo_spec.todict())
-    data['geo_spec'] = self.geo_spec
-    data['geo_info'] = self.geo_info
-    data['date'] = date
-    data['time'] = time
-
-    import hashlib
-    fingerprint = hashlib.md5()
-    fingerprint.update(str(data))
-    data['fingerprint'] = fingerprint.hexdigest()
-    return data
-
-  def save(self, filename=None):
-    if not filename:
-      filename = 'default_output'
-    if '.npz' not in filename:
-      filename += '.npz'
-
-    data = self.get_savedic()
-
-    numpy.savez_compressed(filename,
-                           **data)
-    return
 
   def read(self, filename):
     if isinstance(filename, str):
@@ -156,37 +110,36 @@ class QCinfo:
   def get_com(self,nuc_list=None):
     '''Computes the center of mass.
     '''
-    self.com   = numpy.zeros(3)
+    com   = numpy.zeros(3)
     total_mass = 0.
     if nuc_list is None:
       nuc_list = list(range(len(self.geo_spec))) # iterate over all nuclei
     for ii in nuc_list:
       nuc_mass    = standard_mass(self.geo_info[ii][0])
-      self.com   += numpy.multiply(self.geo_spec[ii],nuc_mass)
+      com   += numpy.multiply(self.geo_spec[ii],nuc_mass)
       total_mass += nuc_mass
-    self.com = self.com/total_mass
-    return self.com
+    com = com/total_mass
+    return com
 
-  def get_charge(self):
+  def get_charge(self, nuclear=False):
     '''Computes total charge of the system.
     '''
-    self.charge = 0.
+    charge = 0.
     for ii in range(len(self.geo_info)):
-      nuc_charge    = float(self.geo_info[ii][2])
-      self.charge += nuc_charge
-    return self.charge
+      charge += float(self.geo_info[ii][2])
+    if not nuclear:
+      charge -= sum(self.mo_spec.get_occ())
+    return charge
 
   def get_coc(self):
     '''Computes the center of charge.
     '''
-    self.coc     = numpy.zeros(3)
-    total_charge = 0.
+    coc     = numpy.zeros(3)
     for ii in range(len(self.geo_info)):
       nuc_charge    = float(self.geo_info[ii][2])
-      self.coc     += numpy.multiply(self.geo_spec[ii],nuc_charge)
-      total_charge += nuc_charge
-    self.coc = self.coc/total_charge
-    return self.coc
+      coc += numpy.multiply(self.geo_spec[ii],nuc_charge)
+    coc = coc / self.get_charge(nuclear=True)
+    return coc
     
   def get_bc(self,matrix=None,is_vector=False):
     '''Calculates Barycenter for scalar field
@@ -238,29 +191,14 @@ class QCinfo:
         self.mo_spec.get_spinstate()
   
   def todict(self):
-    '''Converts all essential variables into a dictionary.
+    '''Returns the dictionary that is used to save QCinfo instance
     '''
-    dct = {}
-    keys = ['geo_spec',
-            'geo_info',
-            'ao_spec',
-            'ao_spherical',
-            'mo_spec']
-    #These are all safety functions - maybe one day we won't need them anymore
-    if isinstance(self.mo_spec, dict):
-      self.mo_spec = MOClass(restart=self.mo_spec)
-    if isinstance(self.ao_spec, dict):
-      self.ao_spec = AOClass(restart=self.ao_spec)
-    if isinstance(self.mo_spec, list):
-      self.mo_spec = MOClass(self.mo_spec)
-    if isinstance(self.ao_spec, list):
-      self.ao_spec = AOClass(self.ao_spec)
-    for key in keys:
-      if key != 'ao_spherical':
-        dct[key] = getattr(self,key)
-      else:
-        dct['ao_spherical'] = self.ao_spec.get_old_ao_spherical()
-    return dct
+    data = self.ao_spec.todict()
+    data.update(self.mo_spec.todict())
+    data['geo_spec'] = self.geo_spec
+    data['geo_info'] = self.geo_info
+    data['parent_class_name'] = self.__module__ + '.' + self.__class__.__name__
+    return data
   
   def get_ase_atoms(self,bbox=None,**kwargs):
     '''Create an ASE atoms object.
@@ -297,6 +235,7 @@ class QCinfo:
     return atoms
   # Synonym
   atoms = get_ase_atoms
+
   def view(self,select=slice(None,None,None),bbox=None,**kwargs):
     '''Opens ase-gui with the atoms of the QCinfo class.
     (cf. https://wiki.fysik.dtu.dk/ase/ase/visualize/visualize.html )
@@ -370,15 +309,19 @@ class CIinfo():
 #    if self.moocc is not None:
 #      ciinfo.moocc = self.moocc.copy()    
     return ciinfo
+
   def todict(self):
     return self.__dict__
+
   def get_moocc(self):
     if self.moocc is None:
       raise ValueError('ci.set_moocc(qc) has to be called first! (ci.moocc is not initialized)')
     return self.moocc
+
   def set_moocc(self,moocc):
     assert (moocc.dtype == numpy.intc), 'moocc has to be numpy.intc'
     self.moocc = moocc
+
   def hdf5_save(self,fid='out.h5',group='/ci:0',mode='w'):
     from orbkit.output import hdf5_open,hdf5_append
     from copy import copy
@@ -386,6 +329,7 @@ class CIinfo():
       dct = copy(self.todict())
       dct['info'] = numpy.array(dct['info'].items(),dtype=str)
       hdf5_append(dct,hdf5_file,name=group)
+
   def hdf5_read(self,fid='out.h5',group='/ci:0'):
     from orbkit.output import hdf5_open,hdf52dict
     for hdf5_file in hdf5_open(fid,mode='r'):

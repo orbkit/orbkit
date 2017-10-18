@@ -66,7 +66,7 @@ def calc_mo(qc, fid_mo_list, drv=None, otype=None, ofid=None,
     mo_list : numpy.ndarray, shape=((NMO,) + N)
       Contains the NMO=len(qc.mo_spec) molecular orbitals on a grid.
   '''
-  mo_spec = qc.mo_spec.select(fid_mo_list, flatten_input=True)
+  mo_spec = qc.mo_spec[fid_mo_list]
   qc_select = qc.copy()
   qc_select.mo_spec = mo_spec
 

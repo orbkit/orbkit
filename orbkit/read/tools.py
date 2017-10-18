@@ -178,6 +178,8 @@ def find_itype(fname):
     - .fchk
     - .wfx
     - .wfn
+    - .npz
+    - .hdf5 / .h5
     
   filetypes determined from magic strings:
     - Molden
@@ -194,10 +196,11 @@ def find_itype(fname):
   else:
     filename = fname.name
     was_str = False
-  
-  extensions = ['fchk', 'wfx', 'wfn']
-  if filename.split('.')[-1].lower() in extensions:
+
+  if filename.split('.')[-1].lower() in ['fchk', 'wfx', 'wfn']:
     return filename.split('.')[-1]
+  elif filename.split('.')[-1].lower() in ['numpy', 'npz', 'hdf5', 'h5']:
+    return 'native'
   
   molden_regex = re.compile(r"\[[ ]{,}[Mm]olden[ ]+[Ff]ormat[ ]{,}\]")
   gamess_regex = re.compile(r"[Gg][Aa][Mm][Ee][Ss][Ss]") #This might be too weak - Can someone who knows Gamess please check?
@@ -209,10 +212,12 @@ def find_itype(fname):
   itypes = ['molden', 'gamess', 'gaussian_log', 'aomix']  
   
   text = fname.read()
+  if not isinstance(text, str):
+    text = text.decode('utf-8')
   for regname in itypes:
     if regexes[regname].search(text):
       return regname
-  
+
   if was_str:
     fname.close()
   

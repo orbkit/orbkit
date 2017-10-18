@@ -6,15 +6,17 @@ import numpy
 from orbkit import QCinfo
 from orbkit.orbitals import AOClass, MOClass
 
+non_array_types = (int, float, numpy.float64, numpy.int, numpy.intc, numpy.int64)
+
 def equal(a, b, tol=1e-5):
   if isinstance(a, list):
     a = numpy.array(a)
   if isinstance(b, list):
     b = numpy.array(b)
-  if isinstance(a, (int, float)) and isinstance(b, (int, float)):
+  if isinstance(a, non_array_types) and isinstance(b, non_array_types):
     assert abs(a-b) <= tol
   elif isinstance(a, numpy.ndarray) and isinstance(b, numpy.ndarray):
-    if a.dtype in [float, int, numpy.intc, numpy.float64] and b.dtype in [float, int, numpy.intc, numpy.float64]:
+    if a.dtype in non_array_types and b.dtype in non_array_types:
       assert numpy.allclose(a, b, rtol=tol*1e2, atol=tol)
     else:
       for i,j in zip(a.flatten(), b.flatten()):

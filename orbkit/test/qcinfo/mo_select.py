@@ -51,7 +51,7 @@ equal(qc.mo_spec[[['1.A1', '2.A1'], ['1.B2', '3.A1', 'alpha']]], refmo)
 refmo = MOClass([qc.mo_spec[i] for i in range(12)])
 refmo.update()
 
-equal(qc.mo_spec[map(str,list(range(12)))], refmo)
+equal(qc.mo_spec[list(map(str,range(12)))], refmo)
 
 # Test lists of integers
 refmo = MOClass([qc.mo_spec[i] for i in range(12)])
@@ -60,16 +60,16 @@ equal(qc.mo_spec[range(12)], refmo)
 
 refmo = MOClass([qc.mo_spec[i] for i in range(12)])
 refmo.update()
-equal(qc.mo_spec[[range(5), range(5,12)]], refmo)
+equal(qc.mo_spec[[list(range(5)), list(range(5,12))]], refmo)
 
 # Test mixed lists
 refmo = MOClass([qc.mo_spec[i] for i in range(12)])
 refmo.update()
-equal(qc.mo_spec[[['1.A1','2.A1','1.B2','3.A1', 'all_alpha'] + range(4,12)]], refmo)
+equal(qc.mo_spec[[['1.A1','2.A1','1.B2','3.A1', 'all_alpha'] + list(range(4,12))]], refmo)
 
 refmo = MOClass([qc.mo_spec[i] for i in range(12)])
 refmo.update()
-equal(qc.mo_spec[[['1.A1','2.A1','1.B2','3.A1'] + ['all_alpha'] + range(4,7)+ map(str,list(range(7,10))) + range(10,12)]], refmo)
+equal(qc.mo_spec[[['1.A1','2.A1','1.B2','3.A1'] + ['all_alpha'] + list(range(4,7))+ list(map(str,range(7,10))) + list(range(10,12))]], refmo)
 
 
 

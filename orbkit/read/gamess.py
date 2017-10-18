@@ -28,7 +28,14 @@ def read_gamess(fname, all_mo=False, spin=None, read_properties=False,
   else:
     filename = fname.name
 
-  flines = fname.readlines()       # Read the WHOLE file into RAM
+  text = fname.read()
+  if not isinstance(text, str):
+    text = text.decode('utf-8')
+  flines = text.split('\n')       # Read the WHOLE file into RAM
+
+  while not flines[-1]:
+    flines.pop()
+
   if isinstance(fname, str):
     fname.close()                    # Leave existing file descriptors alive
   
@@ -41,7 +48,7 @@ def read_gamess(fname, all_mo=False, spin=None, read_properties=False,
   restricted = True                  # Flag for restricted calculation
   sec_flag = None                    # A Flag specifying the current section
   is_pop_ana = True                  # Flag for population analysis for ground state
-  keyword = [' ATOM      ATOMIC                      COORDINATES','\n'] 
+  keyword = [' ATOM      ATOMIC                      COORDINATES',''] 
                                      # Keywords for single point calculation and 
                                      # geometry optimization
   mokey = 'EIGENVECTORS'             # Keyword for MOs
@@ -64,7 +71,7 @@ def read_gamess(fname, all_mo=False, spin=None, read_properties=False,
         restricted = False
       else:
         mokey = 'MOLECULAR ORBITALS'
-      
+
     elif keyword[0] in line and keyword[1] in flines[il-1]:
       # The section containing information about 
       # the molecular geometry begins 
@@ -159,7 +166,7 @@ def read_gamess(fname, all_mo=False, spin=None, read_properties=False,
       # Check if we are in a specific section 
       if sec_flag == 'geo_info':
         if not geo_skip:
-          if line == '\n':
+          if line == '':
             sec_flag = None
           else:
             qc.geo_info.append([thisline[0],atom_count+1,thisline[1]])

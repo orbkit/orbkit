@@ -19,14 +19,14 @@ options.quiet = True
 #Gamess Reader is not tested at this point
 #We need to test cclib as well
 
-files = {'fchk': 'h2o_rhf_cart.fchk',
-         'gaussian_log': 'h2o_rhf_cart.inp.log',
-         'gamess': 'formaldehyde.log',
-         'molden': 'h2o_rhf_sph.molden',
-         'aomix': 'aomix.in',
-         'wfx': '1.wfx',
-         'tar.gz': 'NaCl_molden_files.tar.gz',
-         'wfn': 'water_gamess-us.wfn'}
+files = {#'fchk': 'h2o_rhf_cart.fchk',
+         #'gaussian_log': 'h2o_rhf_cart.inp.log',
+         #'gamess': 'formaldehyde.log',
+         #'molden': 'h2o_rhf_sph.molden',
+         #'aomix': 'aomix.in',
+         #'wfx': '1.wfx',
+         'tar.gz': 'NaCl_molden_files.tar.gz'}#,
+         #'wfn': 'water_gamess-us.wfn'}
 
 readers = {'fchk': read_gaussian_fchk,
            'gaussian_log': read_gaussian_log,

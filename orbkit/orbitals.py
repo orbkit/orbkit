@@ -70,6 +70,7 @@ class AOClass(UserList):
             'spherical': self.spherical,
             'contspher': self.contspher,
             'lxlylz': self.lxlylz,
+            'class_name': self.__module__ + '.' + self.__class__.__name__,
             'assign_lxlylz': self.assign_lxlylz}
     return data
 
@@ -478,15 +479,18 @@ class MOClass(UserList):
     self.beta_index = None
     if restart is not None:
       self.up2date = True
-      self.coeffs = restart['coeffs']
-      self.occ = restart['occ']
-      self.sym = restart['sym']
-      self.eig = restart['eig']
-      self.spinpolarized = restart['spinpolarized']
-      self.selection_string = restart['selection_string']
-      self.alpha_index = restart['alpha_index']
-      self.beta_index = restart['beta_index']
-      self.selected_mo = restart['selected_mo']
+      self.coeffs = require(restart['coeffs'], dtype=numpy.float64)
+      self.occ = require(restart['occ'], dtype=numpy.float64)
+      self.sym = require(restart['sym'], dtype=str)
+      self.eig = require(restart['eig'], dtype=numpy.float64)
+      self.spinpolarized = bool(restart['spinpolarized'])
+      self.selection_string = str(restart['selection_string'])
+      self.alpha_index = require(restart['alpha_index'], dtype=numpy.float64)
+      self.beta_index = require(restart['beta_index'], dtype=numpy.intc)
+      if restart['selected_mo']:
+        self.selected_mo = require(restart['selected_mo'], dtype=numpy.intc)
+      else:
+        self.selected_mo = None
       self.new2old()
 
   def todict(self):
@@ -499,6 +503,7 @@ class MOClass(UserList):
             'spinpolarized': self.spinpolarized,
             'occ': self.occ,
             'eig': self.eig,
+            'class_name': self.__module__ + '.' + self.__class__.__name__,
             'sym': self.sym}
     return data
 
@@ -528,6 +533,7 @@ class MOClass(UserList):
         else:
           data_out.append(self.data[c])
       mo_out = MOClass(data_out)
+      mo_out.selected_mo = item
       mo_out.update()
       del data_out
     else:
@@ -898,7 +904,7 @@ class MOClass(UserList):
     '''
     import re
     display('\nProcessing molecular orbital list...')
-    if flatten_input and isinstance(fid_mo_list[0], (list, numpy.ndarray)):
+    if flatten_input and isinstance(list(fid_mo_list)[0], (list, numpy.ndarray)):
        display('\nWarning! Flattening of input lists requested!')
     
     mo_in_file = []
@@ -1056,7 +1062,7 @@ class MOClass(UserList):
               i = str(int(i))
             i = re.sub(' +',' ', i)
             i = regsplit.split(i) if isinstance(i,str) else [i]
-          mo_in_file.append(map(str,i))
+          mo_in_file.append(list(map(str,i)))
       else:
         try:
           fid=open(fid_mo_list,'r')

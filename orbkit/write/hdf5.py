@@ -234,8 +234,15 @@ def hdf5_write(fid,mode='w',gname='',**kwargs):
   for f in hdf5_open(fid,mode=mode):
     if gname is not '':
       group = f.create_group(gname)
-      for i,j in kwargs.items(): 
-        group.create_dataset(i,numpy.shape(j),data=j)
     else:
-      for i,j in kwargs.items(): 
-        f.create_dataset(i,numpy.shape(j),data=j)
+      group = f
+    for key,data in kwargs.items():
+      if isinstance(data,(list,numpy.ndarray)):
+        data = numpy.array(data)
+        if data.dtype in ['<U4', 'O']:
+          data = numpy.array(data, dtype='S10')
+        f.create_dataset(key,numpy.shape(data),data=data)
+      else:
+        if data is None or type(data) == bool:
+          data = str(data)
+        f.attrs[key] = data

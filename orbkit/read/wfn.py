@@ -40,11 +40,20 @@ def read_wfn(fname, all_mo=False, spin=None, **kwargs):
     exp_list.extend(j)
   exp_list = numpy.array(exp_list,dtype=numpy.int64)
 
+  text = fname.read()
+  if not isinstance(text, str):
+    text = text.decode('utf-8')
+  flines = text.split('\n')       # Read the WHOLE file into RAM
+
+  while not flines[-1]:
+    flines.pop()
+
   if isinstance(fname, str):
     filename = fname
     fname = descriptor_from_file(filename, index=0)
+    flines = fname.readlines()
 
-  for line in fname:
+  for line in flines:
     thisline = line.split()      # The current line split into segments
     # Check the file for keywords 
     if 'GAUSSIAN' in line or 'GTO' in line:

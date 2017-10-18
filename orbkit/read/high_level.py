@@ -4,21 +4,22 @@ High level interface to Orbkit reading functions
 
 import re
 
-from orbkit.read.molden import read_molden
-from orbkit.read.gamess import read_gamess
-from orbkit.read.gaussian_fchk import read_gaussian_fchk
-from orbkit.read.gaussian_log import read_gaussian_log
-from orbkit.read.aomix import read_aomix
-from orbkit.read.wfx import read_wfx
-from orbkit.read.wfn import read_wfn
-from orbkit.read.cclib import read_with_cclib
+from .molden import read_molden
+from .gamess import read_gamess
+from .gaussian_fchk import read_gaussian_fchk
+from .gaussian_log import read_gaussian_log
+from .aomix import read_aomix
+from .wfx import read_wfx
+from .wfn import read_wfn
+from .cclib import read_with_cclib
+from .native import read_native
 from orbkit.display import display
 
 from .tools import find_itype, descriptor_from_file, check_mo_norm
 
 readers = {'fchk': read_gaussian_fchk, 'wfx': read_wfx, 'wfn': read_wfn, 
            'cclib': read_with_cclib, 'molden': read_molden, 'gaussian_log': read_gaussian_log, 
-           'aomix': read_aomix, 'gamess': read_gamess}
+           'aomix': read_aomix, 'gamess': read_gamess, 'native': read_native}
 
 def main_read(fname, all_mo=False, spin=None, itype='auto', check_norm=False, **kwargs):
   '''

@@ -44,7 +44,14 @@ def read_aomix(fname, all_mo=False, spin=None, i_md=-1, interactive=True,
   else:
     filename = fname.name
 
-  flines = fname.readlines()       # Read the WHOLE file into RAM
+  text = fname.read()
+  if not isinstance(text, str):
+    text = text.decode('utf-8')
+  flines = text.split('\n')       # Read the WHOLE file into RAM
+
+  while not flines[-1]:
+    flines.pop()
+
   if isinstance(fname, str):
     fname.close()                    # Leave existing file descriptors alive
   
