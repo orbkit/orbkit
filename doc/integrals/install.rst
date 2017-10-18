@@ -24,7 +24,7 @@ and finally, add the library to the PATH environment variable by adding:
 
 .. code-block:: bash
 
-    $ export PATH=$PATH:$HOME/libcint/lib
+    $ export PATH=$PATH:$HOME/libcint
 
 to your `~/.bashrc`.
 

@@ -42,15 +42,24 @@ E += 2*J - K
 equal(E+Vnn, -108.92022806)
 
 # test AO sclicing
-ao.add_MO_block_1e(MOrangei=range(Nelec//2), MOrangej=range(Nelec//2))
+ao.add_MO_block_1e(MOrange=range(Nelec//2))
 Hcore = ao.Hcore(asMO=1)
 Hs = ao.Hcore(asMO=1, max_dims=3)
 equal(Hcore, Hs)
 
-ao.add_MO_block_2e(MOrangei=range(Nelec//2), MOrangej=range(Nelec//2), MOrangek=range(Nelec//2), MOrangel=range(Nelec//2))
+ao.add_MO_block_2e(MOrange=range(Nelec//2))
 V = ao.Vee(asMO=1)
 Vs = ao.Vee(asMO=1, max_dims=3)
 equal(V, Vs)
+
+# test AO ranges
+ao.clear_all_blocks()
+S = ao.overlap(asMO=0)
+rangei = [5,6,7] + [12,13]
+rangej = [4,5]   + [10,11,12,13,14,15]
+ao.add_AO_block_1e(AOrangei=rangei, AOrangej=rangej)
+Sr = ao.overlap(asMO=0)
+equal(S[numpy.ix_(rangei,rangej)], Sr)
 
 # test MOranges
 c = ao.Norb//2
