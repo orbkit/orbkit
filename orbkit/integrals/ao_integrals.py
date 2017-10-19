@@ -3,7 +3,7 @@ import ctypes
 
 from ..tools import lquant
 from ..display import display
-from itertools import chain
+from itertools import chain, combinations_with_replacement
 
 try:
   from numpy import moveaxis
@@ -39,12 +39,26 @@ libcint.CINTgto_norm.restype = ctypes.c_double
 class struct:
   pass
 
+def match_order(a, ref):
+  # inverse argsort of ref
+  if ref.ndim == 1:
+    fwd = numpy.argsort(ref)
+  else:
+    fwd = numpy.lexsort(ref.T, axis=0)
+  inv = numpy.empty_like(fwd)
+  inv[fwd] = numpy.arange(fwd.size)
+  # argsort of a
+  if a.ndim == 1:
+    arg = numpy.argsort(a)
+  else:
+    arg = numpy.lexsort(a.T, axis=0)
+  return arg[inv]
+
 ############################
 ###  external interface  ###
 ############################
 
 # TODO:
-# - reordering for spherical
 # - non-hermitian operators (?)
 # - operators including gradients (return tensors)
 
@@ -52,7 +66,7 @@ class AOIntegrals():
   '''Interface to calculate AO Integrals with libcint.
   https://github.com/sunqm/libcint
   '''
-  def __init__(self, qc, cartesian=True):
+  def __init__(self, qc):
 
     # general parameters
     self.qc = qc
@@ -106,14 +120,15 @@ class AOIntegrals():
     self.basis.c_bas = self.bas.ctypes.data_as(ctypes.c_void_p)
 
     # some further parameters
-    self.basis.cartesian = cartesian
+    self.basis.cartesian = not qc.ao_spec.spherical
     self.basis.Nshells = self.basis.bas.shape[0]
     self.basis.Norb = self.count_contractions()
     self.basis.natm = ctypes.c_int(self.atm.shape[0])
     self.basis.nbas = ctypes.c_int(self.bas.shape[0])
     self.basis.shell_dims = numpy.array(self._get_dims(*range(self.basis.Nshells)))
     self.basis.shell_offsets = _get_shell_offsets(self.basis.shell_dims)
-    if cartesian:
+    self.basis.order = [self._get_order(i) for i in range(self.Nshells)]
+    if self.basis.cartesian:
       self._norm_cart_shell()
 
   @property
@@ -126,6 +141,7 @@ class AOIntegrals():
     self.basis.Norb = self.count_contractions()
     self.basis.shell_dims = numpy.array(self._get_dims(*range(self.Nshells)))
     self.basis.shell_offsets = _get_shell_offsets(self.basis.shell_dims)
+    self.basis.order = [self._get_order(i) for i in range(self.Nshells)]
     if value:
       self._norm_cart_shell()
     self.clear_all_blocks()
@@ -351,6 +367,7 @@ class AOIntegrals():
         AOs = [numpy.array(sorted(set(chain(*blocks)))) for blocks in zip(*self.AO_blocks_1e)]
     if not shells:
       shells = [sorted(set([self._ao2shell(ao) for ao in aos])) for aos in AOs]
+
 
     if not asMO or not max_dims:
 
@@ -624,6 +641,25 @@ class AOIntegrals():
       return dims[0]
     return dims
 
+  def _get_order(self, i):
+    '''Returns indices to transform libcint order to orbkit order for given shell.'''
+    l = self.basis.bas[i][1]
+    if l == 0:
+      return (0,)
+    if self.cartesian:
+      order_orbkit = self.qc.ao_spec.get_lxlylz()[self.qc.ao_spec.get_assign_lxlylz_to_cont()==i,:]
+      order_libcint = []
+      for item in combinations_with_replacement('xyz', l):
+        order_libcint.append([item.count('x'), item.count('y'), item.count('z')])
+      order_libcint = numpy.array(order_libcint)
+    else:
+      order_orbkit = numpy.array(self.qc.ao_spec.get_lm())[self.qc.ao_spec.get_assign_lm_to_cont()==i,1]
+      if l == 1:
+        order_libcint = numpy.array([1,-1,0])
+      else:
+        order_libcint = numpy.array(range(-l,l+1))
+    return match_order(order_libcint, order_orbkit)
+
   def _norm_cart_shell(self):
     '''Calculates normalization factors for each shell. Required to rescale cartesian integrals.'''
     self.basis.cart_norm = []
@@ -637,7 +673,6 @@ class AOIntegrals():
       S = numpy.reshape(mat, (di, di)).T
       S = numpy.sqrt(numpy.diag(S))
       self.basis.cart_norm.append(S)
-
 
 def _libcint1e(basis, operator, shells_i, shells_j):
   '''Calculate AO integral matrix.
@@ -701,14 +736,10 @@ def _libcint1e(basis, operator, shells_i, shells_j):
         buf /= basis.cart_norm[j].reshape(1,dj)
 
       # switch order of basis functions (angl>1)
-      angl = basis.bas[i][1]
-      if angl > 1:
-        order = _get_order(angl, basis.cartesian)
-        buf = buf[order,:]
-      angl = basis.bas[j][1]
-      if angl > 1:
-        order = _get_order(angl, basis.cartesian)
-        buf = buf[:,order]
+      if di > 1:
+        buf = buf[basis.order[i],:]
+      if dj > 1:
+        buf = buf[:,basis.order[j]]
 
       # store
       ii = shell_offsets_i[i]
@@ -813,22 +844,14 @@ def _libcint2e(basis, operator, shells_i, shells_j, shells_k, shells_l):
             buf /= basis.cart_norm[l].reshape(1,1,1,dl)
 
           # switch order of basis functions (angl>1)
-          angl = basis.bas[i][1]
-          if angl > 1:
-            order = _get_order(angl, basis.cartesian)
-            buf = buf[order,:,:,:]
-          angl = basis.bas[j][1]
-          if angl > 1:
-            order = _get_order(angl, basis.cartesian)
-            buf = buf[:,order,:,:]
-          angl = basis.bas[k][1]
-          if angl > 1:
-            order = _get_order(angl, basis.cartesian)
-            buf = buf[:,:,order,:]
-          angl = basis.bas[l][1]
-          if angl > 1:
-            order = _get_order(angl, basis.cartesian)
-            buf = buf[:,:,:,order]
+          if di > 1:
+            buf = buf[basis.order[i],:,:,:]
+          if dj > 1:
+            buf = buf[:,basis.order[j],:,:]
+          if dk > 1:
+            buf = buf[:,:,basis.order[k],:]
+          if dl > 1:
+            buf = buf[:,:,:,basis.order[l]]
 
           # store/replicate results
 
@@ -1008,19 +1031,19 @@ def _get_shell_offsets(shell_dims):
   offsets[1:] = numpy.cumsum(shell_dims[:-1])
   return offsets
 
-def _get_order(l, cartesian):
-  '''Returns indices to transform libcint order to orbkit order.'''
-  if l == 0:
-    return (0,)
-  if l == 1:
-    return (0,1,2)
-  order = {
-    # l : (cartesian, spherical)
-    2 : ((0,3,5,1,2,4), range(5)),
-    3 : ((0,6,9,3,1,2,5,8,7,4), range(7)),
-    4 : ((0,10,14,1,2,6,11,9,13,3,5,12,4,7,8), range(9)),
-  }
-  if cartesian:
-    return order[l][0]
-  else:
-    return order[l][1]
+#def _get_order(l, cartesian):
+  #'''Returns indices to transform libcint order to orbkit order.'''
+  #if l == 0:
+    #return (0,)
+  #if l == 1:
+    #return (0,1,2)
+  #order = {
+    ## l : (cartesian, spherical)
+    #2 : ((0,3,5,1,2,4), range(5)),
+    #3 : ((0,6,9,3,1,2,5,8,7,4), range(7)),
+    #4 : ((0,10,14,1,2,6,11,9,13,3,5,12,4,7,8), range(9)),
+  #}
+  #if cartesian:
+    #return order[l][0]
+  #else:
+    #return order[l][1]

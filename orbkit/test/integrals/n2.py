@@ -10,7 +10,7 @@ options.quiet = True
 
 ## N2 cc-pVDZ RHF
 qc = read.main_read(os.path.join(tests_home, 'n2.mold'), all_mo=True)
-ao = orbkit.integrals.AOIntegrals(qc, cartesian=True)
+ao = orbkit.integrals.AOIntegrals(qc)
 Nelec = int(qc.get_elec_charge())
 
 # MO overlap
