@@ -1,5 +1,6 @@
 #Tools for detci readers
 import numpy
+from orbkit.orbitals import MOClass
 
 def point_groups():
   point_groups = {'c1': 1, 'cs': 2, 'c2': 2, 'ci': 2, 
@@ -47,19 +48,23 @@ def molpro_mo_order_ci(occ_info,mo_spec,irreps=None,nIRREP=None,order_sym=False)
     mo_index[i] = numpy.array(mo_index[i])
     j = numpy.argsort(mo_index[i],axis=0)[:,1]
     mo_index[i] = mo_index[i][j]
-    mo_sym[i] = [mo_spec[j] for j,k in mo_index[i]]
+    mo_sym[i] = MOClass([mo_spec[j] for j,k in mo_index[i]])
+    #mo_sym[i].update()
   if order_sym:
     return mo_sym
   
-  closed = []
-  active = []
-  external = []
+  closed = MOClass()
+  active = MOClass()
+  external = MOClass()
   for i in range(nIRREP):
     a = occ_info['core'][i] + occ_info['closed'][i]
     closed.extend(mo_sym[i][:a])
     b = a+occ_info['active'][i]
     active.extend(mo_sym[i][a:b])
     external.extend(mo_sym[i][b:])
+  #closed.update()
+  #active.update()
+  #external.update()
   return closed,active,external
 
 def orthonorm(ci):

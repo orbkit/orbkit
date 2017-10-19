@@ -99,7 +99,7 @@ def read_gamess(fname, all_mo=False, spin=None, read_properties=False,
       len_mo = 0                      # Number of MOs 
       init_mo = False                 # Initialize new MO section
       info_key = None                 # A Flag specifying the energy and symmetry section
-      exp_list = []
+      lxlylz = []
       if 'ALPHA' in line:
         has_alpha = True
         mo_skip = 0
@@ -214,7 +214,7 @@ def read_gamess(fname, all_mo=False, spin=None, read_properties=False,
                 init_mo = False
             elif init_mo:
               init_len = len(thisline)
-              exp_list = []
+              lxlylz = []
               for ii in range(len(thisline)):
                 if has_alpha == True or has_beta == True:
                   qc.mo_spec.append({'coeffs': [],
@@ -251,7 +251,7 @@ def read_gamess(fname, all_mo=False, spin=None, read_properties=False,
                   qc.mo_spec[-ii]['sym'] = '%d.%s' % (sym[a], thisline[init_len-ii])
               info_key = 'coeffs'
             elif thisline != [] and info_key == 'coeffs':
-              exp_list.append((line[11:17]))
+              lxlylz.append((line[11:17]))
               for ii in range(init_len,0,-1):
                 qc.mo_spec[-ii]['coeffs'].append(float(line[16:].split()[init_len-ii]))
         elif mo_skip:
@@ -338,19 +338,19 @@ def read_gamess(fname, all_mo=False, spin=None, read_properties=False,
                          'type': basis_set[qc.geo_info[kk][0]][ll]['type'],
                          'pnum': basis_set[qc.geo_info[kk][0]][ll]['pnum'],
                          'coeffs': basis_set[qc.geo_info[kk][0]][ll]['coeffs'],
-                         'exp_list': None
+                         'lxlylz': None
                          })
   # Reconstruct exponents list for ao_spec
   count = 0
   for i,j in enumerate(qc.ao_spec):    
     l = l_deg(lquant[j['type']])
-    j['exp_list'] = []
+    j['lxlylz'] = []
     for i in range(l):
-      j['exp_list'].append((exp_list[count].lower().count('x'),
-                            exp_list[count].lower().count('y'),
-                            exp_list[count].lower().count('z')))
+      j['lxlylz'].append((lxlylz[count].lower().count('x'),
+                          lxlylz[count].lower().count('y'),
+                          lxlylz[count].lower().count('z')))
       count += 1
-    j['exp_list'] = numpy.array(j['exp_list'],dtype=numpy.int64)
+    j['lxlylz'] = numpy.array(j['lxlylz'],dtype=numpy.int64)
   
   if restricted:
     for ii in range(len(qc.mo_spec)):

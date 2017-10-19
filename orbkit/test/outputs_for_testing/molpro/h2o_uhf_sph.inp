@@ -1,0 +1,24 @@
+*** h2o
+memory,200,m
+gprint,basis
+gprint,orbital
+
+basis,cc-pVDZ
+
+geomtyp=xyz
+geometry={
+3
+
+H    0.0000000000       -0.8901392951        0.5586943229
+O    0.0000000000        0.0000000000       -0.0703939342
+H    0.0000000000        0.8901392951        0.5586943229
+}
+
+{uhf
+wf,10,1,0
+orbital,2100.2}
+
+md='h2o_uhf_sph.molden'
+put,molden,$md,NEW;orb,2100.2,set=1 ! alpha spins
+put,molden,$md,-1;orb,2100.2,set=2 ! beta spins
+

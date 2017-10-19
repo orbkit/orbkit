@@ -10,7 +10,7 @@ from orbkit import options
 options.quiet = True
 
 tests_home = os.path.dirname(inspect.getfile(inspect.currentframe()))
-folder = os.path.join(tests_home, '../read/outputs_for_testing')
+folder = os.path.join(tests_home, '../outputs_for_testing/molpro')
 filepath = os.path.join(folder, 'h2o_rhf_sph.molden')
 qc = read.main_read(filepath, all_mo=True)
 

@@ -31,6 +31,7 @@ from .tools import *
 from multiprocessing import Pool
 
 # Import orbkit modules
+#from orbkit.qcinfo import QCinfo
 from orbkit import grid,cy_grid,cy_core
 from orbkit.display import display
 
@@ -76,7 +77,7 @@ def ao_creator(geo_spec,ao_spec,drv=None,
     x,y,z = cy_grid.grid2vector(x.copy(),y.copy(),z.copy())
   else:
     if len(x) != len(y) or len(x) != len(z):
-      raise ValueError("Dimensions of x-, y-, and z- coordinate differ!")
+      raise ValueError('Dimensions of x-, y-, and z- coordinate differ!')
     N = (len(x),)
 
   x = require(x, dtype='f')
@@ -84,15 +85,16 @@ def ao_creator(geo_spec,ao_spec,drv=None,
   z = require(z, dtype='f') 
 
   geo_spec = require(geo_spec, dtype='f')
-  lxlylz,assign = ao_spec.get_lxlylz(get_assign=True,bincount=True)
-  ao_coeffs,pnum_list,atom_indices = prepare_ao_calc(ao_spec)
-  is_normalized = each_ao_is_normalized(ao_spec)
-  drv = validate_drv(drv)
   
-  lxlylz = require(lxlylz,dtype='i')
-  assign = require(assign,dtype='i')
-  ao_list = cy_core.aocreator(lxlylz,assign,ao_coeffs,pnum_list,geo_spec,
-                              atom_indices,x,y,z,drv,is_normalized)
+  ao_list = cy_core.aocreator(ao_spec.get_lxlylz(),
+                              ao_spec.get_nlxlylz_per_cont(),
+                              ao_spec.get_prim_coeffs(),
+                              ao_spec.get_nprim_per_cont(),
+                              geo_spec,
+                              ao_spec.get_assign_cont_to_atoms(),
+                              x,y,z,
+                              validate_drv(drv),
+                              ao_spec.get_normalized())
   if 'N' in ao_spec[0]:
     # Renormalize atomic orbital
     ao_list *= ao_spec[0]['N']
@@ -152,7 +154,8 @@ def cartesian2spherical(ao_list,ao_spec):
     The conversion is currently only supported up to g atomic orbitals.
   '''
 
-  lxlylz, assign = ao_spec.get_lxlylz(get_assign=True)
+  lxlylz = ao_spec.get_lxlylz()
+  assign = ao_spec.get_assign_lxlylz_to_cont()
   ao_spherical = ao_spec.get_old_ao_spherical()
 
   l = [[] for i in ao_spec]
@@ -223,11 +226,15 @@ def slice_rho(xx):
   '''
   try:
     # All desired information is stored in the Global variable Spec 
-    geo_spec = Spec['geo_spec']
-    ao_spec = Spec['ao_spec']
-    mo_spec = Spec['mo_spec']
-    drv = Spec['Derivative']
+    geo_spec = Spec['qc'].geo_spec
+    ao_spec = Spec['qc'].ao_spec
+    mo_spec = Spec['qc'].mo_spec
+    drv = Spec['derivative']
     calc_mo = Spec['calc_mo']
+    if Spec['calc_ao']:
+      _mo_creator = lambda x,y: x
+    else: 
+      _mo_creator = mo_creator
     
     # Set up Grid
     x = grid.x[xx[0]:xx[1]]
@@ -241,11 +248,11 @@ def slice_rho(xx):
         # Calculate the derivatives of the AOs and MOs for this slice 
         delta_ao_list = ao_creator(geo_spec,ao_spec,drv=ii_d,
                     x=x,y=y,z=z,is_vector=True)
-        delta_mo_list.append(mo_creator(delta_ao_list,mo_spec))
+        delta_mo_list.append(_mo_creator(delta_ao_list,mo_spec))
       return numpy.array(delta_mo_list)
     # Calculate the MOs and AOs for this slice 
     ao_list = ao_creator(geo_spec,ao_spec,x=x,y=y,z=z,is_vector=True)
-    mo_list = mo_creator(ao_list,mo_spec)
+    mo_list = _mo_creator(ao_list,mo_spec)
     
     if calc_mo:
       return numpy.array(mo_list)
@@ -299,7 +306,7 @@ def initializer(global_args):
   global Spec
   Spec = global_args
   
-def rho_compute(qc,calc_mo=False,drv=None,laplacian=False,
+def rho_compute(qc,calc_ao=False,calc_mo=False,drv=None,laplacian=False,
                 numproc=1,slice_length=1e4,vector=None,save_hdf5=False,
                 **kwargs):
   r'''Calculate the density, the molecular orbitals, or the derivatives thereof.
@@ -320,6 +327,9 @@ def rho_compute(qc,calc_mo=False,drv=None,laplacian=False,
     See :ref:`Central Variables` for details.
   qc.mo_spec : List of dictionaries
     See :ref:`Central Variables` for details.
+  calc_ao : bool, optional
+    If True, the computation of the atomic orbitals is only
+    carried out.
   calc_mo : bool, optional
     If True, the computation of  the molecular orbitals requested is only
     carried out.
@@ -364,10 +374,17 @@ def rho_compute(qc,calc_mo=False,drv=None,laplacian=False,
   laplacian_rho : numpy.ndarray, shape=(N)
     Contains the laplacian of the density on a grid, i.e. 
     :math:`\nabla^2 \rho = \nabla^2_x \rho + \nabla^2_y \rho + \nabla^2_z \rho`.
-  '''  
+  ''' 
+  #if not isinstance(qc,QCinfo):
+    #raise TypeError('rho_compute argument `qc` has to be a QCinfo class instance')
+  if calc_ao and calc_mo:
+    raise ValueError('Choose either calc_ao=True or calc_mo=True')
+  elif calc_ao:
+    calc_mo = True 
+
   slice_length = slice_length if not vector else vector
   if slice_length == 0:
-    return rho_compute_no_slice(qc,calc_mo=calc_mo,drv=drv,
+    return rho_compute_no_slice(qc,calc_ao=calc_ao,calc_mo=calc_mo,drv=drv,
                                 laplacian=laplacian,**kwargs)
   if laplacian:
     if not (drv is None or drv == ['xx','yy','zz'] or drv == ['x2','y2','z2']):
@@ -384,17 +401,13 @@ def rho_compute(qc,calc_mo=False,drv=None,laplacian=False,
       drv = [drv]
   else:
     is_drv = False
-    
-  # Specify the global variable containing all desired information needed 
-  # by the function slice_rho
-  if isinstance(qc,dict):
-    Spec = qc
+  
+  if calc_ao:
+    labels = qc.ao_spec.get_labels()
+    mo_num = qc.ao_spec.get_ao_num()
   else:
-    Spec = qc.todict()
-
-  Spec['calc_mo'] = calc_mo
-  Spec['Derivative'] = drv
-  mo_num = len(Spec['mo_spec'])
+    mo_num = len(qc.mo_spec)
+    labels = [ii_mo['sym'] for ii_mo in qc.mo_spec]
   
   if not grid.is_initialized:
     display('\nSetting up the grid...')
@@ -418,21 +431,19 @@ def rho_compute(qc,calc_mo=False,drv=None,laplacian=False,
   if numproc > sNum: numproc = sNum
   
   # Print information regarding the density calculation 
-  display("\nStarting the calculation of the %s..." % 
-         ("molecular orbitals" if calc_mo else "density"))
-  display("The grid has been separated into %d slices each having %.2e grid points." % 
+  display('\nStarting the calculation of the %s...' % 
+         ('molecular orbitals' if calc_mo else 'density'))
+  display('The grid has been separated into %d slices each having %.2e grid points.' % 
                 (sNum, slice_length))
   if numproc <= 1:
-    display("The calculation will be carried out using only one process.\n" + 
-    "\n\tThe number of subprocesses can be changed with -p\n")
+    display('The calculation will be carried out using only one process.\n' + 
+    '\n\tThe number of subprocesses can be changed with -p\n')
   else:
-    display("The calculation will be carried out with %d subprocesses." 
+    display('The calculation will be carried out with %d subprocesses.' 
             % numproc)
-
-  display("\nThere are %d contracted %s AOs and %d MOs to be calculated." %
-          (len(Spec['mo_spec'].get_coeffs()),
-           'Cartesian' if not Spec['ao_spec'].spherical else 'spherical', 
-           mo_num))
+  display('\nThere are %d contracted %s AOs' % (qc.ao_spec.get_ao_num(),
+          'Cartesian' if not qc.ao_spec.spherical else 'spherical')+ 
+          ('' if calc_ao else ' and %d MOs to be calculated.' % mo_num))
   
   # Initialize some additional user information 
   status_old = 0
@@ -463,12 +474,12 @@ def rho_compute(qc,calc_mo=False,drv=None,laplacian=False,
     f['z'] = grid.z
   
   if calc_mo:
-    mo_list = zeros((mo_num,npts) if drv is None 
-                    else (len(drv),mo_num,npts),"mo_list",save_hdf5)
+    mo_list = zeros((mo_num,npts) if drv is None else (len(drv),mo_num,npts),
+                    'ao_list' if calc_ao else 'mo_list',save_hdf5)
   else:
-    rho = zeros(npts,"rho",save_hdf5)
+    rho = zeros(npts,'rho',save_hdf5)
     if is_drv:
-      delta_rho = zeros((len(drv),npts),"rho",save_hdf5)
+      delta_rho = zeros((len(drv),npts),'rho',save_hdf5)
   
   # Write the slices in x to an array xx 
   xx = []
@@ -483,6 +494,13 @@ def rho_compute(qc,calc_mo=False,drv=None,laplacian=False,
       xx.append((numpy.array([i,i + slice_length],dtype=int)))
     i += slice_length 
   
+  # Specify the global variable containing all desired information needed 
+  # by the function slice_rho
+  Spec = {'qc': qc,
+          'calc_ao': calc_ao,
+          'calc_mo': calc_mo,
+          'derivative': drv
+    }
   # Start the worker processes
   if numproc > 1:
     pool = Pool(processes=numproc, initializer=initializer, initargs=(Spec,))
@@ -516,7 +534,7 @@ def rho_compute(qc,calc_mo=False,drv=None,laplacian=False,
     status = numpy.floor(s*10/float(sNum))*10
     if not status % 10 and status != status_old:
       t.append(time.time())
-      display("\tFinished %(f)d %% (%(s)d slices in %(t).3f s)" 
+      display('\tFinished %(f)d %% (%(s)d slices in %(t).3f s)' 
                 % {'f': status,
                 's': s + 1 - s_old,
                 't': t[-1]-t[-2]})
@@ -534,14 +552,14 @@ def rho_compute(qc,calc_mo=False,drv=None,laplacian=False,
   
   if not was_vector and drv is None:
     # Print the norm of the MOs 
-    display("\nNorm of the MOs:")
+    display('\nNorm of the MOs:')
     for ii_mo in range(len(mo_norm)):
       if calc_mo:
         norm = numpy.sum(numpy.square(mo_list[ii_mo]))*grid.d3r
       else:
         norm = mo_norm[ii_mo]*grid.d3r
-      display("\t%(m).6f\tMO %(n)s" 
-                % {'m':norm, 'n':Spec['mo_spec'][ii_mo]['sym']})
+      display('\t%(m).6f\t%(t)s %(n)s' 
+               % {'m':norm, 'n':labels[ii_mo], 't':'AO' if calc_ao else 'MO'})
   
   if calc_mo:    
     #if not was_vector: 
@@ -552,7 +570,7 @@ def rho_compute(qc,calc_mo=False,drv=None,laplacian=False,
   
   if not was_vector:
     # Print the number of electrons
-    display("We have " + str(numpy.sum(rho)*grid.d3r) + " electrons.")
+    display('We have ' + str(numpy.sum(rho)*grid.d3r) + ' electrons.')
   
   #if not was_vector: 
   rho = reshape(rho,N)
@@ -567,7 +585,7 @@ def rho_compute(qc,calc_mo=False,drv=None,laplacian=False,
     return rho, delta_rho
   # rho_compute 
 
-def rho_compute_no_slice(qc,calc_mo=False,drv=None,
+def rho_compute_no_slice(qc,calc_ao=False,calc_mo=False,drv=None,
                          laplacian=False,return_components=False,
                          x=None,y=None,z=None,is_vector=None,**kwargs):
   r'''Calculates the density, the molecular orbitals, or the derivatives thereof
@@ -584,13 +602,16 @@ def rho_compute_no_slice(qc,calc_mo=False,drv=None,
     See :ref:`Central Variables` for details.
   qc.mo_spec : List of dictionaries
     See :ref:`Central Variables` for details.
+  calc_ao : bool, optional
+    If True, the computation of the atomic orbitals is only
+    carried out.
   calc_mo : bool, optional
     If True, the computation of  the molecular orbitals requested is only
     carried out.
   is_vector : bool, optional
     If True, performs the computations for a vector grid, i.e., 
     with x, y, and z as vectors.
-  drv : string or list of strings {None,'x','y', or 'z'}, optional
+  drv : string or list of strings {None,'x','y', 'z', 'xx', 'xy', ...}, optional
     If not None, computes the analytical derivative of the requested 
     quantities with respect to DRV.
   laplacian : bool, optional
@@ -653,7 +674,11 @@ def rho_compute_no_slice(qc,calc_mo=False,drv=None,
     Contains the laplacian of the density on a grid, i.e. 
     :math:`\nabla^2 \rho = \nabla^2_x \rho + \nabla^2_y \rho + \nabla^2_z \rho`.
   '''  
-  
+  if calc_ao and calc_mo:
+    raise ValueError('calc_ao and calc_mo are mutually exclusive arguments.'+
+                     'Use calc_mo and return_components instead!')
+  #if not isinstance(qc,QCinfo):
+    #raise TypeError('rho_compute_no_slice argument `qc` has to be a QCinfo class instance')
   # Create the grid
   if all(v is None for v in [x,y,z,is_vector]) and not grid.is_initialized:
     display('\nSetting up the grid...')
@@ -681,7 +706,7 @@ def rho_compute_no_slice(qc,calc_mo=False,drv=None,
             '%.2e grid points...' % len(grid.x))
   else:
     if len(x) != len(y) or len(x) != len(z):
-      raise ValueError("Dimensions of x-, y-, and z- coordinate differ!")
+      raise ValueError('Dimensions of x-, y-, and z- coordinate differ!')
     N = (len(x),)
   
   if laplacian:
@@ -692,10 +717,9 @@ def rho_compute_no_slice(qc,calc_mo=False,drv=None,
     drv = ['xx','yy','zz']
   
   display('\nStarting the calculation without slicing the grid...')
-  display("\nThere are %d contracted %s AOs and %d MOs to be calculated." %
-          (len(qc.mo_spec[0]['coeffs']),
-           'Cartesian' if not qc.ao_spec.spherical else 'spherical', 
-           len(qc.mo_spec)))
+  display('\nThere are %d contracted %s AOs' % (qc.ao_spec.get_ao_num(),
+          'Cartesian' if not qc.ao_spec.spherical else 'spherical')+ 
+          ('' if calc_ao else ' and %d MOs to be calculated.' % len(qc.mo_spec)))
   
   if drv is not None:
     try:
@@ -712,8 +736,10 @@ def rho_compute_no_slice(qc,calc_mo=False,drv=None,
       delta_ao_list[i] = ao_creator(qc.geo_spec,qc.ao_spec,
                                       drv=ii_d,
                                       is_vector=True,x=x,y=y,z=z)
-      delta_mo_list[i] =  mo_creator(delta_ao_list[i],qc.mo_spec)                     
-    delta_ao_list = convert(delta_ao_list,was_vector,N)
+      if not calc_ao: delta_mo_list[i] =  mo_creator(delta_ao_list[i],qc.mo_spec)     
+    delta_ao_list = convert(delta_ao_list,was_vector,N)                
+    if calc_ao: 
+      return delta_ao_list
     delta_mo_list = convert(delta_mo_list,was_vector,N)
     if calc_mo:  
       return ((delta_ao_list,delta_mo_list) if return_components 
@@ -741,13 +767,15 @@ def rho_compute_no_slice(qc,calc_mo=False,drv=None,
   # Calculate the AOs and MOs 
   ao_list = ao_creator(qc.geo_spec,qc.ao_spec,
                        is_vector=True,x=x,y=y,z=z)
-  mo_list = convert(mo_creator(ao_list,qc.mo_spec),was_vector,N)
+  if not calc_ao: mo_list = convert(mo_creator(ao_list,qc.mo_spec),was_vector,N)
   ao_list = convert(ao_list,was_vector,N)
+  if calc_ao: 
+    return ao_list
   if not was_vector:
     # Print the norm of the MOs 
-    display("\nNorm of the MOs:")
+    display('\nNorm of the MOs:')
     for ii_mo in range(len(mo_list)): 
-      display("\t%(m).6f\tMO %(n)s" 
+      display('\t%(m).6f\tMO %(n)s' 
        % {'m':numpy.sum(mo_list[ii_mo]**2)*d3r, 'n':qc.mo_spec[ii_mo]['sym']})
   
   if calc_mo:
@@ -763,7 +791,7 @@ def rho_compute_no_slice(qc,calc_mo=False,drv=None,
   
   if not was_vector:
     # Print the number of electrons 
-    display("We have " + str(numpy.sum(rho)*d3r) + " electrons.")
+    display('We have ' + str(numpy.sum(rho)*d3r) + ' electrons.')
   
   if drv is None:
     return ((ao_list, mo_list, rho) if return_components else rho)

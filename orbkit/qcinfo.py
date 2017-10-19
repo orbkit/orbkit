@@ -38,15 +38,17 @@ class QCinfo:
 
   See :ref:`Central Variables` in the manual for details.
   '''
-  def __init__(self, filename=None):
+  def __init__(self, data=None, filename=None):
     self.geo_info = []
     self.geo_spec = []
 
-    data = None
     if filename:
       data = self.read(filename)
+    
+    if data:
       self.geo_spec = data['geo_spec']
       self.geo_info = data['geo_info']
+      self.format_geo()
       self.ao_spec = AOClass(restart=data)
       self.mo_spec = MOClass(restart=data)
     else:

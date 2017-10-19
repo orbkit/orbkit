@@ -22,7 +22,6 @@ examples/basic_examples/Plots/
 *.md
 *.am
 *.cmap
-*.log
 *.oklog
 *.tga
 *.vmd
