@@ -2,6 +2,7 @@ import numpy
 import ctypes
 
 from ..tools import lquant
+from ..display import display
 from itertools import chain
 
 try:
@@ -537,8 +538,14 @@ class AOIntegrals():
       # get slices by shells (avoid splitting AOs belonging to the same shell)
       slices = self._get_slices(max_dims, shells[0])
 
-      for i_, s in enumerate(slices):
-        shells_sliced = [s] + shells[1:]
+      display('AO slices requested using max_dims={:d}'.format(max_dims))
+      display('Number of AOs required/total:    {:4d}/{:4d}'.format(len(AOs[0]), self.Norb))
+      display('Number of shells required/total: {:4d}/{:4d}'.format(len(shells[0]), self.Nshells))
+      display('AO slices generated: {:d}'.format(len(slices)))
+
+      for i_, slice_ in enumerate(slices):
+        display('\tcalculating slice {:2d}: {:4d} AOs, {:4d} shells'.format(i_+1, sum(self.basis.shell_dims[slice_]), len(slice_)))
+        shells_sliced = [slice_] + shells[1:]
 
         # calculate AO matrix slice
         mat = _libcint2e(self.basis, operator, *shells_sliced)
@@ -557,7 +564,7 @@ class AOIntegrals():
 
         # convert to MO (blocks)
         # all AOs in current slice
-        AOslice = sorted(set(chain(*[self._shell2ao(i) for i in s])).intersection(AOs[0]))
+        AOslice = sorted(set(chain(*[self._shell2ao(i) for i in slice_])).intersection(AOs[0]))
         # match indices with respect to AOs[0]
         AOslice = [numpy.where(numpy.array(AOs[0])>=ao)[0][0] for ao in AOslice]
 
