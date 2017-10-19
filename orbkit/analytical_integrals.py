@@ -4,7 +4,7 @@
 Code for the computation of the overlap between primitive atomic basis functions
 adapted from 
 
-  M. Hô, J. M. Hernandez-Perez: "Evaluation of Gaussian Molecular Integrals", DOI:10.3888/tmj.14-3
+  M. HÃ´, J. M. Hernandez-Perez: "Evaluation of Gaussian Molecular Integrals", DOI:10.3888/tmj.14-3
 '''
 '''
 orbkit
@@ -32,7 +32,6 @@ from multiprocessing import Pool
 
 from . import cy_overlap
 from .tools import *
-from .omp_functions import slicer
 from .orbitals import AOClass, MOClass
 
 def get_ao_overlap(coord_a, coord_b, ao_spec, lxlylz_b=None,
@@ -68,8 +67,8 @@ def get_ao_overlap(coord_a, coord_b, ao_spec, lxlylz_b=None,
   '''
   if not isinstance(ao_spec, AOClass):
     raise TypeError('ao_spec must be an instance of the AOClass')
-
-  if isinstance(drv, list):
+    
+  if isinstance(drv, list) or (isinstance(drv, str) and len(drv) > 1):
     aoom = []
     for ii_d in drv:
       aoom.append(get_ao_overlap(coord_a,coord_b,ao_spec,
@@ -79,10 +78,10 @@ def get_ao_overlap(coord_a, coord_b, ao_spec, lxlylz_b=None,
   lxlylz_a = ao_spec.get_lxlylz()
 
   if lxlylz_b is None:
-    lxlylz_b =  numpy.array(lxlylz_a,copy=True)
+    lxlylz_b = numpy.array(lxlylz_a,copy=True)
   else:
     try:
-      lxlylz_b = numpy.array(lxlylz_b,dtype=numpy.int64)
+      lxlylz_b = numpy.array(lxlylz_b,dtype=numpy.intc)
     except ValueError:
       raise ValueError('The keyword argument `lxlylz` has to be convertable ' + 
                        'into a numpy integer array.')
@@ -96,27 +95,18 @@ def get_ao_overlap(coord_a, coord_b, ao_spec, lxlylz_b=None,
     raise ValueError('Only first derivatives are currently supported for ' +
                      'analytical integrals.')
   
-  ra = numpy.zeros((0,3))
-  rb = numpy.array(ra, copy=True)
-  for cont in ao_spec:
-    ra = numpy.append(ra,coord_a[cont['atom']][numpy.newaxis,:],axis=0)
-    rb = numpy.append(rb,coord_b[cont['atom']][numpy.newaxis,:],axis=0)
+  
+  ao_overlap_matrix = cy_overlap.aooverlap(coord_a,
+                                           coord_b,
+                                           lxlylz_a,
+                                           lxlylz_b,
+                                           ao_spec.get_nlxlylz_per_cont(),
+                                           ao_spec.get_prim_coeffs(),
+                                           ao_spec.get_nprim_per_cont(),
+                                           ao_spec.get_assign_cont_to_atoms(),
+                                           drv,
+                                           ao_spec.get_normalized())
 
-
-  coeffs = ao_spec.get_lmpao()
-  index = ao_spec.get_lmprim2cont(return_l=True)
-
-  ra = require(ra,dtype='f')
-  rb = require(rb,dtype='f')
-
-  #lxlylz_a comes from an AOClass instance so its type is checked there
-  #lxlylz_b might come from anywhere so we neet to make sure it has the right type
-  lxlylz_b = require(lxlylz_b,dtype='i')
-
-  ao_overlap_matrix = cy_overlap.aooverlap(ra,rb,
-                                           lxlylz_a,lxlylz_b,
-                                           coeffs,index,
-                                           drv,int(ao_spec.normalized))
   if 'N' in ao_spec[0]:
     for i in range(len(ao_overlap_matrix)):
       ao_overlap_matrix[i,:] *= ao_spec[0]['N'][i]*ao_spec[0]['N'][:,0]
@@ -152,9 +142,10 @@ def cartesian2spherical_aoom(ao_overlap_matrix,ao_spec):
   '''
 
   # Get the exponents of the Cartesian basis functions
-  exp_list,assign = ao_spec.get_lxlylz(get_assign=True)
+  lxlylz = ao_spec.get_lxlylz()
+  assign = ao_spec.get_assign_lxlylz_to_cont()
   ao_spherical  = ao_spec.get_old_ao_spherical()
-  if ao_overlap_matrix.shape != (len(exp_list),len(exp_list)):
+  if ao_overlap_matrix.shape != (len(lxlylz),len(lxlylz)):
     raise IOError('No contraction is currently not supported for a '+ 
                   'spherical harmonics. Please come back'+
                   ' manually after calling `contract_ao_overlap_matrix()`.')
@@ -169,7 +160,7 @@ def cartesian2spherical_aoom(ao_overlap_matrix,ao_spec):
     sph0 = get_cart2sph(*k0)    
     for c0 in range(len(sph0[0])):
       for i,j in enumerate(l[j0]):
-        if tuple(exp_list[j]) == sph0[0][c0]:
+        if tuple(lxlylz[j]) == sph0[0][c0]:
           indices.append(i + l[j0][0])
       c += 1
   if len(indices) == 0:
@@ -208,7 +199,6 @@ def get_mo_overlap(mo_a,mo_b,ao_overlap_matrix):
   mo_overlap : float
     Contains the overlap of the two input molecular orbitals.
   '''
-
   shape = numpy.shape(ao_overlap_matrix)
   if isinstance(mo_a,dict):
     mo_a = numpy.array(mo_a['coeffs'])
@@ -393,17 +383,17 @@ def get_ao_dipole_matrix(qc,component='x'):
   # the `Ket` basis set, and increase lz by one.
   lxlylz_b = qc.ao_spec.get_lxlylz()
   lxlylz_b[:,component] += 1
-
+  
   ao_part_1 = get_ao_overlap(qc.geo_spec,qc.geo_spec,qc.ao_spec,
                              lxlylz_b=lxlylz_b)
-
+  
   # Compute the second part of the expectation value:
   ao_part_2 = get_ao_overlap(qc.geo_spec,qc.geo_spec,qc.ao_spec)
 
   i = 0
   for sel_ao in range(len(qc.ao_spec)):
-    if 'exp_list' in qc.ao_spec[sel_ao].keys():
-      l = len(qc.ao_spec[sel_ao]['exp_list'])
+    if 'lxlylz' in qc.ao_spec[sel_ao].keys():
+      l = len(qc.ao_spec[sel_ao]['lxlylz'])
     else:
       l = l_deg(l=qc.ao_spec[sel_ao]['type'].lower(),
               cartesian_basis=(not qc.ao_spec.spherical))
@@ -458,8 +448,8 @@ def get_atom2mo(qc):
   b = 0  
   for sel_ao in range(len(qc.ao_spec)):
     a = qc.ao_spec[sel_ao]['atom']
-    if 'exp_list' in qc.ao_spec[sel_ao].keys():
-      l = len(qc.ao_spec[sel_ao]['exp_list'])
+    if 'lxlylz' in qc.ao_spec[sel_ao].keys():
+      l = len(qc.ao_spec[sel_ao]['lxlylz'])
     else:
       l = l_deg(l=qc.ao_spec[sel_ao]['type'].lower(),
               cartesian_basis=(not qc.ao_spec.spherical))
@@ -523,13 +513,13 @@ def print2D(x,format='%+.2f ',start='\t',end=''):
     s = start
     for j in range(shape[1]):
       s += format % x[i,j]
-    display(s + end)
+    print(s + end)
 
 def pmat(matrix,vmax=lambda x: numpy.max(numpy.abs(x))):
   import matplotlib.pyplot as plt
   plt.figure()
   if matrix.dtype == complex:
-    display('plotting real part of matrix')
+    print('plotting real part of matrix')
     matrix = matrix.real
   vm = vmax(numpy.abs(matrix)) if callable(vmax) else vmax
   plt.imshow(matrix,interpolation=None,vmin=-vm,vmax=vm,cmap='seismic_r')

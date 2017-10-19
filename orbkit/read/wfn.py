@@ -35,10 +35,10 @@ def read_wfn(fname, all_mo=False, spin=None, **kwargs):
   at_num = 0                      # Number of atoms
   c_type = 0                      # Counting variable for AO type
   c_exp = 0                       # Counting variable for AO exponents
-  exp_list = []
+  lxlylz = []
   for j in exp_wfn:         
-    exp_list.extend(j)
-  exp_list = numpy.array(exp_list,dtype=numpy.int64)
+    lxlylz.extend(j)
+  lxlylz = numpy.array(lxlylz,dtype=numpy.int64)
 
   text = fname.read()
   if not isinstance(text, str):
@@ -68,13 +68,14 @@ def read_wfn(fname, all_mo=False, spin=None, **kwargs):
         qc.ao_spec.append({'atom': int(thisline[i])-1,
               'pnum': -1,
               'coeffs': None,
-              'exp_list': None,
-              'ao_spherical': None
+              'lxlylz': None,
+              #'lm': None
               })
     elif 'TYPE ASSIGNMENTS' in line:
       thisline = line[18:].split()
       for i in range(len(thisline)):
-        qc.ao_spec[c_type]['exp_list'] = exp_list[int(thisline[i])-1][numpy.newaxis]
+        qc.ao_spec[c_type]['lxlylz'] = lxlylz[int(thisline[i])-1][numpy.newaxis]
+        qc.ao_spec[c_type]['type'] = orbit[sum(lxlylz[int(i)-1])]
         c_type += 1
     elif 'EXPONENTS' in line:
       thisline = line.replace('EXPONENTS','').replace('D','E').split()

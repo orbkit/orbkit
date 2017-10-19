@@ -47,8 +47,8 @@ def calc_mo(qc, fid_mo_list, drv=None, otype=None, ofid=None,
       Specifies the filename of the molecular orbitals list or list of molecular
       orbital labels (cf. :mod:`orbkit.read.mo_select` for details). 
       If fid_mo_list is 'all_mo', creates a list containing all molecular orbitals.
-    drv : int or string, {None, 'x', 'y', 'z', 0, 1, 2}, optional
-      If not None, a derivative calculation of the atomic orbitals 
+    drv : string or list of strings {None,'x','y', 'z', 'xx', 'xy', ...}, optional
+      If not None, a derivative calculation of the molecular orbitals 
       is requested.
     otype : str or list of str, optional
       Specifies output file type. See :data:`otypes` for details.
@@ -148,9 +148,8 @@ def mo_set(qc, fid_mo_list, drv=None, laplacian=None,
     ofid : str, optional
       Specifies output file name. If None, the filename will be based on
       :mod:`orbkit.options.outputname`.
-    drv : int or string, {None, 'x', 'y', 'z', 0, 1, 2}, optional
-      If not None, a derivative calculation of the atomic orbitals 
-      is requested.
+    drv : string or list of strings {None,'x','y', 'z', 'xx', 'xy', ...}, optional
+      If not None, a derivative calculation is requested.
     return_all : bool
       If False, no data will be returned.
     numproc : int, optional
@@ -169,7 +168,7 @@ def mo_set(qc, fid_mo_list, drv=None, laplacian=None,
   '''
 
   #Can be an mo_spec or a list of mo_spec
-  # For later itteration we'll make it into a list here if it is not
+  # For later iteration we'll make it into a list here if it is not
   mo_info_list = qc.mo_spec.select(fid_mo_list)
   if isinstance(mo_info_list, MOClass):
     mo_info_list = [mo_info_list]
@@ -289,128 +288,86 @@ def mo_set(qc, fid_mo_list, drv=None, laplacian=None,
     return datasets, delta_datasets
   # mo_set 
 
-def calc_ao(qc, drv=None, otype=None, ofid=None):  
+
+def calc_ao(qc, drv=None, otype=None, ofid=None,
+            numproc=None, slice_length=None):
   '''Computes and saves all atomic orbital or a derivative thereof.
   
   **Parameters:**
    
-    qc.geo_spec, qc.geo_info, qc.ao_spec :
+    qc.geo_spec, qc.geo_info, qc.ao_spec, qc.mo_spec :
       See :ref:`Central Variables` for details.
+  drv : string or list of strings {None,'x','y', 'z', 'xx', 'xy', ...}, optional
+      If not None, a derivative calculation of the atomic orbitals 
+      is requested.
     otype : str or list of str, optional
       Specifies output file type. See :data:`otypes` for details.
     ofid : str, optional
       Specifies output file name. If None, the filename will be based on
       :mod:`orbkit.options.outputname`.
-    drv : int or string, {None, 'x', 'y', 'z', 'xx', 'xy', ...}, optional
-      If not None, a derivative calculation of the atomic orbitals 
-      is requested.
+    numproc : int, optional
+      Specifies number of subprocesses for multiprocessing. 
+      If None, uses the value from :mod:`options.numproc`.
+    slice_length : int, optional
+      Specifies the number of points per subprocess.
+      If None, uses the value from :mod:`options.slice_length`.
     
-  **Returns:**    
-  
+  **Returns:**  
     ao_list : numpy.ndarray, shape=((NAO,) + N)
-      Contains the computed NAO atomic orbitals on a grid. Is only returned, if
-      otype is None.
+      Contains the computed NAO atomic orbitals on a grid. 
   '''
-  from omp_functions import run
+  
+  slice_length = options.slice_length if slice_length is None else slice_length
+  numproc = options.numproc if numproc is None else numproc
+  datalabels = qc.ao_spec.get_labels()
+  
+  ao_list = core.rho_compute(qc,
+                             calc_ao=True,
+                             drv=drv,
+                             slice_length=options.slice_length,
+                             numproc=options.numproc)
+  
+  if otype is None:
+    return ao_list
   
   if ofid is None:
-    ofid = options.outputname
-  dstr = '' if drv is None else '_d%s' % drv
+    ofid = '%s_AO' % (options.outputname)
   
-  ao_spec = []
-  lxlylz = []
-  datalabels = []
-  for sel_ao in range(len(qc.ao_spec)):
-    if 'exp_list' in qc.ao_spec[sel_ao].keys():
-      l = qc.ao_spec[sel_ao]['exp_list']
-    else:
-      l = core.exp[core.lquant[qc.ao_spec[sel_ao]['type']]]
-    lxlylz.extend(l)
-    for i in l:
-      ao_spec.append(qc.ao_spec[sel_ao].copy())
-      ao_spec[-1]['exp_list'] = [i]
-      datalabels.append('lxlylz=%s,atom=%d' %(i,ao_spec[-1]['atom']))
-  
-  global_args = {'geo_spec':qc.geo_spec,
-                 'geo_info':qc.geo_info,
-                 'ao_spec':ao_spec,
-                 'drv':drv,
-                 'x':grid.x,
-                 'y':grid.y,
-                 'z':grid.z,
-                 'is_vector':grid.is_vector,
-                 'otype':otype,
-                 'ofid':ofid}
-  display('Starting the computation of the %d atomic orbitals'%len(ao_spec)+
-         (' using %d subprocesses.' % options.numproc if options.numproc > 1 
-          else '.' )
-          )
-  ao = run(get_ao,x=numpy.arange(len(ao_spec)).reshape((-1,1)),
-           numproc=options.numproc,display=display,
-           initializer=initializer,global_args=global_args)
-    
-  if otype is None or 'h5' in otype or 'mayavi' in otype:   
-    ao_list = []
-    for i in ao:
-      ao_list.extend(i)      
-    ao_list = numpy.array(ao_list)
-    if otype is None or options.no_output:
-      return ao_list
-    
-    if 'h5' in otype:
-      import h5py
-      fid = '%s_AO%s.h5' % (ofid,dstr)
-      display('Saving to Hierarchical Data Format file (HDF5)...\n\t%s' % fid)
-      hdf5_write(fid,mode='w',gname='general_info',
-                        x=grid.x,y=grid.y,z=grid.z,
-                        geo_info=qc.geo_info,geo_spec=qc.geo_spec,
-                        lxlylz=numpy.array(lxlylz,dtype=numpy.int64),
-                        aolabels=numpy.array(datalabels),
-                        grid_info=numpy.array(grid.is_vector,dtype=int))      
-      for f in hdf5_open(fid,mode='a'):
-        hdf5_append(ao_spec,f,name='ao_spec')
-        hdf5_append(ao_list,f,name='ao_list')
+  if not options.no_output:
+    if 'h5' in otype:    
+      output.main_output(mo_list,qc.geo_info,qc.geo_spec,data_id='AO',
+                    outputname=ofid,drv=drv,is_mo_output=False)
+    # Create Output     
+    cube_files = []
+    for i in range(len(datalabels)):
+      outputname = '%s_%03d' % (ofid,i)
+      index = numpy.index_exp[:,i] if drv is not None else i
+      output_written = output.main_output(ao_list[index],
+                                      qc.geo_info,qc.geo_spec,
+                                      outputname=outputname,
+                                      comments=datalabels[i].replace('[','').replace(']',''),
+                                      otype=otype,omit=['h5','vmd','mayavi'],
+                                      drv=drv)
       
-    if 'mayavi' in otype:
-      main_output(ao_list,qc.geo_info,qc.geo_spec,
-                  otype='mayavi',datalabels=datalabels)
-
-  if 'vmd' in otype and options.vector is None:
-    fid = '%s_AO%s' % (ofid,dstr)
-    display('\nCreating VMD network file...' +
-                    '\n\t%(o)s.vmd' % {'o': fid})
-    vmd_network_creator(fid,
-                        cube_files=['%s_AO%s_%03d.cb' % (ofid,
-                        dstr,x) for x in range(len(ao_spec))])
-  # calc_ao
-
-def initializer(gargs):
-  global global_args
-  global_args = gargs
-  grid.set_grid(global_args['x'],
-                global_args['y'],
-                global_args['z'],
-                is_vector=global_args['is_vector'])
-
-def get_ao(x):
-  ao_list = core.ao_creator(global_args['geo_spec'],
-                            [global_args['ao_spec'][int(x)]],
-                            drv=global_args['drv'])
-  
-  if global_args['otype'] is not None:
-    drv = global_args['drv']
-    comments = '%03d.lxlylz=%s,at=%d' %(x,
-                                         global_args['ao_spec'][x]['exp_list'][0],
-                                         global_args['ao_spec'][x]['atom'])
+      for i in output_written:
+        if i.endswith('.cb'):
+          cube_files.append(i)
+          
+    if 'vmd' in otype and cube_files != []:
+      display('\nCreating VMD network file...' +
+                      '\n\t%(o)s.vmd' % {'o': ofid})
+      output.vmd_network_creator(ofid,cube_files=cube_files)
+  if 'mayavi' in otype:
+    if drv is not None:
+      tmp = []
+      for i in drv:
+        for j in datalabels:
+          tmp.append('d/d%s of %s' % (i,j))
+      datalabels = tmp
+    data = ao_list.reshape((-1,) + grid.get_shape())
     
-    main_output(ao_list[0] if drv is None else ao_list,
-                global_args['geo_info'],
-                global_args['geo_spec'],
-                comments=comments,
-                outputname='%s_AO_%03d' % (global_args['ofid'],x),
-                otype=global_args['otype'],
-                omit=['h5','vmd','mayavi'],
-                drv = None if drv is None else [drv])
+    output.main_output(data,qc.geo_info,qc.geo_spec,
+                       otype='mayavi',datalabels=datalabels)
   return ao_list
 
 def atom2index(atom,geo_info=None):

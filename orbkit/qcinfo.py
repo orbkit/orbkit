@@ -39,9 +39,13 @@ class QCinfo:
   See :ref:`Central Variables` in the manual for details.
   '''
   def __init__(self, data=None):
+    self.geo_info = []
+    self.geo_spec = []
+    
     if data:
-      self.geo_spec = numpy.array(data['geo_spec'], dtype=numpy.float64)
-      self.geo_info = numpy.array(data['geo_info'], dtype=str)
+      self.geo_spec = data['geo_spec']
+      self.geo_info = data['geo_info']
+      self.format_geo()
       self.ao_spec = AOClass(restart=data)
       self.mo_spec = MOClass(restart=data)
     else:
@@ -72,19 +76,6 @@ class QCinfo:
         if atom1[i] != atom2[i]:
           same = False
     return same
-
-  def read(self, filename):
-    if isinstance(filename, str):
-      if '.npz' not in filename:
-        filename += '.npz'
-      fname = open(filename, 'r')
-
-    data = numpy.load(fname)
-
-    display('Loaded QCInfo class from file {0}'.format(filename))
-    display('File was created on {0} at {1}'.format(data['date'], data['time']))
-
-    return data
 
   def copy(self):
     from copy import deepcopy

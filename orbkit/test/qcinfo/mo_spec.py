@@ -8,7 +8,7 @@ import os, inspect
 options.quiet = True
 
 tests_home = os.path.dirname(inspect.getfile(inspect.currentframe()))
-folder = os.path.join(tests_home, '../read/outputs_for_testing')
+folder = os.path.join(tests_home, '../outputs_for_testing/gamess')
 filepath = os.path.join(folder, 'formaldehyde.log')
 
 qc = main_read(filepath, all_mo=True)

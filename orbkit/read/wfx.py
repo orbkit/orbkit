@@ -6,6 +6,7 @@ from orbkit.orbitals import AOClass, MOClass
 from orbkit.core import exp_wfn
 
 from .tools import descriptor_from_file
+from orbkit.core import orbit
 
 def read_wfx(fname, all_mo=False, spin=None, **kwargs):
   '''Reads all information desired from a wfn file.
@@ -30,10 +31,10 @@ def read_wfx(fname, all_mo=False, spin=None, **kwargs):
   qc = QCinfo()
   qc.ao_spec = AOClass([])
   qc.mo_spec = MOClass([])
-  exp_list = []
+  lxlylz = []
   for j in exp_wfn:         
-    exp_list.extend(j)
-  exp_list = numpy.array(exp_list,dtype=numpy.int64)
+    lxlylz.extend(j)
+  lxlylz = numpy.array(lxlylz,dtype=numpy.int64)
   
   if isinstance(fname, str):
     filename = fname
@@ -95,8 +96,8 @@ def read_wfx(fname, all_mo=False, spin=None, **kwargs):
       qc.ao_spec = AOClass([{'atom': None,
                     'pnum': -1,
                     'coeffs': None,
-                    'exp_list': None,
-                    'ao_spherical': None
+                    'lxlylz': None,
+                    #'lm': None
                     } for i in range(ao_num)])
     elif '<Primitive Centers>' in line:
       sec_flag = 'ao_center'
@@ -139,7 +140,8 @@ def read_wfx(fname, all_mo=False, spin=None, **kwargs):
           count += 1
       if sec_flag == 'ao_type':
         for i in line.split():
-          qc.ao_spec[count]['exp_list'] = exp_list[int(i)-1][numpy.newaxis]
+          qc.ao_spec[count]['lxlylz'] = lxlylz[int(i)-1][numpy.newaxis]
+          qc.ao_spec[count]['type'] = orbit[sum(lxlylz[int(i)-1])]
           count += 1
       if sec_flag == 'ao_exp':
         for i in line.split():

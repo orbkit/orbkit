@@ -5,7 +5,6 @@ from orbkit.qcinfo import QCinfo
 from orbkit.orbitals import AOClass, MOClass
 from orbkit.display import display
 from orbkit.core import l_deg, lquant
-from orbkit.read.tools import set_ao_spherical
 
 from .tools import descriptor_from_file
 
@@ -236,10 +235,10 @@ def read_molden(fname, all_mo=False, spin=None, i_md=-1, interactive=True,
               basis_count += l_deg(lquant[i_ao],cartesian_basis=cartesian_basis[i_md])
               max_l = max(max_l,lquant[i_ao])
               qc.ao_spec.append({'atom': at_num,
-                              'type': i_ao,
-                              'pnum': -pnum if by_orca[i_md] else pnum,
-                              'coeffs': numpy.zeros((pnum, 2))
-                              })
+                                'type': i_ao,
+                                'pnum': -pnum if by_orca[i_md] else pnum,
+                                'coeffs': numpy.zeros((pnum, 2))
+                                })
           else:
             # Append the AO coefficients 
             coeffs = numpy.array(line.replace('D','e').split(), dtype=numpy.float64)
@@ -298,8 +297,7 @@ def read_molden(fname, all_mo=False, spin=None, i_md=-1, interactive=True,
 
   # Spherical basis?
   if not cartesian_basis[i_md]:
-    set_ao_spherical(qc.ao_spec,p=[1,0])
-    qc.ao_spec.spherical = True
+    qc.ao_spec.set_lm_dict(p=[1,0])
   if max_l > 2 and mixed_warning[i_md]:
     raise IOError('The input file %s contains ' % filename +
                   'mixed spherical and Cartesian function (%s).' %  mixed_warning[i_md] + 
@@ -339,10 +337,9 @@ def read_molden(fname, all_mo=False, spin=None, i_md=-1, interactive=True,
   # Check the normalization
   from orbkit.analytical_integrals import get_ao_overlap
   spher_tmp = qc.ao_spec.spherical
-  qc.ao_spec.spherical = False #Don't know what's going on here - we seem to need this though...
+  qc.ao_spec.spherical = False 
   norm = numpy.diagonal(get_ao_overlap(qc.geo_spec,qc.geo_spec,qc.ao_spec))
-  qc.ao_spec.spherical = spher_tmp #Let's put things back as they where before this terrible hack
-
+  qc.ao_spec.spherical = spher_tmp 
   if sum(numpy.abs(norm-1.)) > 1e-8:
     display('The atomic orbitals are not normalized correctly, renormalizing...\n')
     if not by_orca[i_md]: 

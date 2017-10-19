@@ -8,7 +8,7 @@ import os, inspect
 options.quiet = True
 
 tests_home = os.path.dirname(inspect.getfile(inspect.currentframe()))
-folder = os.path.join(tests_home, '../read/outputs_for_testing')
+folder = os.path.join(tests_home, '../outputs_for_testing')
 filepath = os.path.join(folder, 'NaCl_molden_files.tar.gz')
 
 qc_old = main_read(filepath)

@@ -122,7 +122,7 @@ def read_aomix(fname, all_mo=False, spin=None, i_md=-1, interactive=True,
              }
   MO_keys = synonyms.keys()
   
-  exp_list = []
+  lxlylz = []
   count = 0
   start_reading = False
   # Go through the file line by line 
@@ -205,7 +205,7 @@ def read_aomix(fname, all_mo=False, spin=None, i_md=-1, interactive=True,
               qc.ao_spec.append({'atom': at_num,
                               'type': i_ao,
                               'pnum': pnum,
-                              'ao_spherical': None,
+                              #'ao_spherical': None,
                               'coeffs': numpy.zeros((pnum, 2))
                               })
           else:
@@ -253,15 +253,15 @@ def read_aomix(fname, all_mo=False, spin=None, i_md=-1, interactive=True,
                 # Try to convert coefficient to float 
                 qc.mo_spec[-1]['coeffs'][index] = float(thisline[-1])
                 if len(qc.mo_spec) == 1:
-                  exp_list.append(thisline[-2])
+                  lxlylz.append(thisline[-2])
               except ValueError:
                 # If it cannot be converted print error message 
                 raise ValueError('Error in coefficient %d of MO %s!' % (index, 
                 qc.mo_spec[-1]['sym']) + '\nSetting this coefficient to zero...')
 
   # Check usage of same atomic basis sets
-  for ii in range(len(exp_list)):
-    s = exp_list[ii]
+  for ii in range(len(lxlylz)):
+    s = lxlylz[ii]
     exp = [0,0,0]
     c_last = None
     for jj in s[1:]:
@@ -273,18 +273,18 @@ def read_aomix(fname, all_mo=False, spin=None, i_md=-1, interactive=True,
           if jj == ll:
             exp[kk] += 1
             c_last = kk
-    exp_list[ii] = exp
+    lxlylz[ii] = exp
 
   count = 0
   for i,j in enumerate(qc.ao_spec):    
     l = l_deg(lquant[j['type']])
-    j['exp_list'] = []
+    j['lxlylz'] = []
     for i in range(l):
-      j['exp_list'].append((exp_list[count][0],
-                      exp_list[count][1],
-                      exp_list[count][2]))
+      j['lxlylz'].append((lxlylz[count][0],
+                          lxlylz[count][1],
+                          lxlylz[count][2]))
       count += 1
-    j['exp_list'] = numpy.array(j['exp_list'],dtype=numpy.int64)
+    j['lxlylz'] = numpy.array(j['lxlylz'],dtype=numpy.int64)
   
   # For Cartesian basis sets in Turbomole, the molecular orbital coefficients 
   # have to be converted.

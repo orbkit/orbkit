@@ -17,8 +17,8 @@ cdef extern from "c_support.h":
   double ao_norm(int l,int m,int n,double alpha, int is_normalized)
   double get_ao_xyz(double X, double Y, double Z, int lx, int ly, int lz, double alpha, int drv)
 
-def aonorm(int l,int m,int n,double alpha, int is_normalized):
-  return ao_norm(l,m,n,alpha,is_normalized)
+def aonorm(int lx,int ly,int lz,double alpha, int is_normalized):
+  return ao_norm(lx,ly,lz,alpha,is_normalized)
 
 def aoxyz(double x, double y, double z, int lx, int ly, int lz, double alpha, int drv):
   return get_ao_xyz(x, y, z, lx,ly,lz,alpha,drv)
