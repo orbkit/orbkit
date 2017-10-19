@@ -561,8 +561,8 @@ def adjust_to_geo(qc,extend=5.0,step=0.1):
   global min_, max_, N_,delta_
   
   for i in range(3):
-    min_[i] = min(qc.geo_spec[:,i]) - abs(extend)
-    max_[i] = max(qc.geo_spec[:,i]) + abs(extend)
+    min_[i] = min(qc.geo_spec[:,i]) - (extend)
+    max_[i] = max(qc.geo_spec[:,i]) + (extend)
     dist = (max_[i] - min_[i])
     N_[i] = int(numpy.ceil(dist/step))+1
     rest = (N_[i]-1)*step - dist
