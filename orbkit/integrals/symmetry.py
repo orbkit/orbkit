@@ -59,7 +59,7 @@ labels_psi4 = {
   'c2v' : ('', 'A1', 'A2', 'B1', 'B2'),
   'c2h' : ('', 'Ag', 'Bg', 'Au', 'Bu'),
    'd2' : ('', 'A', 'B1', 'B2', 'B3'),
-   'cs' : ('', 'A', 'A"'),
+   'cs' : ('', 'A\'', 'A"'),
    'c2' : ('', 'A', 'B'),
    'ci' : ('', 'Ag', 'Au'),
    'c1' : ('', 'A',),
@@ -74,9 +74,9 @@ def parse_irrep(label, point_group):
 
   # try Psi4
   labels = labels_psi4[point_group]
-  if label in labels.keys():
-    irrep = labels[key]
+  if label in labels:
+    irrep = labels.index(label)
     return cotton2molpro[point_group][irrep]
 
-  raise ValueError('unkown symmetry label')
+  raise ValueError('unkown symmetry label: {}'.format(label))
 
