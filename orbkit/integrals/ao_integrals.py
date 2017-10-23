@@ -40,6 +40,7 @@ class struct:
   pass
 
 def match_order(a, ref):
+  '''Determines order such that a[order,:] == ref.'''
   # inverse argsort of ref
   if ref.ndim == 1:
     fwd = numpy.argsort(ref)
@@ -52,6 +53,7 @@ def match_order(a, ref):
     arg = numpy.argsort(a)
   else:
     arg = numpy.lexsort(a.T, axis=0)
+  # now order is given by arg[inv]
   return arg[inv]
 
 ############################
@@ -1030,20 +1032,3 @@ def _get_shell_offsets(shell_dims):
   offsets = numpy.zeros((len(shell_dims),), dtype=numpy.int)
   offsets[1:] = numpy.cumsum(shell_dims[:-1])
   return offsets
-
-#def _get_order(l, cartesian):
-  #'''Returns indices to transform libcint order to orbkit order.'''
-  #if l == 0:
-    #return (0,)
-  #if l == 1:
-    #return (0,1,2)
-  #order = {
-    ## l : (cartesian, spherical)
-    #2 : ((0,3,5,1,2,4), range(5)),
-    #3 : ((0,6,9,3,1,2,5,8,7,4), range(7)),
-    #4 : ((0,10,14,1,2,6,11,9,13,3,5,12,4,7,8), range(9)),
-  #}
-  #if cartesian:
-    #return order[l][0]
-  #else:
-    #return order[l][1]

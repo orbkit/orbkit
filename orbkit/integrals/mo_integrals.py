@@ -37,7 +37,7 @@ class FCIDUMP(object):
     self.Norb = Norb
     self.Nelec = Nelec
     self.spin = spin
-    self.OrbSym = OrbSym
+    self.OrbSym = numpy.array(OrbSym)
     self.ISym = ISym
 
     if self.Norb:
@@ -53,6 +53,7 @@ class FCIDUMP(object):
       number of orbitals per IRREP
     '''
     self.OrbSym = list(chain(*[[irrep+1]*nmo for irrep, nmo in enumerate(nmopi)]))
+    self.OrbSym = numpy.array(self.OrbSym)
 
   def init_arrays(self):
 
@@ -61,7 +62,7 @@ class FCIDUMP(object):
     if not self.Nelec:
       self.Nelec = self.Norb
     if not numpy.any(self.OrbSym):
-      self.OrbSym = [1,]*self.Norb
+      self.OrbSym = numpy.array([1,]*self.Norb)
 
     self.H = numpy.zeros((self.Norb,self.Norb))
     self.G = numpy.zeros((self.Norb,self.Norb,self.Norb,self.Norb))
@@ -147,7 +148,7 @@ class FCIDUMP(object):
     assert self.initialized, 'Matrices not yet initalized'
     assert irrep in self.OrbSym, 'no orbital(s) specified for IRREP %s' %irrep
 
-    orbitals = numpy.array(self.OrbSym) == irrep
+    orbitals = self.OrbSym == irrep
     orbitals = orbitals[:,numpy.newaxis] & orbitals[numpy.newaxis,:]
 
     if self.restricted or spin == 'alpha':
@@ -171,10 +172,10 @@ class FCIDUMP(object):
     for irrep in (irrepi, irrepj, irrepk, irrepl):
       assert irrep in self.OrbSym, 'no orbital(s) specified for IRREP %s' %irrep
 
-    orbitalsi = numpy.array(self.OrbSym) == irrepi
-    orbitalsj = numpy.array(self.OrbSym) == irrepj
-    orbitalsk = numpy.array(self.OrbSym) == irrepk
-    orbitalsl = numpy.array(self.OrbSym) == irrepl
+    orbitalsi = self.OrbSym == irrepi
+    orbitalsj = self.OrbSym == irrepj
+    orbitalsk = self.OrbSym == irrepk
+    orbitalsl = self.OrbSym == irrepl
 
     orbitals1 = orbitalsi[:,numpy.newaxis] & orbitalsj[numpy.newaxis,:]
     orbitals2 = orbitalsk[:,numpy.newaxis] & orbitalsl[numpy.newaxis,:]
@@ -324,8 +325,6 @@ class FCIDUMP(object):
     '''
     assert self.restricted, 'unrestricted not yet implemented'
 
-    self.OrbSym = numpy.array(self.OrbSym)
-
     if isinstance(core, int):
       core = range(core)
     else:
@@ -376,13 +375,13 @@ class FCIDUMP(object):
     self.H[Hind] -= numpy.sum(self.G[:,core,core,:][not_core,:,:][:,:,not_core], axis=1)
 
     # cut Matrices
-    self.H = self.H[occ,:][:,occ]
-    self.G = self.G[occ,:,:,:][:,occ,:,:][:,:,occ,:][:,:,:,occ]
+    self.H = self.H[numpy.ix_(occ,occ)]
+    self.G = self.G[numpy.ix_(occ,occ,occ,occ)]
 
     if not self.restricted:
-      self.Hbeta = self.Hbeta[occ,:][:,occ]
-      self.Gbeta = self.Gbeta[occ,:,:,:][:,occ,:,:][:,:,occ,:][:,:,:,occ]
-      self.Galphabeta = self.Galphabeta[occ,:,:,:][:,occ,:,:][:,:,occ,:][:,:,:,occ]
+      self.Hbeta = self.Hbeta[numpy.ix_(occ,occ)]
+      self.Gbeta = self.Gbeta[numpy.ix_(occ,occ,occ,occ)]
+      self.Galphabeta = self.Galphabeta[numpy.ix_(occ,occ,occ,occ)]
 
     # update system parameters
     self.Nelec -= 2*len(core)
@@ -420,7 +419,7 @@ class FCIDUMP(object):
       self.Gbeta = self.Gbeta[numpy.ix_(order, order, order, order)]
       self.Galphabeta = self.Galphabeta[numpy.ix_(order, order, order, order)]
 
-    self.OrbSym = numpy.array(self.OrbSym)[order]
+    self.OrbSym = self.OrbSym[order]
 
   def order_irreps(self):
     '''Reorder orbitals in groups of IRREPs'''
@@ -502,7 +501,6 @@ def store(integrals, filename='FCIDUMP', numerical_zero=0, molpro_format=True):
   '''
 
   assert integrals.initialized, 'Matrices not initalized'
-  OrbSym = numpy.array(integrals.OrbSym)
 
   def format_line(I_ijkl, i=-1, j=-1, k=-1, l=-1):
 
@@ -548,7 +546,7 @@ def store(integrals, filename='FCIDUMP', numerical_zero=0, molpro_format=True):
                   continue
 
               # check symmetry
-              if irrep_mul(*OrbSym[[i,j,k,l]]) != 1:
+              if irrep_mul(*integrals.OrbSym[[i,j,k,l]]) != 1:
                  continue
 
               Vijkl = integrals.getitem((i,j,k,l), spin)
@@ -564,7 +562,7 @@ def store(integrals, filename='FCIDUMP', numerical_zero=0, molpro_format=True):
     for spin in ('alpha', 'beta'):
 
       for i in range(integrals.Norb):
-        for j in numpy.where(OrbSym==OrbSym[i])[0]:
+        for j in numpy.where(integrals.OrbSym==integrals.OrbSym[i])[0]:
 
           # for real basis functions
           if i < j:

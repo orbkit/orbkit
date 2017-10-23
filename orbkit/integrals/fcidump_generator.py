@@ -18,9 +18,7 @@ def generate_fcidump(qc, filename='FCIDUMP', core=0, occ=None, sym='c1', orderin
     max_dims : int
       If > 0, calculate AO Integrals in slices containing no more than max_dims AOs (but at least one shell). Slower, but requires less memory.
   '''
-
   sym = sym.lower()
-
   assert sym in symmetry.point_groups
   ao = AOIntegrals(qc)
 
