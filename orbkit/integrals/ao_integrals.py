@@ -4,6 +4,7 @@ import ctypes
 from ..tools import lquant
 from ..display import display
 from itertools import chain, combinations_with_replacement
+import time
 
 try:
   from numpy import moveaxis
@@ -459,7 +460,7 @@ class AOIntegrals():
       return results[0]
     return results
 
-  def int2e(self, operator, asMO=False, max_dims=0):
+  def int2e(self, operator, asMO=False, max_dims=0, max_mem=0):
     '''Calculates all two-electron integrals <ij|operator|kl>.
 
       Use add_AO_block_2e() or add_MO_block_2e() if only a subset of AO or MO integrals is needed.
@@ -476,6 +477,8 @@ class AOIntegrals():
         sets MOrangei to MOrangel at the same range.
       max_dims : int
         If > 0, calculate AO Integrals in slices containing no more than max_dims AOs (but at least one shell). Slower, but requires less memory.
+      max_mem : float
+        Rough memory limit in MB, to determine max_dims automatically. Note: Shells with high angular momentum quantum number may exceed the limit, if choosen to small.
 
       **Returns:**
 
@@ -501,6 +504,19 @@ class AOIntegrals():
         AOs = [numpy.array(sorted(set(chain(*blocks)))) for blocks in zip(*self.AO_blocks_2e)]
     if not shells:
       shells = [sorted(set([self._ao2shell(ao) for ao in aos])) for aos in AOs]
+
+    if max_mem:
+      # get memory requirements for j,k,l
+      shape = []
+      for shell in shells:
+        Norb = numpy.sum(self.basis.shell_dims[shell[0]:shell[-1]+1])
+        shape.append(Norb)
+      mem_jkl = numpy.prod(shape[1:])*8/1000**2
+      # calculate max_dims
+      max_dims = int(max_mem/mem_jkl)
+      if max_dims > shape[0]:
+        # only 1 slice required
+        max_dims = 0
 
     if not asMO or not max_dims:
 
@@ -562,12 +578,21 @@ class AOIntegrals():
       display('Number of shells required/total: {:4d}/{:4d}'.format(len(shells[0]), self.Nshells))
       display('AO slices generated: {:d}'.format(len(slices)))
 
+      T0 = time.time()
       for i_, slice_ in enumerate(slices):
-        display('\tcalculating slice {:2d}: {:4d} AOs, {:4d} shells'.format(i_+1, sum(self.basis.shell_dims[slice_]), len(slice_)))
+        display('\tcalculating slice {:2d}: {:4d} AOs, {:4d} shells'.format(
+          i_+1,                                     # slice number
+          sum(self.basis.shell_dims[slice_]),       # number of AOs in slice
+          len(slice_),                              # number of shells in slice
+        ))
+
+        t0 = time.time()
         shells_sliced = [slice_] + shells[1:]
 
         # calculate AO matrix slice
         mat = _libcint2e(self.basis, operator, *shells_sliced)
+        t1 = time.time()
+        mat_bytes = mat.nbytes / 1000**2
 
         # remove orbitals not presents in AOs
         masks = []
@@ -594,6 +619,19 @@ class AOIntegrals():
             mat, self.qc.mo_spec.coeffs[:,AOs[0]], AOslice=AOslice,
             MOrangei=block[0], MOrangej=block[1], MOrangek=block[2], MOrangel=block[3],
           )
+
+        t2 = time.time()
+        display('\t\tAO integrals {:8.2f} sec, {:8.2f} MB'.format(
+          t1-t0,                                        # time
+          mat_bytes,                                    # MB mat
+        ))
+        display('\t\tao2mo        {:8.2f} sec'.format(t2-t1))
+
+      T1 = time.time()
+      display('\tMO integrals:        {:8.2f} sec, {:8.2f} MB'.format(
+        T1-T0,
+        sum([r.nbytes for r in results]) / 1000**2,   # MB results
+      ))
 
     # return results
     if len(results) == 1:
