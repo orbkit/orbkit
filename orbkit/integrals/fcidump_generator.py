@@ -3,7 +3,7 @@ from . import AOIntegrals, FCIDUMP
 from . import symmetry
 from itertools import chain
 
-def generate_fcidump(qc, filename='FCIDUMP', core=0, occ=None, sym='c1', ordering='molpro', max_dims=0):
+def generate_fcidump(qc, filename='FCIDUMP', core=0, occ=None, sym='c1', ordering='molpro', max_dims=0, max_mem=0):
   '''Creates a FCIDUMP file from a QCInfo object.
 
     **Parameters:**
@@ -17,6 +17,8 @@ def generate_fcidump(qc, filename='FCIDUMP', core=0, occ=None, sym='c1', orderin
       IRREP ordering in FCIDUMP file
     max_dims : int
       If > 0, calculate AO Integrals in slices containing no more than max_dims AOs (but at least one shell). Slower, but requires less memory.
+    max_mem : float
+        Rough memory limit in MB, to determine max_dims automatically. Note: Shells with high angular momentum quantum number may exceed the limit, if choosen to small.
   '''
   sym = sym.lower()
   assert sym in symmetry.point_groups
@@ -52,16 +54,19 @@ def generate_fcidump(qc, filename='FCIDUMP', core=0, occ=None, sym='c1', orderin
     MOranges.extend(numpy.cumsum(nmopi))
     MOranges = [range(MOranges[i], MOranges[i+1]) for i in range(len(nmopi))]
 
+    # apply occ
     if occ is None:
       occ = nmopi
     elif isinstance(occ, int):
-      occ = [occ]
+      raise ValueError('require a list for occ (per IRREP)')
+    MOranges = [MOranges[i][:occ[i]] for i in range(len(nmopi))]
 
   # create FCIDUMP instance
   if isinstance(occ, int):
     Norb = occ
   else:
     Norb = sum(occ)
+    nmopi = occ
 
   fcidump = FCIDUMP(Norb=Norb, Nelec=qc.get_elec_charge(), spin=1)
   fcidump.set_OrbSym(nmopi)
@@ -77,7 +82,8 @@ def generate_fcidump(qc, filename='FCIDUMP', core=0, occ=None, sym='c1', orderin
     fcidump.H = blocks
   else:
     for ii, block in enumerate(blocks):
-      fcidump.set_H(block, irrep=ii+1)
+      if numpy.any(block):  # skip empty MOranges
+        fcidump.set_H(block, irrep=ii+1)
 
   # calculate ERI
   ind = []
@@ -90,6 +96,10 @@ def generate_fcidump(qc, filename='FCIDUMP', core=0, occ=None, sym='c1', orderin
           if symmetry.irrep_mul(_i, _j, _k, _l) != 1:
             continue
 
+          # skip empty MOranges
+          if not all((MOranges[i], MOranges[j], MOranges[k], MOranges[l])):
+            continue
+
           ao.add_MO_block_2e(
             MOrangei=MOranges[i],
             MOrangej=MOranges[j],
@@ -98,7 +108,7 @@ def generate_fcidump(qc, filename='FCIDUMP', core=0, occ=None, sym='c1', orderin
           )
           ind.append((_i, _j, _k, _l))
 
-  blocks = ao.Vee(asMO=1, max_dims=max_dims)
+  blocks = ao.Vee(asMO=1, max_dims=max_dims, max_mem=max_mem)
 
   if len(MOranges) == 1:
     fcidump.G = blocks
