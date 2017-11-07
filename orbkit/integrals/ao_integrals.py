@@ -521,7 +521,11 @@ class AOIntegrals():
     if not asMO or not max_dims:
 
       # calculate whole AO matrix
+      display('calculating 2-electron AO matrix for {:4d} shells along first index'.format(len(shells[0])))
+      T0 = time.time()
       mat = _libcint2e(self.basis, operator, *shells)
+      T1 = time.time()
+      display('finished in {:8.2f} sec'.format(T1-T0))
 
       # remove orbitals not presents in AOs
       masks = []
@@ -556,11 +560,15 @@ class AOIntegrals():
         results = []
         if not self.MO_blocks_2e:
           results = [ao2mo(mat, self.qc.mo_spec.coeffs[:,AOs[0]])]
-        for block in self.MO_blocks_2e:
+        display('ao2mo for MO block(s) {}'.format(len(self.MO_blocks_2e)))
+        T0 = time.time()
+        for ib, block in enumerate(self.MO_blocks_2e):
           results.append(ao2mo(
             mat, self.qc.mo_spec.coeffs[:,AOs[0]],
             MOrangei=block[0], MOrangej=block[1], MOrangek=block[2], MOrangel=block[3],
           ))
+        T1 = time.time()
+        display('\tfinished in {:8.2f} sec'.format(T1-T0))
 
     else:
 
@@ -606,6 +614,11 @@ class AOIntegrals():
           masks.append(mask)
         mat = mat[numpy.ix_(*masks)]
 
+        display('\t\tAO integrals {:8.2f} sec, {:8.2f} MB'.format(
+          t1-t0,     # time
+          mat_bytes, # MB mat
+        ))
+
         # convert to MO (blocks)
         # all AOs in current slice
         AOslice = sorted(set(chain(*[self._shell2ao(i) for i in slice_])).intersection(AOs[0]))
@@ -621,11 +634,10 @@ class AOIntegrals():
           )
 
         t2 = time.time()
-        display('\t\tAO integrals {:8.2f} sec, {:8.2f} MB'.format(
-          t1-t0,                                        # time
-          mat_bytes,                                    # MB mat
-        ))
-        display('\t\tao2mo        {:8.2f} sec'.format(t2-t1))
+        display('\t\tao2mo        {:8.2f} sec, {:8.2f} MB'.format(
+          t2-t1,                                        # time
+          sum([r.nbytes for r in results]) / 1000**2)   # MB mat
+        )
 
       T1 = time.time()
       display('\tMO integrals:        {:8.2f} sec, {:8.2f} MB'.format(

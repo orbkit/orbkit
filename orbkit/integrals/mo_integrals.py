@@ -316,7 +316,7 @@ class FCIDUMP(object):
   def reduce_active_space(self, core=0, occ=None):
     '''Reduce to active orbitals.
 
-    **Paramters:**
+    **Parameters:**
 
     occ : int or list of ints
       A single integer selects the first n MOs. Supply a list of integers to select for each IRREP indivdually.

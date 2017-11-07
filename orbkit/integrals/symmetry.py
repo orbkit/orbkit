@@ -66,7 +66,7 @@ labels_psi4 = {
 }
 
 def parse_irrep(label, point_group):
-  '''Returns IRREP index in Molpro Ordering.'''
+  '''Returns IRREP index.'''
 
   # try Molpro
   if label.isdigit():
@@ -75,8 +75,7 @@ def parse_irrep(label, point_group):
   # try Psi4
   labels = labels_psi4[point_group]
   if label in labels:
-    irrep = labels.index(label)
-    return cotton2molpro[point_group][irrep]
+    return labels.index(label)
 
-  raise ValueError('unkown symmetry label: {}'.format(label))
+  raise ValueError('unkown symmetry label {} for point group {}'.format(label, point_group.capitalize()))
 
