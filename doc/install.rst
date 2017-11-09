@@ -3,8 +3,7 @@
 Installation Instructions
 =========================
 
-In this section, we present the manual installation of ORBKIT on a Unix-like
-system.
+In this section, we present the manual installation of the development version of ORBKIT. For the stable release, refer to `https://orbkit.github.io/install.html <https://orbkit.github.io/install.html>`__.
 
 .. contents:: Table of Contents:
   :local:
@@ -35,14 +34,13 @@ The package h5py is not mandatory but strongly recommended.
 Instructions
 ------------
 
-
 ORBKIT needs to be installed manually, i.e.,
 the Cython modules need to be pre-compiled and some 
 environment variables need to be set. 
 In the following, we describe this procedure exemplary 
 for the different platforms.
 
-Irrespective of the system you'r using you should test
+Irrespective of the system you're using, you should test
 the code after completing the installation process.
 
 * First, to test the serial version of the code run::
@@ -75,11 +73,16 @@ bug fixes and features.
     Clone the repository::
 
         $ git clone https://github.com/orbkit/orbkit.git
+    
+    Go to the orbkit folder and checkout the development branch::
+    
+        $ cd orbkit
         $ git checkout development
+        $ cd ..
 
   * **OR:** Using a zip archive:
 
-    Download the latest ORBKIT release and extract the file::
+    Download the latest ORBKIT (development) release and extract the file::
 
         $ wget https://github.com/orbkit/orbkit/archive/development.zip
         $ unzip orbkit-development.zip
@@ -116,7 +119,7 @@ We have tested ORBKIT on Windows using the free Visual Studio 2015 Community Edi
 and the free version of the Python environment Entought Canopy 
 (https://www.enthought.com/products/canopy/). 
 
-Download and unzip the newest version of ORBKIT (or use git and clone the newest version):
+Download and unzip the newest (development) version of ORBKIT (or use git and clone the newest version):
 from 
   
   https://github.com/orbkit/orbkit/archive/development.zip
