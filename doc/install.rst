@@ -75,15 +75,15 @@ bug fixes and features.
     Clone the repository::
 
         $ git clone https://github.com/orbkit/orbkit.git
-        $ git checkout cython
+        $ git checkout development
 
   * **OR:** Using a zip archive:
 
     Download the latest ORBKIT release and extract the file::
 
-        $ wget https://github.com/orbkit/orbkit/archive/cython.zip
-        $ unzip orbkit-cython.zip
-        $ mv orbkit-cython orbkit
+        $ wget https://github.com/orbkit/orbkit/archive/development.zip
+        $ unzip orbkit-development.zip
+        $ mv orbkit-development orbkit
 
 Set an environment variable to this directory::
 
@@ -119,7 +119,7 @@ and the free version of the Python environment Entought Canopy
 Download and unzip the newest version of ORBKIT (or use git and clone the newest version):
 from 
   
-  https://github.com/orbkit/orbkit/archive/cython.zip
+  https://github.com/orbkit/orbkit/archive/development.zip
 
 In the following, we assume that ORBKIT can be found at ``C:\orbkit``
 
