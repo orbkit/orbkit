@@ -63,7 +63,6 @@ bug fixes and features.
     Clone the repository::
 
         $ git clone https://github.com/orbkit/orbkit.git
-        $ git checkout cython
 
   * **OR:** Using a zip archive:
 
