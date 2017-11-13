@@ -28,9 +28,14 @@ def read_gamess(fname, all_mo=False, spin=None, read_properties=False,
   else:
     filename = fname.name
 
-  flines = fname.readlines()       # Read the WHOLE file into RAM
-  if isinstance(fname, str):
-    fname.close()                    # Leave existing file descriptors alive
+  from io import TextIOWrapper
+  if isinstance(fname, TextIOWrapper):
+    flines = fname.readlines()       # Read the WHOLE file into RAM
+  else:
+    magic = 'This is an Orbkit magic string'
+    text = fname.read().decode("iso-8859-1").replace('\n','\n{}'.format(magic))
+    flines = text.split(magic)
+    flines.pop()
   
   # Initialize the variables 
   qc = QCinfo()

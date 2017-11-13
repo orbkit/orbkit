@@ -208,7 +208,12 @@ def find_itype(fname):
   
   itypes = ['molden', 'gamess', 'gaussian_log', 'aomix']  
   
-  text = fname.read()
+  from io import TextIOWrapper
+  if isinstance(fname, TextIOWrapper):
+    text = fname.read()
+  else:
+    text = fname.read().decode("iso-8859-1")
+
   for regname in itypes:
     if regexes[regname].search(text):
       return regname
