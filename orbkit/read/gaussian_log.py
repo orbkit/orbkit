@@ -49,17 +49,14 @@ def read_gaussian_log(fname,all_mo=False,spin=None,orientation='standard',
   else:
     filename = fname.name
 
-  text = fname.read()
-  if not isinstance(text, str):
-    text = text.decode('utf-8')
-  flines = text.split('\n')       # Read the WHOLE file into RAM
-
-  while not flines[-1]:
+  from io import TextIOWrapper
+  if isinstance(fname, TextIOWrapper):
+    flines = fname.readlines()       # Read the WHOLE file into RAM
+  else:
+    magic = 'This is an Orbkit magic string'
+    text = fname.read().decode("iso-8859-1").replace('\n','\n{}'.format(magic))
+    flines = text.split(magic)
     flines.pop()
-
-  if isinstance(fname, str):
-    fname.close()                    # Leave existing file descriptors alive
-  
   
   # Search the file the specific sections
   count = {'link': 0, 'geometry': 0, 'geometry_input': 0, 'atomic orbitals': 0, 

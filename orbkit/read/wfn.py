@@ -51,7 +51,17 @@ def read_wfn(fname, all_mo=False, spin=None, **kwargs):
   if isinstance(fname, str):
     filename = fname
     fname = descriptor_from_file(filename, index=0)
-    flines = fname.readlines()
+  else:
+    filename = fname.name
+
+  from io import TextIOWrapper
+  if isinstance(fname, TextIOWrapper):
+    flines = fname.readlines()       # Read the WHOLE file into RAM
+  else:
+    magic = 'This is an Orbkit magic string'
+    text = fname.read().decode("iso-8859-1").replace('\n','\n{}'.format(magic))
+    flines = text.split(magic)
+    flines.pop()
 
   for line in flines:
     thisline = line.split()      # The current line split into segments

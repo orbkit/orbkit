@@ -3,23 +3,23 @@
 Function Reference
 ==================
 
-The following section contains a detailed description of all modules present 
+The following section contains a detailed description of all modules present
 in ORBKIT.
 
 orbkit.qcinfo
 --------------
-.. automodule:: orbkit.qcinfo 
+.. automodule:: orbkit.qcinfo
     :members:
 
 orbkit.orbitals
 ---------------
-.. automodule:: orbkit.orbitals 
+.. automodule:: orbkit.orbitals
     :members:
     :noindex:
 
 orbkit.options
 --------------
-.. automodule:: orbkit.options 
+.. automodule:: orbkit.options
 
 Functions for developers
 ........................
@@ -37,42 +37,42 @@ Parameters
 
 orbkit.main
 -----------
-.. automodule:: orbkit.main 
+.. automodule:: orbkit.main
     :members:
 
 orbkit.read
 ------------
-.. automodule:: orbkit.read 
+.. automodule:: orbkit.read
     :members:
 
 orbkit.grid
 -----------
-.. automodule:: orbkit.grid 
+.. automodule:: orbkit.grid
     :members:
 
 orbkit.core
 -----------
-.. automodule:: orbkit.core 
+.. automodule:: orbkit.core
     :members:
 
 orbkit.analytical_integrals
 ---------------------------
-.. automodule:: orbkit.analytical_integrals 
+.. automodule:: orbkit.analytical_integrals
     :members:
 
 orbkit.multiple_files
 ---------------------
-.. automodule:: orbkit.read.multiple_files 
+.. automodule:: orbkit.read.multiple_files
     :members:
 
 orbkit.display
 --------------
-.. automodule:: orbkit.display 
+.. automodule:: orbkit.display
     :members:
 
 orbkit.output
 -------------
-.. automodule:: orbkit.output 
+.. automodule:: orbkit.output
 
 .. autofunction:: orbkit.output.main_output
 .. autofunction:: orbkit.output.HDF5_creator
@@ -82,6 +82,12 @@ orbkit.output
 
 orbkit.extras
 -------------
-.. automodule:: orbkit.extras 
+.. automodule:: orbkit.extras
     :members:
- 
+
+orbkit.integrals
+----------------
+.. automodule:: orbkit.integrals.ao_integrals
+    :members:
+.. automodule:: orbkit.integrals.mo_integrals
+    :members:
