@@ -7,6 +7,7 @@ from orbkit.read.wfx import read_wfx
 from orbkit.read.wfn import read_wfn
 from orbkit.read.cclib_parser import read_with_cclib
 from orbkit.test.tools import equal
+from orbkit.test import check_import
 from orbkit import options
 import numpy
 import os, inspect
@@ -15,9 +16,6 @@ tests_home = os.path.dirname(inspect.getfile(inspect.currentframe()))
 folder = os.path.join(tests_home, '../outputs_for_testing')
 
 options.quiet = True
-
-#Gamess Reader is not tested at this point
-#We need to test cclib as well
 
 files = {'fchk': 'gaussian/h2o_rhf_cart.fchk',
          'gaussian_log': 'gaussian/h2o_rhf_cart.inp.log',
@@ -79,10 +77,12 @@ refgeo = {'tar.gz': [ 0.        ,  0.        , -2.54176518],
           'fchk': [ -6.16297582e-32,   1.68211949e+00,  -9.51043615e-01],
           'molden': [ 0.        , -1.68211948,  1.05577926]
           }
-#I'm not shure that .fchk files are read correctly. Seems good but I
-#don't really know... Can somemone please check?
 
 for fname in files:
+  print(fname)
+  if fname == 'cclib':
+    if not check_import(fname):
+      next(files)
   qcinfo = readers[fname](os.path.join(folder, files[fname]),cclib_parser='Gaussian')
   e_list = numpy.zeros(4, dtype=float)
   coeffs_list = numpy.zeros(4, dtype=float)

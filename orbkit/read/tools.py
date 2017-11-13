@@ -142,19 +142,19 @@ def get_atom_symbol(atom):
   except ValueError:    
     return atom.upper()
 
-#def set_ao_spherical(ao_spec,p=[1,0]):
-  #ao_spec.spherical = True
-  #for i,ao in enumerate(ao_spec):
-    #ii = ao['type']
-    #l = lquant[ii]
-    #for m in (range(0,l+1) if l != 1 else p):
-      #ao_spec[i]['ao_spherical'].append((l,m))
-      #if m != 0:
-        #ao_spec[i]['ao_spherical'].append((l,-m))
-##    for m in (range(1,l+1) if l != 1 else p):
-##      if m != 0:
-##        ao_spherical.append([i,(l,-m)])
-  #return
+def set_ao_spherical(ao_spec,p=[1,0]):
+  ao_spec.spherical = True
+  for i,ao in enumerate(ao_spec):
+    ii = ao['type']
+    l = lquant[ii]
+    for m in (range(0,l+1) if l != 1 else p):
+      ao_spec[i]['ao_spherical'].append((l,m))
+      if m != 0:
+        ao_spec[i]['ao_spherical'].append((l,-m))
+    for m in (range(1,l+1) if l != 1 else p):
+      if m != 0:
+        ao_spherical.append([i,(l,-m)])
+  return
 
 def find_itype(fname):
   '''

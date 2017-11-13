@@ -1,12 +1,6 @@
-import numpy
-
+from orbkit.read.tools import set_ao_spherical
 from orbkit.qcinfo import QCinfo
 from orbkit.orbitals import AOClass, MOClass
-from orbkit.units import aa2a0
-from orbkit.core import l_deg, lquant
-from orbkit.units import ev2ha
-
-from .tools import get_atom_symbol
 
 def read_with_cclib(filename, cclib_parser=None, all_mo=False, spin=None, 
                     **kwargs):
@@ -43,13 +37,7 @@ def read_with_cclib(filename, cclib_parser=None, all_mo=False, spin=None,
     display('Please create a molden file with Molpro, i.e., ' + 
             '\n\tput,molden,output.molden,NEW;\n')
   
-  from importlib import import_module
-  parsedic = {'Gaussian': 'gaussianparser', 'Gamess': 'gamessparser',
-              'Orca': 'orcaparser'}
-  module = import_module('cclib.parser.{}'.format(parsedic[cclib_parser]))
-  if cclib_parser != 'Gaussian':
-    cclib_parser = cclib_parser.upper()
-  parser = getattr(module,cclib_parser)
+  exec('from cclib.parser import %s as parser' % cclib_parser)
   ccData = parser(filename).parse()
   return convert_cclib(ccData, all_mo=all_mo, spin=spin)
 
@@ -114,14 +102,13 @@ def convert_cclib(ccData, all_mo=False, spin=None):
     for i,ao in enumerate(qc.ao_spec):
       l = l_deg(lquant[ao['type']],cartesian_basis=cartesian_basis)
       if cartesian_basis:
-        ao['lxlylz'] = []
-      else:
-        ao['lm'] = []
+        ao['exp_list'] = []
+        
       for ll in range(l):
         if cartesian_basis:
-          ao['lxlylz'].append((ccData.aonames[count].lower().count('x'),
-                               ccData.aonames[count].lower().count('y'),
-                               ccData.aonames[count].lower().count('z')))
+          ao['exp_list'].append((ccData.aonames[count].lower().count('x'),
+                                ccData.aonames[count].lower().count('y'),
+                                ccData.aonames[count].lower().count('z')))
         else:
           m = ccData.aonames[count].lower().split('_')[-1]
           m = m.replace('+',' +').replace('-',' -').replace('s','s 0').split(' ') 
@@ -130,7 +117,7 @@ def convert_cclib(ccData, all_mo=False, spin=None):
             m = p - 1
           else:
             m = int(m[-1])
-          ao['lm'].append((lquant[ao['type']],m))
+          qc.ao_spec[i]['ao_spherical'].append((lquant[ao['type']],m))
         count += 1
   
   # Converting all information about molecular orbitals
@@ -182,9 +169,8 @@ def convert_cclib(ccData, all_mo=False, spin=None):
         ue -= 1.0
       else:
         occ_num = 0.0
-        
       qc.mo_spec.append({'coeffs': (ccData.nocoeffs if is_natorb else ccData.mocoeffs[i])[ii],
-              'energy': 0.0 if is_natorb else ccData.moenergies[i][ii]*ev2ha,
+              'energy': 0.0 if is_natorb else ccData.moenergies[i][ii],
               'occ_num': occ_num,
               'sym': '%d.%s' %(sym[a],a)
               })
@@ -202,13 +188,14 @@ def convert_cclib(ccData, all_mo=False, spin=None):
     c_cart = sum([l_deg(l=ao['type'], cartesian_basis=True) for ao in qc.ao_spec])
     c_sph = sum([l_deg(l=ao['type'], cartesian_basis=False) for ao in qc.ao_spec])
     
-    c = qc.mo_spec.get_coeffs().shape[-1]
+    c = qc.mo_spec.get_coeff().shape[-1]
     if c != c_cart and c == c_sph: # Spherical basis
-      qc.ao_spec.set_lm_dict(p=[0,1])
+      qc.ao_spec.spherical = True
+      set_ao_spherical(qc.ao_spec,p=[0,1])
     elif c != c_cart:
       display('Warning: The basis set type does not match with pure spherical ' +
               'or pure Cartesian basis!') 
-      display('Please specify qc.ao_spec["lxlylz"] and/or qc.ao_spec["lm"] by your self.')
+      display('Please specify qc.mo_spec["exp_list"] and/or qc.mo_spec["ao_spherical"] by your self.')
   
   # Are all MOs requested for the calculation? 
   if not all_mo:

@@ -40,14 +40,6 @@ def read_wfn(fname, all_mo=False, spin=None, **kwargs):
     lxlylz.extend(j)
   lxlylz = numpy.array(lxlylz,dtype=numpy.int64)
 
-  text = fname.read()
-  if not isinstance(text, str):
-    text = text.decode('utf-8')
-  flines = text.split('\n')       # Read the WHOLE file into RAM
-
-  while not flines[-1]:
-    flines.pop()
-
   if isinstance(fname, str):
     filename = fname
     fname = descriptor_from_file(filename, index=0)

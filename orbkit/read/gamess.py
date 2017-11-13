@@ -164,7 +164,7 @@ def read_gamess(fname, all_mo=False, spin=None, read_properties=False,
       # Check if we are in a specific section 
       if sec_flag == 'geo_info':
         if not geo_skip:
-          if line == '':
+          if len(line) < 2:
             sec_flag = None
           else:
             qc.geo_info.append([thisline[0],atom_count+1,thisline[1]])
