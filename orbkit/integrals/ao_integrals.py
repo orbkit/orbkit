@@ -506,14 +506,19 @@ class AOIntegrals():
       shells = [sorted(set([self._ao2shell(ao) for ao in aos])) for aos in AOs]
 
     if max_mem:
-      # get memory requirements for j,k,l
+      # get memory requirements for AO matrix (j,k,l)
       shape = []
       for shell in shells:
         Norb = numpy.sum(self.basis.shell_dims[shell[0]:shell[-1]+1])
         shape.append(Norb)
       mem_jkl = numpy.prod(shape[1:])*8/1000**2
-      # calculate max_dims
-      max_dims = int(max_mem/mem_jkl)
+      # get memory requirements for MO matrix (i,j,k,l)
+      if asMO:
+        block = self.MO_blocks_2e[0]
+        mem_mo = [numpy.prod([len(i) for i in block])*8/1000.**2 for block in self.MO_blocks_2e]
+        max_mem -= sum(mem_mo)
+      # calculate max_dims (estimate 2*mem_jkl to account for ao2mo)
+      max_dims = int(max_mem/(2*mem_jkl))
       if max_dims > shape[0]:
         # only 1 slice required
         max_dims = 0
@@ -626,18 +631,22 @@ class AOIntegrals():
         AOslice = [numpy.where(numpy.array(AOs[0])>=ao)[0][0] for ao in AOslice]
 
         if not self.MO_blocks_2e:
-          results[0] += _ao2mo_slice(mat, self.qc.mo_spec.coeffs[:,AOs[0]], AOslice=AOslice)
+          res, mem = _ao2mo_slice(mat, self.qc.mo_spec.coeffs[:,AOs[0]], AOslice=AOslice)
+          results[0] += res
         for i, block in enumerate(self.MO_blocks_2e):
-          results[i] += _ao2mo_slice(
+          mem = 0
+          res, mem_ = _ao2mo_slice(
             mat, self.qc.mo_spec.coeffs[:,AOs[0]], AOslice=AOslice,
             MOrangei=block[0], MOrangej=block[1], MOrangek=block[2], MOrangel=block[3],
           )
+          results[i] += res
+          mem = max(mem, mem_)
 
         t2 = time.time()
         display('\t\tao2mo        {:8.2f} sec, {:8.2f} MB'.format(
-          t2-t1,                                        # time
-          sum([r.nbytes for r in results]) / 1000**2)   # MB mat
-        )
+          t2-t1,         # time
+          mem / 1000**2   # MB ao2mo
+        ))
 
       T1 = time.time()
       display('\tMO integrals:        {:8.2f} sec, {:8.2f} MB'.format(
@@ -1059,7 +1068,7 @@ def _ao2mo_slice(mat, coeffs, AOslice, MOrange=None, MOrangei=None, MOrangej=Non
     if len(mat.shape) == 2:
       return numpy.zeros((len(MOrangei), len(MOrangej)))
     elif len(mat.shape) == 4:
-      return numpy.zeros((len(MOrangei), len(MOrangej), len(MOrangek), len(MOrangel)))
+      return numpy.zeros((len(MOrangei), len(MOrangej), len(MOrangek), len(MOrangel))), 0
 
   if len(mat.shape) == 2:
     # 1-electron integrals
@@ -1067,13 +1076,19 @@ def _ao2mo_slice(mat, coeffs, AOslice, MOrange=None, MOrangei=None, MOrangej=Non
     return numpy.dot(coeffs[numpy.ix_(MOrangei, AOs_)], numpy.dot(mat, coeffs[numpy.ix_(MOrangej, AOs)].T))
   elif len(mat.shape) == 4:
     # 2-electron integrals
+    mem = mat.nbytes
     mat = mat[numpy.ix_(AOs_mat, AOs, AOs, AOs)]
+    mem = max(mem, mat.nbytes)
+    mat = numpy.tensordot(mat, coeffs[numpy.ix_(MOrangej,AOs)], axes=(1, 1))
+    mem = max(mem, mat.nbytes)
+    mat = numpy.tensordot(mat, coeffs[numpy.ix_(MOrangek,AOs)], axes=(1, 1))
+    mem = max(mem, mat.nbytes)
+    mat = numpy.tensordot(mat, coeffs[numpy.ix_(MOrangel,AOs)], axes=(1, 1))
+    mem = max(mem, mat.nbytes)
     mat = numpy.tensordot(mat, coeffs[numpy.ix_(MOrangei, AOs_)], axes=(0, 1))
-    coeffs = coeffs[:,AOs]
-    mat = numpy.tensordot(mat, coeffs[MOrangej,:], axes=(0, 1))
-    mat = numpy.tensordot(mat, coeffs[MOrangek,:], axes=(0, 1))
-    mat = numpy.tensordot(mat, coeffs[MOrangel,:], axes=(0, 1))
-    return mat
+    mat = numpy.rollaxis(mat, 3, 0)
+    mem = max(mem, mat.nbytes)
+    return mat, mem
 
 def rescale_coeffs_libcint(exps, coeffs, l):
   return [ c*libcint.CINTgto_norm(l, ctypes.c_double(e)) for e, c in zip(exps, coeffs) ]
