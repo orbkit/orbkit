@@ -1,6 +1,6 @@
 import numpy
 from orbkit import read, options
-import orbkit.integrals
+from orbkit import libcint_interface as integrals
 from orbkit.test.tools import equal
 
 import os, inspect
@@ -9,9 +9,10 @@ tests_home = os.path.dirname(inspect.getfile(inspect.currentframe()))
 options.quiet = True
 
 ## N2 cc-pVDZ RHF
-qc = read.main_read(os.path.join(tests_home, 'n2.mold'), all_mo=True)
-ao = orbkit.integrals.AOIntegrals(qc)
-Nelec = int(qc.get_elec_charge())
+folder = os.path.join(tests_home, '../outputs_for_testing/molpro')
+qc = read.main_read(os.path.join(folder, 'n2.mold'), all_mo=True)
+ao = integrals.AOIntegrals(qc)
+Nelec = int(abs(qc.get_charge(nuclear=False)))
 
 # MO overlap
 S = ao.overlap(asMO=1)
@@ -31,8 +32,8 @@ E = 0.5*numpy.tensordot(P, Hcore+F, axes=2)
 equal(E+Vnn, -108.92022806)
 
 # calculate Hartree-Fock energy from MOs
-Hcore_mo = orbkit.integrals.ao2mo(Hcore, qc.mo_spec.coeffs, MOrange=range(Nelec//2))
-Vee_mo = orbkit.integrals.ao2mo(Vee, qc.mo_spec.coeffs, MOrange=range(Nelec//2))
+Hcore_mo = integrals.ao2mo(Hcore, qc.mo_spec.coeffs, MOrange=range(Nelec//2))
+Vee_mo = integrals.ao2mo(Vee, qc.mo_spec.coeffs, MOrange=range(Nelec//2))
 
 E = 2*numpy.trace(Hcore_mo[:Nelec//2,:Nelec//2])
 J = numpy.trace(numpy.trace(Vee_mo[:Nelec//2,:Nelec//2,:Nelec//2,:Nelec//2], axis1=2, axis2=3))
@@ -71,17 +72,17 @@ equal(S[0], numpy.zeros(S[0].shape))
 equal(S[1], numpy.eye(S[1].shape[0]))
 
 # test FCIDUMP generator without symmetry
-fcidump = orbkit.integrals.generate_fcidump(qc, '')
-fcidump_ref = orbkit.integrals.load_fcidump(os.path.join(tests_home, 'FCIDUMP_N2'))
+fcidump = integrals.generate_fcidump(qc, '')
+fcidump_ref = integrals.load_fcidump(os.path.join(tests_home, 'FCIDUMP_N2'))
 
 equal(fcidump.nuclear_repulsion, fcidump_ref.nuclear_repulsion)
 equal(fcidump.get_H(full=True), fcidump_ref.get_H(full=True))
 equal(fcidump.get_G(full=True), fcidump_ref.get_G(full=True))
 
 # test FCIDUMP generator with symmetry
-qc = read.main_read(os.path.join(tests_home, 'n2_c2v.mold'), all_mo=True)
-fcidump = orbkit.integrals.generate_fcidump(qc, '', sym='c2v')
-fcidump_ref = orbkit.integrals.load_fcidump(os.path.join(tests_home, 'FCIDUMP_N2_c2v'))
+qc = read.main_read(os.path.join(folder, 'n2_c2v.mold'), all_mo=True)
+fcidump = integrals.generate_fcidump(qc, '', sym='c2v')
+fcidump_ref = integrals.load_fcidump(os.path.join(tests_home, 'FCIDUMP_N2_c2v'))
 
 equal(fcidump.nuclear_repulsion, fcidump_ref.nuclear_repulsion)
 equal(fcidump.get_H(full=True), fcidump_ref.get_H(full=True))

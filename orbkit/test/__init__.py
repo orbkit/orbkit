@@ -3,12 +3,10 @@ Module for systematic testing of Orbkit functions
 '''
 
 import unittest
-import subprocess
 from orbkit import __file__
 from orbkit.display import display
 import os
 import sys
-import shutil
 from orbkit import options
 
 tests = ['units',
@@ -20,8 +18,8 @@ tests = ['units',
          'native_io/io_numpy',
          'native_io/io_hdf5',
          'qcinfo/mo_select',
-         'integrals/basic',
-         'integrals/n2',
+         'libcint_interface/libcint_basic',
+         'libcint_interface/libcint_n2',
          'qcinfo/mo_spec',
          'analytical_properties/analytical_integral_norm',
          'analytical_properties/dipole',
@@ -29,27 +27,25 @@ tests = ['units',
 
 def check_import(filename):
   # This defines which modules should be checked for which folders
-  impdict = {'hdf5': 'h5py', 'integrals': 'libcint'}
+  # We try both to import the module and to find it within the PATH variable
+  impdict = {'hdf5': 'h5py', 'libcint': 'libcint'}
   refmod = None
   for module in impdict.keys():
     if module in filename:
       refmod = module
       break
   if refmod:
-    if sys.version_info.major == 2:
-      import imp
-      imp_check = imp.find_module
-    else:
-      import importlib
-      if sys.version_info.minor <= 3:
-        imp_check = importlib.find_loader
-      else:
-        imp_check = importlib.util.find_spec
+    run_test = False
     try:
-      imp_check(impdict[refmod])
-      return True
+      __import__(impdict[refmod])
+      run_test = True
     except ImportError:
-      return False
+      pass
+    for dirname in os.environ['PATH'].split(':'):
+      if os.path.isfile(os.path.join(dirname, '{}.so'.format(impdict[refmod]))):
+        run_test = True
+        break
+    return run_test
   else:
     return True
 

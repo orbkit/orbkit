@@ -1,5 +1,6 @@
 import numpy
-from orbkit import read, integrals
+from orbkit import read
+from orbkit import libcint_interface as integrals
 from orbkit import options
 from orbkit.test.tools import equal
 
@@ -9,8 +10,9 @@ tests_home = os.path.dirname(inspect.getfile(inspect.currentframe()))
 options.quiet = True
 
 ## NH3 STO-3G RHF
-qc = read.main_read(os.path.join(tests_home, 'nh3.mold'), all_mo=True)
-Nelec = int(qc.get_elec_charge())
+folder = os.path.join(tests_home, '../outputs_for_testing')
+qc = read.main_read(os.path.join(folder, 'molpro/nh3.mold'), all_mo=True)
+Nelec = int(abs(qc.get_charge(nuclear=False)))
 ao = integrals.AOIntegrals(qc)
 
 ## test basic 1- and 2-electron integrals
@@ -45,8 +47,8 @@ equal(Vnn, 11.73717604)
 equal(EHF+Vnn, -55.455419778557)
 
 ## H2O spherical Gaussian
-qc = read.main_read(os.path.join(tests_home, '../outputs_for_testing/gaussian/h2o_rhf_sph.fchk'), all_mo=True)
-Nelec = int(qc.get_elec_charge())
+qc = read.main_read(os.path.join(folder, 'gaussian/h2o_rhf_sph.fchk'), all_mo=True)
+Nelec = int(abs(qc.get_charge(nuclear=False)))
 
 ao = integrals.AOIntegrals(qc)
 

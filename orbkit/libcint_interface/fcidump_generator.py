@@ -65,7 +65,7 @@ def generate_fcidump(qc, filename='FCIDUMP', core=0, occ=None, sym='c1', spin=1,
     Norb = sum(occ)
     nmopi = occ
 
-  fcidump = FCIDUMP(Norb=Norb, Nelec=qc.get_elec_charge(), spin=spin)
+  fcidump = FCIDUMP(Norb=Norb, Nelec=int(abs(qc.get_charge(nuclear=False))), spin=spin)
   fcidump.set_OrbSym(nmopi)
   fcidump.nuclear_repulsion = qc.nuclear_repulsion
 

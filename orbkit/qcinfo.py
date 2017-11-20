@@ -123,14 +123,15 @@ class QCinfo:
     return com
 
 
-  def get_charge(self, nuclear=False):
+  def get_charge(self, nuclear=True, electron=True):
     '''Computes total charge of the system.
     '''
     charge = 0.
-    for ii in range(len(self.geo_info)):
-      charge += float(self.geo_info[ii][2])
-    if not nuclear:
+    if electron:
       charge -= sum(self.mo_spec.get_occ())
+    if nuclear:
+      for ii in range(len(self.geo_info)):
+        charge += float(self.geo_info[ii][2])
     return charge
 
   def get_coc(self):
