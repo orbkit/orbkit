@@ -46,9 +46,10 @@ def molpro_mo_order_ci(occ_info,mo_spec,irreps=None,nIRREP=None,order_sym=False)
     if mo_index[i] == []:
       continue
     mo_index[i] = numpy.array(mo_index[i])
-    sort = numpy.argsort(mo_index[i],axis=0)[:,1]
-    mo_index[i] = mo_index[i][sort]
-    mo_sym[i] = [mo_spec[j] for j,k in mo_index[i]]
+    j = numpy.argsort(mo_index[i],axis=0)[:,1]
+    mo_index[i] = mo_index[i][j]
+    mo_sym[i] = MOClass([mo_spec[j] for j,k in mo_index[i]])
+    #mo_sym[i].update()
   if order_sym:
     return mo_sym
   
@@ -61,6 +62,9 @@ def molpro_mo_order_ci(occ_info,mo_spec,irreps=None,nIRREP=None,order_sym=False)
     b = a+occ_info['active'][i]
     active.extend(mo_sym[i][a:b])
     external.extend(mo_sym[i][b:])
+  #closed.update()
+  #active.update()
+  #external.update()
   return closed,active,external
 
 def orthonorm(ci):
