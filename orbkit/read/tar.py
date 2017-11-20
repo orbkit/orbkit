@@ -22,21 +22,21 @@ def get_all_files_from_tar(infile, sort=False):
   itypes = []
 
   fd = tarfile.open(infile, 'r')
-  for tarinfo in fd:
-    if tarinfo.isreg():
-      one_file = fd.extractfile(tarinfo)
-      itype = find_itype(one_file)
-      one_file = fd.extractfile(tarinfo)
-      itypes.append(itype)
-      files.append(one_file)
+  all_members = fd.getmembers()
+  all_fnames = fd.getnames()
+  fnames = [all_fnames[i] for i in range(len(all_fnames)) if all_members[i].isfile()]
+  members = [all_members[i] for i in range(len(all_members)) if all_members[i].isfile()]
+  del all_members, all_fnames
+  files = [fd.extractfile(fname) for fname in fnames]
+  itypes = [find_itype(fd.extractfile(fname), extension=fname.split('.')[-1]) for fname in fnames]
   files = numpy.array(files)
-  itypes = numpy.array(itypes)
+  itypes = numpy.array(itypes, dtype=str)
   if sort:
-    filenames = numpy.array([f.name for f in files], dtype=str)
-    si = numpy.argsort(filenames)
+    fnames = numpy.array(fnames, dtype=str)
+    si = numpy.argsort(fnames)
     files = files[si]
     itypes = itypes[si]
-    del filenames, si
+    del fnames, si
   return files, itypes
 
 #The ci_descriptor attribute is a hack which becomes

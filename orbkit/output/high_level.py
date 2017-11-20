@@ -42,7 +42,7 @@ from .vmd import vmd_network_creator
 from .xyz import xyz_creator
 from .native import write_native
 
-def main_output(data,outputname='new',otype='auto',geo_info=None,geo_spec=None,
+def main_output(data,geo_info=None,geo_spec=None,outputname='new',otype='auto',
                 drv=None,omit=[],**kwargs):
   '''Creates the requested output.
   
@@ -78,7 +78,6 @@ def main_output(data,outputname='new',otype='auto',geo_info=None,geo_spec=None,
     for iot in range(len(otype)):
       if otype[iot] == 'auto':
         otype[iot] = otype[iot].split('.')[-1]
-  otype = numpy.array(otype, dtype=str)
 
   # Catch our native format before all else
   # We can't figure this out by the file ending alone
@@ -86,7 +85,7 @@ def main_output(data,outputname='new',otype='auto',geo_info=None,geo_spec=None,
   # as well as our internal format
 
   output_written = []
-  internals = numpy.argwhere(otype == 'native')
+  internals = [i for i in range(len(otype)) if otype[i] == 'native']
   if len(internals) > 0:
     if not isinstance(data,list):
       data = [data]
@@ -107,7 +106,7 @@ def main_output(data,outputname='new',otype='auto',geo_info=None,geo_spec=None,
       group = ['' for _ in data]
 
     for i, oname in enumerate(outputname):
-      write_native(data[i], oname, ftype[i], group[i])
+      write_native(data[i], oname, ftype[i])
       if group[i] != '':
         output_written.append('{0}_{1}.{2}'.format(oname, group[i], ftype[i]))
       else:

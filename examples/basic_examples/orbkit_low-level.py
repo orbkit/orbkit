@@ -86,9 +86,9 @@ import matplotlib.pyplot as plt
 import numpy
 
 # select cuts
-xd = mo_list[0][orbkit.grid.N_[0]/2-1,:,:]
-yd = mo_list[0][:,orbkit.grid.N_[1]/2-1,:]
-zd = mo_list[0][:,:,orbkit.grid.N_[2]/2-1]
+xd = mo_list[0][orbkit.grid.N_[0]//2-1,:,:]
+yd = mo_list[0][:,orbkit.grid.N_[1]//2-1,:]
+zd = mo_list[0][:,:,orbkit.grid.N_[2]//2-1]
 
 # plot cuts
 f, (pic1, pic2, pic3) = \

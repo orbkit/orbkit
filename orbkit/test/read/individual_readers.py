@@ -7,7 +7,6 @@ from orbkit.read.wfx import read_wfx
 from orbkit.read.wfn import read_wfn
 from orbkit.read.cclib_parser import read_with_cclib
 from orbkit.test.tools import equal
-from orbkit.test import check_import
 from orbkit import options
 import numpy
 import os, inspect
@@ -79,24 +78,24 @@ refgeo = {'tar.gz': [ 0.        ,  0.        , -2.54176518],
           }
 
 for fname in files:
-  print(fname)
+  skip = False
   if fname == 'cclib':
-    if not check_import(fname):
-      next(files)
-  qcinfo = readers[fname](os.path.join(folder, files[fname]),cclib_parser='Gaussian')
-  e_list = numpy.zeros(4, dtype=float)
-  coeffs_list = numpy.zeros(4, dtype=float)
-  contrac_list = numpy.zeros(4, dtype=float)
-  geo_list = qcinfo.geo_spec[0]
-  for i in range(4):
-    e_list[i] = qcinfo.mo_spec[i]['energy']
-    coeffs_list[i] = qcinfo.ao_spec[i]['coeffs'][0,0]
-    contrac_list[i] = qcinfo.ao_spec[i]['coeffs'][0,1]
-  for ref in [[e_list, refeigen], [coeffs_list, refexp], [contrac_list, refcontrac], [geo_list,refgeo]]:
-    equal(ref[0], ref[1][fname])
-
-# Format string for new references
-#print("'{0}': {1},".format(fname,numpy.array2string(qcinfo.geo_spec[0], separator=', '))) 
+    try:
+      __import__(fname)
+    except ImportError:
+      skip = True
+  if not skip:
+    qcinfo = readers[fname](os.path.join(folder, files[fname]),cclib_parser='Gaussian')
+    e_list = numpy.zeros(4, dtype=float)
+    coeffs_list = numpy.zeros(4, dtype=float)
+    contrac_list = numpy.zeros(4, dtype=float)
+    geo_list = qcinfo.geo_spec[0]
+    for i in range(4):
+      e_list[i] = qcinfo.mo_spec[i]['energy']
+      coeffs_list[i] = qcinfo.ao_spec[i]['coeffs'][0,0]
+      contrac_list[i] = qcinfo.ao_spec[i]['coeffs'][0,1]
+    for ref in [[e_list, refeigen], [coeffs_list, refexp], [contrac_list, refcontrac], [geo_list,refgeo]]:
+      equal(ref[0], ref[1][fname])
 
 
 

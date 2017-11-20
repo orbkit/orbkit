@@ -180,6 +180,8 @@ def hdf5_append(x,group,name='data'):
     for ii in keys:
       hdf5_append(x[ii],subgroup,name=ii)
   else:
+    if x is None:
+      x = str('None')
     group.attrs[name] = x
   
 
@@ -239,10 +241,17 @@ def hdf5_write(fid,mode='w',gname='',**kwargs):
     for key,data in kwargs.items():
       if isinstance(data,(list,numpy.ndarray)):
         data = numpy.array(data)
-        if data.dtype in ['<U4', 'O']:
+        if data.dtype in ['<U1', '<U4', 'O']:
           data = numpy.array(data, dtype='S10')
-        f.create_dataset(key,numpy.shape(data),data=data)
+        group.create_dataset(key,numpy.shape(data),data=data)
       else:
         if data is None or type(data) == bool:
           data = str(data)
-        f.attrs[key] = data
+        group.attrs[key] = data
+
+
+
+
+
+
+

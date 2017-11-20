@@ -31,7 +31,7 @@ from scipy import integrate
 
 # Import orbkit modules
 from orbkit import core,grid, options
-from orbkit.write import vmd_network_creator,main_output,hdf5_creator,hdf5_write,hdf5_append
+from orbkit.output import vmd_network_creator,main_output,hdf5_creator,hdf5_write,hdf5_append
 from orbkit.display import display
 from orbkit.orbitals import MOClass
 

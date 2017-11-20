@@ -46,8 +46,8 @@ def molpro_mo_order_ci(occ_info,mo_spec,irreps=None,nIRREP=None,order_sym=False)
     if mo_index[i] == []:
       continue
     mo_index[i] = numpy.array(mo_index[i])
-    j = numpy.argsort(mo_index[i],axis=0)[:,1]
-    mo_index[i] = mo_index[i][j]
+    sort = numpy.argsort(mo_index[i],axis=0)[:,1]
+    mo_index[i] = mo_index[i][sort]
     mo_sym[i] = [mo_spec[j] for j,k in mo_index[i]]
   if order_sym:
     return mo_sym

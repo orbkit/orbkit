@@ -12,6 +12,7 @@ from orbkit.read.gaussian_log import read_gaussian_log
 from orbkit.read.aomix import read_aomix
 from orbkit.read.wfx import read_wfx
 from orbkit.read.wfn import read_wfn
+from orbkit.read.native import read_native
 from orbkit.read.cclib_parser import read_with_cclib
 from orbkit.display import display
 
@@ -25,7 +26,7 @@ readers = {'molden': read_molden,
            'wfn': read_wfn,
            'wfx': read_wfx,
            'cclib': read_with_cclib,
-           #'orbkit.dump'
+           'native': read_native
           }                        #: Specifies possible input types.
 
 def main_read(fname, all_mo=False, spin=None, itype='auto', check_norm=False, **kwargs):

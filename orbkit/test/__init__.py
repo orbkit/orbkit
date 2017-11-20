@@ -17,20 +17,19 @@ tests = ['units',
          'read/individual_readers',
          'detci/read/detci_readers',
          'detci/h3+',
-         'native_io/numpy',
-         'native_io/hdf5',
+         'native_io/io_numpy',
+         'native_io/io_hdf5',
          'qcinfo/mo_select',
          'integrals/nh3',
          'integrals/n2',
          'qcinfo/mo_spec',
-         'qcinfo/ao_spec',
          'analytical_properties/analytical_integral_norm',
          'analytical_properties/dipole',
          'grid_based/rho_compute']
 
 def check_import(filename):
   # This defines which modules should be checked for which folders
-  impdict = {'hdf5': 'h5py'}
+  impdict = {'hdf5': 'h5py', 'integrals': 'libcint'}
   refmod = None
   for module in impdict.keys():
     if module in filename:
@@ -62,7 +61,7 @@ def skip_tests():
       if check_import(self.filename):
         can_import = True
       if not can_import:
-        self.skipTest('skipped')
+        self.skipTest('libcint not found')
       else:
         func(self)
     return wrapper
@@ -77,7 +76,7 @@ class ScriptTestCase(unittest.TestCase):
   @skip_tests()
   def testfile(self):
     with open(self.filename) as fd:
-      exec(compile(fd.read(), self.filename, 'exec'), {})
+      exec(compile(fd.read(), self.filename, 'exec'))
 
   def id(self):
     return self.filename

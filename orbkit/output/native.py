@@ -2,7 +2,32 @@
 '''
 import time
 
-def write_native(data, outputname='new', ftype='numpy', group=''):
+def recursive_dict_resolution(indict):
+  resolved = False
+  dictchain = [indict]
+  keychain = ['']
+  i = 0
+  while not resolved or i > 0:
+    resolved = True
+    keypop = []
+    for key in dictchain[i].keys():
+      if isinstance(dictchain[i][key], dict):
+        dictchain.append(dictchain[i][key])
+        keychain.append(key)
+        keypop.append(key)
+        resolved = False
+    for key in keypop:
+      dictchain[i].pop(key)
+    if not resolved:
+      i += 1
+    else:
+      i -= 1
+  outdict = {}
+  for i,j in zip(keychain, dictchain):
+    outdict[i] = j
+  return outdict
+  
+def write_native(data, outputname='new', ftype='numpy'):
   '''Creates the requested output.
   
   **Parameters:**
@@ -13,8 +38,6 @@ def write_native(data, outputname='new', ftype='numpy', group=''):
       Contains the base name of the output file.
     ftype, str : 
       Data can be written to ``.npz`` or ``hdf5`` files.
-    group : str, optional
-      Name for ``hdf5`` group
   '''
 
   if not callable(getattr(data, 'todict')):
@@ -31,7 +54,19 @@ def write_native(data, outputname='new', ftype='numpy', group=''):
     from numpy import savez_compressed as save
     save(outputname + '.npz', **odata)
   elif ftype.lower() in ['hdf5', 'h5']:
-    from orbkit.write import hdf5_write
-    hdf5_write(outputname + '.' + ftype.lower(), 'w', group, **odata)
+    from orbkit.output import hdf5_write
+    odata = recursive_dict_resolution(odata)
+    for i,key in enumerate(odata.keys()):
+      if i == 0:
+        mode = 'w'
+      else:
+        mode = 'a'
+      hdf5_write(outputname + '.' + ftype.lower(), mode, gname=key, **odata[key])
   else:
     raise NotImplementedError('File format {0} not implemented for writing.'.format(ftype.lower()))
+
+
+
+
+
+

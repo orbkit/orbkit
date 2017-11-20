@@ -35,7 +35,7 @@ def l_deg(l=0,ao=None,cartesian_basis=True):
       return 1
     else:
       l = len(ao)
-  elif isinstance(l,str):
+  elif not isinstance(l,int):
     l = lquant[l]
   return int((l+1)*(l+2)/2) if cartesian_basis else int(2*l+1)
   # l_deg 

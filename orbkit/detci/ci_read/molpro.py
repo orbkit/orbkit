@@ -42,8 +42,17 @@ def molpro_mcscf(fname,select_run=0,threshold=0.0,**kwargs):
   else:
     filename = fname.name
 
+  from io import TextIOWrapper
+  if isinstance(fname, TextIOWrapper):
+    flines = fname.readlines()      # Read the WHOLE file into RAM
+  else:
+    magic = 'This is an Orbkit magic string'
+    text = fname.read().decode("iso-8859-1").replace('\n','\n{}'.format(magic))
+    flines = text.split(magic)
+    flines.pop()
+
   # Go through the file line by line 
-  for line in fname:
+  for line in flines:
     if '1PROGRAM * %s' % available[method] in line:
       count += 1
       numci.append(0)
@@ -95,98 +104,98 @@ def molpro_mcscf(fname,select_run=0,threshold=0.0,**kwargs):
     
   occ_types = ['core','closed','active','external']
   
-  with open(filename) as fileobject:
-    for line in fileobject:
-      thisline = line.split()             # The current line split into segments
-      
-      if '1PROGRAM *' in line:
-        start_reading = False
-      #--- Number of IRREPs
-      if 'Point group' in line or '_PGROUP' in line: 
-        nIRREP = point_groups()[thisline[-1].lower()]
-        rhf_occ = numpy.zeros(nIRREP,dtype=numpy.intc)
-      #--- RHF occupation
-      elif 'Final occupancy:' in line:
-        c_occ = line.split()[2:]
-        for ii in range(len(c_occ)):
-          rhf_occ[ii] = int(c_occ[ii])
-      #--- A MCSCF Calculation starts ---
-      elif '1PROGRAM * %s' % available[method] in line:
-        occ_info = {}
-        for i in occ_types:
-          occ_info[i] = numpy.zeros(nIRREP,dtype=numpy.intc)
-        state_info = []
-        i = numpy.argwhere(select_run == count_runs)
-        if len(i) > 0:
-          index_run = int(i)
-          start_reading = True
-          count = 0
-          old = 0
-        count_runs += 1
-      elif start_reading:
-        #--- Active space ---
-        if 'Number of ' in line and 'orbitals:' in line:          
-          line = line.replace('(','').replace(')','').replace('-shell','')   
-          c_occ = numpy.array(line.split()[-nIRREP:],dtype=numpy.intc)
-          occ_info[line.split()[2]] += c_occ
-        elif 'State symmetry' in line:
-          fileobject.next()
-          thisline = fileobject.next()
-          if 'State symmetry' in thisline:
-            fileobject.next()
-            thisline = fileobject.next()
-          thisline = thisline.replace('=',' ').split()
-          data = {'nel': thisline[3],
-                  'spin': thisline[6],
-                  'sym': thisline[9]}
-          thisline = fileobject.next().split()
-          state_info.extend([data for i in range(int(thisline[-1]))])
-        elif '!%s state' % method in line.lower() and 'energy' in line.lower():
-          ci[index_run].append(CIinfo(method=method))
-          info = state_info[count]
-          thisline = line.lower().replace('state','state ').split()
-          ci[index_run][count].info = copy(general_information) 
-          ci[index_run][count].info['fileinfo'] += '@%d' % index_run
-          ci[index_run][count].info['state'] = thisline[2]
-          ci[index_run][count].info['energy'] = float(thisline[4])
-          ci[index_run][count].info['spin'] = info['spin']
-          ci[index_run][count].info['nel'] = info['nel']
-          ci[index_run][count].info['occ_info'] = occ_info
-          count += 1
-        elif 'CI vector' in line:
-          sec_flag = 'mcscf'
-          info_split = '     '
-          ci_skip = 3
-          info = thisline[-1]
-          count = old
-          first = True
-        if not ci_skip:
-          if line == '\n' or '/EOF' in line:
-            sec_flag = False
-          elif sec_flag != False:
-            split_line = filter(None, line.split(info_split))
-            if len(split_line) > 1:
-              occupation = numpy.zeros((numpy.sum(occ_info['active']),2),dtype=numpy.intc)
-              for i,j in enumerate(split_line[0].replace(' ','')):
-                if j == '2': 
-                  occupation[i,:] = 1
-                elif j == 'a':
-                  occupation[i,0] = 1
-                elif j == 'b':
-                  occupation[i,1] = 1
-              c0 = 0
-            coeffs = split_line[-1].split()
-            for i,j in enumerate(coeffs):
-              if first:
-                old += 1
-              min_c = min(min_c,abs(float(j)))
-              if abs(float(j)) > threshold:
-                ci[index_run][count + c0 + i].coeffs.append(float(j))
-                ci[index_run][count + c0 + i].occ.append(occupation)
-            c0 += len(coeffs)
-            first = False
-        else:
-          ci_skip -= 1 
+  flines = iter(flines)
+  for line in flines:
+    thisline = line.split()             # The current line split into segments
+    
+    if '1PROGRAM *' in line:
+      start_reading = False
+    #--- Number of IRREPs
+    if 'Point group' in line or '_PGROUP' in line: 
+      nIRREP = point_groups()[thisline[-1].lower()]
+      rhf_occ = numpy.zeros(nIRREP,dtype=numpy.intc)
+    #--- RHF occupation
+    elif 'Final occupancy:' in line:
+      c_occ = line.split()[2:]
+      for ii in range(len(c_occ)):
+        rhf_occ[ii] = int(c_occ[ii])
+    #--- A MCSCF Calculation starts ---
+    elif '1PROGRAM * %s' % available[method] in line:
+      occ_info = {}
+      for i in occ_types:
+        occ_info[i] = numpy.zeros(nIRREP,dtype=numpy.intc)
+      state_info = []
+      i = numpy.argwhere(select_run == count_runs)
+      if len(i) > 0:
+        index_run = int(i)
+        start_reading = True
+        count = 0
+        old = 0
+      count_runs += 1
+    elif start_reading:
+      #--- Active space ---
+      if 'Number of ' in line and 'orbitals:' in line:          
+        line = line.replace('(','').replace(')','').replace('-shell','')   
+        c_occ = numpy.array(line.split()[-nIRREP:],dtype=numpy.intc)
+        occ_info[line.split()[2]] += c_occ
+      elif 'State symmetry' in line:
+        next(flines)
+        thisline = next(flines)
+        if 'State symmetry' in thisline:
+          next(flines)
+          thisline = next(flines)
+        thisline = thisline.replace('=',' ').split()
+        data = {'nel': thisline[3],
+                'spin': thisline[6],
+                'sym': thisline[9]}
+        thisline = next(flines).split()
+        state_info.extend([data for i in range(int(thisline[-1]))])
+      elif '!%s state' % method in line.lower() and 'energy' in line.lower():
+        ci[index_run].append(CIinfo(method=method))
+        info = state_info[count]
+        thisline = line.lower().replace('state','state ').split()
+        ci[index_run][count].info = copy(general_information) 
+        ci[index_run][count].info['fileinfo'] += '@%d' % index_run
+        ci[index_run][count].info['state'] = thisline[2]
+        ci[index_run][count].info['energy'] = float(thisline[4])
+        ci[index_run][count].info['spin'] = info['spin']
+        ci[index_run][count].info['nel'] = info['nel']
+        ci[index_run][count].info['occ_info'] = occ_info
+        count += 1
+      elif 'CI vector' in line:
+        sec_flag = 'mcscf'
+        info_split = '     '
+        ci_skip = 3
+        info = thisline[-1]
+        count = old
+        first = True
+      if not ci_skip:
+        if line == '\n' or '/EOF' in line:
+          sec_flag = False
+        elif sec_flag != False:
+          split_line = list(filter(None, line.split(info_split)))
+          if len(split_line) > 1:
+            occupation = numpy.zeros((numpy.sum(occ_info['active']),2),dtype=numpy.intc)
+            for i,j in enumerate(split_line[0].replace(' ','')):
+              if j == '2': 
+                occupation[i,:] = 1
+              elif j == 'a':
+                occupation[i,0] = 1
+              elif j == 'b':
+                occupation[i,1] = 1
+            c0 = 0
+          coeffs = split_line[-1].split()
+          for i,j in enumerate(coeffs):
+            if first:
+              old += 1
+            min_c = min(min_c,abs(float(j)))
+            if abs(float(j)) > threshold:
+              ci[index_run][count + c0 + i].coeffs.append(float(j))
+              ci[index_run][count + c0 + i].occ.append(occupation)
+          c0 += len(coeffs)
+          first = False
+      else:
+        ci_skip -= 1 
   
   #--- Calculating norm of CI states
   display('\nIn total, %d states have been read.' % sum([len(i) for i in ci])) 

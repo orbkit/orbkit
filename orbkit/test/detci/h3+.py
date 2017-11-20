@@ -91,12 +91,11 @@ for a in range(len(ci)):
 filepath = os.path.join(tests_home, 'refdata_h3+.npz')
 
 #numpy.savez('refdata_h3+.npz', rho_01=rho_01, j_01=j_01, nabla_j_01=nabla_j_01, mu_01=mu_01)
-with open(filepath, 'r') as fd:
-  refdata = numpy.load(fd)
-  equal(rho_01, refdata['rho_01'])
-  equal(j_01, refdata['j_01'])
-  equal(nabla_j_01, refdata['nabla_j_01'])
-  equal(mu_01, refdata['mu_01'])
+refdata = numpy.load(filepath)
+equal(rho_01, refdata['rho_01'])
+equal(j_01, refdata['j_01'])
+equal(nabla_j_01, refdata['nabla_j_01'])
+equal(mu_01, refdata['mu_01'])
 
 
 

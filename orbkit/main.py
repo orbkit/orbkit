@@ -35,7 +35,6 @@ import time
 
 # Import orbkit modules
 from orbkit import core, grid, extras, read
-import orbkit.write as output
 from orbkit import options
 import orbkit.display as display_module
 from orbkit.display import display,good_bye_message
@@ -265,14 +264,18 @@ def run_orbkit(use_qc=None,check_options=True,standalone=False):
 
   # Generate the output requested 
   if not options.no_output:
-    output_written = output.main_output(rho,qc.geo_info,qc.geo_spec,
+    output_written = output.main_output(rho,
+                       geo_info=qc.geo_info,
+                       geo_spec=qc.geo_spec,
                        outputname=options.outputname,
                        otype=options.otype,
                        data_id='rho',
                        omit=['vmd','mayavi'],
                        mo_spec=qc.mo_spec)
     if options.drv is not None:
-      output_written.extend(output.main_output(delta_rho,qc.geo_info,qc.geo_spec,
+      output_written.extend(output.main_output(delta_rho,
+                         geo_info=qc.geo_info,
+                         geo_spec=qc.geo_spec,
                          outputname=options.outputname,
                          otype=options.otype,
                          data_id='delta_rho',
@@ -280,7 +283,9 @@ def run_orbkit(use_qc=None,check_options=True,standalone=False):
                          mo_spec=qc.mo_spec,
                          drv=options.drv))
     if options.laplacian:
-      output_written.extend(output.main_output(laplacian_rho,qc.geo_info,qc.geo_spec,
+      output_written.extend(output.main_output(laplacian_rho,
+                         geo_info=qc.geo_info,
+                         geo_spec=qc.geo_spec,
                          outputname=options.outputname + '_laplacian',
                          otype=options.otype,
                          data_id='laplacian_rho',

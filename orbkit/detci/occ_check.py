@@ -61,11 +61,11 @@ def compare(cia,cib,moocc=None,numproc=1):
   numproc = min(len(cia.coeffs),max(1,numproc))
   ij = numpy.array(numpy.linspace(0, len(cia.coeffs), num=numproc+1, endpoint=True),  
                    dtype=numpy.intc) # backward compatibility
-  ij = zip(ij[:-1],ij[1:])
+  ij = list(zip(ij[:-1],ij[1:]))
   
   display('\nComparing the occupation patterns \nof the determinants of the two states...')
   return_value = omp_functions.run(slice_occ,x=ij,numproc=numproc,display=display)
-  
+
   zero = [[],[]] 
   sing = [[],[]]
   for z,s in return_value:

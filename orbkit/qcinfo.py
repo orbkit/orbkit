@@ -46,8 +46,16 @@ class QCinfo:
       self.geo_spec = data['geo_spec']
       self.geo_info = data['geo_info']
       self.format_geo()
-      self.ao_spec = AOClass(restart=data)
-      self.mo_spec = MOClass(restart=data)
+      if isinstance(data['ao_spec'], numpy.ndarray):
+        ao_spec = data['ao_spec'][numpy.newaxis][0]
+      else:
+        ao_spec = data['ao_spec']
+      if isinstance(data['mo_spec'], numpy.ndarray):
+        mo_spec = data['mo_spec'][numpy.newaxis][0]
+      else:
+        mo_spec = data['mo_spec']
+      self.ao_spec = AOClass(restart=ao_spec)
+      self.mo_spec = MOClass(restart=mo_spec)
     else:
       self.geo_info = []
       self.geo_spec = []
@@ -187,8 +195,9 @@ class QCinfo:
   def todict(self):
     '''Returns the dictionary that is used to save QCinfo instance
     '''
-    data = self.ao_spec.todict()
-    data.update(self.mo_spec.todict())
+    data = {}
+    data['ao_spec'] = self.ao_spec.todict()
+    data['mo_spec'] = self.mo_spec.todict()
     data['geo_spec'] = self.geo_spec
     data['geo_info'] = self.geo_info
     data['parent_class_name'] = self.__module__ + '.' + self.__class__.__name__
@@ -317,9 +326,6 @@ class CIinfo():
 #    if self.moocc is not None:
 #      ciinfo.moocc = self.moocc.copy()
     return ciinfo
-
-  def todict(self):
-    return self.__dict__
 
   def get_moocc(self):
     if self.moocc is None:

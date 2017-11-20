@@ -1,5 +1,5 @@
 from orbkit.read.high_level import main_read
-from orbkit.write.high_level import main_output
+from orbkit.output.high_level import main_output
 from orbkit.test.tools import equal
 from orbkit.qcinfo import QCinfo
 from orbkit import options
@@ -16,7 +16,8 @@ qc_old = main_read(filepath)
 tests_home = os.path.dirname(inspect.getfile(inspect.currentframe()))
 filepath = os.path.join(tests_home, 'tmp')
 
-main_output(qc_old, filepath, otype='native', ftype='numpy')
+main_output(qc_old, outputname=filepath, otype='native', ftype='numpy')
+
 qc_new = main_read(filepath + '.npz')
 equal(qc_old, qc_new)
 

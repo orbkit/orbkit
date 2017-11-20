@@ -37,7 +37,7 @@ for i in range(len(data[0])):
 
 filepath = os.path.join(tests_home, 'refdata_rho_compute.npz')
 #numpy.savez(filepath, data=data[0])
-with open(filepath, 'r') as fd:
-  refdata = numpy.load(fd)
-  for i in range(len(data[0])):
-    equal(data[0][i], refdata['data'][i])
+refdata = numpy.load(filepath)
+in_dic = {0: 'zero', 1: 'one', 2: 'two', 3: 'three', 4: 'four'}
+for i in range(5):
+  equal(data[0][i], refdata[in_dic[i]])

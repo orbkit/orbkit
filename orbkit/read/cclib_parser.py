@@ -5,6 +5,7 @@ from orbkit.orbitals import AOClass, MOClass
 from orbkit.units import aa2a0
 from orbkit.core import l_deg, lquant
 from orbkit.units import ev2ha
+from importlib import import_module
 
 from .tools import get_atom_symbol
 
@@ -43,14 +44,13 @@ def read_with_cclib(filename, cclib_parser=None, all_mo=False, spin=None,
     display('Please create a molden file with Molpro, i.e., ' + 
             '\n\tput,molden,output.molden,NEW;\n')
   
-  from importlib import import_module
   parsedic = {'Gaussian': 'gaussianparser', 'Gamess': 'gamessparser',
               'Orca': 'orcaparser'}
   module = import_module('cclib.parser.{}'.format(parsedic[cclib_parser]))
   if cclib_parser != 'Gaussian':
     cclib_parser = cclib_parser.upper()
-  parser = getattr(module,cclib_parser)
-  ccData = parser(filename).parse()
+  parser = getattr(module,cclib_parser)(filename)
+  ccData = parser.parse()
   return convert_cclib(ccData, all_mo=all_mo, spin=spin)
 
 def convert_cclib(ccData, all_mo=False, spin=None):

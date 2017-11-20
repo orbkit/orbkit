@@ -104,7 +104,6 @@ class AOClass(UserList):
       self._nlxlylz_per_cont      = restart['_nlxlylz_per_cont']
       self._lm                   = restart['_lm']           
       self._assign_lm_to_cont            = restart['_assign_lm_to_cont']   
-      
       self.internal_to_dict()
       
   def todict(self):
@@ -122,7 +121,8 @@ class AOClass(UserList):
             '_assign_lxlylz_to_cont':    self._assign_lxlylz_to_cont,
             '_nlxlylz_per_cont':  self._nlxlylz_per_cont,
             '_lm':               self._lm,
-            '_assign_lm_to_cont':        self._assign_lm_to_cont
+            '_assign_lm_to_cont':        self._assign_lm_to_cont,
+            'parent_class_name' : self.__module__ + '.' + self.__class__.__name__
             }
     return data
   #def __repr__(self):
@@ -142,12 +142,25 @@ class AOClass(UserList):
       raise TypeError('Comaring of AOClass to non AOClass object not defined')
     if cases[0]:
       self.update()
+      if self.spherical:
+        angular = all([numpy.allclose(self._lm, other._lm),
+                       numpy.allclose(self._assign_lm_to_cont, other._assign_lm_to_cont)])
+      else:
+        angular = all([numpy.allclose(self._lxlylz, other._lxlylz),
+                       numpy.allclose(self._assign_lxlylz_to_cont, other._assign_lxlylz_to_cont)])
+      
+      cont_types = all([i==j for i,j in zip(self._cont_types,other._cont_types)])
+
       same = [self.spherical == other.spherical,
-              numpy.allclose(self.cont2atoms, other.cont2atoms),
+              self.normalized == other.normalized,
+              angular,
+              cont_types,
+              numpy.allclose(self._assign_cont_to_atoms, other._assign_cont_to_atoms),
+              numpy.allclose(self._nprim_per_cont, other._nprim_per_cont),
+              numpy.allclose(self._prim_coeffs, other._prim_coeffs),
               numpy.allclose(self._assign_prim_to_cont, other._assign_prim_to_cont),
-              numpy.allclose(self.contspher, other.contspher),
-              numpy.allclose(self.pao, other.pao),
-              numpy.allclose(self._lxlylz, other._lxlylz)]
+              numpy.allclose(self._nprim_per_cont, other._nprim_per_cont),
+              numpy.allclose(self._prim_coeffs , other._prim_coeffs )]
       return all(same)
     else:
       if self.data is None or len(self.data) == 0:
@@ -440,13 +453,13 @@ class MOClass(UserList):
             'spinpolarized': self.spinpolarized,
             'occ': self.occ,
             'eig': self.eig,
-            'class_name': self.__module__ + '.' + self.__class__.__name__,
+            'parent_class_name' : self.__module__ + '.' + self.__class__.__name__,
             'sym': self.sym}
     return data
 
   def __getitem__(self, item):
     parse_directly = False
-    if isinstance(item, int):
+    if isinstance(item, (int, numpy.int64)):
       return UserList.__getitem__(self, item)
     elif isinstance(item, (list, numpy.ndarray)) or \
          (sys.version_info.major == 3 and isinstance(item, range)):
@@ -842,7 +855,8 @@ class MOClass(UserList):
     import re
     display('\nProcessing molecular orbital list...')
     if flatten_input and isinstance(list(fid_mo_list)[0], (list, numpy.ndarray)):
-       display('\nWarning! Flattening of input lists requested!')
+      display('\nWarning! Flattening of input lists requested!')
+      display('\nIf this was not intendet please set ``flatten_input=False``')
     
     mo_in_file = []
     selected_mo = []

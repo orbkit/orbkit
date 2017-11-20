@@ -156,7 +156,7 @@ def set_ao_spherical(ao_spec,p=[1,0]):
         ao_spherical.append([i,(l,-m)])
   return
 
-def find_itype(fname):
+def find_itype(fname, extension=None):
   '''
   This function is used by the high-level read
   to determine what reader to use.
@@ -168,6 +168,9 @@ def find_itype(fname):
   fname: str, file descriptor
     Specifies the filename for the input file.
     fname can also be used with a file descriptor instad of a filename.
+  extension: str, optional
+    If extension is not None it will be used to attempt determining
+    filetypes by extension in place of fname.
     
   **Returns:**
   
@@ -197,9 +200,11 @@ def find_itype(fname):
     filename = fname.name
     was_str = False
 
-  if filename.split('.')[-1].lower() in ['fchk', 'wfx', 'wfn']:
-    return filename.split('.')[-1]
-  elif filename.split('.')[-1].lower() in ['numpy', 'npz', 'hdf5', 'h5']:
+  if not extension:
+    extension = filename.split('.')[-1]
+  if extension.lower() in ['fchk', 'wfx', 'wfn']:
+    return extension
+  elif extension.lower() in ['numpy', 'npz', 'hdf5', 'h5']:
     return 'native'
   
   molden_regex = re.compile(r"\[[ ]{,}[Mm]olden[ ]+[Ff]ormat[ ]{,}\]")

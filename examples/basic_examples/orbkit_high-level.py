@@ -93,7 +93,7 @@ orbkit.init()
 orbkit.options.adjust_grid= [5, 0.1]                # adjust the grid to the geometry
 orbkit.options.otype      = ['hx', 'vmd']           # output file types
 orbkit.options.mo_set     = [[1,2,'homo-2'],
-                         ['homo-1:lumo']]       # list of MO labels (Molden enumeration)
+                         ['homo-1:lumo']]           # list of MO labels (Molden enumeration)
 orbkit.options.filename   = in_fid                  # input file name
 orbkit.options.itype      = 'molden'                # input file type [default]
 orbkit.options.outputname = out_fid                 # output file (base) name

@@ -89,7 +89,7 @@ def main_ci_read(qc,fname,itype='psi4_detci',threshold=0.0,
     moocc = qc.mo_spec.get_occ(return_int=True)
   elif itype in ['psi4_detci','molpro_mcscf']: # detCI-like
     # Reorder qc.mo_spec
-    irreps=None if 'irreps' not in ci[0].info.keys() else ci[0].info['irreps']                                                
+    irreps=None if 'irreps' not in ci[0].info.keys() else ci[0].info['irreps']
     closed,active,external = molpro_mo_order_ci(ci[0].info['occ_info'],
                                                 qc.mo_spec,
                                                 irreps=irreps

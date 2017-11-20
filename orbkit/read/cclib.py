@@ -38,7 +38,8 @@ def read_with_cclib(filename, cclib_parser=None, all_mo=False, spin=None,
             '\n\tput,molden,output.molden,NEW;\n')
   
   exec('from cclib.parser import %s as parser' % cclib_parser)
-  ccData = parser(filename).parse()
+  parser = parser(filename)
+  ccData = parser.parse()
   return convert_cclib(ccData, all_mo=all_mo, spin=spin)
 
 def convert_cclib(ccData, all_mo=False, spin=None):

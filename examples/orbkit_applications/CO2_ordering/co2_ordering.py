@@ -11,7 +11,7 @@ need to be decompressed.
 '''
 import os,copy
 from time import time
-from orbkit import multiple_files as mult
+from orbkit.read.multiple_files import Multi
 from orbkit.display import init_display,display,tForm
 import numpy
 
@@ -21,6 +21,7 @@ t = [time()]
 oco = numpy.arange(170,191,2)
 
 # Read all input files
+mult = Multi()
 mult.read('pec_co2.tar.gz')
 
 # Save the unordered molecular orbital coefficients for depiction
