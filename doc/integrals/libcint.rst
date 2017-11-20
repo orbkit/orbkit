@@ -88,6 +88,8 @@ Slicing is controlled by the ``max_dims`` parameter, and primarily usefull for 2
 
 The default value for ``max_dims`` is 0 and disables slicing. Values larger than that specify the maximum number of basis functions in a slice (along index :math:`i`).
 
+For 2-electron integrals, you may also pass the parameter ``max_mem``, which defines a rough memory limit (in MB) for the AO matrix and ao2mo transformation. The appropiate value for ``max_dims`` is then determined automatically.
+
 Alternatively, if you can exploit symmetry, consider setting only a limited number of MO blocks at a time, to reduce the number of AO integrals to be kept in memory:
 
 .. code-block:: python

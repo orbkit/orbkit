@@ -36,6 +36,7 @@ def indices_2e(int Norb, disable_exchange=False):
 
 def redundant_indices(int i, int j, int k, int l):
   '''Return redundant indices for normalized 2-electron integrals.'''
+  # TODO: skip for equal indices, e.g. i=j=k=l=0
   yield j, i, k, l
   yield i, j, l, k
   yield j, i, l, k

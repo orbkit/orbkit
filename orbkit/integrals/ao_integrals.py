@@ -2,7 +2,9 @@ import numpy
 import ctypes
 
 from ..tools import lquant
-from itertools import chain
+from ..display import display
+from itertools import chain, combinations_with_replacement
+import time
 
 try:
   from numpy import moveaxis
@@ -38,12 +40,28 @@ libcint.CINTgto_norm.restype = ctypes.c_double
 class struct:
   pass
 
+def match_order(a, ref):
+  '''Determines order such that a[order,:] == ref.'''
+  # inverse argsort of ref
+  if ref.ndim == 1:
+    fwd = numpy.argsort(ref)
+  else:
+    fwd = numpy.lexsort(ref.T, axis=0)
+  inv = numpy.empty_like(fwd)
+  inv[fwd] = numpy.arange(fwd.size)
+  # argsort of a
+  if a.ndim == 1:
+    arg = numpy.argsort(a)
+  else:
+    arg = numpy.lexsort(a.T, axis=0)
+  # now order is given by arg[inv]
+  return arg[inv]
+
 ############################
 ###  external interface  ###
 ############################
 
 # TODO:
-# - reordering for spherical
 # - non-hermitian operators (?)
 # - operators including gradients (return tensors)
 
@@ -51,7 +69,7 @@ class AOIntegrals():
   '''Interface to calculate AO Integrals with libcint.
   https://github.com/sunqm/libcint
   '''
-  def __init__(self, qc, cartesian=True):
+  def __init__(self, qc):
 
     # general parameters
     self.qc = qc
@@ -105,14 +123,15 @@ class AOIntegrals():
     self.basis.c_bas = self.bas.ctypes.data_as(ctypes.c_void_p)
 
     # some further parameters
-    self.basis.cartesian = cartesian
+    self.basis.cartesian = not qc.ao_spec.spherical
     self.basis.Nshells = self.basis.bas.shape[0]
     self.basis.Norb = self.count_contractions()
     self.basis.natm = ctypes.c_int(self.atm.shape[0])
     self.basis.nbas = ctypes.c_int(self.bas.shape[0])
     self.basis.shell_dims = numpy.array(self._get_dims(*range(self.basis.Nshells)))
     self.basis.shell_offsets = _get_shell_offsets(self.basis.shell_dims)
-    if cartesian:
+    self.basis.order = [self._get_order(i) for i in range(self.Nshells)]
+    if self.basis.cartesian:
       self._norm_cart_shell()
 
   @property
@@ -125,6 +144,7 @@ class AOIntegrals():
     self.basis.Norb = self.count_contractions()
     self.basis.shell_dims = numpy.array(self._get_dims(*range(self.Nshells)))
     self.basis.shell_offsets = _get_shell_offsets(self.basis.shell_dims)
+    self.basis.order = [self._get_order(i) for i in range(self.Nshells)]
     if value:
       self._norm_cart_shell()
     self.clear_all_blocks()
@@ -351,6 +371,7 @@ class AOIntegrals():
     if not shells:
       shells = [sorted(set([self._ao2shell(ao) for ao in aos])) for aos in AOs]
 
+
     if not asMO or not max_dims:
 
       # calculate whole AO matrix
@@ -439,7 +460,7 @@ class AOIntegrals():
       return results[0]
     return results
 
-  def int2e(self, operator, asMO=False, max_dims=0):
+  def int2e(self, operator, asMO=False, max_dims=0, max_mem=0):
     '''Calculates all two-electron integrals <ij|operator|kl>.
 
       Use add_AO_block_2e() or add_MO_block_2e() if only a subset of AO or MO integrals is needed.
@@ -456,6 +477,8 @@ class AOIntegrals():
         sets MOrangei to MOrangel at the same range.
       max_dims : int
         If > 0, calculate AO Integrals in slices containing no more than max_dims AOs (but at least one shell). Slower, but requires less memory.
+      max_mem : float
+        Rough memory limit in MB, to determine max_dims automatically. Note: Shells with high angular momentum quantum number may exceed the limit, if choosen to small.
 
       **Returns:**
 
@@ -482,10 +505,32 @@ class AOIntegrals():
     if not shells:
       shells = [sorted(set([self._ao2shell(ao) for ao in aos])) for aos in AOs]
 
+    if max_mem:
+      # get memory requirements for AO matrix (j,k,l)
+      shape = []
+      for shell in shells:
+        Norb = numpy.sum(self.basis.shell_dims[shell[0]:shell[-1]+1])
+        shape.append(Norb)
+      mem_jkl = numpy.prod(shape[1:])*8/1000**2
+      # get memory requirements for MO matrix (i,j,k,l)
+      if asMO:
+        block = self.MO_blocks_2e[0]
+        mem_mo = [numpy.prod([len(i) for i in block])*8/1000.**2 for block in self.MO_blocks_2e]
+        max_mem -= sum(mem_mo)
+      # calculate max_dims (estimate 2*mem_jkl to account for ao2mo)
+      max_dims = int(max_mem/(2*mem_jkl))
+      if max_dims > shape[0]:
+        # only 1 slice required
+        max_dims = 0
+
     if not asMO or not max_dims:
 
       # calculate whole AO matrix
+      display('calculating 2-electron AO matrix for {:4d} shells along first index'.format(len(shells[0])))
+      T0 = time.time()
       mat = _libcint2e(self.basis, operator, *shells)
+      T1 = time.time()
+      display('finished in {:8.2f} sec'.format(T1-T0))
 
       # remove orbitals not presents in AOs
       masks = []
@@ -520,11 +565,15 @@ class AOIntegrals():
         results = []
         if not self.MO_blocks_2e:
           results = [ao2mo(mat, self.qc.mo_spec.coeffs[:,AOs[0]])]
-        for block in self.MO_blocks_2e:
+        display('ao2mo for MO block(s) {}'.format(len(self.MO_blocks_2e)))
+        T0 = time.time()
+        for ib, block in enumerate(self.MO_blocks_2e):
           results.append(ao2mo(
             mat, self.qc.mo_spec.coeffs[:,AOs[0]],
             MOrangei=block[0], MOrangej=block[1], MOrangek=block[2], MOrangel=block[3],
           ))
+        T1 = time.time()
+        display('\tfinished in {:8.2f} sec'.format(T1-T0))
 
     else:
 
@@ -537,11 +586,26 @@ class AOIntegrals():
       # get slices by shells (avoid splitting AOs belonging to the same shell)
       slices = self._get_slices(max_dims, shells[0])
 
-      for i_, s in enumerate(slices):
-        shells_sliced = [s] + shells[1:]
+      display('AO slices requested using max_dims={:d}'.format(max_dims))
+      display('Number of AOs required/total:    {:4d}/{:4d}'.format(len(AOs[0]), self.Norb))
+      display('Number of shells required/total: {:4d}/{:4d}'.format(len(shells[0]), self.Nshells))
+      display('AO slices generated: {:d}'.format(len(slices)))
+
+      T0 = time.time()
+      for i_, slice_ in enumerate(slices):
+        display('\tcalculating slice {:2d}: {:4d} AOs, {:4d} shells'.format(
+          i_+1,                                     # slice number
+          sum(self.basis.shell_dims[slice_]),       # number of AOs in slice
+          len(slice_),                              # number of shells in slice
+        ))
+
+        t0 = time.time()
+        shells_sliced = [slice_] + shells[1:]
 
         # calculate AO matrix slice
         mat = _libcint2e(self.basis, operator, *shells_sliced)
+        t1 = time.time()
+        mat_bytes = mat.nbytes / 1000**2
 
         # remove orbitals not presents in AOs
         masks = []
@@ -555,19 +619,40 @@ class AOIntegrals():
           masks.append(mask)
         mat = mat[numpy.ix_(*masks)]
 
+        display('\t\tAO integrals {:8.2f} sec, {:8.2f} MB'.format(
+          t1-t0,     # time
+          mat_bytes, # MB mat
+        ))
+
         # convert to MO (blocks)
         # all AOs in current slice
-        AOslice = sorted(set(chain(*[self._shell2ao(i) for i in s])).intersection(AOs[0]))
+        AOslice = sorted(set(chain(*[self._shell2ao(i) for i in slice_])).intersection(AOs[0]))
         # match indices with respect to AOs[0]
         AOslice = [numpy.where(numpy.array(AOs[0])>=ao)[0][0] for ao in AOslice]
 
         if not self.MO_blocks_2e:
-          results[0] += _ao2mo_slice(mat, self.qc.mo_spec.coeffs[:,AOs[0]], AOslice=AOslice)
+          res, mem = _ao2mo_slice(mat, self.qc.mo_spec.coeffs[:,AOs[0]], AOslice=AOslice)
+          results[0] += res
         for i, block in enumerate(self.MO_blocks_2e):
-          results[i] += _ao2mo_slice(
+          mem = 0
+          res, mem_ = _ao2mo_slice(
             mat, self.qc.mo_spec.coeffs[:,AOs[0]], AOslice=AOslice,
             MOrangei=block[0], MOrangej=block[1], MOrangek=block[2], MOrangel=block[3],
           )
+          results[i] += res
+          mem = max(mem, mem_)
+
+        t2 = time.time()
+        display('\t\tao2mo        {:8.2f} sec, {:8.2f} MB'.format(
+          t2-t1,         # time
+          mem / 1000**2   # MB ao2mo
+        ))
+
+      T1 = time.time()
+      display('\tMO integrals:        {:8.2f} sec, {:8.2f} MB'.format(
+        T1-T0,
+        sum([r.nbytes for r in results]) / 1000**2,   # MB results
+      ))
 
     # return results
     if len(results) == 1:
@@ -617,6 +702,25 @@ class AOIntegrals():
       return dims[0]
     return dims
 
+  def _get_order(self, i):
+    '''Returns indices to transform libcint order to orbkit order for given shell.'''
+    l = self.basis.bas[i][1]
+    if l == 0:
+      return (0,)
+    if self.cartesian:
+      order_orbkit = self.qc.ao_spec.get_lxlylz()[self.qc.ao_spec.get_assign_lxlylz_to_cont()==i,:]
+      order_libcint = []
+      for item in combinations_with_replacement('xyz', l):
+        order_libcint.append([item.count('x'), item.count('y'), item.count('z')])
+      order_libcint = numpy.array(order_libcint)
+    else:
+      order_orbkit = numpy.array(self.qc.ao_spec.get_lm())[self.qc.ao_spec.get_assign_lm_to_cont()==i,1]
+      if l == 1:
+        order_libcint = numpy.array([1,-1,0])
+      else:
+        order_libcint = numpy.array(range(-l,l+1))
+    return match_order(order_libcint, order_orbkit)
+
   def _norm_cart_shell(self):
     '''Calculates normalization factors for each shell. Required to rescale cartesian integrals.'''
     self.basis.cart_norm = []
@@ -630,7 +734,6 @@ class AOIntegrals():
       S = numpy.reshape(mat, (di, di)).T
       S = numpy.sqrt(numpy.diag(S))
       self.basis.cart_norm.append(S)
-
 
 def _libcint1e(basis, operator, shells_i, shells_j):
   '''Calculate AO integral matrix.
@@ -694,14 +797,10 @@ def _libcint1e(basis, operator, shells_i, shells_j):
         buf /= basis.cart_norm[j].reshape(1,dj)
 
       # switch order of basis functions (angl>1)
-      angl = basis.bas[i][1]
-      if angl > 1:
-        order = _get_order(angl, basis.cartesian)
-        buf = buf[order,:]
-      angl = basis.bas[j][1]
-      if angl > 1:
-        order = _get_order(angl, basis.cartesian)
-        buf = buf[:,order]
+      if di > 1:
+        buf = buf[basis.order[i],:]
+      if dj > 1:
+        buf = buf[:,basis.order[j]]
 
       # store
       ii = shell_offsets_i[i]
@@ -806,22 +905,14 @@ def _libcint2e(basis, operator, shells_i, shells_j, shells_k, shells_l):
             buf /= basis.cart_norm[l].reshape(1,1,1,dl)
 
           # switch order of basis functions (angl>1)
-          angl = basis.bas[i][1]
-          if angl > 1:
-            order = _get_order(angl, basis.cartesian)
-            buf = buf[order,:,:,:]
-          angl = basis.bas[j][1]
-          if angl > 1:
-            order = _get_order(angl, basis.cartesian)
-            buf = buf[:,order,:,:]
-          angl = basis.bas[k][1]
-          if angl > 1:
-            order = _get_order(angl, basis.cartesian)
-            buf = buf[:,:,order,:]
-          angl = basis.bas[l][1]
-          if angl > 1:
-            order = _get_order(angl, basis.cartesian)
-            buf = buf[:,:,:,order]
+          if di > 1:
+            buf = buf[basis.order[i],:,:,:]
+          if dj > 1:
+            buf = buf[:,basis.order[j],:,:]
+          if dk > 1:
+            buf = buf[:,:,basis.order[k],:]
+          if dl > 1:
+            buf = buf[:,:,:,basis.order[l]]
 
           # store/replicate results
 
@@ -977,7 +1068,7 @@ def _ao2mo_slice(mat, coeffs, AOslice, MOrange=None, MOrangei=None, MOrangej=Non
     if len(mat.shape) == 2:
       return numpy.zeros((len(MOrangei), len(MOrangej)))
     elif len(mat.shape) == 4:
-      return numpy.zeros((len(MOrangei), len(MOrangej), len(MOrangek), len(MOrangel)))
+      return numpy.zeros((len(MOrangei), len(MOrangej), len(MOrangek), len(MOrangel))), 0
 
   if len(mat.shape) == 2:
     # 1-electron integrals
@@ -985,13 +1076,19 @@ def _ao2mo_slice(mat, coeffs, AOslice, MOrange=None, MOrangei=None, MOrangej=Non
     return numpy.dot(coeffs[numpy.ix_(MOrangei, AOs_)], numpy.dot(mat, coeffs[numpy.ix_(MOrangej, AOs)].T))
   elif len(mat.shape) == 4:
     # 2-electron integrals
+    mem = mat.nbytes
     mat = mat[numpy.ix_(AOs_mat, AOs, AOs, AOs)]
+    mem = max(mem, mat.nbytes)
+    mat = numpy.tensordot(mat, coeffs[numpy.ix_(MOrangej,AOs)], axes=(1, 1))
+    mem = max(mem, mat.nbytes)
+    mat = numpy.tensordot(mat, coeffs[numpy.ix_(MOrangek,AOs)], axes=(1, 1))
+    mem = max(mem, mat.nbytes)
+    mat = numpy.tensordot(mat, coeffs[numpy.ix_(MOrangel,AOs)], axes=(1, 1))
+    mem = max(mem, mat.nbytes)
     mat = numpy.tensordot(mat, coeffs[numpy.ix_(MOrangei, AOs_)], axes=(0, 1))
-    coeffs = coeffs[:,AOs]
-    mat = numpy.tensordot(mat, coeffs[MOrangej,:], axes=(0, 1))
-    mat = numpy.tensordot(mat, coeffs[MOrangek,:], axes=(0, 1))
-    mat = numpy.tensordot(mat, coeffs[MOrangel,:], axes=(0, 1))
-    return mat
+    mat = numpy.rollaxis(mat, 3, 0)
+    mem = max(mem, mat.nbytes)
+    return mat, mem
 
 def rescale_coeffs_libcint(exps, coeffs, l):
   return [ c*libcint.CINTgto_norm(l, ctypes.c_double(e)) for e, c in zip(exps, coeffs) ]
@@ -1000,20 +1097,3 @@ def _get_shell_offsets(shell_dims):
   offsets = numpy.zeros((len(shell_dims),), dtype=numpy.int)
   offsets[1:] = numpy.cumsum(shell_dims[:-1])
   return offsets
-
-def _get_order(l, cartesian):
-  '''Returns indices to transform libcint order to orbkit order.'''
-  if l == 0:
-    return (0,)
-  if l == 1:
-    return (0,1,2)
-  order = {
-    # l : (cartesian, spherical)
-    2 : ((0,3,5,1,2,4), range(5)),
-    3 : ((0,6,9,3,1,2,5,8,7,4), range(7)),
-    4 : ((0,10,14,1,2,6,11,9,13,3,5,12,4,7,8), range(9)),
-  }
-  if cartesian:
-    return order[l][0]
-  else:
-    return order[l][1]

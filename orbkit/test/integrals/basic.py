@@ -43,3 +43,22 @@ Vnn = qc.nuclear_repulsion
 # compare
 equal(Vnn, 11.73717604)
 equal(EHF+Vnn, -55.455419778557)
+
+## H2O spherical Gaussian
+qc = read.main_read(os.path.join(tests_home, '../outputs_for_testing/gaussian/h2o_rhf_sph.fchk'), all_mo=True)
+Nelec = int(qc.get_elec_charge())
+
+ao = integrals.AOIntegrals(qc)
+
+ao.add_MO_block_1e(MOrange=range(Nelec//2))
+ao.add_MO_block_2e(MOrange=range(Nelec//2))
+
+Hcore_mo = ao.kinetic(asMO=1) + ao.Vne(asMO=1)
+Vee_mo = ao.Vee(asMO=1, max_dims=0)
+Vnn = qc.nuclear_repulsion
+
+EHF = 2*numpy.trace(Hcore_mo[:Nelec//2,:Nelec//2])
+J = numpy.trace(numpy.trace(Vee_mo[:Nelec//2,:Nelec//2,:Nelec//2,:Nelec//2], axis1=2, axis2=3))
+K = numpy.trace(numpy.trace(Vee_mo[:Nelec//2,:Nelec//2,:Nelec//2,:Nelec//2], axis1=1, axis2=2))
+EHF += 2*J - K
+equal(EHF+Vnn, -75.9920448744)
