@@ -2,7 +2,8 @@
 '''
 import time
 
-def recursive_dict_resolution(indict):
+def unravel_dicts(indict):
+  '''Unravels encapsulated dictionaries stemming from class-subclass structures'''
   resolved = False
   dictchain = [indict]
   keychain = ['']
@@ -55,7 +56,7 @@ def write_native(data, outputname='new', ftype='numpy'):
     save(outputname + '.npz', **odata)
   elif ftype.lower() in ['hdf5', 'h5']:
     from orbkit.output import hdf5_write
-    odata = recursive_dict_resolution(odata)
+    odata = unravel_dicts(odata)
     for i,key in enumerate(odata.keys()):
       if i == 0:
         mode = 'w'
