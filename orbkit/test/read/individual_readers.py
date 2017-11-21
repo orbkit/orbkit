@@ -78,12 +78,14 @@ refgeo = {'tar.gz': [ 0.        ,  0.        , -2.54176518],
           }
 
 for fname in files:
+
   skip = False
   if fname == 'cclib':
     try:
       __import__(fname)
     except ImportError:
       skip = True
+
   if not skip:
     qcinfo = readers[fname](os.path.join(folder, files[fname]),cclib_parser='Gaussian')
     e_list = numpy.zeros(4, dtype=float)

@@ -53,9 +53,10 @@ itypes = ['auto',
           'wfn',
           'wfx',
           'cclib',
+          'native',
           'orbkit.dump']                        #: Specifies possible input types.
 
-otypes = ['h5', 'cb', 'am', 'hx', 'vmd', 'mayavi'] #: Specifies possible output types.
+otypes = ['h5', 'cb', 'am', 'hx', 'vmd', 'native', 'mayavi'] #: Specifies possible output types.
 
 drv_options = ['None','x','y','z',
                'xx','yy','zz','x2','y2','z2',

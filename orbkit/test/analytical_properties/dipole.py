@@ -45,24 +45,33 @@ fileext = ['.molden',
 
 for i in range(len(tests)):
   for j in range(len(folder)):
-    fid = os.path.join(output_folder,'%s/%s%s'%(folder[j],tests[i],fileext[j]))
-    
-    if 'uhf' in tests[i] and folder[j] == 'molpro':
-      # Read the alpha input file
-      qc = read.main_read(fid,itype=ok_opt[j],
-                          all_mo=True,spin=None,i_md=0,interactive=False)
-      # Extend the beta input file
-      qc_b = read.main_read(fid,itype=ok_opt[j],
-                          all_mo=True,spin=None,i_md=1,interactive=False)
-      qc.mo_spec.extend(qc_b.mo_spec)
-      qc.mo_spec.update()
-    else:
-      qc = read.main_read(fid ,itype=ok_opt[j],interactive=False,
-                          all_mo=True,cclib_parser='Gaussian')
-    
-    dip = get_dipole_moment(qc,component=['x','y','z'])
-    
-    equal(dip, ref_dip[folder[j]])
+
+    skip = False
+    if ok_opt[j] == 'cclib':
+      try:
+        __import__(ok_opt[j])
+      except ImportError:
+        skip = True
+
+    if not skip:
+      fid = os.path.join(output_folder,'%s/%s%s'%(folder[j],tests[i],fileext[j]))
+      
+      if 'uhf' in tests[i] and folder[j] == 'molpro':
+        # Read the alpha input file
+        qc = read.main_read(fid,itype=ok_opt[j],
+                            all_mo=True,spin=None,i_md=0,interactive=False)
+        # Extend the beta input file
+        qc_b = read.main_read(fid,itype=ok_opt[j],
+                            all_mo=True,spin=None,i_md=1,interactive=False)
+        qc.mo_spec.extend(qc_b.mo_spec)
+        qc.mo_spec.update()
+      else:
+        qc = read.main_read(fid ,itype=ok_opt[j],interactive=False,
+                            all_mo=True,cclib_parser='Gaussian')
+      
+      dip = get_dipole_moment(qc,component=['x','y','z'])
+      
+      equal(dip, ref_dip[folder[j]])
     
 '''
 Old tests
