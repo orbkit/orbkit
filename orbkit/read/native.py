@@ -32,7 +32,7 @@ def parse_group(group):
   return group_data
 
 # ``all_mo`` and ``spin`` make no sense here but defining them anyways makes ``main_read`` cleaner.
-def read_native(fname, all_mo=None, spin=None):
+def read_native(fname, all_mo=None, spin=None, **kwargs):
 
   ftype = fname.split('.')[-1]
 

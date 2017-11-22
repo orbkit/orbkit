@@ -35,7 +35,7 @@ import time
 
 # Import orbkit modules
 from orbkit import core, grid, extras, read
-from orbkit import options
+from orbkit import options, output
 import orbkit.display as display_module
 from orbkit.display import display,good_bye_message
 
@@ -87,6 +87,14 @@ def run_orbkit(use_qc=None,check_options=True,standalone=False):
   else:
     # Use a user defined QCinfo class.
     qc = use_qc
+
+  if 'native' in options.otype:
+    output.main_output(qc, outputname=options.outputname, otype='native', ftype=options.niotype)
+    options.otype.remove('native')
+    if not len(options.otype):
+      t.append(time.time()) # Final time
+      good_bye_message(t)
+      exit()
   
   display('\nSetting up the grid...')
   if options.grid_file is not None: 

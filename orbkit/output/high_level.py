@@ -36,7 +36,7 @@ from orbkit.units import a02aa
 from .amira import amira_creator
 from .cube import cube_creator
 from .hdf5 import hdf5_creator, hdf5_append, hdf5_write, hx_network_creator
-from .mayavi import view_with_mayavi
+from .mayavi_interface import view_with_mayavi
 from .pdb import pdb_creator
 from .vmd import vmd_network_creator
 from .xyz import xyz_creator
