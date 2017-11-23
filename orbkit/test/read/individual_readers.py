@@ -16,9 +16,6 @@ folder = os.path.join(tests_home, '../outputs_for_testing')
 
 options.quiet = True
 
-#Gamess Reader is not tested at this point
-#We need to test cclib as well
-
 files = {'fchk': 'gaussian/h2o_rhf_cart.fchk',
          'gaussian_log': 'gaussian/h2o_rhf_cart.inp.log',
          'cclib': 'gaussian/h2o_rhf_cart.inp.log',
@@ -79,24 +76,28 @@ refgeo = {'tar.gz': [ 0.        ,  0.        , -2.54176518],
           'fchk': [ -6.16297582e-32,   1.68211949e+00,  -9.51043615e-01],
           'molden': [ 0.        , -1.68211948,  1.05577926]
           }
-#I'm not shure that .fchk files are read correctly. Seems good but I
-#don't really know... Can somemone please check?
 
 for fname in files:
-  qcinfo = readers[fname](os.path.join(folder, files[fname]),cclib_parser='Gaussian')
-  e_list = numpy.zeros(4, dtype=float)
-  coeffs_list = numpy.zeros(4, dtype=float)
-  contrac_list = numpy.zeros(4, dtype=float)
-  geo_list = qcinfo.geo_spec[0]
-  for i in range(4):
-    e_list[i] = qcinfo.mo_spec[i]['energy']
-    coeffs_list[i] = qcinfo.ao_spec[i]['coeffs'][0,0]
-    contrac_list[i] = qcinfo.ao_spec[i]['coeffs'][0,1]
-  for ref in [[e_list, refeigen], [coeffs_list, refexp], [contrac_list, refcontrac], [geo_list,refgeo]]:
-    equal(ref[0], ref[1][fname])
 
-# Format string for new references
-#print("'{0}': {1},".format(fname,numpy.array2string(qcinfo.geo_spec[0], separator=', '))) 
+  skip = False
+  if fname == 'cclib':
+    try:
+      __import__(fname)
+    except ImportError:
+      skip = True
+
+  if not skip:
+    qcinfo = readers[fname](os.path.join(folder, files[fname]),cclib_parser='Gaussian')
+    e_list = numpy.zeros(4, dtype=float)
+    coeffs_list = numpy.zeros(4, dtype=float)
+    contrac_list = numpy.zeros(4, dtype=float)
+    geo_list = qcinfo.geo_spec[0]
+    for i in range(4):
+      e_list[i] = qcinfo.mo_spec[i]['energy']
+      coeffs_list[i] = qcinfo.ao_spec[i]['coeffs'][0,0]
+      contrac_list[i] = qcinfo.ao_spec[i]['coeffs'][0,1]
+    for ref in [[e_list, refeigen], [coeffs_list, refexp], [contrac_list, refcontrac], [geo_list,refgeo]]:
+      equal(ref[0], ref[1][fname])
 
 
 

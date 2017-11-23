@@ -12,68 +12,66 @@ If mayavi2 is installed, the vector field of the gradient of
 one MO will be shown.
 '''
 
-import numpy as np
+import numpy, orbkit
 
 # import the functions of orbkit (import function 
 # ok that imports all other functions)
-import orbkit as ok
-
 # defining some grid in spherical coordinates
-r     = np.arange(0.1,    3.,              0.2)
-theta = np.arange(0,      np.pi+0.1, np.pi/10.)
-phi   = np.arange(-np.pi, np.pi+0.1, np.pi/10.)
+r     = numpy.arange(0.1,       3.,              0.2)
+theta = numpy.arange(0,         numpy.pi+0.1, numpy.pi/10.)
+phi   = numpy.arange(-numpy.pi, numpy.pi+0.1, numpy.pi/10.)
 
 # initialize orbkit with default parameters and options
-ok.init()
+orbkit.init()
 
 # Setting up a spherical grid -> also sets option for vector grid
-ok.grid.sph2cart_vector(r,theta,phi)
+orbkit.grid.sph2cart_vector(r,theta,phi)
 
 # orbkit options
-ok.options.filename     = 'h2o.molden'       # input file name
-ok.options.itype        = 'molden'       # input file type
-ok.options.outputname   = 'h2o_MO'       # output file (base) name
-ok.options.otype        = 'h5'           # output file type
-ok.options.numproc      = 1              # number of processes for multiprocessing
-ok.options.slice_length = 4e4            # number of points per process
-ok.options.calc_mo      = 'MO_List.tab'  # list of molecular orbitals to be used
+orbkit.options.filename     = 'h2o.molden'       # input file name
+orbkit.options.itype        = 'molden'       # input file type
+orbkit.options.outputname   = 'h2o_MO'       # output file (base) name
+orbkit.options.otype        = 'h5'           # output file type
+orbkit.options.numproc      = 1              # number of processes for multiprocessing
+orbkit.options.slice_length = 4e4            # number of points per process
+orbkit.options.calc_mo      = 'MO_List.tab'  # list of molecular orbitals to be used
 
 # first run: do not calculate derivatives
-ok.options.drv          = None           # do not calculate derivative
-ok.options.no_output    = True           # we will create our own output
+orbkit.options.drv          = None           # do not calculate derivative
+orbkit.options.no_output    = True           # we will create our own output
 
 # run orbkit
-mo = ok.run_orbkit()
+mo = orbkit.run_orbkit()
 
 # create output: molecular orbital data
-ok.output.HDF5_creator(mo,
-    ok.options.outputname,
-    ok.main.qc.geo_info,ok.main.qc.geo_spec,
+orbkit.output.hdf5_creator(mo,
+    orbkit.options.outputname,
+    orbkit.main.qc.geo_info,orbkit.main.qc.geo_spec,
     data_id='MO',               # name of data set
     append=None,                # create new file [default]
     data_only=False,            # include grid, structure, and MO data [default]
     is_mo_output=True,
-    mo_spec=ok.main.qc.mo_spec)
+    mo_spec=orbkit.main.qc.mo_spec)
 
 # second run: calculate derivatives
-ok.options.drv       = ['x', 'y', 'z'] # calculate derivatives along x, y and z
-ok.options.no_output = True            # we will create our own output
+orbkit.options.drv       = ['x', 'y', 'z'] # calculate derivatives along x, y and z
+orbkit.options.no_output = True            # we will create our own output
 
 # run orbkit
-mo = ok.run_orbkit()
+mo = orbkit.run_orbkit()
 
 # append output: derivative data
-ok.output.HDF5_creator(mo,ok.options.outputname,None,None,
+orbkit.output.hdf5_creator(mo,orbkit.options.outputname,None,None,
   data_id='delta_MO',             # name of data set
   append='/',                     # where to append in file
   data_only=True,                 # do not include grid, structure, and MO data
   is_mo_output=False,
-  mo_spec=ok.main.qc.mo_spec)
+  mo_spec=orbkit.main.qc.mo_spec)
 
 # plot derivative
-x = ok.grid.x
-y = ok.grid.y
-z = ok.grid.z
+x = orbkit.grid.x
+y = orbkit.grid.y
+z = orbkit.grid.z
 
 # test if mayavi exists and possibly plot
 maya = False

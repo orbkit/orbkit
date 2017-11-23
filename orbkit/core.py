@@ -31,7 +31,6 @@ from .tools import *
 from multiprocessing import Pool
 
 # Import orbkit modules
-#from orbkit.qcinfo import QCinfo
 from orbkit import grid,cy_grid,cy_core
 from orbkit.display import display
 
@@ -225,10 +224,15 @@ def slice_rho(xx):
     the density on a grid.
   '''
   try:
-    # All desired information is stored in the Global variable Spec 
-    geo_spec = Spec['qc'].geo_spec
-    ao_spec = Spec['qc'].ao_spec
-    mo_spec = Spec['qc'].mo_spec
+    # All desired information is stored in the Global variable Spec
+    if isinstance(Spec['qc'], dict):
+      geo_spec = Spec['qc']['geo_spec']
+      ao_spec = Spec['qc']['ao_spec']
+      mo_spec = Spec['qc']['mo_spec']
+    else:
+      geo_spec = Spec['qc'].geo_spec
+      ao_spec = Spec['qc'].ao_spec
+      mo_spec = Spec['qc'].mo_spec
     drv = Spec['derivative']
     calc_mo = Spec['calc_mo']
     if Spec['calc_ao']:
@@ -401,13 +405,20 @@ def rho_compute(qc,calc_ao=False,calc_mo=False,drv=None,laplacian=False,
       drv = [drv]
   else:
     is_drv = False
-  
-  if calc_ao:
-    labels = qc.ao_spec.get_labels()
-    mo_num = qc.ao_spec.get_ao_num()
+
+  if isinstance(qc, dict):
+    ao_spec = qc['ao_spec']
+    mo_spec = qc['mo_spec']
   else:
-    mo_num = len(qc.mo_spec)
-    labels = [ii_mo['sym'] for ii_mo in qc.mo_spec]
+    ao_spec = qc.ao_spec
+    mo_spec = qc.mo_spec
+
+  if calc_ao:
+    labels = ao_spec.get_labels()
+    mo_num = ao_spec.get_ao_num()
+  else:
+    mo_num = len(mo_spec)
+    labels = [ii_mo['sym'] for ii_mo in mo_spec]
   
   if not grid.is_initialized:
     display('\nSetting up the grid...')
@@ -429,7 +440,12 @@ def rho_compute(qc,calc_ao=False,calc_mo=False,drv=None,laplacian=False,
   # The number of worker processes is capped to the number of 
   # grid points in x-direction.  
   if numproc > sNum: numproc = sNum
-  
+
+  if isinstance(qc, dict):
+    ao_spec = qc['ao_spec']
+  else:
+    ao_spec = qc.ao_spec
+
   # Print information regarding the density calculation 
   display('\nStarting the calculation of the %s...' % 
          ('molecular orbitals' if calc_mo else 'density'))
@@ -441,8 +457,8 @@ def rho_compute(qc,calc_ao=False,calc_mo=False,drv=None,laplacian=False,
   else:
     display('The calculation will be carried out with %d subprocesses.' 
             % numproc)
-  display('\nThere are %d contracted %s AOs' % (qc.ao_spec.get_ao_num(),
-          'Cartesian' if not qc.ao_spec.spherical else 'spherical')+ 
+  display('\nThere are %d contracted %s AOs' % (ao_spec.get_ao_num(),
+          'Cartesian' if not ao_spec.spherical else 'spherical')+ 
           ('' if calc_ao else ' and %d MOs to be calculated.' % mo_num))
   
   # Initialize some additional user information 
@@ -513,7 +529,7 @@ def rho_compute(qc,calc_ao=False,calc_mo=False,drv=None,laplacian=False,
     # Which slice do we compute 
     i = xx[s][0]
     j = xx[s][1]    
-    # Perform the compution for the current slice 
+    # Perform the compution for the current slice
     result = it.next() if numproc > 1 else slice_rho(xx[s])
     # What output do we expect 
     if calc_mo:
@@ -716,10 +732,17 @@ def rho_compute_no_slice(qc,calc_ao=False,calc_mo=False,drv=None,
               'The option `drv` has been changed to `drv=["xx","yy","zz"]`.')
     drv = ['xx','yy','zz']
   
+  if isinstance(qc, dict):
+    ao_spec = qc['ao_spec']
+    mo_spec = qc['mo_spec']
+  else:
+    ao_spec = qc.ao_spec
+    mo_spec = qc.mo_spec
+
   display('\nStarting the calculation without slicing the grid...')
-  display('\nThere are %d contracted %s AOs' % (qc.ao_spec.get_ao_num(),
-          'Cartesian' if not qc.ao_spec.spherical else 'spherical')+ 
-          ('' if calc_ao else ' and %d MOs to be calculated.' % len(qc.mo_spec)))
+  display('\nThere are %d contracted %s AOs' % (ao_spec.get_ao_num(),
+          'Cartesian' if not ao_spec.spherical else 'spherical')+ 
+          ('' if calc_ao else ' and %d MOs to be calculated.' % len(mo_spec)))
   
   if drv is not None:
     try:

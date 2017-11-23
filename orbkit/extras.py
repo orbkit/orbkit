@@ -30,7 +30,8 @@ import numpy
 from scipy import integrate
 
 # Import orbkit modules
-from orbkit import core,grid, output, options
+from orbkit import core,grid, options
+from orbkit.output import vmd_network_creator,main_output,hdf5_creator,hdf5_write,hdf5_append
 from orbkit.display import display
 from orbkit.orbitals import MOClass
 
@@ -65,7 +66,7 @@ def calc_mo(qc, fid_mo_list, drv=None, otype=None, ofid=None,
     mo_list : numpy.ndarray, shape=((NMO,) + N)
       Contains the NMO=len(qc.mo_spec) molecular orbitals on a grid.
   '''
-  mo_spec = qc.mo_spec.select(fid_mo_list, flatten_input=True)
+  mo_spec = qc.mo_spec[fid_mo_list]
   qc_select = qc.copy()
   qc_select.mo_spec = mo_spec
 
@@ -87,9 +88,9 @@ def calc_mo(qc, fid_mo_list, drv=None, otype=None, ofid=None,
   
   if not options.no_output:
     if 'h5' in otype:    
-      output.main_output(mo_list,qc.geo_info,qc.geo_spec,data_id='MO',
-                    outputname=ofid,
-                    mo_spec=qc_select.mo_spec,drv=drv,is_mo_output=True)
+      main_output(mo_list,qc.geo_info,qc.geo_spec,data_id='MO',
+                  outputname=ofid,
+                  mo_spec=qc_select.mo_spec,drv=drv,is_mo_output=True)
     # Create Output     
     cube_files = []
     for i in range(len(qc_select.mo_spec)):
@@ -98,12 +99,12 @@ def calc_mo(qc, fid_mo_list, drv=None, otype=None, ofid=None,
                                            qc_select.mo_spec.get_occ()[i],
                                            qc_select.mo_spec.get_eig()[i]))
       index = numpy.index_exp[:,i] if drv is not None else i
-      output_written = output.main_output(mo_list[index],
-                                      qc.geo_info,qc.geo_spec,
-                                      outputname=outputname,
-                                      comments=comments,
-                                      otype=otype,omit=['h5','vmd','mayavi'],
-                                      drv=drv)
+      output_written = main_output(mo_list[index],
+                                   qc.geo_info,qc.geo_spec,
+                                   outputname=outputname,
+                                   comments=comments,
+                                   otype=otype,omit=['h5','vmd','mayavi'],
+                                   drv=drv)
       
       for i in output_written:
         if i.endswith('.cb'):
@@ -112,7 +113,8 @@ def calc_mo(qc, fid_mo_list, drv=None, otype=None, ofid=None,
     if 'vmd' in otype and cube_files != []:
       display('\nCreating VMD network file...' +
                       '\n\t%(o)s.vmd' % {'o': ofid})
-      output.vmd_network_creator(ofid,cube_files=cube_files)
+      vmd_network_creator(ofid,cube_files=cube_files)
+
   if 'mayavi' in otype:
     datalabels = ['MO %(sym)s, Occ=%(occ_num).2f, E=%(energy)+.4f E_h' % 
                   i for i in qc_select.mo_spec]
@@ -124,9 +126,8 @@ def calc_mo(qc, fid_mo_list, drv=None, otype=None, ofid=None,
       datalabels = tmp
     data = mo_list.reshape((-1,) + grid.get_shape())
     
-    output.main_output(data,qc.geo_info,qc.geo_spec,
+    main_output(data,qc.geo_info,qc.geo_spec,
                        otype='mayavi',datalabels=datalabels)
-  
   return mo_list
   
 def mo_set(qc, fid_mo_list, drv=None, laplacian=None,
@@ -225,17 +226,17 @@ def mo_set(qc, fid_mo_list, drv=None, laplacian=None,
         display('Saving to Hierarchical Data Format file (HDF5)...')
         group = '/mo_set:%03d' % (i_file+1)	
         display('\n\t%s.h5 in the group "%s"' % (ofid,group))	
-        output.HDF5_creator(rho,ofid,qc.geo_info,qc.geo_spec,data_id='rho',
+        HDF5_creator(rho,ofid,qc.geo_info,qc.geo_spec,data_id='rho',
                             mode='w',group=group,mo_spec=qc_select['mo_spec'])
         if drv is not None:
           for i,j in enumerate(drv):
             data_id = 'rho_d%s' % j
-            output.HDF5_creator(delta_rho[i],ofid,qc.geo_info,qc.geo_spec,
+            HDF5_creator(delta_rho[i],ofid,qc.geo_info,qc.geo_spec,
                                 data_id=data_id,data_only=True,mode='a',
                                 group=group,mo_spec=qc_select['mo_spec'])
           if laplacian:
             data_id = 'rho_laplacian' 
-            output.HDF5_creator(laplacian_rho,ofid,qc.geo_info,qc.geo_spec,
+            HDF5_creator(laplacian_rho,ofid,qc.geo_info,qc.geo_spec,
                                 data_id=data_id,data_only=True,mode='a',
                                 group=group,mo_spec=qc_select['mo_spec'])
             
@@ -243,7 +244,7 @@ def mo_set(qc, fid_mo_list, drv=None, laplacian=None,
       cube_files.append('%s.cb' % fid)
       comments = ('mo_set:'+','.join(mo_info.selection_string))
 
-      output.main_output(rho,qc.geo_info,qc.geo_spec,outputname=fid,
+      main_output(rho,qc.geo_info,qc.geo_spec,outputname=fid,
                          otype=otype,omit=['h5','vmd','mayavi'],
                          comments=comments)
       if drv is not None:
@@ -251,28 +252,27 @@ def mo_set(qc, fid_mo_list, drv=None, laplacian=None,
           fid = '%s_%03d_d%s' % (ofid, i_file+1, j) 
           cube_files.append('%s.cb' % fid)
           comments = ('d%s_of_mo_set:' % j + ','.join(mo_info.selection_string))
-          output.main_output(delta_rho[i],qc.geo_info,qc.geo_spec,outputname=fid,
+          main_output(delta_rho[i],qc.geo_info,qc.geo_spec,outputname=fid,
                              otype=otype,omit=['h5','vmd','mayavi'],
                              comments=comments)  
         if laplacian:
           fid = '%s_%03d_laplacian' % (ofid, i_file+1) 
           cube_files.append('%s.cb' % fid)
           comments = ('laplacian_of_mo_set:' + ','.join(mo_info.selection_string))
-          output.main_output(laplacian_rho,qc.geo_info,qc.geo_spec,outputname=fid,
+          main_output(laplacian_rho,qc.geo_info,qc.geo_spec,outputname=fid,
                              otype=otype,omit=['h5','vmd','mayavi'],
                              comments=comments)  
           
   if 'vmd' in otype and cube_files != []:
       display('\nCreating VMD network file...' +
                       '\n\t%(o)s.vmd' % {'o': ofid})
-      output.vmd_network_creator(ofid,cube_files=cube_files)
-   
+      vmd_network_creator(ofid,cube_files=cube_files)
+
   datasets = numpy.array(datasets)
   if drv is None:
     if 'mayavi' in otype:
-      output.main_output(datasets,qc.geo_info,qc.geo_spec,
+      main_output(datasets,qc.geo_info,qc.geo_spec,
                        otype='mayavi',datalabels=mo_info.selected_mo)
-    print(datasets.shape)
     return datasets#, mo_info
   else:
     delta_datasets = numpy.array(delta_datasets)
@@ -282,7 +282,7 @@ def mo_set(qc, fid_mo_list, drv=None, laplacian=None,
         datalabels.extend(['d/d%s of %s' % (j,i) for j in drv])
         if laplacian:
           datalabels.append('laplacian of %s' % i)
-      output.main_output(delta_datasets.reshape((-1,) + grid.get_shape()),
+      main_output(delta_datasets.reshape((-1,) + grid.get_shape()),
                          qc.geo_info,qc.geo_spec,otype='mayavi',datalabels=datalabels)
     return datasets, delta_datasets
   # mo_set 
@@ -367,7 +367,6 @@ def calc_ao(qc, drv=None, otype=None, ofid=None,
     
     output.main_output(data,qc.geo_info,qc.geo_spec,
                        otype='mayavi',datalabels=datalabels)
-  
   return ao_list
 
 def atom2index(atom,geo_info=None):

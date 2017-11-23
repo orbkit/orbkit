@@ -10,4 +10,5 @@ from .gaussian_log import read_gaussian_log
 from .aomix import read_aomix
 from .wfx import read_wfx
 from .wfn import read_wfn
+from .native import read_native
 from .cclib_parser import read_with_cclib

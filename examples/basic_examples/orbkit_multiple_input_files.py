@@ -9,7 +9,7 @@ using analytical integrals.
 Moreover, it shows...
   - how to read a list of files
   - how to order the molecular orbital coefficients
-  - how to save and read the information obtained to and from an HDF5-file
+  - how to save and read the information obtained to and from an hdf5-file
   - how to depict several molecular orbitals
   - how to perform a standard orbkit computation for one molecular structures
 
@@ -18,7 +18,9 @@ folder and need to be decompressed before running this example.
 '''
 import os
 from time import time
-from orbkit import multiple_files as mult
+from orbkit import Multi
+from orbkit.read.high_level import main_read
+from orbkit.output.high_level import main_output
 from orbkit.display import init_display,display,tForm
 
 create_plots = False # Specifies, if plots shall be created
@@ -45,11 +47,6 @@ init_display(name = 'mo_ordering')  # Specify a filename for the oklog file
 
 t = [time()]
 
-# Create a list containing the filenames of the input files
-path = 'NaCl_molden_files'
-if not os.path.exists(path):
-  raise IOError('%s does not exist! Please extract NaCl_molden_files.tar.gz' % path)
-
 #How are input files formatted?
 fid_list = 'NaCl_molden_files.tar.gz'
 #fid = 'nacl.%03d.molden'
@@ -61,6 +58,7 @@ fid_list = 'NaCl_molden_files.tar.gz'
 #  fid_list.append(f)
 
 # Read all input files
+mult = Multi()
 mult.read(fid_list,itype='molden',all_mo=True,nosym=False)
 
 t.append(time())
@@ -116,10 +114,11 @@ if create_plots:
 
 t.append(time())
 
-hdf5_fid = 'nacl.h5' # Specifies the filename of the HDF5 file
+npz_fid = 'nacl' # Specifies the filename of the npz file
 
-# Save the results to a HDF5 file
-mult.save_hdf5(hdf5_fid)
+# Save the results to a hdf5 file
+main_output(mult, outputname=npz_fid, otype='native', ftype='numpy')
+
 
 # Reset the `orbkit.multiple_files` module
 try:
@@ -129,33 +128,31 @@ except ImportError:
     from imp import reload # <= Python3.3
   except ImportError:
     pass # Python2.X
-reload(mult)
 
 # Read in the results
-mult.read_hdf5(hdf5_fid)
+mult = main_read(npz_fid+'.npz')
 
 t.append(time())
 
 # Perform a standard orbkit computation
-QC = mult.construct_qc() # Construct the qc_info class for every structure
+mult.construct_qc() # Construct the qc_info class for every structure
 r = 0                    # Index to be calculated
 out_fid = 'nacl_r%d' % r # Specifies the name of the output file
 
 display('Running orbkit for the structure %d' % r)
-import orbkit as ok
-
+import orbkit
 
 # Initialize orbkit with default parameters and options
-ok.init(reset_display=False)
+orbkit.init(reset_display=False)
 
 # Set some options
-ok.options.adjust_grid= [5, 0.1]                # adjust the grid to the geometry
-ok.options.outputname = out_fid                 # output file (base) name
-ok.options.otype      = 'h5'                    # output file type [default]
-ok.options.numproc    = 4                       # number of processes
+orbkit.options.adjust_grid= [5, 0.1]                # adjust the grid to the geometry
+orbkit.options.outputname = out_fid                 # output file (base) name
+orbkit.options.otype      = 'h5'                    # output file type [default]
+orbkit.options.numproc    = 4                       # number of processes
 
 # Run orbkit with qc as input
-ok.run_orbkit(QC[r])
+orbkit.run_orbkit(mult.QC[r])
 
 t.append(time())
 

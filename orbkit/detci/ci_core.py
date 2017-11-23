@@ -124,7 +124,7 @@ def rho(zero,sing,molist,slice_length=1e4,numproc=1):
   
   slice_length = min(molist.shape[1],slice_length)
   ij = numpy.arange(0,molist.shape[1]+1,abs(int(slice_length)),dtype=numpy.intc)
-  ij = zip(ij[:-1],ij[1:])
+  ij = list(zip(ij[:-1],ij[1:]))
   
   data = numpy.zeros(molist.shape[1])
   return_val = omp_functions.run(slice_rho,x=ij,numproc=min(len(ij),numproc),display=display)
@@ -191,7 +191,7 @@ def jab(zero,sing,molist,molistdrv,slice_length=1e4,numproc=1):
     
   slice_length = min(molist.shape[1],slice_length)
   ij = numpy.arange(0,molist.shape[1]+1,abs(int(slice_length)),dtype=numpy.intc)
-  ij = zip(ij[:-1],ij[1:])
+  ij = list(zip(ij[:-1],ij[1:]))
   
   data = numpy.zeros((3,molist.shape[1]))
   return_val = omp_functions.run(slice_jab,x=ij,numproc=min(len(ij),numproc),display=display)
@@ -254,7 +254,7 @@ def a_nabla_b(zero,sing,molist,molistdrv,slice_length=1e4,numproc=1):
     
   slice_length = min(molist.shape[1],slice_length)
   ij = numpy.arange(0,molist.shape[1]+1,abs(int(slice_length)),dtype=numpy.intc)
-  ij = zip(ij[:-1],ij[1:])
+  ij = list(zip(ij[:-1],ij[1:]))
   
   data = numpy.zeros((3,molist.shape[1]))
   return_val = omp_functions.run(slice_a_nabla_b,x=ij,numproc=min(len(ij),numproc),display=display)

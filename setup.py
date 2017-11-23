@@ -38,5 +38,10 @@ setup(
                     extra_link_args=['-fopenmp'],
                     include_dirs=[numpy.get_include()],
                     ),
+                   # Libcint
+                   Extension("orbkit.libcint_interface.cy_mo_integrals",
+                    sources=["orbkit/libcint_interface/cy_mo_integrals.pyx"],
+                    include_dirs=[numpy.get_include()],
+                    ),
                    ],
 )

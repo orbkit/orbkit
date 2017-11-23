@@ -28,9 +28,14 @@ def read_gamess(fname, all_mo=False, spin=None, read_properties=False,
   else:
     filename = fname.name
 
-  flines = fname.readlines()       # Read the WHOLE file into RAM
-  if isinstance(fname, str):
-    fname.close()                    # Leave existing file descriptors alive
+  from io import TextIOWrapper
+  if isinstance(fname, TextIOWrapper):
+    flines = fname.readlines()       # Read the WHOLE file into RAM
+  else:
+    magic = 'This is an Orbkit magic string'
+    text = fname.read().decode("iso-8859-1").replace('\n','\n{}'.format(magic))
+    flines = text.split(magic)
+    flines.pop()
   
   # Initialize the variables 
   qc = QCinfo()
@@ -41,7 +46,7 @@ def read_gamess(fname, all_mo=False, spin=None, read_properties=False,
   restricted = True                  # Flag for restricted calculation
   sec_flag = None                    # A Flag specifying the current section
   is_pop_ana = True                  # Flag for population analysis for ground state
-  keyword = [' ATOM      ATOMIC                      COORDINATES','\n'] 
+  keyword = [' ATOM      ATOMIC                      COORDINATES',''] 
                                      # Keywords for single point calculation and 
                                      # geometry optimization
   mokey = 'EIGENVECTORS'             # Keyword for MOs
@@ -64,7 +69,7 @@ def read_gamess(fname, all_mo=False, spin=None, read_properties=False,
         restricted = False
       else:
         mokey = 'MOLECULAR ORBITALS'
-      
+
     elif keyword[0] in line and keyword[1] in flines[il-1]:
       # The section containing information about 
       # the molecular geometry begins 
@@ -159,7 +164,7 @@ def read_gamess(fname, all_mo=False, spin=None, read_properties=False,
       # Check if we are in a specific section 
       if sec_flag == 'geo_info':
         if not geo_skip:
-          if line == '\n':
+          if len(line) < 2:
             sec_flag = None
           else:
             qc.geo_info.append([thisline[0],atom_count+1,thisline[1]])

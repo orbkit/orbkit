@@ -142,21 +142,21 @@ def get_atom_symbol(atom):
   except ValueError:    
     return atom.upper()
 
-#def set_ao_spherical(ao_spec,p=[1,0]):
-  #ao_spec.spherical = True
-  #for i,ao in enumerate(ao_spec):
-    #ii = ao['type']
-    #l = lquant[ii]
-    #for m in (range(0,l+1) if l != 1 else p):
-      #ao_spec[i]['ao_spherical'].append((l,m))
-      #if m != 0:
-        #ao_spec[i]['ao_spherical'].append((l,-m))
-##    for m in (range(1,l+1) if l != 1 else p):
-##      if m != 0:
-##        ao_spherical.append([i,(l,-m)])
-  #return
+def set_ao_spherical(ao_spec,p=[1,0]):
+  ao_spec.spherical = True
+  for i,ao in enumerate(ao_spec):
+    ii = ao['type']
+    l = lquant[ii]
+    for m in (range(0,l+1) if l != 1 else p):
+      ao_spec[i]['ao_spherical'].append((l,m))
+      if m != 0:
+        ao_spec[i]['ao_spherical'].append((l,-m))
+    for m in (range(1,l+1) if l != 1 else p):
+      if m != 0:
+        ao_spherical.append([i,(l,-m)])
+  return
 
-def find_itype(fname):
+def find_itype(fname, extension=None):
   '''
   This function is used by the high-level read
   to determine what reader to use.
@@ -168,6 +168,9 @@ def find_itype(fname):
   fname: str, file descriptor
     Specifies the filename for the input file.
     fname can also be used with a file descriptor instad of a filename.
+  extension: str, optional
+    If extension is not None it will be used to attempt determining
+    filetypes by extension in place of fname.
     
   **Returns:**
   
@@ -178,6 +181,8 @@ def find_itype(fname):
     - .fchk
     - .wfx
     - .wfn
+    - .npz
+    - .hdf5 / .h5
     
   filetypes determined from magic strings:
     - Molden
@@ -194,10 +199,13 @@ def find_itype(fname):
   else:
     filename = fname.name
     was_str = False
-  
-  extensions = ['fchk', 'wfx', 'wfn']
-  if filename.split('.')[-1].lower() in extensions:
-    return filename.split('.')[-1]
+
+  if not extension:
+    extension = filename.split('.')[-1]
+  if extension.lower() in ['fchk', 'wfx', 'wfn']:
+    return extension
+  elif extension.lower() in ['numpy', 'npz', 'hdf5', 'h5']:
+    return 'native'
   
   molden_regex = re.compile(r"\[[ ]{,}[Mm]olden[ ]+[Ff]ormat[ ]{,}\]")
   gamess_regex = re.compile(r"[Gg][Aa][Mm][Ee][Ss][Ss]") #This might be too weak - Can someone who knows Gamess please check?
@@ -208,11 +216,16 @@ def find_itype(fname):
   
   itypes = ['molden', 'gamess', 'gaussian_log', 'aomix']  
   
-  text = fname.read()
+  from io import TextIOWrapper
+  if isinstance(fname, TextIOWrapper):
+    text = fname.read()
+  else:
+    text = fname.read().decode("iso-8859-1")
+
   for regname in itypes:
     if regexes[regname].search(text):
       return regname
-  
+
   if was_str:
     fname.close()
   

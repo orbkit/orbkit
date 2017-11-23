@@ -34,8 +34,8 @@ lgpl_short = '''This is ORBKIT.
 import time
 
 # Import orbkit modules
-from orbkit import core, grid, extras, output, read
-from orbkit import options
+from orbkit import core, grid, extras, read
+from orbkit import options, output
 import orbkit.display as display_module
 from orbkit.display import display,good_bye_message
 
@@ -87,6 +87,14 @@ def run_orbkit(use_qc=None,check_options=True,standalone=False):
   else:
     # Use a user defined QCinfo class.
     qc = use_qc
+
+  if 'native' in options.otype:
+    output.main_output(qc, outputname=options.outputname, otype='native', ftype=options.niotype)
+    options.otype.remove('native')
+    if not len(options.otype):
+      t.append(time.time()) # Final time
+      good_bye_message(t)
+      exit()
   
   display('\nSetting up the grid...')
   if options.grid_file is not None: 
@@ -264,14 +272,18 @@ def run_orbkit(use_qc=None,check_options=True,standalone=False):
 
   # Generate the output requested 
   if not options.no_output:
-    output_written = output.main_output(rho,qc.geo_info,qc.geo_spec,
+    output_written = output.main_output(rho,
+                       geo_info=qc.geo_info,
+                       geo_spec=qc.geo_spec,
                        outputname=options.outputname,
                        otype=options.otype,
                        data_id='rho',
                        omit=['vmd','mayavi'],
                        mo_spec=qc.mo_spec)
     if options.drv is not None:
-      output_written.extend(output.main_output(delta_rho,qc.geo_info,qc.geo_spec,
+      output_written.extend(output.main_output(delta_rho,
+                         geo_info=qc.geo_info,
+                         geo_spec=qc.geo_spec,
                          outputname=options.outputname,
                          otype=options.otype,
                          data_id='delta_rho',
@@ -279,7 +291,9 @@ def run_orbkit(use_qc=None,check_options=True,standalone=False):
                          mo_spec=qc.mo_spec,
                          drv=options.drv))
     if options.laplacian:
-      output_written.extend(output.main_output(laplacian_rho,qc.geo_info,qc.geo_spec,
+      output_written.extend(output.main_output(laplacian_rho,
+                         geo_info=qc.geo_info,
+                         geo_spec=qc.geo_spec,
                          outputname=options.outputname + '_laplacian',
                          otype=options.otype,
                          data_id='laplacian_rho',
@@ -288,7 +302,8 @@ def run_orbkit(use_qc=None,check_options=True,standalone=False):
     if 'vmd' in options.otype:
       # Create VMD network 
       display('\nCreating VMD network file...' +
-                    '\n\t%(o)s.vmd' % {'o': options.outputname})     
+                    '\n\t%(o)s.vmd' % {'o': options.outputname})
+
       cube_files = []
       for i in output_written:
         if i.endswith('.cb'):

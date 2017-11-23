@@ -11,30 +11,18 @@ need to be decompressed.
 '''
 import os,copy
 from time import time
-from orbkit import multiple_files as mult
+from orbkit.read.multiple_files import Multi
 from orbkit.display import init_display,display,tForm
 import numpy
 
 t = [time()]
 
-# Create a list containing the filenames of the input files
-path = 'pec_co2'
-if not os.path.exists(path):
-  raise IOError('%s does not exist! Please extract pec_co2.tar.gz' % path)
-
 # The bond angle
 oco = numpy.arange(170,191,2)
-# How are input files formatted?
-fid = '%d.molden'
-fid_list = []
-for i in range(1,len(oco)+1):
-  f = os.path.join(path,fid % i)
-  if not os.path.exists(f):
-    raise IOError('%s does not exist!' % f)
-  fid_list.append(f)
 
 # Read all input files
-mult.read(fid_list,itype='molden')
+mult = Multi()
+mult.read('pec_co2.tar.gz')
 
 # Save the unordered molecular orbital coefficients for depiction
 mo_before = copy.deepcopy(mult.mo_coeff_all)

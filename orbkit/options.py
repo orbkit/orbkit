@@ -53,9 +53,13 @@ itypes = ['auto',
           'wfn',
           'wfx',
           'cclib',
+          'native',
           'orbkit.dump']                        #: Specifies possible input types.
 
-otypes = ['h5', 'cb', 'am', 'hx', 'vmd', 'mayavi'] #: Specifies possible output types.
+niotypes = ['npz',
+            'hdf5']                         #: Specifies file format for native io
+
+otypes = ['h5', 'cb', 'am', 'hx', 'vmd', 'native', 'mayavi'] #: Specifies possible output types.
 
 drv_options = ['None','x','y','z',
                'xx','yy','zz','x2','y2','z2',
@@ -105,6 +109,10 @@ def init_parser():
   group.add_option("-e", "--itype", dest="itype",
                       default='auto', type="choice",choices=itypes,
                       help="input type: '" + "', '".join(itypes) + 
+                      "' [default: '%default']")
+  group.add_option("--niotype", dest="niotype",
+                      default='npz', type="choice",choices=niotypes,
+                      help="input type: '" + "', '".join(niotypes) + 
                       "' [default: '%default']")
   group.add_option("--cclib_parser",dest="cclib_parser",
                       type="string",
@@ -298,6 +306,16 @@ def check_options(error=raise_error,display=print_message,
     if itype == 'cclib' and cclib_parser is None:
       error('The input type cclib requires the specification of parser, ' + 
             'e.g., --cclib_parser=Gaussian')
+
+    if niotype not in niotypes:
+      error('Unupported format for native io (choose from "%s")\n' %
+            '", "'.join(niotypes))
+    if niotype == 'hdf5':
+      try:
+        __import__('h5py')
+      except ImportError:
+        error('External IO to HDF5 file was requested but no\n' +
+              'HDF5 module could be found.')
     
     fid_base = os.path.splitext(filename)[0]
     
@@ -482,7 +500,8 @@ def check_grid_output_compatibilty(error=raise_error):
 
 #--- Input/Output Options ---
 filename        = ''            #: Specifies input file name. (str)
-itype           = 'auto'          #: Specifies input file type. See :data:`itypes` for details. (str) 
+itype           = 'auto'        #: Specifies input file type. See :data:`itypes` for details. (str) 
+niotype         = 'npz'         #: Specifies output filetype for native io
 cclib_parser    = None          #: If itype is 'cclib', specifies the cclib.parser. (str)
 outputname      = None          #: Specifies output file (base) name. (str)
 otype           = 'h5'          #: Specifies output file type. See :data:`otypes` for details. (str or list of str or None)

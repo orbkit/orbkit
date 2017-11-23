@@ -4,24 +4,24 @@
 This file is part of orbkit. See the main program or documentation 
 for information on the license.
 
-Example file that shows how to read an HDF5 orbkit output with python.
+Example file that shows how to read an hdf5 orbkit output with python.
 '''
 
-# Import the HDF5 python module
+# Import the hdf5 python module
 import h5py
 
 fid = 'h2o.h5'
 
-# Open the HDF5 File created by orbkit
-HDF5_file = h5py.File(fid,'r')
+# Open the hdf5 File created by orbkit
+hdf5_file = h5py.File(fid,'r')
 
 # Load the grid
-x = HDF5_file['/x'][...]
-y = HDF5_file['/y'][...]
-z = HDF5_file['/z'][...]
+x = hdf5_file['/x'][...]
+y = hdf5_file['/y'][...]
+z = hdf5_file['/z'][...]
 
 # Load the density
-rho = HDF5_file['/rho'][...]
+rho = hdf5_file['/rho'][...]
 
 # Do something with the data
 import numpy
