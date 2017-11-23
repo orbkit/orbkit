@@ -27,13 +27,13 @@ class AOClass(UserList):
 
   1. Numpy-style data:
 
-      cont2atoms : numpy.ndarray, dtype=numpy.intc, shape = (NAO) 
+      cont2atoms : numpy.ndarray, dtype=numpy.intc, shape = (NAO)
         Transformation matrix between contracted GTO's and atoms.
       _assign_prim_to_cont : numpy.ndarray, dtype=numpy.intc, shape = (NPAO)
         Transformation matrix between contracted GTO's and primitive GTO's.
-      pg_expcont : numpy.ndarray, dtype=float64, shape = (NPAO, 2) 
+      pg_expcont : numpy.ndarray, dtype=float64, shape = (NPAO, 2)
         Information on primitive GTO's:
-          1st element exponent and 2nd element contraction 
+          1st element exponent and 2nd element contraction
       contspher : numpy.ndarray, dtype=numpy.intc, shape = (NAO, 2)
         Same information as ao_spherical as numpy.ndarray
       lxlylz : numpy.ndarray, dtype=numpy.intc, shape = (NAO, 3)
@@ -150,7 +150,7 @@ class AOClass(UserList):
       else:
         angular = all([numpy.allclose(self._lxlylz, other._lxlylz),
                        numpy.allclose(self._assign_lxlylz_to_cont, other._assign_lxlylz_to_cont)])
-      
+
       cont_types = all([i==j for i,j in zip(self._cont_types,other._cont_types)])
 
       same = [self.spherical == other.spherical,
@@ -407,7 +407,7 @@ class MOClass(UserList):
 
   1. Numpy-style data:
 
-      coeffs : numpy.ndarray, dtype=float64, shape = (NMO, NAO) 
+      coeffs : numpy.ndarray, dtype=float64, shape = (NMO, NAO)
         Molecular orbital coefficients.
       occ : numpy.ndarray, dtype=float64, shape = (NMO)
         Occupation numbers for molecular orbitals.
@@ -552,7 +552,7 @@ class MOClass(UserList):
 
   def get_lastbound(self):
     '''Returns index of highest bound MO.
-    ''' 
+    '''
     if not self.up2date:
       self.update()
     imaxbound = (self.get_eig() <= 0.).nonzero()[0][-1]
@@ -642,7 +642,7 @@ class MOClass(UserList):
       self.spinpolarized = True
 
   def get_labels(self):
-    return ['MO %(sym)s, Occ=%(occ_num).2f, E=%(energy)+.4f E_h' % 
+    return ['MO %(sym)s, Occ=%(occ_num).2f, E=%(energy)+.4f E_h' %
                   i for i in self.data]
 
   def set_coeffs(self, item):
@@ -789,31 +789,31 @@ class MOClass(UserList):
   def get_spin_index(self, spin):
     '''Function used to select MO's by spin. A numpy.ndarray is returned
        which contains the indexes of MO's of the selected spin.
-    
+
       **Parameters:**
-     
+
       spin : 'str', can be either 'alpha' or 'beta'
-      
+
       **Returns:**
 
       alpha : numpy.ndarray, dtype=numpy.intc
 
     '''
-    spindic = {'alpha': self.alpha_index, 'beta': self.alpha_index}
+    spindic = {'alpha': self.alpha_index, 'beta': self.beta_index}
     return numpy.array(spindic[spin], dtype=numpy.intc)
 
   def select(self, fid_mo_list, flatten_input=True, sort_indices=True):
-    '''Selects molecular orbitals from an external file or a list of molecular 
+    '''Selects molecular orbitals from an external file or a list of molecular
        orbital labels.
 
     **Parameters:**
-     
-      mo_spec :        
+
+      mo_spec :
         See :ref:`Central Variables` for details.
       fid_mo_list : str, `'all_mo'`, or list
         | If fid_mo_list is a str, specifies the filename of the molecular orbitals list.
         | If fid_mo_list is 'all_mo', creates a list containing all molecular orbitals.
-        | If fid_mo_list is a list, provides a list (or a list of lists) of molecular 
+        | If fid_mo_list is a list, provides a list (or a list of lists) of molecular
           orbital labels.
 
       flatten_input : boolean, optional
@@ -821,18 +821,18 @@ class MOClass(UserList):
 
       sort_indices : boolean, optional
         Specifies wheter list of indexes should be sorted before it is returned. This is only supported if flatten_input is set to ``True``.
-        
+
 
     **Supported Formats:**
-    
+
       Integer List (Counting from **Zero**!)::
-      
+
         1       2       3
         5       4
         homo    lumo+2:lumo+4
-      
+
       List with Symmetry Labels::
-      
+
         1.1     2.1     1.3
         1.1     4.1
         4.1     2.3     2.1
@@ -840,9 +840,9 @@ class MOClass(UserList):
       ``alpha`` and ``beta`` can be used together with symmetry labels to restrict the selection to orbitals of that symmetry.
       This option is not supported for integer lists. Note also that ``alpha`` and ``beta`` only restrict selection within one
       string of inputs. If you which to spin-restrict orbitlas given as a list of strings please use ``all_alpha`` or ``all_beta``.
-    
+
     **Returns:**
-    
+
       List of MOClass instances containing the selected orbitals as well as further information on the selection criteria used
       If a sinlge list is used as in input and/or flatten_input=True, an MOClass instance is returned instead.
     '''
@@ -851,11 +851,11 @@ class MOClass(UserList):
     if flatten_input and isinstance(list(fid_mo_list)[0], (list, numpy.ndarray)):
       display('\nWarning! Flattening of input lists requested!')
       display('\nIf this was not intendet please set ``flatten_input=False``')
-    
+
     mo_in_file = []
     selected_mo = []
     sym_select = False
-    
+
     def ordered_set(inlist):
       outlist = []
       for i in inlist:
@@ -892,14 +892,14 @@ class MOClass(UserList):
       return pos_range
 
     def parse_nosym(item):
-      keys = {'homo': str(self.get_homo()), 
+      keys = {'homo': str(self.get_homo()),
               'lumo': str(self.get_lumo()),
               'last_bound': str(self.get_lastbound()),
               'lastbound': str(self.get_lastbound())}
 
       for key in keys:
         item = item.replace(key, keys[key])
-      
+
       #This seems quite insane to me... I don't really know what else to do though...
       pos_range = range_separators(remove_empty(item.replace(':',':#:').split(':')))
       item = remove_empty(item.split(':'))
@@ -1017,16 +1017,16 @@ class MOClass(UserList):
             integer = line.replace(',',' ').split()
             mo_in_file.append(integer)
         except:
-          raise IOError('The selected mo-list (%(m)s) is not valid!' % 
+          raise IOError('The selected mo-list (%(m)s) is not valid!' %
                         {'m': fid_mo_list} + '\ne.g.\n\t1\t3\n\t2\t7\t9\n')
         fid_mo_list = mo_in_file
 
       # Print some information
       for i,j in enumerate(mo_in_file):
         display('\tLine %d: %s' % (i+1,', '.join(j)))
-      
-      # Check if the molecular orbitals are specified by symmetry 
-      # (e.g. 1.1 in MOLPRO nomenclature) or 
+
+      # Check if the molecular orbitals are specified by symmetry
+      # (e.g. 1.1 in MOLPRO nomenclature) or
       # by the number in the input file (e.g. 1)
       mo_in_file_new = []
       spinrestructions = []
@@ -1089,7 +1089,7 @@ class MOClass(UserList):
     display('\nThe following orbitals will be considered...')
     for i, sublist in enumerate(mo_in_file):
       display('\tLine %d: %s' % (i+1, str(sublist)))
-    
+
     display('')
     return mo_spec
 
