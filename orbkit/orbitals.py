@@ -491,6 +491,7 @@ class MOClass(UserList):
     else:
       mo_out = self.select(item)
     return mo_out
+
   def __setitem__(self, i, item):
     self.data[i] = item
     self.up2date = False
@@ -527,8 +528,8 @@ class MOClass(UserList):
     return same
 
   def splinsplit_array(self, array):
-    array_alpha = array[:len(self.data)//2]
-    array_beta = array[len(self.data)//2:]
+    array_alpha = array[self.alpha_index]
+    array_beta = array[self.alpha_index]
     return array_alpha, array_beta
 
   def get_homo(self, tol=1e-5):
@@ -536,53 +537,29 @@ class MOClass(UserList):
     '''
     if not self.up2date:
       self.update()
-    if not self.spinpolarized:
-      return (self.get_occ() > tol).nonzero()[0][-1]
-    else:
-      occ_alpha, occ_beta = self.splinsplit_array(self.get_occ())
-      return min([(occ_alpha > tol).nonzero()[0][-1],
-                  (occ_beta > tol).nonzero()[0][-1]])
+    return (self.get_occ() > tol).nonzero()[0][-1]
 
   def get_lumo(self, tol=1e-5):
     '''Returns index of lowest unoccupied MO.
     '''
     if not self.up2date:
       self.update()
-    if not self.spinpolarized:
-      ilumo = (self.get_occ() > tol).nonzero()[0][-1]+1
-      if ilumo > len(self.data):
-        raise ValueError('No unoccupied orbitals present!')
-      else:
-        return ilumo
-
+    ilumo = (self.get_occ() > tol).nonzero()[0][-1]+1
+    if ilumo >= len(self.data):
+      raise ValueError('No unoccupied orbitals present!')
     else:
-      occ_alpha, occ_beta = self.splinsplit_array(self.get_occ())
-      ilumo = max([(occ_alpha > tol).nonzero()[0][-1]+1,
-                   (occ_beta > tol).nonzero()[0][-1]+1])
-      if ilumo > len(self.data):
-        raise ValueError('No unoccupied orbitals present!')
-      else:
-        return ilumo
+      return ilumo
 
   def get_lastbound(self):
     '''Returns index of highest bound MO.
     ''' 
     if not self.up2date:
       self.update()
-    if not self.spinpolarized:
-      imaxbound = (self.get_eig() <= 0.).nonzero()[0][-1]
-      if imaxbound > len(self.data):
-        raise ValueError('No unoccupied orbitals present!')
-      else:
-        return imaxbound
+    imaxbound = (self.get_eig() <= 0.).nonzero()[0][-1]
+    if imaxbound >= len(self.data):
+      raise ValueError('No unoccupied orbitals present!')
     else:
-      eigen_alpha, eigen_beta = self.splinsplit_array(self.get_eig())
-      imaxbound = max([(eigen_alpha <= 0.).nonzero()[0][-1],
-                       (eigen_beta <= 0.).nonzero()[0][-1]])
-      if imaxbound > len(self.data):
-        raise ValueError('No unoccupied orbitals present!')
-      else:
-        return imaxbound   
+      return imaxbound
 
   def sort_by_sym(self):
     '''Sorts mo_spec by symmetry.
@@ -620,13 +597,28 @@ class MOClass(UserList):
     return
 
   def update(self):
+    if self.alpha_index is None and self.beta_index is None:
+      self.sort_by_energy()
+      self.get_spinstate()
+    else:
+      # sort_by_energy() does its own updating
+      self.get_coeffs()
+      self.get_occ()
+      self.get_eig()
+      self.get_sym()
+    self.up2date = True
+    return
+
+  def sort_by_energy(self):
+    tmp_data = []
+    sort = numpy.argsort(self.get_eig())
+    for s in sort:
+      tmp_data.append(self.data[s])
+    self.data = tmp_data
     self.get_coeffs()
     self.get_occ()
     self.get_eig()
     self.get_sym()
-    self.up2date = True
-    if self.alpha_index is None and self.beta_index is None:
-      self.get_spinstate()
     return
 
   def get_spinstate(self):

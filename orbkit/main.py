@@ -302,7 +302,8 @@ def run_orbkit(use_qc=None,check_options=True,standalone=False):
     if 'vmd' in options.otype:
       # Create VMD network 
       display('\nCreating VMD network file...' +
-                    '\n\t%(o)s.vmd' % {'o': options.outputname})     
+                    '\n\t%(o)s.vmd' % {'o': options.outputname})
+
       cube_files = []
       for i in output_written:
         if i.endswith('.cb'):

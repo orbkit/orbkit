@@ -114,6 +114,7 @@ def calc_mo(qc, fid_mo_list, drv=None, otype=None, ofid=None,
       display('\nCreating VMD network file...' +
                       '\n\t%(o)s.vmd' % {'o': ofid})
       vmd_network_creator(ofid,cube_files=cube_files)
+
   if 'mayavi' in otype:
     datalabels = ['MO %(sym)s, Occ=%(occ_num).2f, E=%(energy)+.4f E_h' % 
                   i for i in qc_select.mo_spec]
@@ -127,7 +128,6 @@ def calc_mo(qc, fid_mo_list, drv=None, otype=None, ofid=None,
     
     main_output(data,qc.geo_info,qc.geo_spec,
                        otype='mayavi',datalabels=datalabels)
-  
   return mo_list
   
 def mo_set(qc, fid_mo_list, drv=None, laplacian=None,
@@ -267,13 +267,12 @@ def mo_set(qc, fid_mo_list, drv=None, laplacian=None,
       display('\nCreating VMD network file...' +
                       '\n\t%(o)s.vmd' % {'o': ofid})
       vmd_network_creator(ofid,cube_files=cube_files)
-   
+
   datasets = numpy.array(datasets)
   if drv is None:
     if 'mayavi' in otype:
       main_output(datasets,qc.geo_info,qc.geo_spec,
                        otype='mayavi',datalabels=mo_info.selected_mo)
-    print(datasets.shape)
     return datasets#, mo_info
   else:
     delta_datasets = numpy.array(delta_datasets)
