@@ -28,7 +28,7 @@ tests = ['units',
 def check_import(filename):
   # This defines which modules should be checked for which folders
   # We try both to import the module and to find it within the PATH variable
-  impdict = {'hdf5': 'h5py', 'libcint': 'libcint'}
+  impdict = {'hdf5': 'h5py', 'libcint': 'lib/libcint'}
   refmod = None
   for module in impdict.keys():
     if module in filename:
