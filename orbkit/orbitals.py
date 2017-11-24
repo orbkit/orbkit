@@ -638,6 +638,7 @@ class MOClass(UserList):
       if len(split_label) == 2:
         spindic[split_label[-1]].append(isym)
         self.sym[isym] = split_label[0]
+        self.data[isym]['sym'] = self.sym[isym]
       else:
         spindic['a'].append(isym)
     if len(self.beta_index) != 0:
@@ -751,7 +752,6 @@ class MOClass(UserList):
         self.occ[imo] = mo['occ_num']
     if return_int:
       for f in self.occ:
-        self.get_spinstate()
         if self.spinpolarized and 0. > f < 1.-tol_int:
           raise ValueError('Occupation numbers are not integers')
         elif not self.spinpolarized and 0. > f < 2.-tol_int:
@@ -813,28 +813,21 @@ class MOClass(UserList):
       # orbitals are already restricted
       return
 
-    # get indices
-    idx_a = self.get_spin_index('alpha')
-    idx_b = self.get_spin_index('beta')
-
     # assert same energy
-    ener_a, ener_b = self.eig[idx_a], self.eig[idx_b]
+    ener_a, ener_b = self.eig[self.alpha_index], self.eig[self.beta_index]
     assert numpy.all(ener_a == ener_b), "MO eigenvalues do not match"
 
     # assert same MO coefficients
-    coeff_a, coeff_b = self.coeffs[idx_a], self.coeffs[idx_b]
+    coeff_a, coeff_b = self.coeffs[self.alpha_index], self.coeffs[self.beta_index]
     assert numpy.all(coeff_a == coeff_b), "MO coeffs do not match"
 
     # add occupation and select alpha orbitals only
-    occ = self.occ[idx_a] + self.occ[idx_b]
-    self.data = self.select(idx_a.tolist()).data
+    occ = self.occ[self.alpha_index] + self.occ[self.beta_index]
+    self.data = self[self.alpha_index].data
     self.spinpolarized = False
     self.update()
     self.set_occ(occ)
-
-    # update labels
-    labels = [l.rstrip('_a') for l in self.sym]
-    self.set_sym(numpy.array(labels))
+    self.update()
 
   def select(self, fid_mo_list, flatten_input=True, sort_indices=True):
     '''Selects molecular orbitals from an external file or a list of molecular
@@ -1109,6 +1102,10 @@ class MOClass(UserList):
         mo_spec.append(self.data[index])
       mo_spec.selected_mo = mo_in_file[0]
       mo_spec.selection_string = str(fid_mo_list[0])
+      # Update alpha_index and beta_index in newly created mo_spec
+      mo_spec.alpha_index = require([i for i,j in enumerate(mo_in_file[0]) if j in self.alpha_index], dtype='i')
+      mo_spec.beta_index = require([i for i,j in enumerate(mo_in_file[0]) if j in self.beta_index], dtype='i')
+
     else:
       mo_spec = []
       for i, sublist in enumerate(mo_in_file):
@@ -1117,6 +1114,9 @@ class MOClass(UserList):
           mo_sub.append(self.data[index])
         mo_sub.selected_mo = sublist
         mo_sub.selection_string = str(fid_mo_list[i])
+        # Update alpha_index and beta_index in newly created mo_spec
+        mo_sub.alpha_index = require([i for i,j in enumerate(sublist) if j in self.alpha_index], dtype='i')
+        mo_sub.beta_index = require([i for i,j in enumerate(sublist) if j in self.beta_index], dtype='i')
         mo_spec.append(mo_sub)
 
     # Print some information

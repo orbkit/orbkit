@@ -59,7 +59,7 @@ for i in range(len(tests)):
       ao_overlap_matrix = ai.get_ao_overlap(qc.geo_spec,qc.geo_spec,qc.ao_spec)
       # Loop over spin if unrestricted
       for spin in ['alpha','beta']:
-        mos = qc.mo_spec.select('all_mo '+spin)
+        mos = qc.mo_spec['all_mo ' + spin]
         if mos != []:
           moom = ai.get_mo_overlap_matrix(mos,mos,ao_overlap_matrix,numproc=options.numproc)
           equal(moom, numpy.eye(len(moom)),tol=tol)
