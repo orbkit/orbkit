@@ -494,15 +494,6 @@ class MOClass(UserList):
       mo_out = self.select(index)
     return mo_out
 
-<<<<<<< HEAD
-  def __setitem__(self, index, item):
-    self.data[index] = item
-    self.up2date = False
-
-  def __delitem__(self, index):
-    del self.data[index]
-    self.up2date = False
-=======
   def __setitem__(self, i, item):
     self.data[i] = item
     self._up_to_date = False
@@ -510,7 +501,6 @@ class MOClass(UserList):
   def __delitem__(self, i):
     del self.data[i]
     self._up_to_date = False
->>>>>>> development
 
   def __eq__(self, other):
     cases = [isinstance(other, MOClass), other == [], other is None]
@@ -878,6 +868,8 @@ class MOClass(UserList):
       ``alpha`` and ``beta`` can be used together with symmetry labels to restrict the selection to orbitals of that symmetry.
       This option is not supported for integer lists. Note also that ``alpha`` and ``beta`` only restrict selection within one
       string of inputs. If you which to spin-restrict orbitlas given as a list of strings please use ``all_alpha`` or ``all_beta``.
+      You may also select all MO's of a given symmetry by specifying only the symmetry label
+      with a preceeding asterisc, e.g. ``*A1`` to get all orbitals of A1 symmetry. 
 
     **Returns:**
 
@@ -981,16 +973,13 @@ class MOClass(UserList):
 
     def parse_sym(item):
       error = False
-      tmp = []
-      if any([operation in item for operation in ['+', '-', ':']]) \
-         or '.' not in item:
-         raise IOError('{0} is not a valid label according '.format(item) +
-                      'to the MOLPRO nomenclature, e.g., `5.1` or `5.A1`.' +
-                      '\n\tHint: You cannot mix integer numbering and MOLPRO\'s ' +
-                      'symmetry labels')
-      for i in numpy.argwhere(self.get_sym() == item):
-        tmp.extend(i)
-      return tmp
+      if any([operation in item for operation in ['+', '-', ':']]):
+        raise ValueError('Combining (mathematical) operators and symmetry' +
+                         'labels is not supported')
+      elif '.' not in item:
+        return [i for i,s in enumerate(self.get_sym()) if item.split('*')[-1] in s]
+      else:
+        return [i for i,s in enumerate(self.get_sym()) if s == item]
 
     def parse_spin(item, all_alpha_beta):
       spindic = {0: 'all_alpha', 1: 'all_beta'}
@@ -1073,7 +1062,7 @@ class MOClass(UserList):
         spinrestructions.append(srec)
         tmp = []
         for item in sublist:
-          if '.' not in item:
+          if '.' not in item and '*' not in item:
             if isinstance(item, str):
               tmp.extend(parse_nosym(item))
             else:
