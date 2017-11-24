@@ -35,9 +35,9 @@ from .tools import *
 from .orbitals import AOClass, MOClass
 
 def get_ao_overlap(coord_a, coord_b, ao_spec, lxlylz_b=None,
-                   drv=None):
+                   drv=None, cell_a=None, cell_b=None, pbc_exp=[2,2,2]):
   '''Computes the overlap matrix of a basis set, where `Bra` basis set
-  corresponds to the geometry :literal:`coord_a` and `Ket` basis set corresponds 
+  corresponds to the geometry :literal:`geom_a` and `Ket` basis set corresponds 
   to the geometry :literal:`coord_b`.
   
   In order to enable the computation of analytical expectation values, 
@@ -48,10 +48,10 @@ def get_ao_overlap(coord_a, coord_b, ao_spec, lxlylz_b=None,
   
   **Parameters:**
   
-  coord_a : geo_spec
+  coord_a : numpy.ndarray
     Specifies the geometry of the `Bra` basis set. 
     See :ref:`Central Variables` in the manual for details.  
-  coord_b : geo_spec
+  coord_b : numpy.ndarray
     Specifies the geometry of the `Ket` basis set. 
     See :ref:`Central Variables` in the manual for details.  
   ao_spec : 
@@ -59,6 +59,14 @@ def get_ao_overlap(coord_a, coord_b, ao_spec, lxlylz_b=None,
   lxlylz_b : numpy.ndarray, dtype=numpy.int64, shape = (NAO,3), optional
     Contains the expontents lx, ly, lz for the primitive Cartesian Gaussians of
     the `Ket` basis set. 
+  cell : numpy.ndarray, optional
+    Unit cell for geom_a and geom_b - if specified, the calculation of the ao_overlap will
+    contain contributions stemming from periodic images.
+    *NOTE* : Due to issues with missmatching nubers of atoms in computational supercells
+    using different cells for coord_a and coord_b is currently not supported.
+  pbc_exp : list, optioal
+    Used to specify the maximum expansion of the unit cell along periodic directions.
+    If not specified, only nearest-neighbor cells will be considered (pbc_exp=[2,2,2]).
   
   **Returns:**
   
@@ -71,7 +79,7 @@ def get_ao_overlap(coord_a, coord_b, ao_spec, lxlylz_b=None,
   if isinstance(drv, list) or (isinstance(drv, str) and len(drv) > 1):
     aoom = []
     for ii_d in drv:
-      aoom.append(get_ao_overlap(coord_a,coord_b,ao_spec,
+      aoom.append(get_ao_overlap(geom_a,geom_b,ao_spec,
                                  lxlylz_b=lxlylz_b,
                                  drv=ii_d))
     return aoom
@@ -94,16 +102,53 @@ def get_ao_overlap(coord_a, coord_b, ao_spec, lxlylz_b=None,
   if drv > 3:
     raise ValueError('Only first derivatives are currently supported for ' +
                      'analytical integrals.')
-  
+
+
+  # Here we prepare the data for the actual overlap calculation with the
+  # purpose of correctly accounting for periodic boundary conditions
+
+  nlxlylz_per_cont = ao_spec.get_nlxlylz_per_cont()
+  prim_coeffs = ao_spec.get_prim_coeffs()
+  nprim_per_cont = ao_spec.get_nprim_per_cont()
+  cont_to_atoms = ao_spec.get_assign_cont_to_atoms()
+  lxlylz_a = lxlylz_a.copy()
+  lxlylz_b = lxlylz_b.copy()
+
+
+  if cell is not None:
+    from .geometry_tools import build_computational_supercell
+
+    coord_a, sc_map, nc = build_computational_supercell(cell, coord_a, cell, pbc_exp)
+    if not numpy.allclose(coord_a, coord_b):
+      coord_b = build_computational_supercell(cell, coord_b, cell, pbc_exp, return_mapping=False)
+    else:
+      coord_b = coord_a
+
+    # First we expand alls the lists that we will need
+    prim_coeffs = require([pc for i in range(nc) for pc in prim_coeffs],dtype='i')
+    lxlylz_a = require([lxyz for i in range(nc) for lxyz in lxlylz_a],dtype='i')
+    lxlylz_b = require([lxyz for i in range(nc) for lxyz in lxlylz_b],dtype='i')
+    nprim_per_cont = require([npc for i in range(nc) for npc in nprim_per_cont],dtype='i')
+    nlxlylz_per_cont = require([nxyzc for i in range(nc) for nxyzc in nlxlylz_per_cont],dtype='i')
+    prim_coeffs = require([pc for i in range(nc) for pc in prim_coeffs],dtype='f')
+    cont_to_atoms = require([c2a for i in range(nc) for c2a in cont_to_atoms],dtype='i')
+
+    # Then we take care of mapping everything properly to the new supercell
+    ncprim = len(cont_to_atoms) // nc
+    for isc in range(1,nc):
+      for icgp in range(ncprim):
+        icgs = icgp + isc*ncprim
+        cont_to_atoms[icgs] = sc_map[cont_to_atoms[icgp]][isc]
+      
   
   ao_overlap_matrix = cy_overlap.aooverlap(coord_a,
                                            coord_b,
                                            lxlylz_a,
                                            lxlylz_b,
-                                           ao_spec.get_nlxlylz_per_cont(),
-                                           ao_spec.get_prim_coeffs(),
-                                           ao_spec.get_nprim_per_cont(),
-                                           ao_spec.get_assign_cont_to_atoms(),
+                                           nlxlylz_per_cont,
+                                           prim_coeffs,
+                                           nprim_per_cont,
+                                           cont_to_atoms,
                                            drv,
                                            ao_spec.get_normalized())
 

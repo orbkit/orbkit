@@ -170,11 +170,12 @@ class AOClass(UserList):
       else:
         return False
 
-  def __setitem__(self, i, item):
-    self.data[i] = item
+  def __setitem__(self, index, item):
+    self.data[index] = item
     self.up_to_date = False
-  def __delitem__(self, i):
-    del self.data[i]
+
+  def __delitem__(self, index):
+    del self.data[index]
     self.up_to_date = False
 
   def append(self, item):
@@ -183,8 +184,8 @@ class AOClass(UserList):
 
   def extend(self, item):
     UserList.extend(self, item)
-
     self.up_to_date = False
+
   def remove(self, item):
     UserList.remove(self, item)
     self.up_to_date = False
@@ -459,45 +460,45 @@ class MOClass(UserList):
             'sym': self.sym}
     return data
 
-  def __getitem__(self, item):
+  def __getitem__(self, index):
     parse_directly = False
-    if isinstance(item, (int, numpy.int64)):
-      return UserList.__getitem__(self, item)
-    elif isinstance(item, (list, numpy.ndarray)) or \
-         (sys.version_info.major == 3 and isinstance(item, range)):
-      if isinstance(item, numpy.ndarray):
-        parse_directly = item.dtype in [int, numpy.int_, numpy.intc, bool, numpy.bool_]
+    if isinstance(index, (int, numpy.int64)):
+      return UserList.__getitem__(self, index)
+    elif isinstance(index, (list, numpy.ndarray)) or \
+         (sys.version_info.major == 3 and isinstance(index, range)):
+      if isinstance(index, numpy.ndarray):
+        parse_directly = index.dtype in [int, numpy.int_, numpy.intc, bool, numpy.bool_]
       else:
         parse_directly = True
-        for it in item:
+        for it in index:
           if not isinstance(it, (int, numpy.int_, numpy.intc, bool, numpy.bool_)):
             parse_directly = False
             break
     if parse_directly:
-      item = numpy.array(item)
-      if item.ndim > 1:
+      index = numpy.array(index)
+      if index.ndim > 1:
         raise ValueError('Only 1D arrays can be used for indexing!')
       data_out = []
-      for i, c in enumerate(item):
+      for i, c in enumerate(index):
         if isinstance(c, numpy.bool_):
           if c:
             data_out.append(self.data[i])
         else:
           data_out.append(self.data[c])
       mo_out = MOClass(data_out)
-      mo_out.selected_mo = item
+      mo_out.selected_mo = index
       mo_out.update()
       del data_out
     else:
-      mo_out = self.select(item)
+      mo_out = self.select(index)
     return mo_out
 
-  def __setitem__(self, i, item):
-    self.data[i] = item
+  def __setitem__(self, index, item):
+    self.data[index] = item
     self.up2date = False
 
-  def __delitem__(self, i):
-    del self.data[i]
+  def __delitem__(self, index):
+    del self.data[index]
     self.up2date = False
 
   def __eq__(self, other):

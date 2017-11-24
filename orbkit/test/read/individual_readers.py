@@ -91,6 +91,7 @@ for fname in files:
     e_list = numpy.zeros(4, dtype=float)
     coeffs_list = numpy.zeros(4, dtype=float)
     contrac_list = numpy.zeros(4, dtype=float)
+    print(qcinfo.geo_spec)
     geo_list = qcinfo.geo_spec[0]
     for i in range(4):
       e_list[i] = qcinfo.mo_spec[i]['energy']

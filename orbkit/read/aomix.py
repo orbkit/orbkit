@@ -170,8 +170,7 @@ def read_aomix(fname, all_mo=False, spin=None, i_md=-1, interactive=True,
         if sec_flag == 'geo_info':
           # Geometry section 
           qc.geo_info.append(thisline[0:3])
-          qc.geo_spec.append([float(ii) for ii in thisline[3:
-              ]])
+          qc.geo_spec.append([float(ii) for ii in thisline[3:]])
         if sec_flag == 'ao_info':
           # Atomic orbital section 
           def check_int(i):

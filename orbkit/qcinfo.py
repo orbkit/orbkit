@@ -38,14 +38,12 @@ class QCinfo:
 
   See :ref:`Central Variables` in the manual for details.
   '''
-  def __init__(self, data=None):
-    self.geo_info = []
-    self.geo_spec = []
-    
+  def __init__(self, data=None):  
     if data:
       self.geo_spec = data['geo_spec']
       self.geo_info = data['geo_info']
       self.format_geo()
+      self.cell = data['cell']
       if isinstance(data['ao_spec'], numpy.ndarray):
         ao_spec = data['ao_spec'][numpy.newaxis][0]
       else:
@@ -59,6 +57,7 @@ class QCinfo:
     else:
       self.geo_info = []
       self.geo_spec = []
+      self.cell = numpy.zeros((3,3))
       self.ao_spec = AOClass()
       self.mo_spec = MOClass()
 
