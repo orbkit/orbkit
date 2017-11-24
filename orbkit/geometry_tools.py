@@ -7,7 +7,7 @@ def norm(a, b, cell, disp=[0,0,0]):
      and another atom in an arbitrary cell'''
   return numpy.linalg.norm(a - (b + numpy.dot(cell, disp)))
 
-def build_computational_supercell(cell, coord, cell, pbc_exp=[1,1,1], return_mapping=True):
+def build_computational_supercell(cell, coord, cell, pbc_exp=[2,2,2], return_mapping=True):
   '''Builds up the supercell used in the AO overlap calculations
   and returns the mapping needed to project the supercell back
   to the primitive cell.
