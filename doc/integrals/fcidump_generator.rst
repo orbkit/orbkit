@@ -12,9 +12,9 @@ The file can be generated from a QCinfo object. Assuming we start from some mold
 
 .. code-block:: python
 
-    >> from orbkit import read, integrals
+    >> from orbkit import read, libcint_interface
     >> qc = read.main_read('h2o.molden', all_mo=True)
-    >> integrals.generate_fcidump(qc)
+    >> libcint_interface.generate_fcidump(qc)
 
 This will create a file named ``FCIDUMP``. The filename can be controlled by passing the ``filename`` parameter, an empty string disables writing to file. The return value of the function is a ``FCIDUMP`` object (see below).
 
@@ -22,13 +22,13 @@ Furthermore you can pass a point group to exploit symmetry, provided the molecul
 
 .. code-block:: python
 
-    >> integrals.generate_fcidump(qc, filename='FCIDUMP_H2O_C2v', sym='c2v')
+    >> libcint_interface.generate_fcidump(qc, filename='FCIDUMP_H2O_C2v', sym='c2v')
 
 The active space can be controlled by the optional ``occ`` and ``closed`` parameters, which work similar to the corresponding cards in Molpro: They accept a list of integers, one for each IRREP. A given integer :math:`n` then sets the first :math:`n` orbitals in this IRREP to be *occupied* or *core* respectively.
 
 .. code-block:: python
 
-    >> integrals.generate_fcidump(qc, filename='FCIDUMP_H2O_C2v', sym='c2v', core=[1,0,0,0], occ=[2,1,1,0])
+    >> libcint_interface.generate_fcidump(qc, filename='FCIDUMP_H2O_C2v', sym='c2v', core=[1,0,0,0], occ=[2,1,1,0])
 
 
 Accessing integrals from the FCIDUMP
@@ -38,8 +38,8 @@ The ``FCIDUMP`` class may also be used to access the MO integrals. First, either
 
 .. code-block:: python
 
-    >> fcidump = integrals.generate_fcidump(qc, filename='')
-    >> fcidump = integrals.load_fcidump('FCIDUMP')
+    >> fcidump = libcint_interface.generate_fcidump(qc, filename='')
+    >> fcidump = libcint_interface.load_fcidump('FCIDUMP')
 
 The ``fcidump`` object then gives access to the different integrals. Integrals are internally stored in spatial orbital basis, and only unique integrals are kept. For example ``fcidump.get_H()`` returns a upper triangular matrix with the 1-electron integrals, while the lower triangular part contains only zeros. If the complete matrix is needed, pass ``full=True``. For unrestricted orbitals the parameter ``spin='alpha'`` (default) or ``spin='beta'`` controlls the required subset. Integrals in spin orbital basis are obtained by ``fcidump.get_h()``.
 

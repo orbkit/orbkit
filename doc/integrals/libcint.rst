@@ -1,11 +1,11 @@
 Libcint Interface
 =================
 
-The ``integrals`` module provides a class ``AOIntegrals``, that gives access to various integrals calculated from the information available in a QCinfo object. Make sure libcint is installed  and added to the PATH environment variable (see :ref:`Install libcint`). First create an instance of ``AOIntegrals`` from a QCinto object, e.g.:
+The ``libcint_interface`` module provides a class ``AOIntegrals``, that gives access to various integrals calculated from the information available in a QCinfo object. Make sure libcint is installed  and added to the PATH environment variable (see :ref:`Install libcint`). First create an instance of ``AOIntegrals`` from a QCinto object, e.g.:
 
 .. code-block:: python
 
-    >> from orbkit import read, integrals
+    >> from orbkit import read, libcint_interface
     >> qc = read.main_read('h2o.molden', all_mo=True)
     >> ao = integrals.AOIntegrals(qc)
 
@@ -13,7 +13,7 @@ By default, the Integrals are calculated by using cartesian Gaussians. Switching
 
 .. code-block:: python
 
-    >> ao = integrals.AOIntegrals(qc, cartesian=False)
+    >> ao = libcint_interface.AOIntegrals(qc, cartesian=False)
 
 Integrals can then be calculated by calling ``ao.int1e(operator)`` or ``ao.int2e(operator)`` for 1- and 2-electron integrals respectively, and passing the desired ``operator`` base name. A list of available operators can be found in the `libcint documentation`_.
 

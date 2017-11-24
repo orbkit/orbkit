@@ -59,7 +59,6 @@ equal(qc.mo_spec[[['1.A1', '2.A1'], ['1.B2', '3.A1', 'alpha']]], refmo)
 
 refmo = MOClass([qc.mo_spec[i] for i in range(12)])
 refmo.update()
-
 equal(qc.mo_spec[list(map(str,range(12)))], refmo)
 
 # Test lists of integers

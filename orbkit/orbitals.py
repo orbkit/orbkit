@@ -27,13 +27,13 @@ class AOClass(UserList):
 
   1. Numpy-style data:
 
-      cont2atoms : numpy.ndarray, dtype=numpy.intc, shape = (NAO) 
+      cont2atoms : numpy.ndarray, dtype=numpy.intc, shape = (NAO)
         Transformation matrix between contracted GTO's and atoms.
       _assign_prim_to_cont : numpy.ndarray, dtype=numpy.intc, shape = (NPAO)
         Transformation matrix between contracted GTO's and primitive GTO's.
-      pg_expcont : numpy.ndarray, dtype=float64, shape = (NPAO, 2) 
+      pg_expcont : numpy.ndarray, dtype=float64, shape = (NPAO, 2)
         Information on primitive GTO's:
-          1st element exponent and 2nd element contraction 
+          1st element exponent and 2nd element contraction
       contspher : numpy.ndarray, dtype=numpy.intc, shape = (NAO, 2)
         Same information as ao_spherical as numpy.ndarray
       lxlylz : numpy.ndarray, dtype=numpy.intc, shape = (NAO, 3)
@@ -54,7 +54,7 @@ class AOClass(UserList):
   '''
   def __init__(self, seq = [], restart=None):
     UserList.__init__(self, seq)
-    self.up_to_date = False
+    self._up_to_date = False
     self.normalized = False
     self.spherical = False
 
@@ -89,7 +89,7 @@ class AOClass(UserList):
     #self.assign_lm = None
 
     if restart is not None:
-      self.up_to_date = True
+      self._up_to_date = True
       self.normalized           = restart['normalized']
       self.spherical            = restart['spherical']
 
@@ -150,7 +150,7 @@ class AOClass(UserList):
       else:
         angular = all([numpy.allclose(self._lxlylz, other._lxlylz),
                        numpy.allclose(self._assign_lxlylz_to_cont, other._assign_lxlylz_to_cont)])
-      
+
       cont_types = all([i==j for i,j in zip(self._cont_types,other._cont_types)])
 
       same = [self.spherical == other.spherical,
@@ -170,29 +170,30 @@ class AOClass(UserList):
       else:
         return False
 
-  def __setitem__(self, index, item):
-    self.data[index] = item
-    self.up_to_date = False
+  def __setitem__(self, i, item):
+    self.data[i] = item
+    self._up_to_date = False
 
-  def __delitem__(self, index):
-    del self.data[index]
-    self.up_to_date = False
+  def __delitem__(self, i):
+    del self.data[i]
+    self._up_to_date = False
 
   def append(self, item):
     UserList.append(self, item)
-    self.up_to_date = False
+    self._up_to_date = False
 
   def extend(self, item):
     UserList.extend(self, item)
-    self.up_to_date = False
+    self._up_to_date = False
 
   def remove(self, item):
     UserList.remove(self, item)
-    self.up_to_date = False
+    self._up_to_date = False
 
   def update(self):
     '''Transfers UserList data dictionary to internal variables
     '''
+    self._up_to_date = False
     self.check_members()
     self.update_ao_data()
     self.update_lxlylz()
@@ -200,7 +201,7 @@ class AOClass(UserList):
 
     self.is_normlized(force=True)
 
-    self.up_to_date = True
+    self._up_to_date = True
 
   def check_members(self):
     if self.data == []:
@@ -240,7 +241,7 @@ class AOClass(UserList):
   def is_normlized(self,force=False):
     '''Check if orbitals in AOClass are normalized.
     '''
-    if not self.up_to_date or force:
+    if not self._up_to_date or force:
       self.normalized = False
       conts_are_norm = []
       for cont in self.data:
@@ -307,7 +308,7 @@ class AOClass(UserList):
         if m != 0:
           self.data[sel_ao]['lm'].append((l,-m))
     self.spherical = True
-    self.up_to_date = False
+    self._up_to_date = False
 
   def internal_to_dict(self):
     '''Transforms Numpy-style data to lists of dictionary style data
@@ -328,54 +329,54 @@ class AOClass(UserList):
 
   #def get_atom_indices(self):
   def get_assign_cont_to_atoms(self):
-    if not self.up_to_date: self.update()
+    if not self._up_to_date: self.update()
     return copy(self._assign_cont_to_atoms)
 
   #def get_type_list(self):
   def get_cont_types(self):
-    if not self.up_to_date: self.update()
+    if not self._up_to_date: self.update()
     return copy(self._cont_types)
 
   #def get_pnum_list(self):
   def get_nprim_per_cont(self):
-    if not self.up_to_date: self.update()
+    if not self._up_to_date: self.update()
     return copy(self._nprim_per_cont)
 
   #def get_ao_coeffs(self):
   def get_prim_coeffs(self):
-    if not self.up_to_date: self.update()
+    if not self._up_to_date: self.update()
     return copy(self._prim_coeffs)
 
   #def get_prim2cont(self):
   def get_assign_prim_to_cont(self):
-    if not self.up_to_date: self.update()
+    if not self._up_to_date: self.update()
     return copy(self._assign_prim_to_cont)
 
   def get_lxlylz(self):
-    if not self.up_to_date: self.update()
+    if not self._up_to_date: self.update()
     return copy(self._lxlylz)
 
   #def get_assign_lxlylz(self):
   def get_assign_lxlylz_to_cont(self):
-    if not self.up_to_date: self.update()
+    if not self._up_to_date: self.update()
     return copy(self._assign_lxlylz_to_cont)
 
   #def get_bincount_lxlylz(self):
   def get_nlxlylz_per_cont(self):
-    if not self.up_to_date: self.update()
+    if not self._up_to_date: self.update()
     return copy(self._nlxlylz_per_cont)
 
   def get_lm(self):
-    if not self.up_to_date: self.update()
+    if not self._up_to_date: self.update()
     return copy(self._lm)
 
   #def get_assign_lm(self):
   def get_assign_lm_to_cont(self):
-    if not self.up_to_date: self.update()
+    if not self._up_to_date: self.update()
     return copy(self._assign_lm_to_cont)
 
   def get_normalized(self):
-    if not self.up_to_date: self.update()
+    if not self._up_to_date: self.update()
     return int(self.normalized)
 
 
@@ -385,11 +386,11 @@ class AOClass(UserList):
   def get_old_ao_spherical(self):
     '''Compatability funtction to allow access to old-style ao_spherical.
     '''
-    if not self.up_to_date: self.update()
+    if not self._up_to_date: self.update()
     return list(zip(self.get_assign_lm_to_cont(),self.get_lm())) if self.spherical else []
 
   def get_labels(self):
-    if not self.up_to_date: self.update()
+    if not self._up_to_date: self.update()
     if self.spherical:
       labels = ['l,m=%s,atom=%d' % (self.get_lm()[i],self.get_assign_cont_to_atoms()[j])
                 for i,j in enumerate(self.get_assign_lm_to_cont())]
@@ -399,7 +400,7 @@ class AOClass(UserList):
     return labels
 
   def get_ao_num(self):
-    if not self.up_to_date: self.update()
+    if not self._up_to_date: self.update()
     return len(self.get_lm()) if self.spherical else len(self.get_lxlylz())
 
 class MOClass(UserList):
@@ -408,7 +409,7 @@ class MOClass(UserList):
 
   1. Numpy-style data:
 
-      coeffs : numpy.ndarray, dtype=float64, shape = (NMO, NAO) 
+      coeffs : numpy.ndarray, dtype=float64, shape = (NMO, NAO)
         Molecular orbital coefficients.
       occ : numpy.ndarray, dtype=float64, shape = (NMO)
         Occupation numbers for molecular orbitals.
@@ -425,7 +426,7 @@ class MOClass(UserList):
   '''
   def __init__(self, seq = [], restart=None):
     UserList.__init__(self, seq)
-    self.up2date = False
+    self._up_to_date = False
     self.coeffs = None
     self.occ = None
     self.sym = None
@@ -436,7 +437,7 @@ class MOClass(UserList):
     self.alpha_index = None
     self.beta_index = None
     if restart is not None:
-      self.up2date = True
+      self._up_to_date = True
       self.coeffs = restart['coeffs']
       self.occ = restart['occ']
       self.sym = restart['sym']
@@ -493,6 +494,7 @@ class MOClass(UserList):
       mo_out = self.select(index)
     return mo_out
 
+<<<<<<< HEAD
   def __setitem__(self, index, item):
     self.data[index] = item
     self.up2date = False
@@ -500,6 +502,15 @@ class MOClass(UserList):
   def __delitem__(self, index):
     del self.data[index]
     self.up2date = False
+=======
+  def __setitem__(self, i, item):
+    self.data[i] = item
+    self._up_to_date = False
+
+  def __delitem__(self, i):
+    del self.data[i]
+    self._up_to_date = False
+>>>>>>> development
 
   def __eq__(self, other):
     cases = [isinstance(other, MOClass), other == [], other is None]
@@ -536,14 +547,14 @@ class MOClass(UserList):
   def get_homo(self, tol=1e-5):
     '''Returns index of highest occupied MO.
     '''
-    if not self.up2date:
+    if not self._up_to_date:
       self.update()
     return (self.get_occ() > tol).nonzero()[0][-1]
 
   def get_lumo(self, tol=1e-5):
     '''Returns index of lowest unoccupied MO.
     '''
-    if not self.up2date:
+    if not self._up_to_date:
       self.update()
     ilumo = (self.get_occ() > tol).nonzero()[0][-1]+1
     if ilumo >= len(self.data):
@@ -553,8 +564,8 @@ class MOClass(UserList):
 
   def get_lastbound(self):
     '''Returns index of highest bound MO.
-    ''' 
-    if not self.up2date:
+    '''
+    if not self._up_to_date:
       self.update()
     imaxbound = (self.get_eig() <= 0.).nonzero()[0][-1]
     if imaxbound >= len(self.data):
@@ -570,15 +581,15 @@ class MOClass(UserList):
 
   def append(self, item):
     UserList.append(self, item)
-    self.up2date = False
+    self._up_to_date = False
 
   def extend(self, item):
     UserList.extend(self, item)
-    self.up2date = False
+    self._up_to_date = False
 
   def remove(self, item):
     UserList.remove(self, item)
-    self.up2date = False
+    self._up_to_date = False
 
   def mo_template(self):
     template = {'coeffs': None,
@@ -598,6 +609,7 @@ class MOClass(UserList):
     return
 
   def update(self):
+    self._up_to_date = False
     if self.alpha_index is None and self.beta_index is None:
       self.sort_by_energy()
       self.get_spinstate()
@@ -607,7 +619,7 @@ class MOClass(UserList):
       self.get_occ()
       self.get_eig()
       self.get_sym()
-    self.up2date = True
+    self._up_to_date = True
     return
 
   def sort_by_energy(self):
@@ -626,7 +638,7 @@ class MOClass(UserList):
     '''Determines whether the MOClass has alpha and beta spins and removes the _a/_b spin labels.
     For spin-paired calculations all spins are set to 'alpha'.
     '''
-    if not self.up2date:
+    if not self._up_to_date:
       self.get_sym()
     self.spinpolarized = False
     self.alpha_index = []
@@ -637,13 +649,14 @@ class MOClass(UserList):
       if len(split_label) == 2:
         spindic[split_label[-1]].append(isym)
         self.sym[isym] = split_label[0]
+        self.data[isym]['sym'] = self.sym[isym]
       else:
         spindic['a'].append(isym)
     if len(self.beta_index) != 0:
       self.spinpolarized = True
 
   def get_labels(self):
-    return ['MO %(sym)s, Occ=%(occ_num).2f, E=%(energy)+.4f E_h' % 
+    return ['MO %(sym)s, Occ=%(occ_num).2f, E=%(energy)+.4f E_h' %
                   i for i in self.data]
 
   def set_coeffs(self, item):
@@ -705,7 +718,7 @@ class MOClass(UserList):
 
         coeffs: numpy.ndarray, dtype=numpy.float64, shape = (NMO, NAO)
     '''
-    if not self.up2date:
+    if not self._up_to_date:
       self.coeffs = numpy.zeros(shape=(len(self.data), len(self.data[0]['coeffs'])), dtype=numpy.float64)
       for imo, mo in enumerate(self.data):
         self.coeffs[imo] = mo['coeffs']
@@ -718,7 +731,7 @@ class MOClass(UserList):
 
         eig: numpy.ndarray, dtype=numpy.float64, shape = (NMO)
     '''
-    if not self.up2date:
+    if not self._up_to_date:
       self.eig = numpy.zeros(shape=(len(self.data)), dtype=numpy.float64)
       for imo, mo in enumerate(self.data):
         self.eig[imo] = mo['energy']
@@ -744,13 +757,12 @@ class MOClass(UserList):
 
         occ: numpy.ndarray, dtype=numpy.float64, shape = (NMO)
     '''
-    if not self.up2date:
+    if not self._up_to_date:
       self.occ = numpy.zeros(shape=(len(self.data)), dtype=numpy.float64)
       for imo, mo in enumerate(self.data):
         self.occ[imo] = mo['occ_num']
     if return_int:
       for f in self.occ:
-        self.get_spinstate()
         if self.spinpolarized and 0. > f < 1.-tol_int:
           raise ValueError('Occupation numbers are not integers')
         elif not self.spinpolarized and 0. > f < 2.-tol_int:
@@ -780,7 +792,7 @@ class MOClass(UserList):
 
         sym: numpy.ndarray, dtype=numpy.str, shape = (NMO)
     '''
-    if not self.up2date:
+    if not self._up_to_date:
       self.sym = []
       for imo, mo in enumerate(self.data):
         self.sym.append(mo['sym'])
@@ -790,31 +802,56 @@ class MOClass(UserList):
   def get_spin_index(self, spin):
     '''Function used to select MO's by spin. A numpy.ndarray is returned
        which contains the indexes of MO's of the selected spin.
-    
+
       **Parameters:**
-     
+
       spin : 'str', can be either 'alpha' or 'beta'
-      
+
       **Returns:**
 
       alpha : numpy.ndarray, dtype=numpy.intc
 
     '''
-    spindic = {'alpha': self.alpha_index, 'beta': self.alpha_index}
+    spindic = {'alpha': self.alpha_index, 'beta': self.beta_index}
     return numpy.array(spindic[spin], dtype=numpy.intc)
 
+  def combine_restricted_orbitals(self):
+    '''Combines unrestricted orbitals with same MO coefficients to restricted orbitals.
+    (For example Psi4 creates a molden file with unrestricted orbitals after a ROHF calculation.)
+    '''
+
+    if not self.spinpolarized:
+      # orbitals are already restricted
+      return
+
+    # assert same energy
+    ener_a, ener_b = self.eig[self.alpha_index], self.eig[self.beta_index]
+    assert numpy.all(ener_a == ener_b), "MO eigenvalues do not match"
+
+    # assert same MO coefficients
+    coeff_a, coeff_b = self.coeffs[self.alpha_index], self.coeffs[self.beta_index]
+    assert numpy.all(coeff_a == coeff_b), "MO coeffs do not match"
+
+    # add occupation and select alpha orbitals only
+    occ = self.occ[self.alpha_index] + self.occ[self.beta_index]
+    self.data = self[self.alpha_index].data
+    self.spinpolarized = False
+    self.update()
+    self.set_occ(occ)
+    self.update()
+
   def select(self, fid_mo_list, flatten_input=True, sort_indices=True):
-    '''Selects molecular orbitals from an external file or a list of molecular 
+    '''Selects molecular orbitals from an external file or a list of molecular
        orbital labels.
 
     **Parameters:**
-     
-      mo_spec :        
+
+      mo_spec :
         See :ref:`Central Variables` for details.
       fid_mo_list : str, `'all_mo'`, or list
         | If fid_mo_list is a str, specifies the filename of the molecular orbitals list.
         | If fid_mo_list is 'all_mo', creates a list containing all molecular orbitals.
-        | If fid_mo_list is a list, provides a list (or a list of lists) of molecular 
+        | If fid_mo_list is a list, provides a list (or a list of lists) of molecular
           orbital labels.
 
       flatten_input : boolean, optional
@@ -822,18 +859,18 @@ class MOClass(UserList):
 
       sort_indices : boolean, optional
         Specifies wheter list of indexes should be sorted before it is returned. This is only supported if flatten_input is set to ``True``.
-        
+
 
     **Supported Formats:**
-    
+
       Integer List (Counting from **Zero**!)::
-      
+
         1       2       3
         5       4
         homo    lumo+2:lumo+4
-      
+
       List with Symmetry Labels::
-      
+
         1.1     2.1     1.3
         1.1     4.1
         4.1     2.3     2.1
@@ -841,9 +878,9 @@ class MOClass(UserList):
       ``alpha`` and ``beta`` can be used together with symmetry labels to restrict the selection to orbitals of that symmetry.
       This option is not supported for integer lists. Note also that ``alpha`` and ``beta`` only restrict selection within one
       string of inputs. If you which to spin-restrict orbitlas given as a list of strings please use ``all_alpha`` or ``all_beta``.
-    
+
     **Returns:**
-    
+
       List of MOClass instances containing the selected orbitals as well as further information on the selection criteria used
       If a sinlge list is used as in input and/or flatten_input=True, an MOClass instance is returned instead.
     '''
@@ -852,11 +889,11 @@ class MOClass(UserList):
     if flatten_input and isinstance(list(fid_mo_list)[0], (list, numpy.ndarray)):
       display('\nWarning! Flattening of input lists requested!')
       display('\nIf this was not intendet please set ``flatten_input=False``')
-    
+
     mo_in_file = []
     selected_mo = []
     sym_select = False
-    
+
     def ordered_set(inlist):
       outlist = []
       for i in inlist:
@@ -893,14 +930,14 @@ class MOClass(UserList):
       return pos_range
 
     def parse_nosym(item):
-      keys = {'homo': str(self.get_homo()), 
+      keys = {'homo': str(self.get_homo()),
               'lumo': str(self.get_lumo()),
               'last_bound': str(self.get_lastbound()),
               'lastbound': str(self.get_lastbound())}
 
       for key in keys:
         item = item.replace(key, keys[key])
-      
+
       #This seems quite insane to me... I don't really know what else to do though...
       pos_range = range_separators(remove_empty(item.replace(':',':#:').split(':')))
       item = remove_empty(item.split(':'))
@@ -1018,16 +1055,16 @@ class MOClass(UserList):
             integer = line.replace(',',' ').split()
             mo_in_file.append(integer)
         except:
-          raise IOError('The selected mo-list (%(m)s) is not valid!' % 
+          raise IOError('The selected mo-list (%(m)s) is not valid!' %
                         {'m': fid_mo_list} + '\ne.g.\n\t1\t3\n\t2\t7\t9\n')
         fid_mo_list = mo_in_file
 
       # Print some information
       for i,j in enumerate(mo_in_file):
         display('\tLine %d: %s' % (i+1,', '.join(j)))
-      
-      # Check if the molecular orbitals are specified by symmetry 
-      # (e.g. 1.1 in MOLPRO nomenclature) or 
+
+      # Check if the molecular orbitals are specified by symmetry
+      # (e.g. 1.1 in MOLPRO nomenclature) or
       # by the number in the input file (e.g. 1)
       mo_in_file_new = []
       spinrestructions = []
@@ -1076,6 +1113,10 @@ class MOClass(UserList):
         mo_spec.append(self.data[index])
       mo_spec.selected_mo = mo_in_file[0]
       mo_spec.selection_string = str(fid_mo_list[0])
+      # Update alpha_index and beta_index in newly created mo_spec
+      mo_spec.alpha_index = require([i for i,j in enumerate(mo_in_file[0]) if j in self.alpha_index], dtype='i')
+      mo_spec.beta_index = require([i for i,j in enumerate(mo_in_file[0]) if j in self.beta_index], dtype='i')
+
     else:
       mo_spec = []
       for i, sublist in enumerate(mo_in_file):
@@ -1084,29 +1125,15 @@ class MOClass(UserList):
           mo_sub.append(self.data[index])
         mo_sub.selected_mo = sublist
         mo_sub.selection_string = str(fid_mo_list[i])
+        # Update alpha_index and beta_index in newly created mo_spec
+        mo_sub.alpha_index = require([i for i,j in enumerate(sublist) if j in self.alpha_index], dtype='i')
+        mo_sub.beta_index = require([i for i,j in enumerate(sublist) if j in self.beta_index], dtype='i')
         mo_spec.append(mo_sub)
 
     # Print some information
     display('\nThe following orbitals will be considered...')
     for i, sublist in enumerate(mo_in_file):
       display('\tLine %d: %s' % (i+1, str(sublist)))
-    
+
     display('')
     return mo_spec
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
