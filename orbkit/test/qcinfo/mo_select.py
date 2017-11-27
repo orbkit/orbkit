@@ -40,8 +40,9 @@ usecases = {'homo-1:lumo+2': range(homo-1,lumo+2),
             '0:5:2': list(range(0,5,2)),
             '1.A1 2.A1 1.B2 3.A1 alpha': alpha[:4],
             '1.A1 2.A1 1.B2 3.A1 beta': beta[:4],
-            '*A1': [i for i,s in enumerate(qc.mo_spec.get_sym()) if 'A1' in s],
-            '*A1 beta': [i for i,s in enumerate(qc.mo_spec.get_sym()) if 'A1' in s and i in beta],
+            '*.A1': [i for i,s in enumerate(qc.mo_spec.get_sym()) if 'A1' in s],
+            '*.A1 1.B2 2.B2': [i for i,s in enumerate(qc.mo_spec.get_sym()) if 'A1' in s or s in ['1.B2', '2.B2']],
+            '*.A1 beta': [i for i,s in enumerate(qc.mo_spec.get_sym()) if 'A1' in s and i in beta],
             'homo,lumo alpha': alpha[[homo//2,lumo//2]],
             'all_mo alpha': alpha
            }

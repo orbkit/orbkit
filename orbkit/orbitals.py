@@ -868,7 +868,7 @@ class MOClass(UserList):
       This option is not supported for integer lists. Note also that ``alpha`` and ``beta`` only restrict selection within one
       string of inputs. If you which to spin-restrict orbitlas given as a list of strings please use ``all_alpha`` or ``all_beta``.
       You may also select all MO's of a given symmetry by specifying only the symmetry label
-      with a preceeding asterisc, e.g. ``*A1`` to get all orbitals of A1 symmetry. 
+      with a preceeding asterisc, e.g. ``*.A1`` to get all orbitals of A1 symmetry. 
 
     **Returns:**
 
@@ -975,8 +975,8 @@ class MOClass(UserList):
       if any([operation in item for operation in ['+', '-', ':']]):
         raise ValueError('Combining (mathematical) operators and symmetry' +
                          'labels is not supported')
-      elif '.' not in item:
-        return [i for i,s in enumerate(self.get_sym()) if item.split('*')[-1] in s]
+      elif '*' in item:
+        return [i for i,s in enumerate(self.get_sym()) if item.split('*.')[-1] in s]
       else:
         return [i for i,s in enumerate(self.get_sym()) if s == item]
 
