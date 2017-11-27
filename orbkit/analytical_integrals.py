@@ -140,7 +140,6 @@ def get_ao_overlap(coord_a, coord_b, ao_spec, lxlylz_b=None,
         icgs = icgp + isc*ncprim
         cont_to_atoms[icgs] = sc_map[cont_to_atoms[icgp]][isc]
       
-  
   ao_overlap_matrix = cy_overlap.aooverlap(coord_a,
                                            coord_b,
                                            lxlylz_a,
