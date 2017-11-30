@@ -62,7 +62,7 @@ class FCIDUMP(object):
     if not self.Nelec:
       self.Nelec = self.Norb
     if not numpy.any(self.OrbSym):
-      self.OrbSym = numpy.array([1,]*self.Norb)
+      self.OrbSym = numpy.ones(self.Norb, dtype=int)
 
     self.H = numpy.zeros((self.Norb,self.Norb))
     self.G = numpy.zeros((self.Norb,self.Norb,self.Norb,self.Norb))
@@ -243,7 +243,7 @@ class FCIDUMP(object):
       f[tril] = fl[tril]
     return f
 
-    # create alias
+  # create alias
   get_F = get_H
   get_f = get_h
 
