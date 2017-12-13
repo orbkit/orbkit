@@ -31,7 +31,7 @@ def xyz_creator(geo_info,geo_spec,filename='new',mode='w',charges=None,comments=
     for i in range(3):
       xyz = geo_spec[il]
       if angstrom:
-        xyz *= a02aa
+        xyz *= a0_to_aa
       string += ' %22.15f'  % (xyz[i])
     if charges is not None:
       string += ' %22.15f'  % charges[il]

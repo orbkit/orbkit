@@ -24,14 +24,14 @@ _statC = 1. / 2997924580 #Statcoulomb
 _debye = 1e-20*_statC # Debye
                                                                         
 #Conversion factors                                                     
-a02aa = _a0 / _aa                                                       
-aa2a0 = _aa / _a0                                                       
+a0_to_aa = _a0 / _aa                                                       
+aa_to_a0 = _aa / _a0                                                       
                                                                         
-u2me = _u / _me
-me2u = _me / _u                                                        
+u_to_me = _u / _me
+me_to_u = _me / _u                                                        
                                                                         
-ev2ha = _e / _ha
-ha2ev = _ha / _e 
+ev_to_ha = _e / _ha
+ha_to_ev = _ha / _e 
 
-debye2ea0 = _debye / (_e * _a0)
-ea02debye = _e * _a0 / _debye
+debye_to_ea0 = _debye / (_e * _a0)
+ea0_to_debye = _e * _a0 / _debye

@@ -31,7 +31,7 @@ from os import path
 # Import orbkit modules
 from orbkit import grid, options
 from orbkit.display import display
-from orbkit.units import a02aa
+from orbkit.units import a0_to_aa
 
 from .amira import amira_creator
 from .cube import cube_creator
