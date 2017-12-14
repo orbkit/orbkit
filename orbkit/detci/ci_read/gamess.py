@@ -76,7 +76,7 @@ def gamess_tddft(fname,select_state=None,threshold=0.0,**kwargs):
         ci[-1].coeffs = []
         ci[-1].occ    = []
         ci[-1].info = {'state': thisline[2],
-                       'energy': float(thisline[-2])*ev2ha,
+                       'energy': float(thisline[-2])*ev_to_ha,
                        'fileinfo': filename,
                        'read_threshold': threshold,
                        'spin': 'Unknown',

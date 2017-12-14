@@ -8,7 +8,7 @@ import numpy
 
 from orbkit.display import display
 from orbkit.tools import *
-from orbkit.units import u2me
+from orbkit.units import u_to_me
 from orbkit import options
 from orbkit import analytical_integrals
 
@@ -117,9 +117,9 @@ def standard_mass(atom):
     read_nist()  
   try:
     atom = int(atom) - 1
-    return nist_mass[atom][1] * u2me
+    return nist_mass[atom][1] * u_to_me
   except ValueError:
-    return dict(nist_mass)[atom.title()] * u2me
+    return dict(nist_mass)[atom.title()] * u_to_me
     
 def get_atom_symbol(atom):
   '''Returns the atomic symbol of a given atom.
