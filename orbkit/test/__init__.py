@@ -13,6 +13,7 @@ tests = ['units',
          'read/find_filetype',
          'read/read_multiple_input_files',
          'read/individual_readers',
+         'output/molden'
          'detci/read/detci_readers',
          'detci/h3+',
          'native_io/io_numpy',
