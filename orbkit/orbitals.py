@@ -829,6 +829,8 @@ class MOClass(UserList):
     occ = self.occ[idx_a] + self.occ[idx_b]
     self.data = self.select(idx_a.tolist()).data
     self.spinpolarized = False
+    self.alpha_index = None
+    self.beta_index = None
     self.update()
     self.set_occ(occ)
 

@@ -17,3 +17,4 @@ from .pdb import pdb_creator
 from .vmd import vmd_network_creator
 from .xyz import xyz_creator
 from .native import write_native
+from .molden import molden_writer
