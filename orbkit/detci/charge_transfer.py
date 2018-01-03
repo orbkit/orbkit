@@ -12,7 +12,7 @@ from orbkit import grid,core,output
 from orbkit.display import display, init_display
 
 
-def compute_nto(qc,ci,Tij=[],md_filename=None):
+def compute_nto(qc,ci=[],Tij=[],md_filename=None):
   ''' 
   Function to calculate natural transition orbitals (NTO) for CIS-type wavefunctions 
   according to R.L. Martin, J. Chem. Phys. 2003, 118(11), 4775.
@@ -31,6 +31,14 @@ def compute_nto(qc,ci,Tij=[],md_filename=None):
        See :ref:`Central Variables` for details of the QC Class.
       
   '''
+  # Determine length of states
+  if ci != []:
+    stlen = len(ci)
+  elif Tij != []:
+    stlen = len(Tij)
+  else:
+    raise IOError('Variables ci and Tij are both empty.\n')
+  
   display('Calculate natural transition orbitals.')
   # Creates matrix for occupied and virtual orbitals
   LUMO = qc.mo_spec.get_lumo()
@@ -46,7 +54,7 @@ def compute_nto(qc,ci,Tij=[],md_filename=None):
   qc_nto = []
   
   # Calculate NTOs (assuming that ci[0] is the ground state)
-  for i in range(len(ci)):
+  for i in range(stlen):
     
     # Initialize NTOs
     ntos = {}
@@ -127,9 +135,9 @@ def compute_p_h_rho(qc_nto,min_val=1e-6,numproc=1,slice_length=1e4,hdf5_fid=None
   rho_h = numpy.array(rho_h)
   rho_p = numpy.array(rho_p)
   
-  if grid.is_vector:
-    rho_p = rho_p.reshape(grid.N_)
-    rho_h = rho_h.reshape(grid.N_)
+  #if grid.is_vector:
+    #rho_p = rho_p.reshape(grid.N_)
+    #rho_h = rho_h.reshape(grid.N_)
   
   if hdf5_fid:
     display('Save densities in HDF5 file...\n')
