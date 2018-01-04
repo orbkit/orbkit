@@ -4,7 +4,7 @@ from copy import copy
 from orbkit.display import display
 from orbkit.qcinfo import QCinfo, CIinfo
 from orbkit.orbitals import MOClass
-from orbkit.units import ev2ha
+from orbkit.units import ev_to_ha
 
 from .tools import molpro_mo_order_ci
 from .psi4 import psi4_detci
