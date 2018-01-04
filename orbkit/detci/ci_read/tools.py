@@ -80,7 +80,6 @@ def orthonorm(ci):
       Contains the orthonormalized CI coefficients for each Slater-determinant
   '''
   # Grahm-Schmidt orthonormalization
-  display('Orthonormalization of CI-coefficients with Gram-Schmidt...\n')
   for ii in range(len(ci)):
     scal = numpy.dot(ci[ii].coeffs,ci[ii].coeffs)
     ci[ii].coeffs /= numpy.sqrt(scal)

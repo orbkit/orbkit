@@ -76,7 +76,7 @@ def main_ci_read(qc,fname,itype='psi4_detci',threshold=0.0,
     display('Available reader (`itype`) are:\n  ' + ', '.join(reader.keys()))
     raise NotImplementedError("itype='%s' not implemented!"%itype)
   
-  kwargs['nmoocc'] = qc.mo_spec.get_occ(sum_occ=True)
+  kwargs['nmoocc'] = qc.mo_spec.get_lumo()
   
   ci = reader[itype](fname,select_state=select,threshold=threshold, 
                      select_run=select,                 # PSI4/MOLPRO specific
