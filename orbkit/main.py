@@ -325,7 +325,7 @@ def run_orbkit(use_qc=None,check_options=True,standalone=False):
       datalabels.append('laplacian of rho')
     output.main_output(plt_data,qc.geo_info,qc.geo_spec,
                        otype='mayavi',
-                       datalabels=datalabels)
+                       comments=datalabels)
   
   # Return the computed data, i.e., rho for standard, and (rho,delta_rho)  
   # for derivative calculations. For laplacian (rho,delta_rho,laplacian_rho) 

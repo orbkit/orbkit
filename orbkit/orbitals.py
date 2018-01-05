@@ -528,6 +528,9 @@ class MOClass(UserList):
           same = False
     return same
 
+  def __str__(self):
+    return '\n'.join(self.get_labels())
+
   def splinsplit_array(self, array):
     array_alpha = array[self.alpha_index]
     array_beta = array[self.alpha_index]
@@ -638,14 +641,22 @@ class MOClass(UserList):
       if len(split_label) == 2:
         spindic[split_label[-1]].append(isym)
         self.sym[isym] = split_label[0]
+        self.data[isym]['sym'] = self.sym[isym]
       else:
         spindic['a'].append(isym)
     if len(self.beta_index) != 0:
       self.spinpolarized = True
 
-  def get_labels(self):
-    return ['MO %(sym)s, Occ=%(occ_num).2f, E=%(energy)+.4f E_h' %
+  def get_labels(self,format='default'):
+    if format=='short':
+      return ['%(sym)s' %
                   i for i in self.data]
+    elif format=='vmd':
+      return ['%(sym)s,Occ=%(occ_num).2f,E=%(energy)+.4f' %
+                  i for i in self.data]
+    else:
+      return ['MO %(sym)s, Occ=%(occ_num).2f, E=%(energy)+.4f E_h' %
+                    i for i in self.data]
 
   def set_coeffs(self, item):
     '''Set function for numpy array version of molecular orbital coefficients.
@@ -751,7 +762,6 @@ class MOClass(UserList):
         self.occ[imo] = mo['occ_num']
     if return_int:
       for f in self.occ:
-        self.get_spinstate()
         if self.spinpolarized and 0. > f < 1.-tol_int:
           raise ValueError('Occupation numbers are not integers')
         elif not self.spinpolarized and 0. > f < 2.-tol_int:
@@ -813,28 +823,21 @@ class MOClass(UserList):
       # orbitals are already restricted
       return
 
-    # get indices
-    idx_a = self.get_spin_index('alpha')
-    idx_b = self.get_spin_index('beta')
-
     # assert same energy
-    ener_a, ener_b = self.eig[idx_a], self.eig[idx_b]
+    ener_a, ener_b = self.eig[self.alpha_index], self.eig[self.beta_index]
     assert numpy.all(ener_a == ener_b), "MO eigenvalues do not match"
 
     # assert same MO coefficients
-    coeff_a, coeff_b = self.coeffs[idx_a], self.coeffs[idx_b]
+    coeff_a, coeff_b = self.coeffs[self.alpha_index], self.coeffs[self.beta_index]
     assert numpy.all(coeff_a == coeff_b), "MO coeffs do not match"
 
     # add occupation and select alpha orbitals only
-    occ = self.occ[idx_a] + self.occ[idx_b]
-    self.data = self.select(idx_a.tolist()).data
+    occ = self.occ[self.alpha_index] + self.occ[self.beta_index]
+    self.data = self[self.alpha_index].data
     self.spinpolarized = False
     self.update()
     self.set_occ(occ)
-
-    # update labels
-    labels = [l.rstrip('_a') for l in self.sym]
-    self.set_sym(numpy.array(labels))
+    self.update()
 
   def select(self, fid_mo_list, flatten_input=True, sort_indices=True):
     '''Selects molecular orbitals from an external file or a list of molecular
@@ -874,6 +877,8 @@ class MOClass(UserList):
       ``alpha`` and ``beta`` can be used together with symmetry labels to restrict the selection to orbitals of that symmetry.
       This option is not supported for integer lists. Note also that ``alpha`` and ``beta`` only restrict selection within one
       string of inputs. If you which to spin-restrict orbitlas given as a list of strings please use ``all_alpha`` or ``all_beta``.
+      You may also select all MO's of a given symmetry by specifying only the symmetry label
+      with a preceeding asterisc, e.g. ``*.A1`` to get all orbitals of A1 symmetry. 
 
     **Returns:**
 
@@ -977,16 +982,13 @@ class MOClass(UserList):
 
     def parse_sym(item):
       error = False
-      tmp = []
-      if any([operation in item for operation in ['+', '-', ':']]) \
-         or '.' not in item:
-         raise IOError('{0} is not a valid label according '.format(item) +
-                      'to the MOLPRO nomenclature, e.g., `5.1` or `5.A1`.' +
-                      '\n\tHint: You cannot mix integer numbering and MOLPRO\'s ' +
-                      'symmetry labels')
-      for i in numpy.argwhere(self.get_sym() == item):
-        tmp.extend(i)
-      return tmp
+      if any([operation in item for operation in ['+', '-', ':']]):
+        raise ValueError('Combining (mathematical) operators and symmetry' +
+                         'labels is not supported')
+      elif '*' in item:
+        return [i for i,s in enumerate(self.get_sym()) if item.split('*.')[-1] in s]
+      else:
+        return [i for i,s in enumerate(self.get_sym()) if s == item]
 
     def parse_spin(item, all_alpha_beta):
       spindic = {0: 'all_alpha', 1: 'all_beta'}
@@ -1069,7 +1071,7 @@ class MOClass(UserList):
         spinrestructions.append(srec)
         tmp = []
         for item in sublist:
-          if '.' not in item:
+          if '.' not in item and '*' not in item:
             if isinstance(item, str):
               tmp.extend(parse_nosym(item))
             else:
@@ -1109,6 +1111,10 @@ class MOClass(UserList):
         mo_spec.append(self.data[index])
       mo_spec.selected_mo = mo_in_file[0]
       mo_spec.selection_string = str(fid_mo_list[0])
+      # Update alpha_index and beta_index in newly created mo_spec
+      mo_spec.alpha_index = require([i for i,j in enumerate(mo_in_file[0]) if j in self.alpha_index], dtype='i')
+      mo_spec.beta_index = require([i for i,j in enumerate(mo_in_file[0]) if j in self.beta_index], dtype='i')
+
     else:
       mo_spec = []
       for i, sublist in enumerate(mo_in_file):
@@ -1117,6 +1123,9 @@ class MOClass(UserList):
           mo_sub.append(self.data[index])
         mo_sub.selected_mo = sublist
         mo_sub.selection_string = str(fid_mo_list[i])
+        # Update alpha_index and beta_index in newly created mo_spec
+        mo_sub.alpha_index = require([i for i,j in enumerate(sublist) if j in self.alpha_index], dtype='i')
+        mo_sub.beta_index = require([i for i,j in enumerate(sublist) if j in self.beta_index], dtype='i')
         mo_spec.append(mo_sub)
 
     # Print some information

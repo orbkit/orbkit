@@ -4,7 +4,7 @@ from orbkit import grid
 from .tools import meshgrid2
 
 def view_with_mayavi(x,y,z,data,is_vectorfield=False,geo_spec=None,datalabels=None,
-                     iso_min=1e-4,iso_val=0.01,iso_max=10.0):
+                     iso_min=1e-4,iso_val=0.01,iso_max=10.0,**kwargs):
   ''' Creates an interactive mayavi dialog showing isosurface plots of the input
   data. 
   

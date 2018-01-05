@@ -72,7 +72,7 @@ def calc_mo(qc, fid_mo_list, drv=None, otype=None, ofid=None,
 
   slice_length = options.slice_length if slice_length is None else slice_length
   numproc = options.numproc if numproc is None else numproc
-
+  
   # Calculate the AOs and MOs 
   mo_list = core.rho_compute(qc_select,
                              calc_mo=True,
@@ -87,47 +87,23 @@ def calc_mo(qc, fid_mo_list, drv=None, otype=None, ofid=None,
     ofid = '%s_MO' % (options.outputname)
   
   if not options.no_output:
-    if 'h5' in otype:    
-      main_output(mo_list,qc.geo_info,qc.geo_spec,data_id='MO',
-                  outputname=ofid,
-                  mo_spec=qc_select.mo_spec,drv=drv,is_mo_output=True)
-    # Create Output     
-    cube_files = []
-    for i in range(len(qc_select.mo_spec)):
-      outputname = '%s_%s' % (ofid,qc_select.mo_spec.selected_mo[i])
-      comments = ('%s,Occ=%.1f,E=%+.4f' % (qc_select.mo_spec.selected_mo[i],
-                                           qc_select.mo_spec.get_occ()[i],
-                                           qc_select.mo_spec.get_eig()[i]))
-      index = numpy.index_exp[:,i] if drv is not None else i
-      output_written = main_output(mo_list[index],
-                                   qc.geo_info,qc.geo_spec,
-                                   outputname=outputname,
-                                   comments=comments,
-                                   otype=otype,omit=['h5','vmd','mayavi'],
+    output_written = main_output(mo_list,
+                                  qc.geo_info,qc.geo_spec,
+                                   outputname=ofid,
+                                   comments=qc_select.mo_spec.get_labels(format='vmd'),
+                                   mo_spec=qc_select.mo_spec,
+                                   data_id='MO',
+                                   otype=otype,
+                                   omit='mayavi',
                                    drv=drv)
-      
-      for i in output_written:
-        if i.endswith('.cb'):
-          cube_files.append(i)
-    
-    if 'vmd' in otype and cube_files != []:
-      display('\nCreating VMD network file...' +
-                      '\n\t%(o)s.vmd' % {'o': ofid})
-      vmd_network_creator(ofid,cube_files=cube_files)
-
   if 'mayavi' in otype:
-    datalabels = ['MO %(sym)s, Occ=%(occ_num).2f, E=%(energy)+.4f E_h' % 
-                  i for i in qc_select.mo_spec]
-    if drv is not None:
-      tmp = []
-      for i in drv:
-        for j in datalabels:
-          tmp.append('d/d%s of %s' % (i,j))
-      datalabels = tmp
-    data = mo_list.reshape((-1,) + grid.get_shape())
+    output_written = main_output(mo_list,
+                                  qc.geo_info,qc.geo_spec,
+                                   outputname=ofid,
+                                   comments=qc_select.mo_spec.get_labels(format='default'),
+                                   otype='mayavi',
+                                   drv=drv)
     
-    main_output(data,qc.geo_info,qc.geo_spec,
-                       otype='mayavi',datalabels=datalabels)
   return mo_list
   
 def mo_set(qc, fid_mo_list, drv=None, laplacian=None,
@@ -335,7 +311,7 @@ def calc_ao(qc, drv=None, otype=None, ofid=None,
   if not options.no_output:
     if 'h5' in otype:    
       output.main_output(mo_list,qc.geo_info,qc.geo_spec,data_id='AO',
-                    outputname=ofid,drv=drv,is_mo_output=False)
+                    outputname=ofid,otype='h5',drv=drv,is_mo_output=False)
     # Create Output     
     cube_files = []
     for i in range(len(datalabels)):
