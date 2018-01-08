@@ -51,7 +51,7 @@ synonyms = {'h5':'h5', 'hdf5':'h5',
             }
 
 def main_output(data,geo_info=None,geo_spec=None,outputname='new',otype='auto',
-                drv=None,omit=[],comments='',**kwargs):
+                drv=None,omit=[],datalabels='',**kwargs):
   '''Creates the requested output.
   
   **Parameters:**
@@ -164,15 +164,15 @@ def main_output(data,geo_info=None,geo_spec=None,outputname='new',otype='auto',
       data = numpy.array(grid.mv2g(data))
 
     isstr = isinstance(outputname, str)
-    isstr_comments = isinstance(comments, str)
+    isstr_datalabels = isinstance(datalabels, str)
     
     if drv is not None:
       fid = '%(f)s_d%(d)s'
-      comment_id = 'd/d%(d)s,%(f)s'
+      datalabel_id = 'd/d%(d)s %(f)s'
       it = enumerate(drv)
     else:
       fid = '%(f)s'
-      comment_id = '%(f)s'
+      datalabel_id = '%(f)s'
       it = [(0,None)]
     
     
@@ -185,7 +185,7 @@ def main_output(data,geo_info=None,geo_spec=None,outputname='new',otype='auto',
         output_written.append('{0}.h5'.format(f))
     
     cube_files = []
-    all_comments = []
+    all_datalabels = []
     for idrv,jdrv in it:
       for idata in range(data.shape[1]):
         if isstr:
@@ -193,13 +193,13 @@ def main_output(data,geo_info=None,geo_spec=None,outputname='new',otype='auto',
                'd':jdrv}
         else:
           f = {'f': outputname[idata], 'd':jdrv}
-        if isstr_comments:
-          c = {'f': str(idata) + ',' + comments if data.shape[1] > 1 else comments,
+        if isstr_datalabels:
+          c = {'f': str(idata) + ',' + datalabels if data.shape[1] > 1 else datalabels,
                'd':jdrv}
         else: 
-          c = {'f': comments[idata],'d':jdrv}
-        comment = comment_id%c
-        all_comments.append(comment)
+          c = {'f': datalabels[idata],'d':jdrv}
+        datalabel = datalabel_id%c
+        all_datalabels.append(datalabel)
         
         if 'am' in otype or 'hx' in otype and not print_waring:
           if output_not_possible: print_waring = True
@@ -221,7 +221,7 @@ def main_output(data,geo_info=None,geo_spec=None,outputname='new',otype='auto',
             display('\nSaving to .cb file...' +
                             '\n\t%(o)s.cb' % {'o': fid % f})
             cube_creator(data[idrv,idata],(fid % f),geo_info,geo_spec,
-                         comments=comment,
+                         comments=datalabel,
                          **kwargs)
             output_written.append('%s.cb' % (fid % f))
             cube_files.append('%s.cb' % (fid % f))
@@ -239,7 +239,7 @@ def main_output(data,geo_info=None,geo_spec=None,outputname='new',otype='auto',
     if 'mayavi' in otype:
       data = data.reshape((-1,)+grid.get_shape())
       if output_not_possible: print_waring = True
-      else: view_with_mayavi(grid.x,grid.y,grid.z,data,geo_spec=geo_spec,datalabels=all_comments,**kwargs)
+      else: view_with_mayavi(grid.x,grid.y,grid.z,data,geo_spec=geo_spec,datalabels=all_datalabels,**kwargs)
         
     if print_waring:
       display('For a non-regular vector grid (`if grid.is_vector and not grid.is_regular`)')

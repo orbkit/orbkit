@@ -87,22 +87,15 @@ def calc_mo(qc, fid_mo_list, drv=None, otype=None, ofid=None,
     ofid = '%s_MO' % (options.outputname)
   
   if not options.no_output:
+    format = 'default' if 'mayavi' in otype else 'vmd'
     output_written = main_output(mo_list,
-                                  qc.geo_info,qc.geo_spec,
-                                   outputname=ofid,
-                                   comments=qc_select.mo_spec.get_labels(format='vmd'),
-                                   mo_spec=qc_select.mo_spec,
-                                   data_id='MO',
-                                   otype=otype,
-                                   omit='mayavi',
-                                   drv=drv)
-  if 'mayavi' in otype:
-    output_written = main_output(mo_list,
-                                  qc.geo_info,qc.geo_spec,
-                                   outputname=ofid,
-                                   comments=qc_select.mo_spec.get_labels(format='default'),
-                                   otype='mayavi',
-                                   drv=drv)
+                                 qc.geo_info,qc.geo_spec,
+                                 outputname=ofid,
+                                 datalabels=qc_select.mo_spec.get_labels(format=format),
+                                 mo_spec=qc_select.mo_spec,
+                                 data_id='MO',
+                                 otype=otype,
+                                 drv=drv)
     
   return mo_list
   
@@ -218,26 +211,26 @@ def mo_set(qc, fid_mo_list, drv=None, laplacian=None,
             
       fid = '%s_%03d' % (ofid, i_file+1) 
       cube_files.append('%s.cb' % fid)
-      comments = ('mo_set:'+','.join(mo_info.selection_string))
+      datalabels = ('mo_set:'+','.join(mo_info.selection_string))
 
       main_output(rho,qc.geo_info,qc.geo_spec,outputname=fid,
                          otype=otype,omit=['h5','vmd','mayavi'],
-                         comments=comments)
+                         datalabels=datalabels)
       if drv is not None:
         for i,j in enumerate(drv):
           fid = '%s_%03d_d%s' % (ofid, i_file+1, j) 
           cube_files.append('%s.cb' % fid)
-          comments = ('d%s_of_mo_set:' % j + ','.join(mo_info.selection_string))
+          datalabels = ('d%s_of_mo_set:' % j + ','.join(mo_info.selection_string))
           main_output(delta_rho[i],qc.geo_info,qc.geo_spec,outputname=fid,
                              otype=otype,omit=['h5','vmd','mayavi'],
-                             comments=comments)  
+                             datalabels=datalabels)  
         if laplacian:
           fid = '%s_%03d_laplacian' % (ofid, i_file+1) 
           cube_files.append('%s.cb' % fid)
-          comments = ('laplacian_of_mo_set:' + ','.join(mo_info.selection_string))
+          datalabels = ('laplacian_of_mo_set:' + ','.join(mo_info.selection_string))
           main_output(laplacian_rho,qc.geo_info,qc.geo_spec,outputname=fid,
                              otype=otype,omit=['h5','vmd','mayavi'],
-                             comments=comments)  
+                             datalabels=datalabels)  
           
   if 'vmd' in otype and cube_files != []:
       display('\nCreating VMD network file...' +
@@ -320,7 +313,7 @@ def calc_ao(qc, drv=None, otype=None, ofid=None,
       output_written = output.main_output(ao_list[index],
                                       qc.geo_info,qc.geo_spec,
                                       outputname=outputname,
-                                      comments=datalabels[i].replace('[','').replace(']',''),
+                                      datalabels=datalabels[i].replace('[','').replace(']',''),
                                       otype=otype,omit=['h5','vmd','mayavi'],
                                       drv=drv)
       
