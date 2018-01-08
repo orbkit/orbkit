@@ -52,10 +52,7 @@ def hdf5_creator(data,filename,geo_info,geo_spec,mode='w',data_id='rho',group=No
       
     dset = f.create_dataset('MO:Content',data=numpy.array(mo_name,dtype='S'))
   
-  if options.z_reduced_density:
-    dset = f.create_dataset(data_id,numpy.shape(data),data=data)
-  else:
-    dset = f.create_dataset(data_id,numpy.shape(data),data=data)
+  dset = f.create_dataset(data_id,numpy.shape(data),data=data)
   
   if data_only:
     hdf5_file.close()
@@ -65,12 +62,9 @@ def hdf5_creator(data,filename,geo_info,geo_spec,mode='w',data_id='rho',group=No
   if y is None: y = grid.y
   if z is None: z = grid.z
   
-  if options.z_reduced_density:
-    dset = f.create_dataset('z',(1,len(z)),data=z)
-  else:
-    dset = f.create_dataset('x',(1,len(x)),data=x)
-    dset = f.create_dataset('y',(1,len(y)),data=y)
-    dset = f.create_dataset('z',(1,len(z)),data=z)
+  dset = f.create_dataset('x',(1,len(x)),data=x)
+  dset = f.create_dataset('y',(1,len(y)),data=y)
+  dset = f.create_dataset('z',(1,len(z)),data=z)
   
   if ao_spec is not None:
     hdf5_append(ao_spec,f,name='ao_spec')

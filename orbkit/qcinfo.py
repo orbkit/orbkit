@@ -262,7 +262,7 @@ class QCinfo:
   @property
   def nuclear_repulsion(self):
     '''Calculates nuclear repulsion energy.'''
-    from scipy.linalg import norm
+    from numpy.linalg import norm
     Vnn = 0
     Natoms = self.geo_spec.shape[0]
     for a in range(Natoms):

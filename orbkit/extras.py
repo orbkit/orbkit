@@ -27,7 +27,6 @@ License along with ORBKIT.  If not, see <http://www.gnu.org/licenses/>.
 import os
 
 import numpy
-from scipy import integrate
 
 # Import orbkit modules
 from orbkit import core,grid, options
@@ -180,16 +179,7 @@ def mo_set(qc, fid_mo_list, drv=None, laplacian=None,
     else:
       rho, delta_rho = data
       delta_datasets.append(delta_rho)
-    
-    if options.z_reduced_density:
-      if grid.is_vector:
-        display('\nSo far, reducing the density is not supported for vector grids.\n')
-      elif drv is not None:
-        display('\nSo far, reducing the density is not supported for the derivative of the density.\n')
-      else:
-        rho = integrate.simps(rho, grid.x, dx=grid.delta_[0], axis=0, even='avg')
-        rho = integrate.simps(rho, grid.y, dx=grid.delta_[1], axis=0, even='avg')
-    
+        
     if not options.no_output:
       if 'h5' in otype:
         display('Saving to Hierarchical Data Format file (HDF5)...')

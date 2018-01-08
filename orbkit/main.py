@@ -251,23 +251,7 @@ def run_orbkit(use_qc=None,check_options=True,standalone=False):
     rho, delta_rho, laplacian_rho = data    
   else:
     rho, delta_rho = data
-  
-  # Compute the reduced electron density if requested 
-  if options.z_reduced_density:
-    if grid.is_vector:
-      display(
-      '\nSo far, reducing the density is not supported for ' + 
-      'vector grids.\nSkipping the reduction...\n')
-    elif options.drv is not None:
-      display(
-      '\nSo far, reducing the density is not supported for ' + 
-      'the derivative of the density.\nSkipping the reduction...\n')
-    else:
-      from scipy import integrate
-      display('\nReducing the density with respect to the z-axis.\n')
-      rho = integrate.simps(rho, grid.x, dx=grid.delta_[0], axis=0, even='avg')
-      rho = integrate.simps(rho, grid.y, dx=grid.delta_[1], axis=0, even='avg')
-  
+    
   t.append(time.time()) # A new time step
 
   # Generate the output requested 

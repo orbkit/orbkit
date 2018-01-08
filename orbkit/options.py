@@ -40,7 +40,7 @@ available = [
   'filename','itype','cclib_parser','outputname','otype',
   'numproc','mo_set','calc_ao','all_mo','calc_mo','spin','drv','laplacian',
   'slice_length','is_vector','grid_file','adjust_grid','center_grid','random_grid',
-  'z_reduced_density','gross_atomic_density','mo_tefd',
+  'gross_atomic_density','mo_tefd',
   'quiet','no_log','no_output','no_slice','interactive', 'test'
   ]
 
@@ -210,9 +210,6 @@ def init_parser():
                       atom number ATOM (input order)''')
   parser.add_option_group(group)
   group = optparse.OptionGroup(parser, "Additional Options")
-  group.add_option("--z_reduced_density",dest="z_reduced_density",
-                      default=False, action="store_true", 
-                      help="reduce the density with respect to the z-axis")
   group.add_option("--gross_atomic_density",dest="gross_atomic_density",
                       metavar="INDEX",action="append",type="int",
                       help='''compute the atom-projected electron density with
@@ -523,7 +520,6 @@ adjust_grid     = None          #: If not None, create a grid using a spacing of
 center_grid     = None          #: If not None, grid is centered to specified atom and origin. (int) 
 random_grid     = False         #: If True, creates random grid around atom positions. (bool)
 #--- Additional Options ---
-z_reduced_density = False       #: If True, reduces the density with respect to the z-axis. (bool)
 gross_atomic_density = None     #: Computes the gross atomic electron density with respect to specified atom. (int or list of int)
 mo_tefd         = None          #: Computes the molecular orbital transition electronic flux density between the orbitals I and J specify the requested component with :data:`orbkit.options.drv`. (list of [I, J])
 #--- Options for Advanced Users ---
