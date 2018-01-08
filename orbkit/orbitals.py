@@ -118,7 +118,7 @@ class AOClass(UserList):
     self.get_prim2cont()
     self.get_lmprim2cont()
     self.get_lxlylz()
-    self.is_normlized()
+    self.is_normalized()
     self.up2date = True
     return
   def __setitem__(self, i, item):
@@ -235,7 +235,7 @@ class AOClass(UserList):
     self.pao = item
     self.new2old()
 
-  def is_normlized(self):
+  def is_normalized(self):
     '''Check if orbitals in AOClass are normalized.
     '''
     if not self.up2date:

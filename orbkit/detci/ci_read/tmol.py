@@ -67,8 +67,8 @@ def tmol_tddft(fname,nmoocc=None,nforbs=0,select_state=None,threshold=0.0,
     if len(states[i]['coeffs']) == tspace*2:
       states[i]['coeffs'] = numpy.array(states[i]['coeffs']).reshape((2,nmoocc,-1))
       states[i]['xia'] = 0.5 * (
-                          (states[i]['coeffs'][0] + states[i]['coeffs'][1])
-                          )
+                         (states[i]['coeffs'][0] + states[i]['coeffs'][1])
+                         )
       #states[i]['yia'] = 0.5 * (
                           #(states[i]['coeffs'][0] - states[i]['coeffs'][1])
                           #)
@@ -118,7 +118,7 @@ def tmol_tddft(fname,nmoocc=None,nforbs=0,select_state=None,threshold=0.0,
       c.apply_threshold(threshold,keep_length=False)
   
   for c in ci:
-      c.apply_threshold(0.0,keep_length=False)
+    c.apply_threshold(0.0,keep_length=False)
     
   #--- Calculating norm of CI states
   display('\nIn total, %d states have been read.' % len(ci)) 

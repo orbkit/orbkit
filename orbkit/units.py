@@ -39,4 +39,4 @@ ha2ev = _ha / _e
 debye2ea0 = _debye / (_e * _a0)
 ea02debye = _e * _a0 / _debye
 
-c_in_au = _c / _a0 * sec2atu # Speed of light in atomic units
+c_in_au = _c*(aa2a0*10**10)/(sec2atu) # Speed of light in atomic units

@@ -531,13 +531,13 @@ def print2D(x,format='%+.2f ',start='\t',end=''):
     s = start
     for j in range(shape[1]):
       s += format % x[i,j]
-    display(s + end)
+    print(s + end)
 
 def pmat(matrix,vmax=lambda x: numpy.max(numpy.abs(x))):
   import matplotlib.pyplot as plt
   plt.figure()
   if matrix.dtype == complex:
-    display('plotting real part of matrix')
+    print('plotting real part of matrix')
     matrix = matrix.real
   vm = vmax(numpy.abs(matrix)) if callable(vmax) else vmax
   plt.imshow(matrix,interpolation=None,vmin=-vm,vmax=vm,cmap='seismic_r')
