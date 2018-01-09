@@ -2,9 +2,9 @@ import numpy
 
 from orbkit.qcinfo import QCinfo
 from orbkit.orbitals import AOClass, MOClass
-from orbkit.units import aa2a0
+from orbkit.units import aa_to_a0
 from orbkit.core import l_deg, lquant
-from orbkit.units import ev2ha
+from orbkit.units import ev_to_ha
 from importlib import import_module
 
 from .tools import get_atom_symbol
@@ -78,7 +78,7 @@ def convert_cclib(ccData, all_mo=False, spin=None):
   qc.mo_spec = MOClass([])
   
   # Converting all information concerning atoms and geometry
-  qc.geo_spec = ccData.atomcoords[0] * aa2a0
+  qc.geo_spec = ccData.atomcoords[0] * aa_to_a0
   for ii in range(ccData.natom):
     symbol = get_atom_symbol(atom=ccData.atomnos[ii])
     qc.geo_info.append([symbol,str(ii+1),str(ccData.atomnos[ii])])
@@ -184,7 +184,7 @@ def convert_cclib(ccData, all_mo=False, spin=None):
         occ_num = 0.0
         
       qc.mo_spec.append({'coeffs': (ccData.nocoeffs if is_natorb else ccData.mocoeffs[i])[ii],
-              'energy': 0.0 if is_natorb else ccData.moenergies[i][ii]*ev2ha,
+              'energy': 0.0 if is_natorb else ccData.moenergies[i][ii]*ev_to_ha,
               'occ_num': occ_num,
               'sym': '%d.%s' %(sym[a],a)
               })

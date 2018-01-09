@@ -28,7 +28,7 @@ from os import path
 from copy import copy
 
 from orbkit.display import display
-from .units import u2me, aa2a0
+from .units import u_to_me, aa_to_a0
 from orbkit.read.tools import get_atom_symbol, standard_mass
 from .orbitals import AOClass, MOClass
 
@@ -106,7 +106,7 @@ class QCinfo:
     self.geo_info = numpy.array(self.geo_info)
     self.geo_spec = numpy.array(self.geo_spec,dtype=float)
     if is_angstrom:
-      self.geo_spec *= aa2a0
+      self.geo_spec *= aa_to_a0
 
   def get_com(self,nuc_list=None):
     '''Computes the center of mass.

@@ -1,6 +1,6 @@
 import numpy
 
-from orbkit.units import a02aa
+from orbkit.units import a0_to_aa
 
 def pdb_creator(geo_info,geo_spec,filename='new',charges=None,comments='',
     angstrom=True):
@@ -44,7 +44,7 @@ def pdb_creator(geo_info,geo_spec,filename='new',charges=None,comments='',
       string += ' '
     xyz = geo_spec[il]
     if angstrom:
-      xyz *= a02aa
+      xyz *= a0_to_aa
     string += '             %s %s %s        ' % (('%.9f' % xyz[0])[:7],
                                                  ('%.9f' % xyz[1])[:7],
                                                  ('%.9f' % xyz[2])[:7])
