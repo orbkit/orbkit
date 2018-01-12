@@ -27,8 +27,6 @@ def mulliken(qc):
         :charges: - Mulliken charges for each atom.
 
   '''
-  ao_dim = qc.mo_spec.get_coeffs().shape[1]
-
   # Calculate AO-overlap matrix
   S = get_ao_overlap(qc.geo_spec,qc.geo_spec,qc.ao_spec)
 
@@ -36,11 +34,7 @@ def mulliken(qc):
   P = calc_P(qc)
 
   # Calculate Mulliken population
-  N = 0
-  for m in itertools.product(range(ao_dim)):
-    N += (P[:,m] * S[m,:])
-
-  GP = N.diagonal()
+  GP = numpy.sum(P*S, axis=0)
   atom2mo = get_atom2mo(qc)
   GP_A = numpy.zeros(len(qc.geo_spec))
   for a in range(len(qc.geo_spec)):
@@ -68,8 +62,6 @@ def lowdin(qc):
         :charges: - Lowdin charges for each atom.
 
   '''
-  ao_dim = qc.mo_spec.get_coeffs().shape[1]
-
   # Calculate AO-overlap matrix
   S = get_ao_overlap(qc.geo_spec,qc.geo_spec,qc.ao_spec)
 
@@ -82,15 +74,8 @@ def lowdin(qc):
   P = calc_P(qc)
 
   # Calculate Lowdin population
-  PS = 0
-  for m in itertools.product(range(ao_dim)):
-    PS += (P[:,m] * S12[m,:])
-
-  N = 0
-  for m in itertools.product(range(ao_dim)):
-    N += (S12[:,m] * PS[m,:])
-
-  GP = N.diagonal()
+  PS = numpy.dot(P, S12)
+  GP = numpy.dot(S12, PS).diagonal()
   atom2mo = get_atom2mo(qc)
 
   GP_A = numpy.zeros(len(qc.geo_spec))
