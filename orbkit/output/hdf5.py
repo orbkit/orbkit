@@ -4,7 +4,7 @@ from orbkit import options, grid
 from orbkit.display import display
 from .tools import colormap_creator
 
-def hdf5_creator(data,filename,geo_info,geo_spec,mode='w',data_id='rho',group=None,
+def hdf5_creator(data,filename,geo_info,geo_spec,mode='w',data_id='rho',datalabels=None,group=None,
             data_only=False,ao_spec=None,mo_spec=None,is_mo_output=False,
             x=None,y=None,z=None,**kwargs):
   '''Creates an hdf5 file (Hierarchical Data Format) output.
@@ -51,6 +51,8 @@ def hdf5_creator(data,filename,geo_info,geo_spec,mode='w',data_id='rho',group=No
         mo_name.append(str(i))
       
     dset = f.create_dataset('MO:Content',data=numpy.array(mo_name,dtype='S'))
+  if datalabels is not None:
+    f['content'] = [i.encode('utf8') for i in datalabels]
   
   dset = f.create_dataset(data_id,numpy.shape(data),data=data)
   

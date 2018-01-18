@@ -175,18 +175,10 @@ def main_output(data,geo_info=None,geo_spec=None,outputname='new',otype='auto',
       datalabel_id = '%(f)s'
       it = [(0,None)]
     
-    
-    if 'h5' in otype: 
-      for idrv,jdrv in it:
-        f = fid % {'f':outputname if isstr else outputname[-1],'d':jdrv}
-        display('\nSaving to Hierarchical Data Format file (HDF5)...' +
-                '\n\t{0}.h5'.format(f))
-        hdf5_creator(data[idrv],f,geo_info,geo_spec,**kwargs)
-        output_written.append('{0}.h5'.format(f))
-    
     cube_files = []
     all_datalabels = []
     for idrv,jdrv in it:
+      datasetlabels = []
       for idata in range(data.shape[1]):
         if isstr:
           f = {'f': outputname + '_' + str(idata) if data.shape[1] > 1 else outputname,
@@ -199,7 +191,7 @@ def main_output(data,geo_info=None,geo_spec=None,outputname='new',otype='auto',
         else: 
           c = {'f': datalabels[idata],'d':jdrv}
         datalabel = datalabel_id%c
-        all_datalabels.append(datalabel)
+        datasetlabels.append(datalabel)
         
         if 'am' in otype or 'hx' in otype and not print_waring:
           if output_not_possible: print_waring = True
@@ -225,7 +217,16 @@ def main_output(data,geo_info=None,geo_spec=None,outputname='new',otype='auto',
                          **kwargs)
             output_written.append('%s.cb' % (fid % f))
             cube_files.append('%s.cb' % (fid % f))
-
+      
+      if 'h5' in otype: 
+        f = fid % {'f':outputname if isstr else outputname[-1],'d':jdrv}
+        display('\nSaving to Hierarchical Data Format file (HDF5)...' +
+                '\n\t{0}.h5'.format(f))
+        hdf5_creator(data[idrv],f,geo_info,geo_spec,datalabels=datasetlabels,**kwargs)
+        output_written.append('{0}.h5'.format(f))
+        
+      all_datalabels.extend(datasetlabels)
+    
     if 'vmd' in otype and not print_waring:
       if output_not_possible: print_waring = True
       else: 
@@ -235,6 +236,7 @@ def main_output(data,geo_info=None,geo_spec=None,outputname='new',otype='auto',
         vmd_network_creator(outputname if isstr else outputname[-1],
                             cube_files=cube_files,**kwargs)
         output_written.append('%s.vmd' % (outputname if isstr else outputname[-1]))
+
 
     if 'mayavi' in otype:
       data = data.reshape((-1,)+grid.get_shape())

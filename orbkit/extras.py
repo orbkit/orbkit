@@ -94,7 +94,7 @@ def calc_mo(qc, fid_mo_list, drv=None, otype=None, ofid=None,
                                  data_id='MO',
                                  otype=otype,
                                  drv=drv)
-    
+  
   return mo_list
   
 def mo_set(qc, fid_mo_list, drv=None, laplacian=None,
@@ -145,15 +145,13 @@ def mo_set(qc, fid_mo_list, drv=None, laplacian=None,
   
   if ofid is None:
     ofid = options.outputname
-  if 'h5' in otype and os.path.exists('%s.h5' % ofid):
-    raise IOError('%s.h5 already exists!' % ofid)
   
   datasets = []
   datalabels = []
   delta_datasets = []
   delta_datalabels = []
   cube_files = []
-  print len(mo_info_list)
+  
   for i_file, mo_info in enumerate(mo_info_list):
     qc_select = qc.copy()
     qc_select.mo_spec = mo_info
@@ -189,7 +187,7 @@ def mo_set(qc, fid_mo_list, drv=None, laplacian=None,
   delta_datasets = numpy.array(delta_datasets)
   delta_datalabels.append('mo_set')
   data = numpy.append(datasets,delta_datasets,axis=0)
-  print data.shape
+  
   if not options.no_output:
     output_written = main_output(data,
                                  qc.geo_info,qc.geo_spec,
@@ -199,84 +197,7 @@ def mo_set(qc, fid_mo_list, drv=None, laplacian=None,
                                  data_id='MO',
                                  otype=otype,
                                  drv=None)
-  blas
-  if 0:
-    
-    
-    if drv is None:
-      rho = data
-    elif laplacian:
-      rho, delta_rho, laplacian_rho = data 
-      delta_datasets.extend(delta_rho)
-      delta_datasets.append(laplacian_rho)
-    else:
-      rho, delta_rho = data
-      delta_datasets.append(delta_rho)
-        
-    if not options.no_output:
-      #if 'h5' in otype:
-        #display('Saving to Hierarchical Data Format file (HDF5)...')
-        #group = '/mo_set:%03d' % (i_file+1)	
-        #display('\n\t%s.h5 in the group "%s"' % (ofid,group))	
-        #HDF5_creator(rho,ofid,qc.geo_info,qc.geo_spec,data_id='rho',
-                            #mode='w',group=group,mo_spec=qc_select['mo_spec'])
-        #if drv is not None:
-          #for i,j in enumerate(drv):
-            #data_id = 'rho_d%s' % j
-            #HDF5_creator(delta_rho[i],ofid,qc.geo_info,qc.geo_spec,
-                                #data_id=data_id,data_only=True,mode='a',
-                                #group=group,mo_spec=qc_select['mo_spec'])
-          #if laplacian:
-            #data_id = 'rho_laplacian' 
-            #HDF5_creator(laplacian_rho,ofid,qc.geo_info,qc.geo_spec,
-                                #data_id=data_id,data_only=True,mode='a',
-                                #group=group,mo_spec=qc_select['mo_spec'])
-            
-      fid = '%s_%03d' % (ofid, i_file+1) 
-      cube_files.append('%s.cb' % fid)
-      datalabels = ('mo_set:'+','.join(mo_info.selection_string))
-
-      main_output(rho,qc.geo_info,qc.geo_spec,outputname=fid,
-                         otype=otype,omit=['h5','vmd','mayavi'],
-                         datalabels=datalabels)
-      if drv is not None:
-        for i,j in enumerate(drv):
-          fid = '%s_%03d_d%s' % (ofid, i_file+1, j) 
-          cube_files.append('%s.cb' % fid)
-          datalabels = ('d%s_of_mo_set:' % j + ','.join(mo_info.selection_string))
-          main_output(delta_rho[i],qc.geo_info,qc.geo_spec,outputname=fid,
-                             otype=otype,omit=['h5','vmd','mayavi'],
-                             datalabels=datalabels)  
-        if laplacian:
-          fid = '%s_%03d_laplacian' % (ofid, i_file+1) 
-          cube_files.append('%s.cb' % fid)
-          datalabels = ('laplacian_of_mo_set:' + ','.join(mo_info.selection_string))
-          main_output(laplacian_rho,qc.geo_info,qc.geo_spec,outputname=fid,
-                             otype=otype,omit=['h5','vmd','mayavi'],
-                             datalabels=datalabels)  
-          
-  if 'vmd' in otype and cube_files != []:
-      display('\nCreating VMD network file...' +
-                      '\n\t%(o)s.vmd' % {'o': ofid})
-      vmd_network_creator(ofid,cube_files=cube_files)
-
-  datasets = numpy.array(datasets)
-  if drv is None:
-    if 'mayavi' in otype:
-      main_output(datasets,qc.geo_info,qc.geo_spec,
-                       otype='mayavi',datalabels=mo_info.selected_mo)
-    return datasets
-  else:
-    delta_datasets = numpy.array(delta_datasets)
-    if 'mayavi' in otype:
-      datalabels = []
-      for i in mo_info.selected_mo:
-        datalabels.extend(['d/d%s of %s' % (j,i) for j in drv])
-        if laplacian:
-          datalabels.append('laplacian of %s' % i)
-      main_output(delta_datasets.reshape((-1,) + grid.get_shape()),
-                         qc.geo_info,qc.geo_spec,otype='mayavi',datalabels=datalabels)
-    return datasets, delta_datasets
+  return data
   # mo_set 
 
 
