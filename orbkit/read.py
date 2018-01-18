@@ -2386,7 +2386,7 @@ def mo_select(mo_spec, fid_mo_list, strict=False):
         i = list(range(*[expr2int(j) for j in k]))
         sel.extend(i)
       else:
-        sel.append(int(i))
+        sel.append(expr2int(i))
     return sel
   
   if isinstance(fid_mo_list,str) and fid_mo_list.lower() == 'all_mo':
