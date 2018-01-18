@@ -651,11 +651,15 @@ class MOClass(UserList):
     if format=='short':
       return ['%(sym)s' %
                   i for i in self.data]
-    elif format=='vmd':
-      return ['%(sym)s,Occ=%(occ_num).2f,E=%(energy)+.4f' %
+    elif format=='print':
+      return ['%(sym)s (Occ = %(occ_num).2f, E = %(energy)+.4f E_h)' %
+                  i for i in self.data]
+      
+    elif format in ['cb','cube','vmd']:
+      return ['%(sym)s,Occ=%(occ_num).1f,E=%(energy)+.2f' %
                   i for i in self.data]
     else:
-      return ['MO %(sym)s, Occ=%(occ_num).2f, E=%(energy)+.4f E_h' %
+      return ['%(sym)s, Occ=%(occ_num).2f, E=%(energy)+.4f E_h' %
                     i for i in self.data]
 
   def set_coeffs(self, item):
@@ -889,7 +893,7 @@ class MOClass(UserList):
     display('\nProcessing molecular orbital list...')
     if flatten_input and isinstance(list(fid_mo_list)[0], (list, numpy.ndarray)):
       display('\nWarning! Flattening of input lists requested!')
-      display('\nIf this was not intendet please set ``flatten_input=False``')
+      display('\nIf this was not intended please set ``flatten_input=False``')
 
     mo_in_file = []
     selected_mo = []
@@ -1105,7 +1109,7 @@ class MOClass(UserList):
       if sort_indices:
         mo_in_file = [numpy.sort([item for sublist in mo_in_file for item in sublist])]
 
-    if len(mo_in_file) == 1:
+    if len(mo_in_file) == 1 and flatten_input:
       mo_spec = MOClass([])
       for index in mo_in_file[0]:
         mo_spec.append(self.data[index])

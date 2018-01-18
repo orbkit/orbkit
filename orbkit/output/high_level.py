@@ -231,10 +231,10 @@ def main_output(data,geo_info=None,geo_spec=None,outputname='new',otype='auto',
       else: 
         # Create VMD network 
         display('\nCreating VMD network file...' +
-                        '\n\t%(o)s.vmd' % {'o': fid % f})        
+                        '\n\t%s.vmd' % (outputname if isstr else outputname[-1]))        
         vmd_network_creator(outputname if isstr else outputname[-1],
                             cube_files=cube_files,**kwargs)
-        output_written.append('%s.vmd' % (fid % f))
+        output_written.append('%s.vmd' % (outputname if isstr else outputname[-1]))
 
     if 'mayavi' in otype:
       data = data.reshape((-1,)+grid.get_shape())

@@ -418,7 +418,7 @@ def rho_compute(qc,calc_ao=False,calc_mo=False,drv=None,laplacian=False,
     mo_num = ao_spec.get_ao_num()
   else:
     mo_num = len(mo_spec)
-    labels = [ii_mo['sym'] for ii_mo in mo_spec]
+    labels = mo_spec.get_labels(format='print') 
   
   if not grid.is_initialized:
     display('\nSetting up the grid...')

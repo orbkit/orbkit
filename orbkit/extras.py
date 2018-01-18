@@ -86,11 +86,10 @@ def calc_mo(qc, fid_mo_list, drv=None, otype=None, ofid=None,
     ofid = '%s_MO' % (options.outputname)
   
   if not options.no_output:
-    format = 'default' if 'mayavi' in otype else 'vmd'
     output_written = main_output(mo_list,
                                  qc.geo_info,qc.geo_spec,
                                  outputname=ofid,
-                                 datalabels=qc_select.mo_spec.get_labels(format=format),
+                                 datalabels=qc_select.mo_spec.get_labels(),
                                  mo_spec=qc_select.mo_spec,
                                  data_id='MO',
                                  otype=otype,
@@ -137,9 +136,7 @@ def mo_set(qc, fid_mo_list, drv=None, laplacian=None,
 
   #Can be an mo_spec or a list of mo_spec
   # For later iteration we'll make it into a list here if it is not
-  mo_info_list = qc.mo_spec.select(fid_mo_list)
-  if isinstance(mo_info_list, MOClass):
-    mo_info_list = [mo_info_list]
+  mo_info_list = qc.mo_spec.select(fid_mo_list, flatten_input=False)
     
   drv = options.drv if drv is None else drv
   laplacian = options.laplacian if laplacian is None else laplacian
@@ -152,24 +149,60 @@ def mo_set(qc, fid_mo_list, drv=None, laplacian=None,
     raise IOError('%s.h5 already exists!' % ofid)
   
   datasets = []
+  datalabels = []
   delta_datasets = []
+  delta_datalabels = []
   cube_files = []
-
+  print len(mo_info_list)
   for i_file, mo_info in enumerate(mo_info_list):
     qc_select = qc.copy()
     qc_select.mo_spec = mo_info
-    display('Starting with the molecular orbital list'
-            + str(mo_info.selection_string) +
+    label = 'mo_set:'+mo_info.selection_string
+    display('\nStarting with the molecular orbital list \n\t'
+            + label +
             '\n\t(Only regarding existing and occupied mos.)\n')
-      
+    
     data = core.rho_compute(qc_select,
                             drv=drv,
                             laplacian=laplacian,
                             slice_length=slice_length,
                             numproc=numproc)
 
-    datasets.append(data)
-
+    if drv is None:
+      rho = data
+    elif laplacian:
+      rho, delta_rho, laplacian_rho = data 
+      delta_datasets.extend(delta_rho)
+      delta_datasets.append(laplacian_rho)
+      delta_datalabels.extend(['d^2/d%s^2 %s' % (i,label) for i in 'xyz'])
+      delta_datalabels.append('laplacian_of_' + label)
+    else:
+      rho, delta_rho = data
+      delta_datasets.extend(delta_rho)
+      delta_datalabels.extend(['d/d%s %s' % (i,label) for i in drv])
+      
+    
+    datasets.append(rho)
+    datalabels.append(label)
+  
+  datasets = numpy.array(datasets)
+  delta_datasets = numpy.array(delta_datasets)
+  delta_datalabels.append('mo_set')
+  data = numpy.append(datasets,delta_datasets,axis=0)
+  print data.shape
+  if not options.no_output:
+    output_written = main_output(data,
+                                 qc.geo_info,qc.geo_spec,
+                                 outputname=ofid,
+                                 datalabels=datalabels+delta_datalabels,
+                                 mo_spec=qc_select.mo_spec,
+                                 data_id='MO',
+                                 otype=otype,
+                                 drv=None)
+  blas
+  if 0:
+    
+    
     if drv is None:
       rho = data
     elif laplacian:
@@ -181,23 +214,23 @@ def mo_set(qc, fid_mo_list, drv=None, laplacian=None,
       delta_datasets.append(delta_rho)
         
     if not options.no_output:
-      if 'h5' in otype:
-        display('Saving to Hierarchical Data Format file (HDF5)...')
-        group = '/mo_set:%03d' % (i_file+1)	
-        display('\n\t%s.h5 in the group "%s"' % (ofid,group))	
-        HDF5_creator(rho,ofid,qc.geo_info,qc.geo_spec,data_id='rho',
-                            mode='w',group=group,mo_spec=qc_select['mo_spec'])
-        if drv is not None:
-          for i,j in enumerate(drv):
-            data_id = 'rho_d%s' % j
-            HDF5_creator(delta_rho[i],ofid,qc.geo_info,qc.geo_spec,
-                                data_id=data_id,data_only=True,mode='a',
-                                group=group,mo_spec=qc_select['mo_spec'])
-          if laplacian:
-            data_id = 'rho_laplacian' 
-            HDF5_creator(laplacian_rho,ofid,qc.geo_info,qc.geo_spec,
-                                data_id=data_id,data_only=True,mode='a',
-                                group=group,mo_spec=qc_select['mo_spec'])
+      #if 'h5' in otype:
+        #display('Saving to Hierarchical Data Format file (HDF5)...')
+        #group = '/mo_set:%03d' % (i_file+1)	
+        #display('\n\t%s.h5 in the group "%s"' % (ofid,group))	
+        #HDF5_creator(rho,ofid,qc.geo_info,qc.geo_spec,data_id='rho',
+                            #mode='w',group=group,mo_spec=qc_select['mo_spec'])
+        #if drv is not None:
+          #for i,j in enumerate(drv):
+            #data_id = 'rho_d%s' % j
+            #HDF5_creator(delta_rho[i],ofid,qc.geo_info,qc.geo_spec,
+                                #data_id=data_id,data_only=True,mode='a',
+                                #group=group,mo_spec=qc_select['mo_spec'])
+          #if laplacian:
+            #data_id = 'rho_laplacian' 
+            #HDF5_creator(laplacian_rho,ofid,qc.geo_info,qc.geo_spec,
+                                #data_id=data_id,data_only=True,mode='a',
+                                #group=group,mo_spec=qc_select['mo_spec'])
             
       fid = '%s_%03d' % (ofid, i_file+1) 
       cube_files.append('%s.cb' % fid)
@@ -232,7 +265,7 @@ def mo_set(qc, fid_mo_list, drv=None, laplacian=None,
     if 'mayavi' in otype:
       main_output(datasets,qc.geo_info,qc.geo_spec,
                        otype='mayavi',datalabels=mo_info.selected_mo)
-    return datasets#, mo_info
+    return datasets
   else:
     delta_datasets = numpy.array(delta_datasets)
     if 'mayavi' in otype:

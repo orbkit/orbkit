@@ -1,7 +1,7 @@
 from orbkit.display import display
 
 def vmd_network_creator(filename,cube_files=None,render=False,exit=False,
-                        iso=(-0.01,0.01),abspath=False,mo_options=''):
+                        iso=(-0.01,0.01),abspath=False,mo_options='',**kwargs):
   '''Creates a VMD script file from a list of cube files provided.
 
   **Parameters:**
