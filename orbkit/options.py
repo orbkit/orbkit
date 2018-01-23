@@ -305,7 +305,7 @@ def check_options(error=raise_error,display=print_message,
             'e.g., --cclib_parser=Gaussian')
 
     if niotype not in niotypes:
-      error('Unupported format for native io (choose from "%s")\n' %
+      error('Unsupported format for native io (choose from "%s")\n' %
             '", "'.join(niotypes))
     if niotype == 'hdf5':
       try:

@@ -14,7 +14,9 @@ examples/basic_examples/Plots/
 *cy_*.c
 *.gch
 *.pyc
+*.npz
 *.h5
+*.hdf5
 *.h5am
 *.cb
 *.cube

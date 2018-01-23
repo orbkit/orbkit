@@ -246,40 +246,14 @@ def calc_ao(qc, drv=None, otype=None, ofid=None,
     ofid = '%s_AO' % (options.outputname)
   
   if not options.no_output:
-    if 'h5' in otype:    
-      output.main_output(mo_list,qc.geo_info,qc.geo_spec,data_id='AO',
-                    outputname=ofid,otype='h5',drv=drv,is_mo_output=False)
-    # Create Output     
-    cube_files = []
-    for i in range(len(datalabels)):
-      outputname = '%s_%03d' % (ofid,i)
-      index = numpy.index_exp[:,i] if drv is not None else i
-      output_written = output.main_output(ao_list[index],
-                                      qc.geo_info,qc.geo_spec,
-                                      outputname=outputname,
-                                      datalabels=datalabels[i].replace('[','').replace(']',''),
-                                      otype=otype,omit=['h5','vmd','mayavi'],
-                                      drv=drv)
-      
-      for i in output_written:
-        if i.endswith('.cb'):
-          cube_files.append(i)
-          
-    if 'vmd' in otype and cube_files != []:
-      display('\nCreating VMD network file...' +
-                      '\n\t%(o)s.vmd' % {'o': ofid})
-      output.vmd_network_creator(ofid,cube_files=cube_files)
-  if 'mayavi' in otype:
-    if drv is not None:
-      tmp = []
-      for i in drv:
-        for j in datalabels:
-          tmp.append('d/d%s of %s' % (i,j))
-      datalabels = tmp
-    data = ao_list.reshape((-1,) + grid.get_shape())
-    
-    output.main_output(data,qc.geo_info,qc.geo_spec,
-                       otype='mayavi',datalabels=datalabels)
+    output_written = main_output(ao_list,
+                                 qc.geo_info,qc.geo_spec,
+                                 outputname=ofid,
+                                 datalabels=qc.ao_spec.get_labels(),
+                                 data_id='AO',
+                                 otype=otype,
+                                 drv=drv)
+  
   return ao_list
 
 def atom2index(atom,geo_info=None):

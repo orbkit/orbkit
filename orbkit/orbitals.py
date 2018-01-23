@@ -444,6 +444,8 @@ class MOClass(UserList):
       self.spinpolarized = restart['spinpolarized']
       self.selection_string = restart['selection_string']
       self.selected_mo = restart['selected_mo']
+      self.alpha_index = restart['alpha_index']
+      self.beta_index = restart['beta_index']
       self.internal_to_dict()
 
   def todict(self):

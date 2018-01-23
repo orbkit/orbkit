@@ -237,17 +237,12 @@ def hdf5_write(fid,mode='w',gname='',**kwargs):
     for key,data in kwargs.items():
       if isinstance(data,(list,numpy.ndarray)):
         data = numpy.array(data)
-        if data.dtype in ['<U1', '<U4', 'O']:
+        if data.dtype.type is numpy.unicode_:
+          data = numpy.asarray(data,dtype=numpy.string_)
+        elif data.dtype in ['O']:
           data = numpy.array(data, dtype='S10')
-        group.create_dataset(key,numpy.shape(data),data=data)
+        group[key] = data
       else:
         if data is None or type(data) == bool:
           data = str(data)
         group.attrs[key] = data
-
-
-
-
-
-
-
