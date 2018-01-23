@@ -13,13 +13,15 @@ folder = os.path.join(tests_home, '../outputs_for_testing/gaussian')
 filepath = os.path.join(folder, 'h2o_uhf_cart.inp.log')
 
 qc = main_read(filepath, all_mo=True)
-equal(qc.mo_spec.get_homo(), 9)
-equal(qc.mo_spec.get_lumo(), 10)
-equal(qc.mo_spec.get_lastbound(), qc.mo_spec.get_homo())
 
 homo = qc.mo_spec.get_homo()
 lumo = qc.mo_spec.get_lumo()
 lastbound = qc.mo_spec.get_lastbound()
+
+equal(homo, 29)
+equal(lumo, 5)
+equal(lastbound, homo)
+
 
 alpha = numpy.array(qc.mo_spec.alpha_index)
 beta = numpy.array(qc.mo_spec.beta_index)

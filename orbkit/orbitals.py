@@ -538,29 +538,38 @@ class MOClass(UserList):
     '''
     if not self._up_to_date:
       self.update()
-    return (self.get_occ() > tol).nonzero()[0][-1]
+    # molecular orbitals are not necessarily ordered by eigenvalues
+    ind = numpy.argsort(self.get_eig())
+    occ = self.get_occ()[ind]
+    return ind[numpy.where(occ > tol)[0][-1]]
 
   def get_lumo(self, tol=1e-5):
     '''Returns index of lowest unoccupied MO.
     '''
     if not self._up_to_date:
       self.update()
-    ilumo = (self.get_occ() > tol).nonzero()[0][-1]+1
+    # molecular orbitals are not necessarily ordered by eigenvalues
+    ind = numpy.argsort(self.get_eig())
+    occ = self.get_occ()[ind]
+    ilumo = numpy.where(occ <= tol)[0][0]
     if ilumo >= len(self.data):
       raise ValueError('No unoccupied orbitals present!')
     else:
-      return ilumo
+      return ind[ilumo]
 
   def get_lastbound(self):
     '''Returns index of highest bound MO.
     '''
     if not self._up_to_date:
       self.update()
-    imaxbound = (self.get_eig() <= 0.).nonzero()[0][-1]
+    # molecular orbitals are not necessarily ordered by eigenvalues
+    ind = numpy.argsort(self.get_eig())
+    eig = self.get_eig()[ind]
+    imaxbound = numpy.where(eig <= 0.)[0][-1]
     if imaxbound >= len(self.data):
       raise ValueError('No unoccupied orbitals present!')
     else:
-      return imaxbound
+      return ind[imaxbound]
 
   def sort_by_sym(self):
     '''Sorts mo_spec by symmetry.
@@ -599,15 +608,12 @@ class MOClass(UserList):
 
   def update(self):
     self._up_to_date = False
+    self.get_coeffs()
+    self.get_occ()
+    self.get_eig()
+    self.get_sym()
     if self.alpha_index is None and self.beta_index is None:
-      self.sort_by_energy()
       self.get_spinstate()
-    else:
-      # sort_by_energy() does its own updating
-      self.get_coeffs()
-      self.get_occ()
-      self.get_eig()
-      self.get_sym()
     self._up_to_date = True
     return
 
