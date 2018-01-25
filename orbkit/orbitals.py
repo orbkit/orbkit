@@ -623,10 +623,7 @@ class MOClass(UserList):
     for s in sort:
       tmp_data.append(self.data[s])
     self.data = tmp_data
-    self.get_coeffs()
-    self.get_occ()
-    self.get_eig()
-    self.get_sym()
+    self.update()
     return
 
   def get_spinstate(self):
