@@ -225,7 +225,7 @@ def read_molden(fname, all_mo=False, spin=None, i_md=-1, interactive=True,
             # AO information section 
             # Initialize a new dict for this AO 
             ao_num = 0               # Initialize number of atomic orbiatls 
-            ao_type = thisline[0]    # Which type of atomic orbital do we have
+            ao_type = thisline[0].lower()    # Which type of atomic orbital do we have
             pnum = int(thisline[1])  # Number of primatives
             # Calculate the degeneracy of this AO and increase basis_count 
             for i_ao in ao_type:
