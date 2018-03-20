@@ -10,3 +10,4 @@ from orbkit import main
 from orbkit import __version__
 
 main.run_standalone()
+qc = main.qc

@@ -90,9 +90,9 @@ class QCinfo:
   def get_mo_occ(self):
     return numpy.array([i['occ_num'] for i in self.mo_spec],dtype=numpy.intc)
   
-  def get_nmoocc(self):
-    return sum(self.get_mo_occ())
-  
+  def get_nmoocc(self, tol=1e-5):
+    return sum(self.get_mo_occ() > tol)
+    
   def get_com(self,nuc_list=None):
     '''Computes the center of mass.
     '''
