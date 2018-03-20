@@ -1,6 +1,7 @@
 '''Output module for Orbkit native format
 '''
 import time
+from os.path import join
 
 def unravel_dicts(indict):
   '''Unravels encapsulated dictionaries stemming from class-subclass structures'''
@@ -28,7 +29,7 @@ def unravel_dicts(indict):
     outdict[i] = j
   return outdict
   
-def write_native(data, outputname='new', ftype='numpy'):
+def write_native(data, outputname='new', ftype='numpy', gname=''):
   '''Creates the requested output.
   
   **Parameters:**
@@ -58,11 +59,11 @@ def write_native(data, outputname='new', ftype='numpy'):
     from orbkit.output import hdf5_write
     odata = unravel_dicts(odata)
     for i,key in enumerate(odata.keys()):
-      if i == 0:
+      if i == 0 and gname == '':
         mode = 'w'
       else:
         mode = 'a'
-      hdf5_write(outputname + '.' + ftype.lower(), mode, gname=key, **odata[key])
+      hdf5_write(outputname + '.' + ftype.lower(), mode, gname=join(gname,key), **odata[key])
   else:
     raise NotImplementedError('File format {0} not implemented for writing.'.format(ftype.lower()))
 
