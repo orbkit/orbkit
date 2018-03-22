@@ -1,12 +1,12 @@
+import os
 import numpy
 
 from orbkit import options, grid
 from orbkit.display import display
-from .tools import colormap_creator
 
-def hdf5_creator(data,filename,geo_info,geo_spec,mode='w',data_id='rho',datalabels=None,group=None,
-            data_only=False,ao_spec=None,mo_spec=None,is_mo_output=False,
-            x=None,y=None,z=None,**kwargs):
+from .native import write_native
+
+def hdf5_creator(data, filename, qcinfo=None, gname='', mode='w',attrs={},**kwargs):
   '''Creates an hdf5 file (Hierarchical Data Format) output.
   
   **Parameters:**
@@ -15,106 +15,35 @@ def hdf5_creator(data,filename,geo_info,geo_spec,mode='w',data_id='rho',datalabe
     Contains the output data.
   filename : str
     Contains the base name of the output file.
-  geo_info, geo_spec : 
-    See :ref:`Central Variables` for details.
-  data_id : str, optional
-    Specifies name of the dataset in the hdf5 file.
-  group : None of str
-    If not None, output data will be stored in this group.
-  data_only : bool
-    Specifies if only the dataset `data` should be saved.
-  ao_spec, mo_spec : optional
-    If not None, these data sets will be saved additionally.
-    (cf. :ref:`Central Variables` for details)
-    If mo_spec is not None, some information about the molecular orbitals 
-    will be saved additionally. 
-  is_mo_output : bool
-    If True, information about the dataset will be saved to 'MO:Content'.
-  x,y,z : numpy.ndarray, optional
-    If not None, these variables will replace grid.x, grid.y, and/or grid.z,
-    respectively.
+  qcinfo : 
+    Stores all information from qcinfo class (see :ref:`Central Variables` for
+    details).
+  gname : str, optional
+    Specifies the path where the data is stored.
+  mode : str, optional
+    Specifies the mode used to open the file. ('r', 'w', 'a')
+  attrs : dict or dict of dicts, optional
+    Supply datasets with attributes. If dict, entries will be added to 'data'.
+  grid : module or class, global
+    Contains the grid, i.e., grid.x, grid.y, and grid.z.
   '''
   import h5py
-  hdf5_file = h5py.File('%s.h5' % filename, mode)
-  if group is None:
-    f = hdf5_file
-  else:
-    hdf5_file.require_group(group)
-    f = hdf5_file[group]
+  if not (filename.endswith('h5'),filename.endswith('hdf5')):
+    filename += '.h5'
     
-  if is_mo_output:    
-    mo_name = []
-    for i,j in enumerate(data):
-      try:
-        mo_name.append(mo_spec[i]['sym'])
-      except TypeError:
-        mo_name.append(str(i))
-      
-    dset = f.create_dataset('MO:Content',data=numpy.array(mo_name,dtype='S'))
-  if datalabels is not None:
-    f['content'] = [i.encode('utf8') for i in datalabels]
+  # Save data and all other kwargs
+  hdf5_write(filename,mode=mode,gname=gname,data=data,**kwargs)
   
-  dset = f.create_dataset(data_id,numpy.shape(data),data=data)
+  # Save grid
+  hdf5_write(filename,mode='a',gname=os.path.join(gname,'grid'),
+             x=grid.x,y=grid.y,z=grid.z)
   
-  if data_only:
-    hdf5_file.close()
-    return
+  # Set attributes
+  hdf5_attributes(filename,gname=gname,**attrs)
   
-  if x is None: x = grid.x
-  if y is None: y = grid.y
-  if z is None: z = grid.z
-  
-  dset = f.create_dataset('x',(1,len(x)),data=x)
-  dset = f.create_dataset('y',(1,len(y)),data=y)
-  dset = f.create_dataset('z',(1,len(z)),data=z)
-  
-  if ao_spec is not None:
-    hdf5_append(ao_spec,f,name='ao_spec')
-    if mo_spec is not None:
-      hdf5_append(mo_spec,f,name='mo_spec')
-  if mo_spec is not None:
-    MO_info = f.create_group('MO_info')
-    occ_num=[]
-    energy=[]
-    sym=[]
-    for ii in range(len(mo_spec)):
-      occ_num.append(mo_spec[ii]['occ_num'])
-      energy.append(mo_spec[ii]['energy'])
-      sym.append(numpy.string_(mo_spec[ii]['sym']))
-    dset = MO_info.create_dataset('occ_num',((1,len(mo_spec))),data=occ_num)
-    dset = MO_info.create_dataset('energy',((1,len(mo_spec))),data=energy)
-    dset = MO_info.create_dataset('sym',((1,len(mo_spec))),data=sym)
-  
-  dset = f.create_dataset('geo_info',(numpy.shape(geo_info)),data=numpy.array(geo_info,dtype='S'))
-  dset = f.create_dataset('geo_spec',(numpy.shape(geo_spec)),data=geo_spec)
-  
-  hdf5_file.close()
+  if qcinfo is not None:
+    write_native(qcinfo, outputname=filename, ftype='hdf5', gname=os.path.join(gname,'QCinfo'))  
 
-def hx_network_creator(rho,filename):
-  '''Creates a ZIBAmira hx-network file including a colormap file (.cmap)
-  adjusted to the density for the easy depiction of the density.
-  '''
-  from orbkit.hx_network_draft import hx_network
-  # Create a .cmap colormap file using the default values 
-  display('\tCreating ZIBAmira colormap file...\n\t\t%(f)s.cmap' % 
-                {'f': filename})
-  
-  AssertionError (rho.shape != tuple(grid.N_)), 'The grid does not fit the data.'
-  
-  colormap_creator(rho,filename)
-  
-  # Create a .hx network file based on the file orbkit.hx_network_draft.py 
-  display('\tCreating ZIBAmira network file...\n\t\t%(f)s.hx' % 
-                {'f': filename})
-  # Open an empty file
-  fid = open('%(f)s.hx' % {'f': filename},'w')
-  
-  filename = filename.split('/')[-1]
-  # Copy the content of the draft file and replace the keywords 
-  fid.write(hx_network.replace("FILENAME",filename)) 
-  
-  # Close the file 
-  fid.close()  
 
 def hdf5_open(fid,mode='w'):
   '''Open an hdf5 file.
@@ -132,6 +61,9 @@ def hdf5_open(fid,mode='w'):
     # Do something with hdf5_file...
   '''
   import h5py
+  if isinstance(fid,h5py.File):
+    yield fid
+  
   hdf5_file = h5py.File(fid, mode)
   try:
     yield hdf5_file
@@ -242,7 +174,28 @@ def hdf5_write(fid,mode='w',gname='',**kwargs):
         elif data.dtype in ['O']:
           data = numpy.array(data, dtype='S10')
         group[key] = data
+      elif isinstance(data,dict):
+        hdf5_append(data,group,name=key)
       else:
         if data is None or type(data) == bool:
           data = str(data)
         group.attrs[key] = data
+
+def hdf5_attributes(filename, gname='', **attrs):
+  warning = []
+  for f in hdf5_open(filename,mode='a'):
+    for key,value in attrs.items():
+      if isinstance(value,dict):
+        for k,v in value.items():
+          if k in f[gname].keys():
+            f[os.path.join(gname,key)].attrs[k] = v
+          else:
+            warning.append(key)
+      else:
+        if key in f[gname].keys():
+          f[os.path.join(gname,'data')].attrs[key] = value
+        else:
+          warning.append('data')
+  if warning:
+    display('Warning: The following attributes are not datasets in '+filename)
+    display(', '.join([os.path.join(gname,i) for i in data]))

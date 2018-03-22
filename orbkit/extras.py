@@ -87,11 +87,9 @@ def calc_mo(qc, fid_mo_list, drv=None, otype=None, ofid=None,
   
   if not options.no_output:
     output_written = main_output(mo_list,
-                                 qc.geo_info,qc.geo_spec,
+                                 qc_select,
                                  outputname=ofid,
                                  datalabels=qc_select.mo_spec.get_labels(),
-                                 mo_spec=qc_select.mo_spec,
-                                 data_id='MO',
                                  otype=otype,
                                  drv=drv)
   
@@ -190,11 +188,9 @@ def mo_set(qc, fid_mo_list, drv=None, laplacian=None,
   
   if not options.no_output:
     output_written = main_output(data,
-                                 qc.geo_info,qc.geo_spec,
+                                 qc,
                                  outputname=ofid,
                                  datalabels=datalabels+delta_datalabels,
-                                 mo_spec=qc_select.mo_spec,
-                                 data_id='MO',
                                  otype=otype,
                                  drv=None)
   return data
@@ -247,10 +243,9 @@ def calc_ao(qc, drv=None, otype=None, ofid=None,
   
   if not options.no_output:
     output_written = main_output(ao_list,
-                                 qc.geo_info,qc.geo_spec,
+                                 qc,
                                  outputname=ofid,
                                  datalabels=qc.ao_spec.get_labels(),
-                                 data_id='AO',
                                  otype=otype,
                                  drv=drv)
   

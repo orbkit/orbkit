@@ -17,7 +17,10 @@ def cube_creator(rho,filename,geo_info,geo_spec,comments='',**kwargs):
   '''
   AssertionError (rho.shape != tuple(grid.N_)), 'The grid does not fit the data.'
   # Open an empty file 
-  fid = open('%(f)s.cb' % {'f': filename}, 'w')
+  if not (filename.endswith('cube'),filename.endswith('cb')):
+    filename += '.cube'
+  
+  fid = open(filename, 'w')
   
   # Write the type and the position of the atoms in the header 
   string = 'orbkit calculation\n'

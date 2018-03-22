@@ -1,5 +1,10 @@
+import os
 import numpy
+
 from orbkit import grid
+from orbkit.display import display
+
+from .tools import colormap_creator
 
 def amira_creator(data,filename):
   '''Creates a ZIBAmira mesh file. (plain text)
@@ -25,7 +30,8 @@ def amira_creator(data,filename):
   N = tuple(grid.N_)
   
   # Open an empty file 
-  fid = open('%s.am' % filename,'w')
+  filename += '.am' if not filename.endswith('.am') else ''
+  fid = open(filename,'w')
   # Write Header 
   fid.write('# AmiraMesh 3D ASCII 2.0\n\n\n')
   fid.write('define Lattice %d %d %d\n' % N)
@@ -47,53 +53,27 @@ def amira_creator(data,filename):
         #string += '%g\n' % rho[rr,ss,tt]
   fid.close()
 
-def amira_creator_old(rho,filename):
-  '''Creates a ZIBAmira mesh file. (plain text)
-  
-  **Parameters:**
-  
-  rho : numpy.ndarray, shape=N
-    Contains the output data.
-  filename : str
-    Contains the base name of the output file.
+def hx_network_creator(rho,filename):
+  '''Creates a ZIBAmira hx-network file including a colormap file (.cmap)
+  adjusted to the density for the easy depiction of the density.
   '''
-  # Open an empty file 
-  fid = open('%(f)s.am' % {'f': filename},'w')
-
-  # usage:
-  #     - open Amira
-  #     - left-click File -> Open Data
-  #     - choose the sfilename.am
-  #     - Press OK
-  #     - right-click on the new Data Object -> Compute -> Arithmetic
-  #     - choose the Arithmetic object
-  #     - select  Expr -> A and Result type -> regular and Apply
-  #     - use the new data object to display your density as usual,
+  from orbkit.hx_network_draft import hx_network
+  filename += '.hx' if not filename.endswith('.hx') else ''
+    
+  # Create a .cmap colormap file using the default values 
+  display('\tCreating ZIBAmira colormap file...\n\t\t' + filename.replace('.hx','.cmap'))
   
-  # Write Header 
-  fid.write('# AmiraMesh 3D ASCII 2.0\n\n\n')
-  fid.write('define Lattice %(Nx)d %(Ny)d %(Nz)d\n' % 
-                    {'Nx': grid.N_[0],'Ny': grid.N_[1],'Nz': grid.N_[2]})
-  fid.write('define Coordinates %(N)d\n\n' % {'N': numpy.sum(grid.N_)})
-  fid.write('Parameters {\n')
-  fid.write('    Content "%(Nx)dx%(Ny)dx%(Nz)d float, uniform coordinates",\n' %
-                    {'Nx': grid.N_[0],'Ny': grid.N_[1],'Nz': grid.N_[2]})
-  fid.write('    BoundingBox %(xmin)f %(xmax)f %(ymin)f %(ymax)f %(zmin)f %(zmax)f,\n' %
-            {'xmin': grid.min_[0],'xmax': grid.max_[0],
-             'ymin': grid.min_[1],'ymax': grid.max_[1],
-             'zmin': grid.min_[2],'zmax': grid.max_[2]})
-  fid.write('    CoordType "uniform"\n}\n\n')
-  fid.write('Lattice { float Data } @1\n')
-  fid.write('# Data section follows\n@1\n')
+  AssertionError (rho.shape != tuple(grid.N_)), 'The grid does not fit the data.'
   
-  # Write density information to .am file
-  string = ''
-  for tt in range(len(grid.z)):
-    for ss in range(len(grid.y)):
-      for rr in range(len(grid.x)): 
-        string += '%g\n' % rho[rr,ss,tt]
+  colormap_creator(rho,filename.replace('.hx','.cmap'))
   
-  fid.write(string)
+  # Create a .hx network file based on the file orbkit.hx_network_draft.py 
+  # Open an empty file
+  
+  fid = open(filename,'w')
+  
+  # Copy the content of the draft file and replace the keywords 
+  fid.write(hx_network.replace("FILENAME",os.path.splitext(os.path.basename(filename))[0])) 
   
   # Close the file 
-  fid.close()
+  fid.close()  

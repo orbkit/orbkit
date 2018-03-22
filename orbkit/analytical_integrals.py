@@ -497,30 +497,3 @@ def get_lc(atoms,atom2mo,strict=False):
         if i==j: lc.append(k)
     return numpy.array(lc,dtype=numpy.intc)
 
-def print2D(x,format='%+.2f ',start='\t',end=''):
-  '''Prints a 2D matrix.
-  
-  **Parameters:**
-  
-  x : numpy.ndarray, shape = (n,m)
-    Contains a 2D matrix.
-  
-  format : str
-    Specifies the output format.
-  '''
-  shape = numpy.shape(x)
-  for i in range(shape[0]):
-    s = start
-    for j in range(shape[1]):
-      s += format % x[i,j]
-    print(s + end)
-
-def pmat(matrix,vmax=lambda x: numpy.max(numpy.abs(x))):
-  import matplotlib.pyplot as plt
-  plt.figure()
-  if matrix.dtype == complex:
-    print('plotting real part of matrix')
-    matrix = matrix.real
-  vm = vmax(numpy.abs(matrix)) if callable(vmax) else vmax
-  plt.imshow(matrix,interpolation=None,vmin=-vm,vmax=vm,cmap='seismic_r')
-  plt.colorbar()

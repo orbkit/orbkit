@@ -1,7 +1,7 @@
 '''Output module for Orbkit native format
 '''
 import time
-from os.path import join
+from os.path import join,splitext
 
 def unravel_dicts(indict):
   '''Unravels encapsulated dictionaries stemming from class-subclass structures'''
@@ -29,7 +29,7 @@ def unravel_dicts(indict):
     outdict[i] = j
   return outdict
   
-def write_native(data, outputname='new', ftype='numpy', gname=''):
+def write_native(data, outputname, ftype='numpy', gname=''):
   '''Creates the requested output.
   
   **Parameters:**
@@ -48,13 +48,16 @@ def write_native(data, outputname='new', ftype='numpy', gname=''):
   if ftype.lower() not in ['numpy', 'npz', 'hdf5', 'h5']:
     raise NotImplementedError('Ony npz and hdf5 are currently supportet.')
 
+  if splitext(outputname)[1] not in ['.numpy', '.npz', '.hdf5', '.h5']:
+    outputname = '{0}.{1}'.format(outputname,ftype.lower())
+    
   odata = data.todict()
   odata['date'] = time.strftime("%Y-%m-%d") 
   odata['time'] = time.strftime("%H:%M:%S")
 
   if ftype.lower() in ['numpy', 'npz']:
     from numpy import savez_compressed as save
-    save(outputname + '.npz', **odata)
+    save(outputname, **odata)
   elif ftype.lower() in ['hdf5', 'h5']:
     from orbkit.output import hdf5_write
     odata = unravel_dicts(odata)
@@ -63,7 +66,7 @@ def write_native(data, outputname='new', ftype='numpy', gname=''):
         mode = 'w'
       else:
         mode = 'a'
-      hdf5_write(outputname + '.' + ftype.lower(), mode, gname=join(gname,key), **odata[key])
+      hdf5_write(outputname, mode, gname=join(gname,key), **odata[key])
   else:
     raise NotImplementedError('File format {0} not implemented for writing.'.format(ftype.lower()))
 

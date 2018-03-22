@@ -26,6 +26,9 @@ def vmd_network_creator(filename,cube_files=None,render=False,exit=False,
   from os import path,listdir
   import linecache
   from orbkit import vmd_network_draft
+  
+  filename += '.vmd' if not filename.endswith('vmd') else ''
+  
   if cube_files is None:
     display('No list of cube (.cb or .cube) filenames provided. Checking the directory' +
             ' of the outputfile...')
@@ -59,8 +62,8 @@ def vmd_network_creator(filename,cube_files=None,render=False,exit=False,
                                   'render': '' if render else '#',
                                   'mo_options' : mo_options,
                                   }
-
-  with open('%(f)s.vmd' % {'f': filename},'w') as f:
+    
+  with open(filename) as f:
     f.write(vmd_network_draft.vmd_string % {'mo':mo})
     if exit:
       f.write('exit\n')
