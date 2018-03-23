@@ -249,4 +249,4 @@ def run_standalone():
   options.init_parser()
   
   # Call the main loop
-  run_orbkit(check_options=False,standalone=True)
+  return run_orbkit(check_options=False,standalone=True)

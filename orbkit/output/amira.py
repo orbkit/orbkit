@@ -63,7 +63,7 @@ def hx_network_creator(rho,filename):
   # Create a .cmap colormap file using the default values 
   display('\tCreating ZIBAmira colormap file...\n\t\t' + filename.replace('.hx','.cmap'))
   
-  AssertionError (rho.shape != tuple(grid.N_)), 'The grid does not fit the data.'
+  assert (rho.shape != tuple(grid.N_)), 'The grid does not fit the data.'
   
   colormap_creator(rho,filename.replace('.hx','.cmap'))
   

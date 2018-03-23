@@ -248,7 +248,7 @@ def main_output(data,qc=None,outputname='new',otype='auto', gname='',
       if output_not_possible: print_waring = True
       else: 
         filename = (outputname if isstr else outputname[-1]) +'.'+ otype_ext['vmd']
-        display('\nCreating VMD network file...' + filename)
+        display('\nCreating VMD network file...\n\t' + filename)
         vmd_network_creator(filename,cube_files=cube_files,**kwargs)
         output_written.append(filename)
 

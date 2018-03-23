@@ -63,7 +63,7 @@ def vmd_network_creator(filename,cube_files=None,render=False,exit=False,
                                   'mo_options' : mo_options,
                                   }
     
-  with open(filename) as f:
+  with open(filename,'w') as f:
     f.write(vmd_network_draft.vmd_string % {'mo':mo})
     if exit:
       f.write('exit\n')

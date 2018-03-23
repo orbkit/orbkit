@@ -123,7 +123,7 @@ def init_parser():
                       type="string",
                       help='''name of the output file 
                       [default: base name of INPUT]''')
-  group.add_option("-t", "--otype", dest="otype", default='auto',
+  group.add_option("-t", "--otype", dest="otype", 
                       type="choice", action="append", choices=otypes,
                       help='''output formats (multiple calls possible):  
                       '{0}' (HDF5 file),                             
@@ -233,6 +233,9 @@ def init_parser():
   if kwargs.show_lgpl:
     print(lgpl.replace('\nThis file is part of orbkit.\n',''))
     sys.exit(0)
+  
+  if kwargs.otype is None:
+    kwargs.otype = ['auto']
   
   for i,j in vars(kwargs).items():
     setattr(thismodule,i,j)

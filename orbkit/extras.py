@@ -166,6 +166,7 @@ def mo_set(qc, fid_mo_list, drv=None, laplacian=None,
 
     if drv is None:
       rho = data
+      delta_datasets = numpy.zeros((0,)+rho.shape)
     elif laplacian:
       rho, delta_rho, laplacian_rho = data 
       delta_datasets.extend(delta_rho)
