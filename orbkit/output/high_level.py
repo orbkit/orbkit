@@ -44,11 +44,13 @@ from .native import write_native
 
 synonyms = {'auto':'auto',
             'h5':'h5', 'hdf5':'h5',
+            'npz':'npz','numpy':'npz',
             'cube':'cube', 'cb':'cube',
             'am':'am', 
             'hx':'hx',
             'vmd':'vmd',
-            'mayavi':'mayavi'
+            'mayavi':'mayavi',
+            '':None
             }
 
 def main_output(data,qc=None,outputname='new',otype='auto', gname='',
@@ -77,6 +79,12 @@ def main_output(data,qc=None,outputname='new',otype='auto', gname='',
   
     All additional keyword arguments are forwarded to the output functions.
   '''
+  if otype is None or otype == []:
+    return []
+  
+  if isinstance(outputname, str):
+    if '@' in outputname:
+      outputname,gname = outputname.split('@')
   if isinstance(otype, str):
     if otype == 'auto':
       outputname, otype = path.splitext(outputname)
@@ -89,8 +97,10 @@ def main_output(data,qc=None,outputname='new',otype='auto', gname='',
   else:
     for iot in range(len(otype)):
       if otype[iot] == 'auto':
-        otype[iot] = otype[iot].split('.')[-1]
-
+        outputname, tmp = path.splitext(outputname)
+        if tmp != '':
+          otype[iot] = tmp[1:]
+  
   # Catch our native format before all else
   # We can't figure this out by the file ending alone
   # as we support hdf5 for output of both grid-based data
@@ -119,11 +129,7 @@ def main_output(data,qc=None,outputname='new',otype='auto', gname='',
       group = ['' for _ in data]
 
     for i, oname in enumerate(outputname):
-      write_native(data[i], oname, ftype[i],gname=gname)
-      if group[i] != '':
-        output_written.append('{0}_{1}.{2}'.format(oname, group[i], ftype[i]))
-      else:
-        output_written.append('{0}.{1}'.format(oname, ftype[i]))
+      output_written.append(write_native(data[i], oname, ftype[i],gname=group[i]))
 
   else:
     print_waring = False
@@ -133,6 +139,9 @@ def main_output(data,qc=None,outputname='new',otype='auto', gname='',
     data = numpy.array(data)
     dims = 1 if grid.is_vector else 3
     shape = data.shape
+    
+    if drv is not None and isinstance(drv,str):
+      drv = [drv]
     
     if data.ndim < dims:
       output_not_possible = True
@@ -144,6 +153,9 @@ def main_output(data,qc=None,outputname='new',otype='auto', gname='',
         data = data[:,numpy.newaxis]
       else:
         data = data[numpy.newaxis]
+    elif data.ndim == dims + 2: # 5d data set check if drv matches Ndrv
+      if drv is None or len(drv) != data.shape[0]:
+        drv = list(range(data.shape[0]))
     elif data.ndim > dims + 2:
       output_not_possible = True
       display('data.ndim > (ndim of grid) +2')
@@ -157,9 +169,6 @@ def main_output(data,qc=None,outputname='new',otype='auto', gname='',
     otype_synonyms = [synonyms[i] for i in otype]
     otype_ext = dict(zip(otype_synonyms,otype))
     
-    if otype is None or otype == []:
-      return output_written 
-
     # Convert the data to a regular grid, if possible
     is_regular_vector = (grid.is_vector and grid.is_regular)
 
@@ -167,7 +176,7 @@ def main_output(data,qc=None,outputname='new',otype='auto', gname='',
       display('\nConverting the regular 1d vector grid to a 3d regular grid.')
       grid.vector2grid(*grid.N_)
       data = numpy.array(grid.mv2g(data))
-
+    
     isstr = isinstance(outputname, str)
     if isinstance(datalabels, str):
       if data.shape[1] > 1:
@@ -177,7 +186,6 @@ def main_output(data,qc=None,outputname='new',otype='auto', gname='',
         datalabels = numpy.array([datalabels])
     elif isinstance(datalabels, list):
       datalabels = numpy.array(datalabels)
-      
     
     if drv is not None:
       fid = '%(f)s_d%(d)s.'
@@ -258,17 +266,34 @@ def main_output(data,qc=None,outputname='new',otype='auto', gname='',
       display('\nSaving to Hierarchical Data Format file (HDF5)...\n\t' + filename)
       
       hdf5_creator(data.reshape(shape),filename,qcinfo=qc,gname=gname,
-                   contents=contents,**kwargs)
+                   ftype='hdf5',contents=contents,**kwargs)
+      output_written.append(filename)
+    
+    if 'npz' in otype_synonyms: 
+      filename = (outputname if isstr else outputname[-1]) 
+      display('\nSaving to a compressed .npz archive...\n\t' + filename+'.npz')
+      hdf5_creator(data.reshape(shape),filename,qcinfo=qc,gname=gname,
+                   ftype='numpy',contents=contents,**kwargs)
       output_written.append(filename)
     
     if 'mayavi' in otype_synonyms:
       if output_not_possible: print_waring = True
       else: 
         display('\nDepicting the results with MayaVi...\n\t')
+        if drv == ['x','y','z'] or drv == [0,1,2]:
+          is_vectorfield = True
+          data = numpy.swapaxes(data,0,1)
+          datalabels = datalabels
+        else:
+          is_vectorfield = False
+          data = data.reshape((-1,)+grid.get_shape())
+          datalabels = all_datalabels
+        
         view_with_mayavi(grid.x,grid.y,grid.z,
-                         data.reshape((-1,)+grid.get_shape()),
+                         data,
+                         is_vectorfield=is_vectorfield,
                          geo_spec=qc.geo_spec,
-                         datalabels=all_datalabels,**kwargs)
+                         datalabels=datalabels,**kwargs)
         
     if print_waring:
       display('For a non-regular vector grid (`if grid.is_vector and not grid.is_regular`)')

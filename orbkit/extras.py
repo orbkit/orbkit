@@ -28,9 +28,11 @@ import os
 
 import numpy
 
+from .tools import *
+
 # Import orbkit modules
-from orbkit import core,grid, options
-from orbkit.output import vmd_network_creator,main_output,hdf5_creator,hdf5_write,hdf5_append
+from orbkit import core,grid,options
+from orbkit.output import main_output
 from orbkit.display import display
 from orbkit.orbitals import MOClass
 
@@ -83,8 +85,12 @@ def calc_mo(qc, fid_mo_list, drv=None, otype=None, ofid=None,
     return mo_list
   
   if ofid is None:
-    ofid = '%s_MO' % (options.outputname)
-  
+    if '@' in options.outputname:
+      outputname,group =  options.outputname.split('@')
+    else:
+      outputname,group = options.outputname, ''
+    outputname,autootype = os.path.splitext(outputname)
+    ofid = '%s_MO%s@%s' % (outputname,autootype,group)
   if not options.no_output:
     output_written = main_output(mo_list,
                                  qc_select,
@@ -431,9 +437,7 @@ def numerical_mulliken_charges(atom,qc,
   return rho_atom, mulliken_num
 
 
-def mo_transition_flux_density(i,j,qc,drv='x',
-                    ao_list=None,mo_list=None,
-                    delta_ao_list=None,delta_mo_list=None):
+def calc_jmo(qc, ij, drv=['x','y','z'], numproc=1, otype=None, ofid='',**kwargs):
   '''Calculate one component (e.g. drv='x') of the 
   transition electoronic flux density between the 
   molecular orbitals i and j.
@@ -455,27 +459,34 @@ def mo_transition_flux_density(i,j,qc,drv='x',
   **Returns:**
   
      mo_tefd : numpy.ndarray
-  '''  
-  if mo_list is None:
-    if ao_list is None:
-      display('\tComputing ao_list and ' +
-                    'mo #%d, since it is not given.' % i)
-      ao_list = core.ao_creator(qc.geo_spec,qc.ao_spec)  
-    else:
-      display('\tComputing mo #%d, since it is not given.' % i)
-    mo = core.mo_creator(ao_list,[qc.mo_spec[i]])[0]
-  else:
-    mo = mo_list[i]
-  if delta_mo_list is None:
-    if delta_ao_list is None:
-      display('\tComputing delta_ao_list and the derivative of ' +
-                    'mo #%d, since it is not given.' % j)
-      delta_ao_list = core.ao_creator(qc.geo_spec,qc.ao_spec,drv=drv)
-    else:
-      display('\tComputing mo #%d, since it is not given.' % j)
-    delta_mo = core.mo_creator(delta_ao_list,[qc.mo_spec[j]])[0]
-  else:
-    delta_mo = delta_mo_list[i]
+  '''
+  ij = numpy.asarray(ij)
+  if ij.ndim == 1 and len(ij) == 2:
+    ij.shape = (1,2)
+  assert ij.ndim == 2
+  assert ij.shape[1] == 2
   
-  return mo*delta_mo
-  # mo_transition_flux_density 
+  u, indices = numpy.unique(ij,return_inverse=True)
+  indices.shape = (-1,2)
+
+  mo_spec = qc.mo_spec[u]
+  qc_select = qc.copy()
+  qc_select.mo_spec = mo_spec
+  labels = mo_spec.get_labels(format='short')
+  
+  mo_matrix = core.calc_mo_matrix(qc_select,drv=drv,
+                                  numproc=numproc,**kwargs)
+  jmo = numpy.zeros((len(drv),len(indices)) + grid.get_shape())
+  datalabels = []
+  for n,(i,j) in enumerate(indices):
+    jmo[:,n] = - 0.5 * (mo_matrix[:,i,j] - mo_matrix[:,j,i])
+    datalabels.append('j( %s , %s )'%(labels[i],labels[j]))
+  
+  if not options.no_output:
+    output_written = main_output(jmo,
+                                 qc,
+                                 outputname=ofid,
+                                 datalabels=datalabels,
+                                 otype=otype,
+                                 drv=drv)
+  return jmo

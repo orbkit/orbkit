@@ -3,7 +3,7 @@
 __all__ = ['grid','options','main','QCinfo','display','run_orbkit','init',
            'read','main_output','rho_compute','rho_compute_no_slice',
            'calc_ao','calc_mo','mo_set','gross_atomic_density',
-           'mo_transition_flux_density','get_dipole_moment',
+           'calc_jmo','get_dipole_moment',
            'atomic_populations',
            ]
 
@@ -19,6 +19,5 @@ from .output.high_level import main_output
 from .read import main_read
 from .read.multiple_files import Multi
 from .core import rho_compute,rho_compute_no_slice
-from .extras import calc_ao,calc_mo,mo_set,gross_atomic_density,\
-                          mo_transition_flux_density
+from .extras import calc_ao,calc_mo,mo_set,gross_atomic_density,calc_jmo
 from .analytical_integrals import get_dipole_moment

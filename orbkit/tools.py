@@ -211,6 +211,25 @@ def require(data,dtype='f',requirements='CA'):
     dtype = numpy.intc
   return numpy.require(data, dtype=dtype, requirements='CA')
 
+def convert(data,was_vector,N):
+  data = numpy.array(data,order='C')
+  if not was_vector:
+    data = data.reshape(data.shape[:-1] + N,order='C')
+  return data
+
+def zeros(shape,name,hdf5_file=None,chunks=True):
+  if hdf5_file is None:
+    return numpy.zeros(shape)
+  else:
+    return hdf5_file.create_dataset(name,shape,dtype=numpy.float64,chunks=chunks)
+
+def reshape(data,shape,save_hdf5):
+  if not save_hdf5:
+    return data.reshape(shape)
+  else:
+    data.attrs['shape'] = shape
+    return data[...].reshape(shape)
+  
 def print2D(x,format='%+.2f ',start='\t',end=''):
   '''Prints a 2D matrix.
   

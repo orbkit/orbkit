@@ -6,7 +6,7 @@ from orbkit.display import display
 
 from .native import write_native
 
-def hdf5_creator(data, filename, qcinfo=None, gname='', mode='w',attrs={},**kwargs):
+def hdf5_creator(data, filename, qcinfo=None, gname='', ftype='hdf5', mode='w',attrs={},**kwargs):
   '''Creates an hdf5 file (Hierarchical Data Format) output.
   
   **Parameters:**
@@ -27,23 +27,75 @@ def hdf5_creator(data, filename, qcinfo=None, gname='', mode='w',attrs={},**kwar
   grid : module or class, global
     Contains the grid, i.e., grid.x, grid.y, and grid.z.
   '''
-  import h5py
-  if not (filename.endswith('h5'),filename.endswith('hdf5')):
-    filename += '.h5'
-    
+  
+  if ftype.lower() in ['hdf5', 'h5']:
+    write = hdf5_write
+    attributes = hdf5_attributes
+  elif ftype.lower() in ['numpy', 'npz']:
+    write = npz_write
+    attributes = npz_attributes
+  else:
+    raise NotImplementedError('File format {0} not implemented for writing.'.format(ftype.lower()))
+  
   # Save data and all other kwargs
-  hdf5_write(filename,mode=mode,gname=gname,data=data,**kwargs)
+  write(filename,mode=mode,gname=gname,data=data,**kwargs)
   
   # Save grid
-  hdf5_write(filename,mode='a',gname=os.path.join(gname,'grid'),
-             x=grid.x,y=grid.y,z=grid.z)
+  write(filename,mode='a',gname=os.path.join(gname,'grid'),
+             x=grid.x,y=grid.y,z=grid.z,
+             is_vector=grid.is_vector,is_regular=grid.is_regular)
   
   # Set attributes
-  hdf5_attributes(filename,gname=gname,**attrs)
+  attributes(filename,gname=gname,**attrs)
   
   if qcinfo is not None:
-    write_native(qcinfo, outputname=filename, ftype='hdf5', gname=os.path.join(gname,'QCinfo'))  
+    write_native(qcinfo, outputname=filename, ftype=ftype, gname=os.path.join(gname,'qcinfo'))  
 
+def npz_write(filename,gname='',mode='w',compress=True,**namedict):
+  '''Function borrowed from numpy.lib.npyio._savez to allow for groups and different modes.
+  '''
+  import zipfile
+
+  if not filename.endswith('npz'):
+    filename += '.npz'
+  
+  if compress:
+    compression = zipfile.ZIP_DEFLATED
+  else:
+    compression = zipfile.ZIP_STORED
+
+  zipf = numpy.lib.npyio.zipfile_factory(filename, mode=mode, compression=compression)
+
+  # Stage arrays in a temporary file on disk, before writing to zip.
+
+  # Import deferred for startup time improvement
+  import tempfile
+  # Since target file might be big enough to exceed capacity of a global
+  # temporary directory, create temp file side-by-side with the target file.
+  file_dir, file_prefix = os.path.split(filename) if  numpy.lib.npyio._is_string_like(filename) else (None, 'tmp')
+  fd, tmpfile = tempfile.mkstemp(prefix=file_prefix, dir=file_dir, suffix='-numpy.npy')
+  os.close(fd)
+  try:
+    for key, val in namedict.items():
+      fname = key + '.npy'
+      fid = open(tmpfile, 'wb')
+      try:
+        numpy.lib.format.write_array(fid, numpy.asanyarray(val))
+        fid.close()
+        fid = None
+        zipf.write(tmpfile, arcname=os.path.join(gname,fname))
+      except IOError as exc:
+        raise IOError("Failed to write to %s: %s" % (tmpfile, exc))
+      finally:
+        if fid:
+          fid.close()
+  finally:
+    os.remove(tmpfile)
+
+  zipf.close()
+
+def npz_attributes(filename, gname='', **attrs):
+  npz_write(filename,gname=gname+'_attrs',mode='a',**attrs)
 
 def hdf5_open(fid,mode='w'):
   '''Open an hdf5 file.
@@ -63,6 +115,9 @@ def hdf5_open(fid,mode='w'):
   import h5py
   if isinstance(fid,h5py.File):
     yield fid
+  
+  if not (fid.endswith('h5') or fid.endswith('hdf5')):
+    fid += '.h5'
   
   hdf5_file = h5py.File(fid, mode)
   try:

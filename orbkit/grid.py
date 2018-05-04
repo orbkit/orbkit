@@ -558,7 +558,7 @@ def adjust_to_geo(qc,extend=5.0,step=0.1):
     Specifies the grid spacing.
   
   '''
-  global min_, max_, N_,delta_
+  global min_, max_, N_, delta_, is_vector, is_initialized
   
   for i in range(3):
     min_[i] = min(qc.geo_spec[:,i]) - (extend)
@@ -570,6 +570,9 @@ def adjust_to_geo(qc,extend=5.0,step=0.1):
     min_[i] -= rest/2.
     max_[i] += rest/2.
     delta_[i] = step
+  
+  is_vector = False
+  is_initialized = False
 
 def check_atom_select(atom,geo_info,geo_spec,interactive=True,
                       display=sys.stdout.write):

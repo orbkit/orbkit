@@ -387,7 +387,7 @@ def rho_compute(qc,calc_ao=False,calc_mo=False,drv=None,laplacian=False,
     calc_mo = True 
 
   slice_length = slice_length if not vector else vector
-  if slice_length == 0:
+  if slice_length <= 0 or numproc <= 0:
     return rho_compute_no_slice(qc,calc_ao=calc_ao,calc_mo=calc_mo,drv=drv,
                                 laplacian=laplacian,**kwargs)
   if laplacian:
@@ -422,7 +422,7 @@ def rho_compute(qc,calc_ao=False,calc_mo=False,drv=None,laplacian=False,
   
   if not grid.is_initialized:
     display('\nSetting up the grid...')
-    grid.grid_init(is_vector=True)
+    grid.grid_init()
     display(grid.get_grid())   # Display the grid
   
   was_vector = grid.is_vector
@@ -436,6 +436,9 @@ def rho_compute(qc,calc_ao=False,calc_mo=False,drv=None,laplacian=False,
   npts = len(grid.x)
   if slice_length < 0: slice_length = numpy.ceil(npts/float(numproc))+1
   sNum = int(numpy.floor(npts/slice_length)+1)
+  if slice_length >= npts: 
+    slice_length = npts
+    sNum = 1
   
   # The number of worker processes is capped to the number of 
   # grid points in x-direction.  
@@ -470,32 +473,30 @@ def rho_compute(qc,calc_ao=False,calc_mo=False,drv=None,laplacian=False,
   # Initialize an array to store the results 
   mo_norm = numpy.zeros((mo_num,))
   
-  def zeros(shape,name,save_hdf5):
-    if not save_hdf5:
-      return numpy.zeros(shape)
-    else:
-      return f.create_dataset(name,shape,dtype=numpy.float64,chunks=shape[:-1] + (slice_length,))
-  def reshape(data,shape):
-    if not save_hdf5:
-      return data.reshape(shape)
-    else:
-      data.attrs['shape'] = shape
-      return data[...].reshape(shape)
-  
   if save_hdf5:
     import h5py
-    f = h5py.File(str(save_hdf5), 'w')
-    f['x'] = grid.x
-    f['y'] = grid.y
-    f['z'] = grid.z
+    hdf5_file = h5py.File(str(save_hdf5), 'w')
+    hdf5_file['grid/x'] = grid.x
+    hdf5_file['grid/y'] = grid.y
+    hdf5_file['grid/z'] = grid.z
+    hdf5_file['grid/is_vector'] = False
+    hdf5_file['grid/is_regular'] = was_vector    
+  else:
+    hdf5_file = None
   
   if calc_mo:
-    mo_list = zeros((mo_num,npts) if drv is None else (len(drv),mo_num,npts),
-                    'ao_list' if calc_ao else 'mo_list',save_hdf5)
+    shape = (mo_num,npts) if drv is None else (len(drv),mo_num,npts)
+    mo_list = zeros(shape,
+                    'ao_list' if calc_ao else 'mo_list',
+                    hdf5_file=hdf5_file,chunks=shape[:-1] + (slice_length,))
   else:
-    rho = zeros(npts,'rho',save_hdf5)
+    shape = (npts,)
+    rho = zeros(npts,'rho',
+                hdf5_file=hdf5_file,chunks=shape[:-1] + (slice_length,))
     if is_drv:
-      delta_rho = zeros((len(drv),npts),'rho',save_hdf5)
+      shape = (len(drv),npts)
+      delta_rho = zeros(shape,'delta_rho',
+                        hdf5_file=hdf5_file,chunks=shape[:-1] + (slice_length,))
   
   # Write the slices in x to an array xx 
   xx = []
@@ -580,8 +581,8 @@ def rho_compute(qc,calc_ao=False,calc_mo=False,drv=None,laplacian=False,
   if calc_mo:    
     #if not was_vector: 
     mo_list = reshape(mo_list,((mo_num,) if drv is None 
-                                         else (len(drv),mo_num,)) + N)
-    if save_hdf5: f.close()
+                                         else (len(drv),mo_num,)) + N,save_hdf5)
+    if save_hdf5: hdf5_file.close()
     return mo_list
   
   if not was_vector:
@@ -589,14 +590,14 @@ def rho_compute(qc,calc_ao=False,calc_mo=False,drv=None,laplacian=False,
     display('We have ' + str(numpy.sum(rho)*grid.d3r) + ' electrons.')
   
   #if not was_vector: 
-  rho = reshape(rho,N)
+  rho = reshape(rho,N,save_hdf5)
   if not is_drv:
-    if save_hdf5: f.close()
+    if save_hdf5: hdf5_file.close()
     return rho
   else:
     #if not was_vector: 
-    delta_rho = reshape(delta_rho,(len(drv),) + N)
-    if save_hdf5: f.close()
+    delta_rho = reshape(delta_rho,(len(drv),) + N,save_hdf5)
+    if save_hdf5: hdf5_file.close()
     if laplacian: return rho, delta_rho, delta_rho.sum(axis=0)
     return rho, delta_rho
   # rho_compute 
@@ -698,23 +699,20 @@ def rho_compute_no_slice(qc,calc_ao=False,calc_mo=False,drv=None,
   # Create the grid
   if all(v is None for v in [x,y,z,is_vector]) and not grid.is_initialized:
     display('\nSetting up the grid...')
-    grid.grid_init(is_vector=True)
+    grid.grid_init()
     display(grid.get_grid())   # Display the grid    
   if x is None: x = grid.x
   if y is None: y = grid.y
   if z is None: z = grid.z
   if is_vector is None: is_vector = grid.is_vector
   
-  def convert(data,was_vector,N):
-    data = numpy.array(data,order='C')
-    if not was_vector:
-      data = data.reshape(data.shape[:-1] + N,order='C')
-    return data
-  
   was_vector = is_vector  
   if not is_vector:
     N = (len(x),len(y),len(z))
-    d3r = numpy.product([x[1]-x[0],y[1]-y[0],z[1]-z[0]])
+    d3r = 1.0
+    for i in x,y,z:
+      if len(i) > 1:
+        d3r *= (i[1]-i[0])
     # Convert regular grid to vector grid
     x,y,z = cy_grid.grid2vector(x.copy(),y.copy(),z.copy())
     is_vector = True
@@ -837,3 +835,105 @@ def rho_compute_no_slice(qc,calc_ao=False,calc_mo=False,drv=None,
   return ((ao_list, mo_list, rho, delta_ao_list, delta_mo_list,) + delta 
         if return_components else (rho,) + delta)
   # rho_compute_no_slice 
+
+def calc_mo_matrix(qc_a,qc_b=None,drv=None,numproc=1,slice_length=1e4,save_hdf5=False,
+                    **kwargs):
+  '''Calculates and saves the selected molecular orbitals or the derivatives thereof.
+  **Parameters:**
+   
+    qc.geo_spec, qc.geo_info, qc.ao_spec, qc.mo_spec :
+      See :ref:`Central Variables` for details.
+    fid_mo_list : str
+      Specifies the filename of the molecular orbitals list or list of molecular
+      orbital labels (cf. :mod:`orbkit.read.mo_select` for details). 
+      If fid_mo_list is 'all_mo', creates a list containing all molecular orbitals.
+    drv : string or list of strings {None,'x','y', 'z', 'xx', 'xy', ...}, optional
+      If not None, a derivative calculation of the molecular orbitals 
+      is requested.
+    otype : str or list of str, optional
+      Specifies output file type. See :data:`otypes` for details.
+    ofid : str, optional
+      Specifies output file name. If None, the filename will be based on
+      :mod:`orbkit.options.outputname`.
+    numproc : int, optional
+      Specifies number of subprocesses for multiprocessing. 
+      If None, uses the value from :mod:`options.numproc`.
+    slice_length : int, optional
+      Specifies the number of points per subprocess.
+      If None, uses the value from :mod:`options.slice_length`.
+    full_matrix : bool
+      if False, numpy.tril_indices(NMO)
+    
+  **Returns:**
+    mo_list : numpy.ndarray, shape=((NMO,) + N)
+      Contains the NMO=len(qc.mo_spec) molecular orbitals on a grid.
+  '''
+  
+  if save_hdf5:
+    save_hdf5_bra = str(save_hdf5) + '.bra'
+    save_hdf5_ket = str(save_hdf5) + '.ket'
+  else:
+    save_hdf5_bra = False
+    save_hdf5_ket = False
+  
+  ibra = [0]
+  if drv is None:
+    drv = [None]
+    iket = [0]
+  elif not isinstance(drv,list):
+    drv = [None, drv]
+    iket = [1]
+  else:
+    drv = [None] + drv
+    iket = list(range(1,len(drv)))
+  
+  if qc_b is None or qc_a == qc_b:
+    # Calculate the AOs and MOs 
+    mo_ket = rho_compute(qc_a,
+                          calc_mo=True,
+                          drv=drv,
+                          numproc=numproc,
+                          save_hdf5=save_hdf5_bra,
+                          slice_length=slice_length,
+                          **kwargs)
+    mo_bra = mo_ket[ibra]
+    mo_ket = mo_ket[iket]
+  else:
+    mo_bra = rho_compute(qc_a,
+                          calc_mo=True,
+                          drv=[drv[ibra]],
+                          numproc=numproc,
+                          save_hdf5=save_hdf5_bra,
+                          slice_length=slice_length,
+                          **kwargs)
+    mo_ket = rho_compute(qc_b,
+                          calc_mo=True,
+                          drv=drv[iket],
+                          numproc=numproc,
+                          save_hdf5=save_hdf5_ket,
+                          slice_length=slice_length,
+                          **kwargs)
+    
+  if save_hdf5:
+    import h5py
+    hdf5_file = h5py.File(str(save_hdf5), 'w')
+    hdf5_file['grid/x'] = grid.x
+    hdf5_file['grid/y'] = grid.y
+    hdf5_file['grid/z'] = grid.z
+    hdf5_file['grid/is_vector'] = grid.is_vector
+  else: 
+    hdf5_file=None
+  
+  nmo_a = mo_bra.shape[1]
+  nmo_b = mo_ket.shape[1]
+  shape = (mo_ket.shape[0],nmo_a) + mo_ket.shape[1:]
+   
+  mo_matrix = zeros(shape,'mo_matrix',hdf5_file=hdf5_file)
+  for n in range(nmo_a):
+    for m in range(nmo_b):
+      mo_matrix[:,n,m] = mo_bra[:,n]*mo_ket[:,m]
+  
+  if save_hdf5:
+    hdf5_file.close()
+  
+  return mo_matrix

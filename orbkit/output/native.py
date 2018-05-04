@@ -29,12 +29,12 @@ def unravel_dicts(indict):
     outdict[i] = j
   return outdict
   
-def write_native(data, outputname, ftype='numpy', gname=''):
+def write_native(outdata, outputname, ftype='numpy', gname='qcinfo', **add_data):
   '''Creates the requested output.
   
   **Parameters:**
 
-    data : 
+    outdata : 
       Instance of the class to be written to fine. This must support a **todict** function.
       outputname : str or list of str
       Contains the base name of the output file.
@@ -42,34 +42,34 @@ def write_native(data, outputname, ftype='numpy', gname=''):
       Data can be written to ``.npz`` or ``hdf5`` files.
   '''
 
-  if not callable(getattr(data, 'todict')):
+  if not callable(getattr(outdata, 'todict')):
     raise NotImplementedError('Supplied class instance does not support todict()')
 
-  if ftype.lower() not in ['numpy', 'npz', 'hdf5', 'h5']:
-    raise NotImplementedError('Ony npz and hdf5 are currently supportet.')
-
-  if splitext(outputname)[1] not in ['.numpy', '.npz', '.hdf5', '.h5']:
-    outputname = '{0}.{1}'.format(outputname,ftype.lower())
-    
-  odata = data.todict()
-  odata['date'] = time.strftime("%Y-%m-%d") 
-  odata['time'] = time.strftime("%H:%M:%S")
-
-  if ftype.lower() in ['numpy', 'npz']:
-    from numpy import savez_compressed as save
-    save(outputname, **odata)
-  elif ftype.lower() in ['hdf5', 'h5']:
-    from orbkit.output import hdf5_write
-    odata = unravel_dicts(odata)
-    for i,key in enumerate(odata.keys()):
-      if i == 0 and gname == '':
-        mode = 'w'
-      else:
-        mode = 'a'
-      hdf5_write(outputname, mode, gname=join(gname,key), **odata[key])
+  if ftype.lower() in ['hdf5', 'h5']:
+    from . import hdf5_write
+    write = hdf5_write
+  elif ftype.lower() in ['numpy', 'npz']:
+    from . import npz_write
+    write = npz_write
   else:
     raise NotImplementedError('File format {0} not implemented for writing.'.format(ftype.lower()))
-
+    #raise NotImplementedError('Only .npz and .hdf5 are currently supported.')
+  
+  odata = outdata.todict()
+  odata.update(add_data)
+  odata['date'] = time.strftime("%Y-%m-%d") 
+  odata['time'] = time.strftime("%H:%M:%S")
+  odata = unravel_dicts(odata)
+  for i,key in enumerate(odata.keys()):
+    if i == 0 and gname == '':
+      mode = 'w'
+    else:
+      mode = 'a'
+    write(outputname, mode=mode, gname=join(gname,key), **odata[key])
+  if gname != '':
+    return '{0}@{1}'.format(outputname,gname)
+  else:
+    return outputname
 
 
 
