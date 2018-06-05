@@ -387,7 +387,7 @@ def rho_compute(qc,calc_ao=False,calc_mo=False,drv=None,laplacian=False,
     calc_mo = True 
 
   slice_length = slice_length if not vector else vector
-  if slice_length <= 0 or numproc <= 0:
+  if numproc <= 0:
     return rho_compute_no_slice(qc,calc_ao=calc_ao,calc_mo=calc_mo,drv=drv,
                                 laplacian=laplacian,**kwargs)
   if laplacian:

@@ -172,11 +172,11 @@ def set_grid(xnew,ynew,znew,is_vector=None):
     setattr(sys.modules[__name__],'is_vector',is_vector)
     info_string += ('\n\nThe variable `grid.is_vector` has been set to %s.' % 
                     is_vector)
-  #set_boundaries(is_regular=(is_vector==False))
+  #set_boundaries((is_vector==False))
   return info_string
   # set_grid 
 
-def set_boundaries(is_regular=False,Nx=None,Ny=None,Nz=None):
+def set_boundaries(is_regular,Nx=None,Ny=None,Nz=None):
   global is_vector, min_, max_, delta_, N_
   min_ = [x.min(),y.min(),z.min()]
   max_ = [x.max(),y.max(),z.max()]
