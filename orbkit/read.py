@@ -404,7 +404,7 @@ def read_molden(filename, all_mo=False, spin=None, i_md=-1, interactive=True,
   from orbkit.analytical_integrals import get_ao_overlap,get_lxlylz
   norm = numpy.diagonal(get_ao_overlap(qc.geo_spec,qc.geo_spec,qc.ao_spec))
   
-  if sum(numpy.abs(norm-1.)) > 1e-8:
+  if max(numpy.abs(norm-1.)) > 1e-5:
     display('The atomic orbitals are not normalized correctly, renormalizing...\n')
     if not by_orca[i_md]: 
       j = 0
