@@ -41,7 +41,7 @@ def read_native(fname, all_mo=None, spin=None, gname='qcinfo', **kwargs):
     data = load(fname)
   elif ftype.lower() in ['hdf5', 'h5']:
     import h5py
-    fd = h5py.File(fname, 'r')
+    fd = h5py.File(fname, 'r')[gname]
     data = {}
     for name in fd.keys():
       if isinstance(fd[name], h5py._hl.group.Group):
