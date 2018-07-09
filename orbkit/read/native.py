@@ -24,12 +24,30 @@ def parse_group(group):
         if all([e in [True, False, None] for e in entry]):
           entry = numpy.array(entry, dtype=bool)
     group_data[key] = entry
+  
   for key in group.attrs.keys():
     entry = group.attrs[key]
     if isinstance(entry, (str,numpy.bytes_)):
       entry = str_to_bool(entry)
     group_data[key] = entry
   return group_data
+
+def build_nested_helper(path, text, container):
+    segs = path.split('/')
+    head = segs[0]
+    tail = segs[1:]
+    if not tail:
+        container[head] = text
+    else:
+        if head not in container:
+            container[head] = {}
+        build_nested_helper('/'.join(tail), text, container[head])
+
+def build_nested(paths):
+    container = {}
+    for path,content in paths.iteritems():
+        build_nested_helper(path, content, container)
+    return container
 
 # ``all_mo`` and ``spin`` make no sense here but defining them anyways makes ``main_read`` cleaner.
 def read_native(fname, all_mo=None, spin=None, gname='qcinfo', **kwargs):
@@ -38,7 +56,8 @@ def read_native(fname, all_mo=None, spin=None, gname='qcinfo', **kwargs):
 
   if ftype.lower() in ['numpy', 'npz']:
     from numpy import load
-    data = load(fname)
+    data = build_nested(load(fname))[gname]
+    
   elif ftype.lower() in ['hdf5', 'h5']:
     import h5py
     fd = h5py.File(fname, 'r')[gname]

@@ -3,7 +3,7 @@ from orbkit.output.high_level import main_output
 from orbkit.test.tools import equal
 from orbkit.qcinfo import QCinfo
 from orbkit import options
-import os, inspect
+import os, inspect, tempfile
 
 options.quiet = True
 
@@ -13,11 +13,12 @@ filepath = os.path.join(folder, 'NaCl_molden_files.tar.gz')
 
 qc_old = main_read(filepath)
 
-tests_home = os.path.dirname(inspect.getfile(inspect.currentframe()))
-filepath = os.path.join(tests_home, 'tmp')
+tests_home = tempfile.gettempdir()
+filepath = os.path.join(tests_home, 'tmp.hdf5')
 
 main_output(qc_old, outputname=filepath, otype='native', ftype='hdf5')
-qc_new = main_read(filepath + '.hdf5')
+
+qc_new = main_read(filepath)
 equal(qc_old, qc_new)
 
-os.remove(filepath + '.hdf5')
+os.remove(filepath)

@@ -48,9 +48,13 @@ def write_native(outdata, outputname, ftype='numpy', gname='qcinfo', **add_data)
   if ftype.lower() in ['hdf5', 'h5']:
     from . import hdf5_write
     write = hdf5_write
+    if not (outputname.endswith('hdf5') or outputname.endswith('h5')):
+      outputname += '.hdf5'
   elif ftype.lower() in ['numpy', 'npz']:
     from . import npz_write
     write = npz_write
+    if not (outputname.endswith('numpy') or outputname.endswith('npz')):
+      outputname += '.npz'
   else:
     raise NotImplementedError('File format {0} not implemented for writing.'.format(ftype.lower()))
     #raise NotImplementedError('Only .npz and .hdf5 are currently supported.')
