@@ -937,11 +937,18 @@ class MOClass(UserList):
       return pos_range
 
     def parse_nosym(item):
-      keys = {'homo': str(self.get_homo()),
-              'lumo': str(self.get_lumo()),
-              'last_bound': str(self.get_lastbound()),
-              'lastbound': str(self.get_lastbound())}
-
+      keys = {'homo': str(self.get_homo())}
+      
+      try: 
+        keys['lumo'] = str(self.get_lumo())
+      except ValueError:
+        pass
+      try: 
+        keys['last_bound'] = str(self.get_lastbound())
+        keys['lastbound'] = str(self.get_lastbound())
+      except ValueError:
+        pass
+      
       for key in keys:
         item = item.replace(key, keys[key])
 

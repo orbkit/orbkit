@@ -23,7 +23,8 @@ tests = ['units',
          'qcinfo/mo_spec',
          'analytical_properties/analytical_integral_norm',
          'analytical_properties/dipole',
-         'grid_based/rho_compute']
+         'grid_based/rho_compute',
+         'grid_based/cube_files']
 
 def check_import(filename):
   # This defines which modules should be checked for which folders

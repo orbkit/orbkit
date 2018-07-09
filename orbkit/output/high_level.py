@@ -126,10 +126,10 @@ def main_output(data,qc=None,outputname='new',otype='auto', gname='',
       if isinstance(kwargs['group'],str):
         group = [kwargs['group'] for _ in data]
     else:
-      group = ['' for _ in data]
-
+      group = [i.__class__.__name__.lower() for i in data]
+    
     for i, oname in enumerate(outputname):
-      output_written.append(write_native(data[i], oname, ftype[i],gname=group[i]))
+      output_written.append(write_native(data[i], oname, ftype[i],gname=path.join(gname,group[i])))
 
   else:
     print_waring = False
