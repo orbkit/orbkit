@@ -434,7 +434,7 @@ def rho_compute(qc,calc_ao=False,calc_mo=False,drv=None,laplacian=False,
   
   # Define the slice length
   npts = len(grid.x)
-  if slice_length < 0: slice_length = numpy.ceil(npts/float(numproc))+1
+  if slice_length <= 0: slice_length = numpy.ceil(npts/float(numproc))+1
   sNum = int(numpy.floor(npts/slice_length)+1)
   if slice_length >= npts: 
     slice_length = npts
