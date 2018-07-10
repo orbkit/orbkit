@@ -29,7 +29,8 @@ def unravel_dicts(indict):
     outdict[i] = j
   return outdict
   
-def write_native(outdata, outputname, ftype='numpy', gname='qcinfo', **add_data):
+def write_native(outdata, outputname, ftype='numpy', gname='qcinfo', mode='w',
+                 **add_data):
   '''Creates the requested output.
   
   **Parameters:**
@@ -65,11 +66,12 @@ def write_native(outdata, outputname, ftype='numpy', gname='qcinfo', **add_data)
   odata['time'] = time.strftime("%H:%M:%S")
   odata = unravel_dicts(odata)
   for i,key in enumerate(odata.keys()):
-    if i == 0 and gname == '':
-      mode = 'w'
+    if i == 0:
+      current_mode = mode
     else:
-      mode = 'a'
-    write(outputname, mode=mode, gname=join(gname,key), **odata[key])
+      current_mode = 'a'
+    write(outputname, mode=current_mode, gname=join(gname,key), **odata[key])
+  
   if gname != '':
     return '{0}@{1}'.format(outputname,gname)
   else:

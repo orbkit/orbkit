@@ -128,8 +128,11 @@ def main_output(data,qc=None,outputname='new',otype='auto', gname='',
     else:
       group = [i.__class__.__name__.lower() for i in data]
     
+    display('Writing native input file...')
     for i, oname in enumerate(outputname):
-      output_written.append(write_native(data[i], oname, ftype[i],gname=path.join(gname,group[i])))
+      output_written.append(write_native(data[i], oname, ftype[i], mode='w',
+                                         gname=path.join(gname,group[i])))
+    display('\n'.join(['\t' + i for i in output_written]))
 
   else:
     print_waring = False

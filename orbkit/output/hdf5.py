@@ -49,7 +49,8 @@ def hdf5_creator(data, filename, qcinfo=None, gname='', ftype='hdf5', mode='w',a
   attributes(filename,gname=gname,**attrs)
   
   if qcinfo is not None:
-    write_native(qcinfo, outputname=filename, ftype=ftype, gname=os.path.join(gname,'qcinfo'))  
+    write_native(qcinfo, outputname=filename, ftype=ftype, mode='a', 
+                 gname=os.path.join(gname,'qcinfo'))  
 
 def npz_write(filename,gname='',mode='w',compress=True,**namedict):
   '''Function borrowed from numpy.lib.npyio._savez to allow for groups and different modes.
@@ -63,7 +64,7 @@ def npz_write(filename,gname='',mode='w',compress=True,**namedict):
     compression = zipfile.ZIP_DEFLATED
   else:
     compression = zipfile.ZIP_STORED
-
+  
   zipf = numpy.lib.npyio.zipfile_factory(filename, mode=mode, compression=compression)
 
   # Stage arrays in a temporary file on disk, before writing to zip.

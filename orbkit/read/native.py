@@ -60,24 +60,26 @@ def read_native(fname, all_mo=None, spin=None, gname='qcinfo', **kwargs):
     
   elif ftype.lower() in ['hdf5', 'h5']:
     import h5py
-    fd = h5py.File(fname, 'r')[gname]
+    fd = h5py.File(fname, 'r')
+    group = fd[gname]
     data = {}
-    for name in fd.keys():
-      if isinstance(fd[name], h5py._hl.group.Group):
-        data[name] = parse_group(fd[name])
+    for name in group.keys():
+      if isinstance(group[name], h5py._hl.group.Group):
+        data[name] = parse_group(group[name])
       else:
-        entry = fd[name][...]
+        entry = group[name][...]
         if entry.dtype in (numpy.bytes_, '|S10'):
           entry = numpy.array(entry, dtype=str)
           if len(entry.shape) == 1:
             if all([e in [True, False, None] for e in entry]):
               entry = numpy.array(entry, dtype=bool)
         data[name] = entry
-    for name in fd.attrs.keys():
-      entry = fd.attrs[name]
+    for name in group.attrs.keys():
+      entry = group.attrs[name]
       if isinstance(entry, (str,numpy.bytes_)):
         entry = str_to_bool(entry)
       data[name] = entry
+    fd.close()
   else:
     raise NotImplementedError('File format {0} not implemented for reading.'.format(ftype.lower()))
 

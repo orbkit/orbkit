@@ -543,29 +543,27 @@ class MOClass(UserList):
     '''
     if not self._up_to_date:
       self.update()
-    return (self.get_occ() > tol).nonzero()[0][-1]
+    ihomo = (self.get_occ() > tol).nonzero()[0]
+    
+    return  None if not len(ihomo) else ihomo[-1]
 
   def get_lumo(self, tol=1e-5):
     '''Returns index of lowest unoccupied MO.
     '''
     if not self._up_to_date:
       self.update()
-    ilumo = (self.get_occ() > tol).nonzero()[0][-1]+1
-    if ilumo >= len(self.data):
-      raise ValueError('No unoccupied orbitals present!')
-    else:
-      return ilumo
+    ilumo = (self.get_occ() < tol).nonzero()[0]
+    
+    return None if not len(ilumo) else ilumo[0]
 
   def get_lastbound(self):
     '''Returns index of highest bound MO.
     '''
     if not self._up_to_date:
       self.update()
-    imaxbound = (self.get_eig() <= 0.).nonzero()[0][-1]
-    if imaxbound >= len(self.data):
-      raise ValueError('No unoccupied orbitals present!')
-    else:
-      return imaxbound
+    imaxbound = (self.get_eig() <= 0.).nonzero()[0]
+    
+    return None if not len(imaxbound) else imaxbound[-1]
 
   def sort_by_sym(self):
     '''Sorts mo_spec by symmetry.
@@ -924,7 +922,7 @@ class MOClass(UserList):
     def remove_empty(items):
       out = []
       for i, item in enumerate(items):
-        if item:
+        if item and not item == 'None':
           out.append(item)
       return out
 
@@ -937,19 +935,18 @@ class MOClass(UserList):
       return pos_range
 
     def parse_nosym(item):
-      keys = {'homo': str(self.get_homo())}
+      keys = {'homo': str(self.get_homo()),
+              'lumo': str(self.get_lumo()),
+              'last_bound': str(self.get_lastbound()),
+              'lastbound': str(self.get_lastbound())}
       
-      try: 
-        keys['lumo'] = str(self.get_lumo())
-      except ValueError:
-        pass
-      try: 
-        keys['last_bound'] = str(self.get_lastbound())
-        keys['lastbound'] = str(self.get_lastbound())
-      except ValueError:
-        pass
+      warnings = {'homo': 'occupied',
+                  'lumo': 'unoccupied',
+                  'last_bound': 'bound'}
       
       for key in keys:
+        if key in item and key in warnings.keys() and keys[key] == 'None':
+          print('No {0} orbitals are present. Ignoring respective entries...'.format(warnings[key]))
         item = item.replace(key, keys[key])
 
       #This seems quite insane to me... I don't really know what else to do though...
@@ -1066,14 +1063,15 @@ class MOClass(UserList):
             integer = line.replace(',',' ').split()
             mo_in_file.append(integer)
         except:
-          raise IOError('The selected mo-list (%(m)s) is not valid!' %
+          raise IOError('The selected mo_list (%(m)s) is not valid!' %
                         {'m': fid_mo_list} + '\ne.g.\n\t1\t3\n\t2\t7\t9\n')
         fid_mo_list = mo_in_file
 
       # Print some information
       for i,j in enumerate(mo_in_file):
         display('\tLine %d: %s' % (i+1,', '.join(j)))
-
+      display('')
+      
       # Check if the molecular orbitals are specified by symmetry
       # (e.g. 1.1 in MOLPRO nomenclature) or
       # by the number in the input file (e.g. 1)
