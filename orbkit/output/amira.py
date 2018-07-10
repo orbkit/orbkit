@@ -57,7 +57,7 @@ def hx_network_creator(rho,filename):
   '''Creates a ZIBAmira hx-network file including a colormap file (.cmap)
   adjusted to the density for the easy depiction of the density.
   '''
-  from orbkit.hx_network_draft import hx_network
+  from .hx_network_draft import hx_network
   filename += '.hx' if not filename.endswith('.hx') else ''
     
   # Create a .cmap colormap file using the default values 

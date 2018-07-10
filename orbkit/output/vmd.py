@@ -20,12 +20,30 @@ def vmd_network_creator(filename,cube_files=None,render=False,exit=False,
     Specifies the isovalue for the blue and the red isosurface, respectively.
   abspath : bool
     If True, the paths of the cube files will be expanded to absolute file paths.
-  vmd_options : strings
+  mo_options : strings
     Further commands to include in vmd script.
+    
+  **Example:**
+  
+  .. code-block::
+  
+    # create cube files
+    extras.calc_mo(qc, active, otype=['vmd'], ofid=fname)
+
+    # recreate vmd script
+    mo_options = """
+    rotate y by 90
+    rotate x by 45
+    rotate z by 0
+    axes location off
+    display distance 1
+    """
+    
+    vmd_network_creator(fname, render=1, exit=1, mo_options=mo_options)
   '''
   from os import path,listdir
   import linecache
-  from orbkit import vmd_network_draft
+  from . import vmd_network_draft
   
   filename += '.vmd' if not filename.endswith('vmd') else ''
   
