@@ -939,7 +939,7 @@ class MOClass(UserList):
               'lumo': str(self.get_lumo()),
               'last_bound': str(self.get_lastbound()),
               'lastbound': str(self.get_lastbound())}
-      
+            
       warnings = {'homo': 'occupied',
                   'lumo': 'unoccupied',
                   'last_bound': 'bound'}
@@ -959,7 +959,7 @@ class MOClass(UserList):
       else:
         for operation in ['-','+']:
           item = eval_mp(item, operation)
-
+      
       if len(pos_range) > 0:
         s = 1
         if numpy.allclose(pos_range,numpy.array([0])) and len(item) == 1: #Stuff like :b
@@ -1031,6 +1031,7 @@ class MOClass(UserList):
           else:
             return all_alpha_beta, item, None
 
+    
     regsplit = re.compile(r"[\s,;]")
 
     # We set these variables here for later reference
@@ -1042,7 +1043,13 @@ class MOClass(UserList):
       mo_in_file_new = [[i for i in range(len(self.data))]]
     else:
       if isinstance(fid_mo_list,str) and not path.exists(fid_mo_list):
-        if ',' in fid_mo_list:
+        if fid_mo_list == 'occupied':
+          display('All occupied orbitals have been selected:')
+          fid_mo_list = [map(str,(self.get_occ() > 1e-5).nonzero()[0])]
+        elif fid_mo_list == 'unoccupied' or fid_mo_list == 'virtual':
+          display('All unoccupied/virtual orbitals have been selected:')
+          fid_mo_list = [map(str,(self.get_occ() <= 1e-5).nonzero()[0])]
+        elif ',' in fid_mo_list:
           fid_mo_list = fid_mo_list.split(',')
         else:
           fid_mo_list = [fid_mo_list]

@@ -59,7 +59,7 @@ def get_file_from_tar(infile, index=0, ci_descriptor=False):
         break
       i += 1
   if not one_file:
-    raise ValueError('File {} not found'.format(i))
+    raise ValueError('File {0} not found'.format(i))
   return one_file, itype
 
 
