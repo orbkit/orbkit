@@ -11,6 +11,7 @@ from .psi4 import psi4_detci
 from .tmol import tmol_escf, tmol_tddft
 from .gamess import gamess_cis, gamess_tddft
 from .molpro import molpro_mcscf
+from .gaussian import gaussian_tddft
 
 def main_ci_read(qc,fname,itype='psi4_detci',threshold=0.0,
                  select=None,nforbs=0,bortho=False,
@@ -23,6 +24,8 @@ def main_ci_read(qc,fname,itype='psi4_detci',threshold=0.0,
   ==============  ==========  =====================
   'psi4_detci'    PSI4        All CI calculations
   'gamess_cis'    GAMESS-US   CIS
+  'gamess_tddft'  GAMESS-US   TD-DFT
+  'gauss16_tddft' Gaussian16  TD-DFT
   'tmol_tddft'    TURBOMOLE   TD-DFT
   'molpro_mcscf'  MOLPRO      MCSCF
   ==============  ==========  =====================
@@ -66,9 +69,11 @@ def main_ci_read(qc,fname,itype='psi4_detci',threshold=0.0,
   assert isinstance(qc,QCinfo), '`qc` has to be an instance of the QCinfo class'
   
   # What kind of input file has to be read?
-  reader = {'psi4_detci': psi4_detci, 
-            'gamess_cis': gamess_cis, 
-            'tmol_tddft': tmol_tddft, 
+  reader = {'psi4_detci': psi4_detci,
+            'gamess_cis': gamess_cis,
+            'gamess_tddft': gamess_tddft,
+            'gaussian_tddft': gaussian_tddft,
+            'tmol_tddft': tmol_tddft,
             'molpro_mcscf': molpro_mcscf}
   
   display('Loading %s file...' % itype)
@@ -85,7 +90,7 @@ def main_ci_read(qc,fname,itype='psi4_detci',threshold=0.0,
   
   # Get a copy of qc
   qc = qc.copy()
-  if itype in ['tmol_tddft','gamess_cis']: # CIS-like
+  if itype in ['tmol_tddft','gamess_cis','gamess_tddft','gaussian_tddft']: # CIS-like
     moocc = qc.mo_spec.get_occ(return_int=True)
   elif itype in ['psi4_detci','molpro_mcscf']: # detCI-like
     # Reorder qc.mo_spec
