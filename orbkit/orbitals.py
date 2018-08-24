@@ -2,6 +2,7 @@ import numpy
 from os import path
 from copy import copy
 import sys
+import warnings
 
 try:
   from UserList import UserList
@@ -429,6 +430,7 @@ class MOClass(UserList):
     self.coeffs = None
     self.occ = None
     self.sym = None
+    self.spin = None
     self.eig = None
     self.spinpolarized = False
     self.selection_string = None
@@ -440,6 +442,10 @@ class MOClass(UserList):
       self.coeffs = restart['coeffs']
       self.occ = restart['occ']
       self.sym = restart['sym']
+      try:
+        self.spin = restart['spin']
+      except KeyError:
+        warnings.warn('`spin` not found in restart file', UserWarning)
       self.eig = restart['eig']
       self.spinpolarized = restart['spinpolarized']
       self.selection_string = restart['selection_string']
@@ -459,7 +465,8 @@ class MOClass(UserList):
             'occ': self.occ,
             'eig': self.eig,
             'parent_class_name' : self.__module__ + '.' + self.__class__.__name__,
-            'sym': self.sym}
+            'sym': self.sym,
+            'spin': self.spin}
     return data
 
   def __getitem__(self, item):
@@ -538,29 +545,42 @@ class MOClass(UserList):
     array_beta = array[self.alpha_index]
     return array_alpha, array_beta
 
-  def get_homo(self, tol=1e-5):
+  @property
+  def is_energy_sorted(self):
+    return all(numpy.diff(self.get_eig())>=0)
+  
+  def get_homo(self, tol=1e-5, sort=True):
     '''Returns index of highest occupied MO.
     '''
     if not self._up_to_date:
       self.update()
+    if sort:
+      self.sort_by_energy()
+    
     ihomo = (self.get_occ() > tol).nonzero()[0]
     
     return  None if not len(ihomo) else ihomo[-1]
 
-  def get_lumo(self, tol=1e-5):
+  def get_lumo(self, tol=1e-5, sort=True):
     '''Returns index of lowest unoccupied MO.
     '''
     if not self._up_to_date:
       self.update()
+    if sort:    
+      self.sort_by_energy()
+    
     ilumo = (self.get_occ() < tol).nonzero()[0]
     
     return None if not len(ilumo) else ilumo[0]
 
-  def get_lastbound(self):
+  def get_lastbound(self, sort=True):
     '''Returns index of highest bound MO.
     '''
     if not self._up_to_date:
       self.update()
+    if sort:
+      self.sort_by_energy()
+    
     imaxbound = (self.get_eig() <= 0.).nonzero()[0]
     
     return None if not len(imaxbound) else imaxbound[-1]
@@ -587,7 +607,8 @@ class MOClass(UserList):
     template = {'coeffs': None,
                 'energy': None,
                 'occ_num': None,
-                'sym': None}
+                'sym': None,
+                'spin': None}
     return template
 
   def internal_to_dict(self):
@@ -598,32 +619,29 @@ class MOClass(UserList):
       self.data[-1]['energy'] = self.eig[imo]
       self.data[-1]['occ_num'] = self.occ[imo]
       self.data[-1]['sym'] = self.sym[imo]
+      self.data[-1]['spin'] = self.spin[imo]
     return
 
   def update(self):
     self._up_to_date = False
-    if self.alpha_index is None and self.beta_index is None:
-      self.sort_by_energy()
-      self.get_spinstate()
-    else:
-      # sort_by_energy() does its own updating
-      self.get_coeffs()
-      self.get_occ()
-      self.get_eig()
-      self.get_sym()
+    self.get_coeffs()
+    self.get_occ()
+    self.get_eig()
+    self.get_sym()
+    self.get_spinstate()
     self._up_to_date = True
     return
 
   def sort_by_energy(self):
+    if self.is_energy_sorted:
+      return
+    warnings.warn('MOs are not sorted by energy. Sorting them...', UserWarning)
     tmp_data = []
     sort = numpy.argsort(self.get_eig())
     for s in sort:
       tmp_data.append(self.data[s])
     self.data = tmp_data
-    self.get_coeffs()
-    self.get_occ()
-    self.get_eig()
-    self.get_sym()
+    self.update()
     return
 
   def get_spinstate(self):
@@ -632,18 +650,23 @@ class MOClass(UserList):
     '''
     if not self._up_to_date:
       self.get_sym()
+      
     self.spinpolarized = False
     self.alpha_index = []
     self.beta_index = []
-    spindic = {'a': self.alpha_index, 'b': self.beta_index}
-    for isym in range(len(self.sym)):
-      split_label = self.sym[isym].split('_')
-      if len(split_label) == 2:
-        spindic[split_label[-1]].append(isym)
-        self.sym[isym] = split_label[0]
-        self.data[isym]['sym'] = self.sym[isym]
+    spindic = {'a': self.alpha_index, 
+               'b': self.beta_index, 
+               'u': self.alpha_index} # unknown is counted as alpha_index
+    spinlabel = {'a':'alpha','b':'beta'}
+    for isym,jsym in enumerate(self.sym):
+      if jsym.endswith('_a') or jsym.endswith('_b'):
+        spindic[jsym[-1]].append(isym)
+        self.sym[isym] = jsym[:-2]
+        self.spin[isym] = spinlabel[jsym[-1]]
       else:
-        spindic['a'].append(isym)
+        spindic[self.spin[isym][0]].append(isym)
+    
+    self.internal_to_dict()
     if len(self.beta_index) != 0:
       self.spinpolarized = True
 
@@ -797,9 +820,16 @@ class MOClass(UserList):
     '''
     if not self._up_to_date:
       self.sym = []
+      self.spin = []
       for imo, mo in enumerate(self.data):
         self.sym.append(mo['sym'])
+        if 'spin' in mo.keys():
+          self.spin.append(mo['spin'])
+        else:
+          self.spin.append('unknown')
+      
       self.sym = numpy.array(self.sym, dtype=str)
+      
     return copy(self.sym)
 
   def get_spin_index(self, spin):
@@ -894,7 +924,7 @@ class MOClass(UserList):
     if flatten_input and isinstance(list(fid_mo_list)[0], (list, numpy.ndarray)):
       display('\nWarning! Flattening of input lists requested!')
       display('\nIf this was not intended please set ``flatten_input=False``')
-
+    
     mo_in_file = []
     selected_mo = []
     sym_select = False
@@ -1033,7 +1063,7 @@ class MOClass(UserList):
 
     
     regsplit = re.compile(r"[\s,;]")
-
+    
     # We set these variables here for later reference
     all_alpha_beta = [False, False]
 
@@ -1041,6 +1071,7 @@ class MOClass(UserList):
       all_alpha_beta, fid_mo_list, srec = parse_spin(fid_mo_list, all_alpha_beta)
       spinrestructions = [srec]
       mo_in_file_new = [[i for i in range(len(self.data))]]
+      
     else:
       if isinstance(fid_mo_list,str) and not path.exists(fid_mo_list):
         if fid_mo_list == 'occupied':
@@ -1097,7 +1128,7 @@ class MOClass(UserList):
           else:
             tmp.extend(parse_sym(item))
         mo_in_file_new.append(tmp)
-
+    
     mo_in_file = []
     for isub, sublist in enumerate(mo_in_file_new):
       if numpy.any(all_alpha_beta):
@@ -1122,9 +1153,10 @@ class MOClass(UserList):
       mo_in_file = [[item for sublist in mo_in_file for item in sublist]]
       if sort_indices:
         mo_in_file = [numpy.sort([item for sublist in mo_in_file for item in sublist])]
-
+    
     if len(mo_in_file) == 1 and flatten_input:
       mo_spec = MOClass([])
+      mo_spec.spinpolarized = self.spinpolarized
       for index in mo_in_file[0]:
         mo_spec.append(self.data[index])
       mo_spec.selected_mo = mo_in_file[0]
@@ -1137,6 +1169,7 @@ class MOClass(UserList):
       mo_spec = []
       for i, sublist in enumerate(mo_in_file):
         mo_sub = MOClass([])
+        mo_sub.spinpolarized = self.spinpolarized
         for index in sublist:
           mo_sub.append(self.data[index])
         mo_sub.selected_mo = sublist

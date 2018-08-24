@@ -1,5 +1,32 @@
 import numpy
 
+def get_amira_colormap(colors,filename,opacity=1.0):
+  
+  f = open(filename,'w')
+  f.write('''# AmiraMesh 3D ASCII 2.0
+
+
+  define Lattice %d
+
+  Parameters {
+      ContentType "Colormap",
+      MinMax 0 1,
+      Interpolate 1,
+      LabelField 0
+  }
+
+  Lattice { float[4] Data } @1
+
+  # Data section follows
+  @1
+  '''%len(colors))
+
+  for i,j,k in colors:
+    f.write('%.15e %.15e %.15e %.15e\n' % (i,j,k,opacity))
+
+  f.close()
+
+
 def colormap_creator(rho,filename,n_peaks=5,start=0.01,stop=0.999,peak_width=0.1):
   '''Creates a .cmap colormap for ZIBAmira adjusted to the density.
 
