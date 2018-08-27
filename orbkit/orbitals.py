@@ -442,16 +442,19 @@ class MOClass(UserList):
       self.coeffs = restart['coeffs']
       self.occ = restart['occ']
       self.sym = restart['sym']
-      try:
-        self.spin = restart['spin']
-      except KeyError:
-        warnings.warn('`spin` not found in restart file', UserWarning)
       self.eig = restart['eig']
       self.spinpolarized = restart['spinpolarized']
       self.selection_string = restart['selection_string']
       self.selected_mo = restart['selected_mo']
       self.alpha_index = restart['alpha_index']
       self.beta_index = restart['beta_index']
+      try:
+        self.spin = restart['spin']
+      except KeyError:
+        warnings.warn('"spin" not found in restart file', UserWarning)
+        self.spin = numpy.zeros_like(self.sym,dtype=str)
+        self.spin[self.alpha_index] = 'alpha'
+        self.spin[self.beta_index] = 'beta'
       self.internal_to_dict()
 
   def todict(self):
