@@ -40,6 +40,7 @@ def read_gamess(fname, all_mo=False, spin=None, read_properties=False,
   has_beta = False                   # Flag for beta electron set
   restricted = True                  # Flag for restricted calculation
   sec_flag = None                    # A Flag specifying the current section
+  dm_flag = None                     # A Flag specifying the current section
   is_pop_ana = True                  # Flag for population analysis for ground state
   keyword = [' ATOM      ATOMIC                      COORDINATES','\n'] 
                                      # Keywords for single point calculation and 
@@ -124,13 +125,14 @@ def read_gamess(fname, all_mo=False, spin=None, read_properties=False,
       occ.append(int(thisline[-1]))
     elif ' NUMBER OF OCCUPIED ORBITALS (BETA ) KEPT IS    =' in line:
       occ.append(int(thisline[-1]))
-    elif 'NUMBER OF STATES REQUESTED' in line and read_properties:
+    elif 'CI-SINGLES CONTROL INFORMATION' in line and read_properties:
       # get the number of excited states and initialize variables for
       # transition dipole moment and energies
-      exc_states = int(line.split('=')[1])  # Number of excited states
+      exc_states = int(flines[il+3].split()[2])  # Number of excited states
       # Dipole moments matrix: Diagonal elements -> permanent dipole moments
       # Off-diagonal elements -> transition dipole moments
       qc.dipole_moments = numpy.zeros(((exc_states+1),(exc_states+1),3))
+      qc.osc_strengths = numpy.zeros(((exc_states+1),(exc_states+1)))
       # Multiplicity of ground and excited states
       qc.states['multiplicity'] = numpy.zeros(exc_states+1)
       # Energies of ground and excited states
@@ -253,7 +255,7 @@ def read_gamess(fname, all_mo=False, spin=None, read_properties=False,
             elif thisline != [] and info_key == 'coeffs':
               exp_list.append((line[11:17]))
               for ii in range(init_len,0,-1):
-                qc.mo_spec[-ii]['coeffs'].append(float(line[16:].split()[init_len-ii]))
+                qc.mo_spec[-ii]['coeffs'].append(float(line[16:].replace('-',' -').split()[init_len-ii]))
         elif mo_skip:
           mo_skip -= 1
       elif sec_flag == 'ecp_info':
@@ -304,6 +306,8 @@ def read_gamess(fname, all_mo=False, spin=None, read_properties=False,
             for ii in range(3):
               qc.dipole_moments[state[0]][state[1]][ii] = float(thisline[ii+3])
               qc.dipole_moments[state[1]][state[0]][ii] = float(thisline[ii+3])
+          elif 'OSCILLATOR STRENGTH =' in line:
+            qc.osc_strengths[state[0]][state[1]] = float(thisline[-1])
       elif sec_flag == 'pop_info':
         if not pop_skip:
           if  line == '\n':
@@ -404,10 +408,11 @@ def read_gamess(fname, all_mo=False, spin=None, read_properties=False,
     for i in range(len(qc.mo_spec))[::-1]:
       if qc.mo_spec[i]['spin'] != spin:
         del qc.mo_spec[i]
-    
+  
+  
   # Convert geo_info and geo_spec to numpy.ndarrays
   qc.format_geo(is_angstrom=angstrom)
-
+  
   qc.mo_spec.update()
   qc.ao_spec.update()
   return qc
