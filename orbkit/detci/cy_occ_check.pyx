@@ -28,7 +28,7 @@ def cis_ab(int i,int j,
   singles = []  #: Effective single excitation
   sc = []       #: Product of CI coefficients
   sm = []       #: Indices of the two molecular orbitals 
-  cdef double sqrt2 = sqrt(2.0) 
+  cdef double sqrt2 = sqrt(2.0)
   for ia in range(i,j):
     if acoeffs[ia] != 0.0:
       for ib in range(nbcoeffs):
@@ -41,8 +41,9 @@ def cis_ab(int i,int j,
               if (aocc[ia,0] == im): f = (moocc[im]-1.0)*citmp
               elif (aocc[ia,1] == im):f = (moocc[im]+1.0)*citmp
               else: f = (moocc[im])*citmp
-              si.append(im)
-              zo.append(f)
+              if f != 0:
+                si.append(im)
+                zo.append(f)
             zc.append(zo)
             zm.append(si)
           elif (aocc[ia,0] == bocc[ib,0]):
@@ -65,7 +66,7 @@ def cis_ab(int i,int j,
             sm.append(si)
           elif (bocc[ib,0] == -1):
             si = []
-            sc.append(-sqrt2*acoeffs[ia])
+            sc.append(-sqrt2*bcoeffs[ib])
             si.append(aocc[ia,1])
             si.append(aocc[ia,0])
             sm.append(si)
