@@ -55,7 +55,7 @@ def compute_nto(qc,ci=[],Tij=[],md_filename=None):
   
   # Calculate NTOs (assuming that ci[0] is the ground state)
   for i in range(stlen):
-    
+
     # Initialize NTOs
     ntos = {}
     ntos['vec'] = numpy.zeros((mo_coeffs.shape))
@@ -65,11 +65,11 @@ def compute_nto(qc,ci=[],Tij=[],md_filename=None):
       rdm = (1/numpy.sqrt(2))*dmat.Tij[:LUMO,LUMO:]
     else:
       rdm = Tij[i]
-    
+      
     # Eigenvalue equation
     (u_vec, sqrtlmbd, v_vec) = numpy.linalg.svd(rdm)
     lmbd = sqrtlmbd * sqrtlmbd
-    
+
     # Eigenvalues for occupied and virtual orbitals
     ntos['val'][:LUMO] = -lmbd[::-1]
     ntos['val'][LUMO:(LUMO+len(lmbd))] = lmbd
@@ -78,8 +78,7 @@ def compute_nto(qc,ci=[],Tij=[],md_filename=None):
     occ_nto = (numpy.dot(occ_mo.T,u_vec)).T
     ntos['vec'][:LUMO] = occ_nto[::-1]
     
-    virt_nto = numpy.dot(virt_mo.T,v_vec)
-    virt_nto = (virt_nto.T)
+    virt_nto = numpy.dot(v_vec,virt_mo)
     ntos['vec'][LUMO:] = virt_nto
     
     # Write new molden-Files
@@ -109,7 +108,7 @@ def compute_p_h_rho(qc_nto,min_val=1e-6,numproc=1,slice_length=1e4,hdf5_fid=None
     
     # MO selection
     qc = qc_nto[i].copy()
-    if numpy.sum(qc.mo_spec.get_occ()) != 0.0:
+    if numpy.sum(abs(qc.mo_spec.get_occ())) != 0.0:
       bmo = abs(qc.mo_spec.get_occ()) >= min_val
       qc.mo_spec = qc.mo_spec[bmo]
       
@@ -134,10 +133,6 @@ def compute_p_h_rho(qc_nto,min_val=1e-6,numproc=1,slice_length=1e4,hdf5_fid=None
   
   rho_h = numpy.array(rho_h)
   rho_p = numpy.array(rho_p)
-  
-  #if grid.is_vector:
-    #rho_p = rho_p.reshape(grid.N_)
-    #rho_h = rho_h.reshape(grid.N_)
   
   if hdf5_fid:
     display('Save densities in HDF5 file...\n')
