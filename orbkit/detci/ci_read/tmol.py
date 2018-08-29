@@ -66,9 +66,10 @@ def tmol_tddft(fname,nmoocc=None,nforbs=0,select_state=None,threshold=0.0,
   for i in range(len(states)):
     if len(states[i]['coeffs']) == tspace*2:
       states[i]['coeffs'] = numpy.array(states[i]['coeffs']).reshape((2,nmoocc,-1))
-      states[i]['xia'] = 0.5 * (
-                         (states[i]['coeffs'][0] + states[i]['coeffs'][1])
-                         )
+      states[i]['xia'] = states[i]['coeffs'][0]
+      #0.5 * (
+                         #(states[i]['coeffs'][0] + states[i]['coeffs'][1])
+                         #)
       #states[i]['yia'] = 0.5 * (
                           #(states[i]['coeffs'][0] - states[i]['coeffs'][1])
                           #)
