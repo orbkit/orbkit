@@ -4,17 +4,16 @@ from copy import copy
 from orbkit.display import display
 from orbkit.qcinfo import CIinfo
 from orbkit.read.tools import descriptor_from_file
-
+from orbkit.units import ev2ha
 from .tools import multiplicity
 
-def gamess_tddft(fname,select_state=None,threshold=0.0,**kwargs):
+def gamess_tddft(filename,select_state=None,threshold=0.0,bortho=False,**kwargs):
   '''Reads GAMESS-US CIS output. 
   
   **Parameters:**
   
-    fname: str, file descriptor
+    filename : str
       Specifies the filename for the input file.
-      fname can also be used with a file descriptor instad of a filename.
     select_state : None or list of int, optional
       If not None, specifies the states to be read (0 corresponds to the ground 
       state), else read all electronic states.
@@ -36,63 +35,68 @@ def gamess_tddft(fname,select_state=None,threshold=0.0,**kwargs):
   spin = 'Unknown'
   
   if isinstance(select_state,int): select_state = [select_state]
-
-  if isinstance(fname, str):
-    filename = fname
-    fname = descriptor_from_file(filename, index=0, ci_descriptor=True)
-  else:
-    filename = fname.name
-
-  for line in fname:
-    thisline = line.split()             # The current line split into segments
-    #--- Check the file for keywords ---
-    # Initialize Hartree-Fock ground state
-    if 'NUMBER OF ELECTRONS' in line:
-      nel = int(thisline[-1])
-    elif 'SPIN MULTIPLICITY' in line:
-      rhfspin = int(thisline[-1])
-    elif 'SINGLET EXCITATIONS' in line:
-      spin = 'Singlet'
-    elif ' FINAL RHF ENERGY IS' in line and (select_state is None or 0 in select_state):
-        ci.append(CIinfo(method='cis'))
-        ci[-1].info   = []
-        ci[-1].coeffs = []
-        ci[-1].occ    = []
-        ci[-1].occ.append([0,0])
-        ci[-1].coeffs.append(1.0)
-        ci[-1].info = {'state': '0',
-                       'energy': float(thisline[4]),
-                       'fileinfo': filename,
-                       'read_threshold': threshold,
-                       'spin': spin,
-                       'nel': nel}
-    # Initialize new excited state
-    elif 'STATE #' in line and 'ENERGY =' in line:
-      if select_state is None or int(thisline[2]) in select_state:
-        init_state = True
-        tddft_skip = 8
-        ci.append(CIinfo(method='cis'))
-        ci[-1].info   = []
-        ci[-1].coeffs = []
-        ci[-1].occ    = []
-        ci[-1].info = {'state': thisline[2],
-                       'energy': float(thisline[-2])*ev2ha,
-                       'fileinfo': filename,
-                       'read_threshold': threshold,
-                       'spin': 'Unknown',
-                       'nel': nel}
-    if init_state == True:
-      if not tddft_skip:
-        if line == '\n':
-          init_state = False
-        else:
-          if abs(float(thisline[2])) > threshold:
-            ci[-1].occ.append(thisline[:2])
-            ci[-1].coeffs.append(thisline[2])
-      elif tddft_skip:
-        tddft_skip -= 1
-
-  fname.close()
+  with open(filename) as fileobject:
+    for line in fileobject:
+      thisline = line.split()             # The current line split into segments
+      #--- Check the file for keywords ---
+      # Initialize Hartree-Fock ground state
+      #jct 09/08/2018
+      if 'NUMBER OF ELECTRONS                          =' in line:
+        nel = int(thisline[-1])
+      elif 'SPIN MULTIPLICITY' in line:
+        rhfspin = int(thisline[-1])
+      elif 'SINGLET EXCITATIONS' in line:
+        spin = 'Singlet'
+      #elif ' FINAL RHF ENERGY IS' in line and (select_state is None or 0 in select_state):
+      elif ' FINAL' in line and ' ENERGY IS' in line and (select_state is None or 0 in select_state):
+          ci.append(CIinfo(method='tddft'))
+          ci[-1].info   = []
+          ci[-1].coeffs = []
+          ci[-1].occ    = []
+          ci[-1].occ.append([0,0])
+          ci[-1].coeffs.append(1.0)
+          ci[-1].info = {'state': '0',
+                         'energy': float(thisline[4]),
+                         'fileinfo': filename,
+                         'read_threshold': threshold,
+                         'spin': spin,
+                         'nel': nel}
+      # Initialize new excited state
+      elif 'STATE #' in line and 'ENERGY =' in line:
+        if select_state is None or int(thisline[2]) in select_state:
+          init_state = True
+          tddft_skip = 8
+          ci.append(CIinfo(method='tddft'))
+          ci[-1].info   = []
+          ci[-1].coeffs = []
+          ci[-1].occ    = []
+          ci[-1].info = {'state': thisline[2],
+                         'energy': float(thisline[-2])/ev2ha,
+                         'fileinfo': filename,
+                         'read_threshold': threshold,
+                         'spin': 'Unknown',
+                         'nel': nel}
+      # jct 09/08/2018
+      #if init_state == True:
+        #if not tddft_skip:
+          #if line == '\n':
+          #  init_state = False
+          #else:
+          #  if abs(float(thisline[2])) > threshold:
+          #    ci[-1].occ.append(thisline[:2])
+          #    ci[-1].coeffs.append(thisline[2])
+        #elif tddft_skip:
+        #  tddft_skip -= 1
+      if init_state == True and line != '\n' and 'WARNING:' not in line:
+        if not tddft_skip:
+          if 'NON-ABELIAN' in line or 'SUMMARY' in line or 'SYMMETRY' in line or 'STATE #' in line:
+            init_state = False
+          else:
+            if abs(float(thisline[2])) > threshold:
+              ci[-1].occ.append(thisline[:2])
+              ci[-1].coeffs.append(thisline[2])
+        elif tddft_skip:
+          tddft_skip -= 1
           
   #--- Calculating norm of CI states
   display('\nIn total, %d states have been read.' % len(ci)) 
@@ -106,6 +110,19 @@ def gamess_tddft(fname,select_state=None,threshold=0.0,**kwargs):
     # Transform to numpy arrays
     ci[i].occ = numpy.array([s for s in ci[i].occ],dtype=numpy.intc)-1
   
+  ## jct 09/08/2018
+  ## Gram-Schmidt
+  #display('Normalizing the TD-DFT coefficients...\n')
+  #for c in ci:
+  #  c.apply_threshold(threshold,keep_length=False)
+  #ci = orthonorm(ci,reorth=False)
+
+  #--- Calculating norm of CI states
+  display('\nIn total, %d states have been read.' % len(ci)) 
+  display('Norm of the states:')
+  for i in ci:
+    display(str(i))
+
   return ci
 
 def gamess_cis(filename,select_state=None,threshold=0.0,**kwargs):
