@@ -3,10 +3,9 @@ import numpy
 from orbkit.read.tools import spin_check
 from orbkit.qcinfo import QCinfo
 from orbkit.orbitals import AOClass, MOClass
-from orbkit.core import exp_wfn
+from orbkit.tools import orbit, exp_wfn
 
 from .tools import descriptor_from_file
-from orbkit.core import orbit
 
 def read_wfx(fname, all_mo=False, spin=None, **kwargs):
   '''Reads all information desired from a wfn file.

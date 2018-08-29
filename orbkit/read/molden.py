@@ -4,7 +4,7 @@ import re
 from orbkit.qcinfo import QCinfo
 from orbkit.orbitals import AOClass, MOClass
 from orbkit.display import display
-from orbkit.core import l_deg, lquant
+from orbkit.tools import l_deg, lquant
 
 from .tools import descriptor_from_file
 

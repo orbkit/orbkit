@@ -4,8 +4,7 @@ from copy import deepcopy
 from orbkit.qcinfo import QCinfo
 from orbkit.orbitals import AOClass, MOClass
 from orbkit.display import display
-from orbkit.core import lquant
-from orbkit.core import orbit
+from orbkit.tools import orbit, lquant
 
 from .tools import descriptor_from_file
 

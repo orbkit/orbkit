@@ -3,7 +3,7 @@ import numpy
 
 from orbkit.qcinfo import QCinfo
 from orbkit.orbitals import AOClass, MOClass
-from orbkit.core import l_deg, lquant
+from orbkit.tools import l_deg, lquant
 from orbkit.display import display
 
 from .tools import descriptor_from_file, spin_check
