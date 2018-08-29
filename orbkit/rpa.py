@@ -3,7 +3,8 @@ from orbkit.display import display
 from orbkit.units import pi, c_in_au,ev2ha
 from orbkit.analytical_integrals import get_ao_dipole_matrix,get_ao_overlap
 from orbkit.analytical_integrals import get_mo_overlap,get_mo_overlap_matrix
-from scipy.cluster.vq import kmeans,vq
+#from scipy.cluster.vq import kmeans,vq
+from scipy.signal import argrelextrema
 
 class RPAClass:
   '''
@@ -29,10 +30,10 @@ class RPAClass:
     
     # Calculate AO overlap moments
     if True in pbc:
-      aoom = []
+      daoom = []
       for c in q:
-        aoom.append(get_ao_overlap(qc.geo_spec,qc.geo_spec,qc.ao_spec,drv=c))
-      aoom = numpy.array(aoom)
+        daoom.append(get_ao_overlap(qc.geo_spec,qc.geo_spec,qc.ao_spec,drv=c))
+      daoom = numpy.array(daoom)
     # Calculate AO dipole matrix
     else:
       aodm = []
@@ -52,7 +53,7 @@ class RPAClass:
         if abs(moexene) >= omega[0] and abs(moexene) <= omega[-1]:
           for xyz in range(len(q)):
             if True in pbc:
-              dm = get_mo_overlap(qc.mo_spec[kk],qc.mo_spec[jj],aoom[xyz])/(moene[kk] - moene[jj])
+              dm = get_mo_overlap(qc.mo_spec[kk],qc.mo_spec[jj],daoom[xyz])/(moene[kk] - moene[jj])
             else:
               dm = get_mo_overlap(qc.mo_spec[kk],qc.mo_spec[jj],aodm[xyz])
             signal[xyz] += ((4*pi*eta*docc)/volume)*(1/((xx-moene[kk]+moene[jj])**2+(eta**2)))*(dm)**2
@@ -71,70 +72,12 @@ class RPAClass:
       f.close()
 
     return signal
+  
+  def lorentz(self,x,eta):
+    '''Returns Lotentz distribution'''
+    return (eta*0.5)/(numpy.pi * ((x)**2. + (eta*0.5)**2.))
 
-  def weighted_kmeans_clustering(self,points,centers,npeaks,it_max=100):
-    
-    # Assign points to nearest center
-    for i in range(len(points['ene'])):
-      distances = abs(points['ene'][i] - centers['ene'])
-      idx = numpy.argmin(distances)
-      points['k'][i] = idx
-      centers['n'][idx] += 1
-      centers['w'][idx] += points['w'][i]
-    centers['ene'] = numpy.zeros(len(centers['ene']))
-
-    #Average the points in each cluster to get a new cluster center.
-    for i in range(len(points['ene'])):
-      centers['ene'][points['k'][i]] += points['ene'][i] * points['w'][i]
-    for i in range(len(centers['ene'])):
-      centers['ene'][i] /= centers['w'][i]
-
-    it_num = 0
-    distsq = numpy.zeros(npeaks)
-    while ( it_num < it_max ):
-      it_num +=1
-      swap = 0
-      for i in range(len(points['ene'])):
-        ci=points['k'][i]
-        if centers['n'][ci] <= 1:
-          continue
-
-        for j in range(len(centers['ene'])):
-          distpc = (abs(points['ene'][i]-centers['ene'][j])*centers['w'][j])
-          if ci == j:
-            distsq[j]= distpc/(centers['w'][j] - points['w'][i])
-          elif centers['n'][j] == 0:
-            centers['ene'][j] = numpy.copy(points['ene'][i])
-            distsq[j] = 0 
-          else:
-            distsq[j]= distpc/(centers['w'][j] + points['w'][i])
-
-        # Find the index of the minimum value of DISTSQ.
-        nearest_cluster = numpy.argmin(distsq)
-
-        # If that is not the cluster to which point I now belongs, move it there.
-        if nearest_cluster == ci:
-          continue
-
-        j = nearest_cluster
-        centers['ene'][ci] = (centers['w'][ci]*centers['ene'][ci] - points['w'][i] * points['ene'][i] ) / ( centers['w'][ci] - points['w'][i])
-        centers['ene'][j] = (centers['w'][j]*centers['ene'][j] + points['w'][i]* points['ene'][i]) / ( centers['w'][j] + points['w'][i])
-        centers['n'][ci] -= 1
-        centers['n'][j] += 1
-        centers['w'][ci] -= points['w'][i]
-        centers['w'][j] += points['w'][i]
-
-        # assign the point its new home
-        points['k'][i] = j
-
-        swap += 1
-      # Exit if no reassignments were made during this iteration.
-      if swap==0: 
-        break
-    
-    return points,centers,it_num
-
-  def get_Tij_ditos(self,dE,pbc=[False, False, False],npeaks=0):
+  def get_Tij_ditos(self,dE,pbc=[False, False, False],unit_cell=numpy.identity(3),eta=0.1*ev2ha):
     
     display('Calculating Transition Density Matrix for DITOs.\n')
 
@@ -151,93 +94,43 @@ class RPAClass:
     exene_mat = numpy.abs(exene_mat[:LUMO,LUMO:])
     
     
-    # Calculate AO overlap moments
+    # Calculate derivatives of AO overlap matrix
     if True in pbc:
-      aoom = []
+      daoom = []
       for c in q:
-        aoom.append(get_ao_overlap(qc.geo_spec,qc.geo_spec,qc.ao_spec,drv=c))
-      aoom = numpy.array(aoom)
+        daoom.append(get_ao_overlap(qc.geo_spec,qc.geo_spec,qc.ao_spec,drv=c))
+      daoom = numpy.array(daoom)
     # Calculate AO dipole matrix
     else:
       aodm = []
       for c in q:
         aodm.append(get_ao_dipole_matrix(qc,component=c))
       aodm = numpy.array(aodm)
-      
-    if npeaks > 0 and len(dE) > 1:
-      raise IOError('This combination of selected energy ranges and k-means clustering is not possible.\n')
-    else:
-      # Calculating transition dipole matrix
-      Tij = numpy.zeros((len(dE),len(q),LUMO,len(qc.mo_spec)-LUMO))
-      qc = self.qc
-      for thr in range(len(dE)):
-        for jj in range(LUMO):
-          for kk in range(LUMO,len(qc.mo_spec)):
-            if abs(exene_mat[jj,kk-LUMO]) >= dE[thr,0] and abs(exene_mat[jj,kk-LUMO]) <= dE[thr,1]:
-              for xyz in range(len(q)):
-                if True in pbc:
-                  dm = get_mo_overlap(qc.mo_spec[jj],qc.mo_spec[kk],aoom[xyz])/(moene[jj] - moene[kk])
-                else:
-                  dm = get_mo_overlap(qc.mo_spec[jj],qc.mo_spec[kk],aodm[xyz])
-                Tij[thr,xyz,jj,kk-LUMO] += 2*dm
-        norm = numpy.linalg.norm(Tij[thr])
-        Tij[thr] /= max(norm,1e-14)
-      
-    # k-means Clustering
-    if npeaks > 0 and len(dE) == 1:
-      display('K-Means Clustering for Transition Density Matrix.\n')
-      
-      # Variable initialization
-      exene = (exene_mat).reshape((-1,))
-      kmcluster = numpy.zeros((npeaks,len(q),len(exene)))
-      
-      # Sorting excitation energies
-      bsort = numpy.argsort((exene))
-      bmo = numpy.logical_and(numpy.abs(exene) >= dE[0,0],numpy.abs(exene) <= dE[0,1])
-      exene *= bmo
-      exene = exene[bsort]
-      exnonzero = numpy.nonzero((exene))[0]
-      exene = exene[exnonzero]
-      
-      # Sorting boolian with indices
-      btmp = (numpy.arange(len(bmo))+1)*bmo
-      btmp = btmp[bsort]
-      btmp = btmp[exnonzero]-1
-      
-      # k-means Clustering
-      c,tmp = kmeans(exene,npeaks)
-      centroids = []
-      xyzpoints = []
-      
-      # Sorting of transition dipole matrix
-      for xyz in range(len(q)):
-        # Define non-zero transition matrix
-        xyzTij = (Tij[0,xyz]).reshape((-1,))
-        xyzTij *= bmo
-        xyzTij = xyzTij[bsort]
-        xyzTij = xyzTij[exnonzero]
-        # Initialize points and centers
-        points = {'ene': exene,
-                  'w': numpy.abs(xyzTij),
-                  'k': numpy.zeros(len(exene),dtype=int)}
-        centers = {'ene': c,
-                  'n': numpy.zeros(len(c),dtype=int),
-                  'w': numpy.zeros(len(c))}
-        # Weighted k means clustering
-        points,centers,it_num = self.weighted_kmeans_clustering(points,centers,npeaks,it_max=100)
-        centroids.append(centers)
-        xyzpoints.append(points)
-
-        for u,v in enumerate(points['k']):
-          kmcluster[v,xyz,btmp[u]] = xyzTij[u]
-
-      kmcluster = kmcluster.reshape((npeaks,len(q),LUMO,len(qc.mo_spec)-LUMO))
-      # Normalize new transition density matrix
-      for thr in range(npeaks):
-        norm = numpy.linalg.norm(kmcluster[thr])
-        kmcluster[thr] /= max(norm,1e-14)
-
-      return kmcluster,centroids,xyzpoints
     
-    else:
-      return Tij
+    # Calculate maxima in RPA spectra
+    omega = numpy.linspace(dE[0],dE[1],401)
+    signal = self.spectrum(unit_cell=unit_cell,pbc=pbc,omega=omega,eta=eta)
+    s = (signal).sum(axis=0)#signal[2]#
+    m = argrelextrema(s, numpy.greater)[0]
+    maxima = {'omega': omega[m], 'signal': s[m]} 
+
+    # Calculating transition dipole matrix
+    Tij = numpy.zeros((len(m),len(q),LUMO,len(qc.mo_spec)-LUMO))
+    qc = self.qc
+    for pp in range(len(m)):
+      for jj in range(LUMO):
+        for kk in range(LUMO,len(qc.mo_spec)):
+          delta = (abs(exene_mat[jj,kk-LUMO]) - maxima['omega'][pp])
+          if abs(exene_mat[jj,kk-LUMO]) >= dE[0] and abs(exene_mat[jj,kk-LUMO]) <= dE[1]:
+            for xyz in range(len(q)):
+              if True in pbc:
+                # From velocity gauge to length gauge
+                dm = get_mo_overlap(qc.mo_spec[jj],qc.mo_spec[kk],daoom[xyz])/(moene[jj] - moene[kk])
+              else:
+                # Length gauge
+                dm = get_mo_overlap(qc.mo_spec[jj],qc.mo_spec[kk],aodm[xyz])
+              Tij[pp,xyz,jj,kk-LUMO] += 2*(numpy.abs(dm)**2)*self.lorentz(delta,eta)
+      norm = numpy.linalg.norm(Tij[pp])
+      Tij[pp] /= max(norm,1e-14)
+      
+    return Tij,maxima
