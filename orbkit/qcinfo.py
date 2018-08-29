@@ -50,6 +50,7 @@ class QCinfo:
     self.states         = {'multiplicity' : None,
                            'energy'       : None}
     self.dipole_moments = None
+    self.osc_strengths = None
     self.charge = self.get_charge()
 
     data = None
