@@ -13,7 +13,7 @@ class RPAClass:
     
     self.qc = qc
       
-  def spectrum(self,unit_cell=numpy.identity(3),pbc=[False, False, False],omega=numpy.linspace(0.0,6.0,401)*ev2ha,eta=0.1*ev2ha,hdf5_fid=None):
+  def spectrum(self,unit_cell=numpy.identity(3),pbc=[False, False, False],omega=numpy.linspace(0.0,6.0,401)*ev2ha,eta=0.1*ev2ha,hdf5_fid=None,return_props=False):
     
     display('Calculating RPA absorption spectrum.\n')
     # Calculate volume, area or length of periodic axes
@@ -46,19 +46,29 @@ class RPAClass:
     moocc = qc.mo_spec.get_occ()
     # Calculating spectra
     signal = numpy.zeros((len(q),len(xx)))
+    oscstr = []
+    moexene = []
+    mos = []
     for jj in range(LUMO):
       for kk in range(LUMO,len(qc.mo_spec)):
         docc = moocc[jj] - moocc[kk]
-        moexene = abs(moene[jj] - moene[kk])
-        if abs(moexene) >= omega[0] and abs(moexene) <= omega[-1]:
+        tmpexene = abs(moene[jj] - moene[kk])
+        if abs(tmpexene) >= omega[0] and abs(tmpexene) <= omega[-1]:
+          moexene.append(tmpexene)
+          oscstr.append([])
+          mos.append([jj,kk])
           for xyz in range(len(q)):
             if True in pbc:
               dm = get_mo_overlap(qc.mo_spec[kk],qc.mo_spec[jj],daoom[xyz])/(moene[kk] - moene[jj])
             else:
               dm = get_mo_overlap(qc.mo_spec[kk],qc.mo_spec[jj],aodm[xyz])
+            oscstr[-1].append(dm)
             signal[xyz] += ((4*pi*eta*docc)/volume)*(1/((xx-moene[kk]+moene[jj])**2+(eta**2)))*(dm)**2
             signal[xyz] += (4*pi*eta*(-docc)/volume)*(1/((xx-moene[jj]+moene[kk])**2+(eta**2)))*(dm)**2
-  
+    
+    oscstr = numpy.array(oscstr)
+    moexene = numpy.array(moexene)
+    mos = numpy.array(mos)
     # Calculate absorption spectra
     for xyz in range(len(q)):
       signal[xyz] *= xx
@@ -69,9 +79,13 @@ class RPAClass:
       f['omega'] = xx
       f['signal'] = signal
       f['volume'] = volume
+      if return_props:
+        f['oscstr'] = oscstr
+        f['moexene'] = moexene
+        f['mos'] = mos
       f.close()
-
-    return signal
+    if return_props: return signal, oscstr, moexene
+    else: return signal
   
   def lorentz(self,x,eta):
     '''Returns Lotentz distribution'''
