@@ -62,7 +62,7 @@ class RPAClass:
               dm = get_mo_overlap(qc.mo_spec[kk],qc.mo_spec[jj],daoom[xyz])/(moene[kk] - moene[jj])
             else:
               dm = get_mo_overlap(qc.mo_spec[kk],qc.mo_spec[jj],aodm[xyz])
-            oscstr[-1].append(dm)
+            oscstr[-1].append(dm**2)
             signal[xyz] += ((4*pi*eta*docc)/volume)*(1/((xx-moene[kk]+moene[jj])**2+(eta**2)))*(dm)**2
             signal[xyz] += (4*pi*eta*(-docc)/volume)*(1/((xx-moene[jj]+moene[kk])**2+(eta**2)))*(dm)**2
     
@@ -79,12 +79,11 @@ class RPAClass:
       f['omega'] = xx
       f['signal'] = signal
       f['volume'] = volume
-      if return_props:
-        f['oscstr'] = oscstr
-        f['moexene'] = moexene
-        f['mos'] = mos
+      f['oscstr'] = oscstr
+      f['moexene'] = moexene
+      f['mos'] = mos
       f.close()
-    if return_props: return signal, oscstr, moexene
+    if return_props: return signal, oscstr, moexene, mos
     else: return signal
   
   def lorentz(self,x,eta):
