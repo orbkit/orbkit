@@ -41,8 +41,9 @@ def cis_ab(int i,int j,
               if (aocc[ia,0] == im): f = (moocc[im]-1.0)*citmp
               elif (aocc[ia,1] == im):f = (moocc[im]+1.0)*citmp
               else: f = (moocc[im])*citmp
-              si.append(im)
-              zo.append(f)
+              if f != 0:
+                si.append(im)
+                zo.append(f)
             zc.append(zo)
             zm.append(si)
           elif (aocc[ia,0] == bocc[ib,0]):
