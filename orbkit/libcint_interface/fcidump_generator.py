@@ -51,11 +51,11 @@ def generate_fcidump(qc, filename='FCIDUMP', core=0, occ=None, sym='c1', spin=1,
     MOranges = [range(MOranges[i], MOranges[i+1]) for i in range(len(nmopi))]
 
     # apply occ
-    assert numpy.all(numpy.array(nmopi) >= numpy.array(occ)), 'occ specifies more orbitals than available'
     if occ is None:
       occ = nmopi
     elif isinstance(occ, int):
       raise ValueError('require a list for occ (per IRREP)')
+    assert numpy.all(numpy.array(nmopi) >= numpy.array(occ)), 'occ specifies more orbitals than available'
     MOranges = [MOranges[i][:occ[i]] for i in range(len(nmopi))]
 
   # create FCIDUMP instance

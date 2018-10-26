@@ -73,7 +73,7 @@ class ScriptTestCase(unittest.TestCase):
   @skip_tests()
   def testfile(self):
     with open(self.filename) as fd:
-      exec(compile(fd.read(), self.filename, 'exec'))
+      exec(compile(fd.read(), self.filename, 'exec'), {})
 
   def id(self):
     return self.filename

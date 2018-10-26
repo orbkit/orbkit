@@ -390,7 +390,6 @@ def check_options(error=raise_error,display=print_message,
     except ValueError: 
       if len(data) == 1:
         data = data[0]
-        print(data.lower())
         if not any([i != data.lower() for i in ['all_mo','occupied','unoccupied','virtual']]):   
           setattr(thismodule,attr,
                   check_if_exists(data,

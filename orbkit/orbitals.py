@@ -476,6 +476,8 @@ class MOClass(UserList):
     parse_directly = False
     if isinstance(item, (int, numpy.int64)):
       return UserList.__getitem__(self, item)
+    elif isinstance(item, slice):
+      return MOClass(UserList.__getitem__(self, item))
     elif isinstance(item, (list, numpy.ndarray)) or \
          (sys.version_info.major == 3 and isinstance(item, range)):
       if isinstance(item, numpy.ndarray):

@@ -25,11 +25,11 @@ License along with orbkit.  If not, see <http://www.gnu.org/licenses/>.
 #from scipy.constants import value as physical_constants
 import numpy
 from os import path
-from copy import copy
+from copy import copy,deepcopy
 
-from orbkit.display import display
+from .display import display
 from .units import u_to_me, aa_to_a0
-from orbkit.read.tools import get_atom_symbol, standard_mass
+from .read.tools import get_atom_symbol, standard_mass
 from .orbitals import AOClass, MOClass
 
 class QCinfo:
@@ -66,11 +66,11 @@ class QCinfo:
     if not isinstance(other, QCinfo):
       raise TypeError('Comaring of QCinfo to non QCinfo object not defined')
     same = [
-			self.comp_geo_info(other.geo_info),
+            self.comp_geo_info(other.geo_info),
             numpy.allclose(self.geo_spec, other.geo_spec),
             self.ao_spec == other.ao_spec,
             self.mo_spec == other.mo_spec
-			]
+            ]
     return all(same)
 
   def update(self):
@@ -313,19 +313,9 @@ class CIinfo():
     else:
       self.coeffs = self.coeffs[i]
       self.occ = self.occ[i]
+      
   def copy(self):
-    from copy import deepcopy
-#This seems to work just fine...
     ciinfo = deepcopy(self)
-#    ciinfo = self.__class__(method=self.method)
-#    if self.coeffs != []:
-#      ciinfo.coeffs = numpy.copy(self.coeffs)
-#    if self.occ != []:
-#      ciinfo.occ = numpy.copy(self.occ)
-#    if self.info is not None:
-#      ciinfo.info = self.info.copy()
-#    if self.moocc is not None:
-#      ciinfo.moocc = self.moocc.copy()
     return ciinfo
 
   def get_moocc(self):

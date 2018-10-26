@@ -18,7 +18,7 @@ def parse_group(group):
   group_data = {}
   for key in group.keys():
     entry = group[key][...]
-    if entry.dtype in (numpy.bytes_, '|S10'):
+    if entry.dtype.type in (numpy.bytes_, numpy.unicode_, numpy.string_):
       entry = numpy.array(entry, dtype=str)
       if len(entry.shape) == 1:
         if all([e in [True, False, None] for e in entry]):
@@ -68,7 +68,7 @@ def read_native(fname, all_mo=None, spin=None, gname='qcinfo', **kwargs):
         data[name] = parse_group(group[name])
       else:
         entry = group[name][...]
-        if entry.dtype in (numpy.bytes_, '|S10'):
+        if entry.dtype.type in (numpy.bytes_, numpy.unicode_, numpy.string_):
           entry = numpy.array(entry, dtype=str)
           if len(entry.shape) == 1:
             if all([e in [True, False, None] for e in entry]):
