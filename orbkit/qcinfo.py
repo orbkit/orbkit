@@ -355,8 +355,12 @@ class CIinfo():
     if keep_length:
       self.coeffs[numpy.invert(i)] = 0.0
     else:
-      self.coeffs = self.coeffs[i]
-      self.occ = self.occ[i]
+      if self.info['state'] == '0':
+       self.coeffs = self.coeffs[i]
+       self.occ = self.occ[:1]
+      else:
+       self.coeffs = self.coeffs[i]
+       self.occ = self.occ[i]
   def copy(self):
     from copy import deepcopy
 #This seems to work just fine...

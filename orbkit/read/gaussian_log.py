@@ -114,7 +114,7 @@ def read_gaussian_log(fname,all_mo=False,spin=None,orientation='standard',
           elif '(6D, 10F)' not in line:
             raise IOError('Please apply a Spherical Harmonics (5D, 7F) or '+
                           'a Cartesian Gaussian Basis Set (6D, 10F)!')
-        elif 'AO basis set' in line:
+        elif 'AO basis set in the form of general basis input' in line:
           count['atomic orbitals'] += 1
         elif 'The electronic state is ' in line:
           count['state'].append(thisline[-1][:-1])
@@ -216,7 +216,7 @@ def read_gaussian_log(fname,all_mo=False,spin=None,orientation='standard',
         elif '(6D, 10F)' not in line:
           raise IOError('Please apply a Spherical Harmonics (5D, 7F) or '+
                         'a Cartesian Gaussian Basis Sets (6D, 10F)!')
-      elif 'AO basis set' in line:
+      elif 'AO basis set in the form of general basis input' in line:
         # The section containing information about 
         # the atomic orbitals begins
         if i_ao == c_ao:

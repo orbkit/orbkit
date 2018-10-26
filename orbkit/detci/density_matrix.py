@@ -20,7 +20,7 @@ class DM:
     zero0 = zero[0].flatten()
     zero1 = zero[1].flatten()
     for imo, it in enumerate(zero1):
-      self.Tij[it,it] += zero0[imo]
+      self.Tij[int(it),int(it)] += zero0[imo]
     # Build the off-diagonal elements of Tij
     for imo, it in enumerate(sing[1]):
       self.Tij[it[0],it[1]] += sing[0][imo]
