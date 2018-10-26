@@ -4,13 +4,20 @@ import re
 from orbkit.qcinfo import QCinfo
 from orbkit.orbitals import AOClass, MOClass
 from orbkit.display import display
-from orbkit.tools import l_deg, lquant
+from orbkit.tools import l_deg, lquant, orbit
 
 from .tools import descriptor_from_file
 
 '''
 New Molden interface
 '''
+
+FLAGS_SPH  = ['5d',  '7f',  '9g']
+FLAGS_CART = ['6d', '10f', '15g']
+# regex to match all lines like "[5d7f]"
+regex_flagline = re.compile(r'\[((' + '|'.join(FLAGS_SPH + FLAGS_CART) + r')+)\]')
+regex_flag = re.compile('(\d+[dfg])')
+regex_molden = re.compile(r'\[[ ]{,}[Mm]olden[ ]+[Ff]ormat[ ]{,}\]')
 
 def read_molden(fname, all_mo=False, spin=None, i_md=-1, interactive=True,
                 **kwargs):
@@ -38,8 +45,6 @@ def read_molden(fname, all_mo=False, spin=None, i_md=-1, interactive=True,
 
   if 'index' not in kwargs.keys():
     kwargs['index'] = 0
-
-  molden_regex = re.compile(r"\[[ ]{,}[Mm]olden[ ]+[Ff]ormat[ ]{,}\]")
 
   if isinstance(fname, str):
     filename = fname
@@ -77,32 +82,39 @@ def read_molden(fname, all_mo=False, spin=None, i_md=-1, interactive=True,
   has_alpha = []
   has_beta = []
   restricted = []
+  spherical_basis = []
   cartesian_basis = []
-  mixed_warning = []
   by_orca = []
   count = 0
   # Go through the file line by line 
-  for il in range(len(flines)):
-    line = flines[il]            # The current line as string
+  for line in flines:
     # Check the file for keywords
-    if molden_regex.search(line):
+    if regex_molden.search(line):
       count += 1
       has_alpha.append(False)
       has_beta.append(False)
       restricted.append(False)
-      cartesian_basis.append(True)
-      mixed_warning.append(False)
+      spherical_basis.append([])
+      cartesian_basis.append([])
       by_orca.append(False)
     if 'orca' in line.lower():
       by_orca[-1] = True
-    if '[5d]' in line.lower() or '[5d7f]' in line.lower():
-      cartesian_basis[-1] = False
-    if '[5d10f]'  in line.lower():
-      mixed_warning[-1] = '5D, 10F'
-      cartesian_basis[-1] = False
-    if '[7f]'  in line.lower():
-      mixed_warning[-1] = '6D, 7F'
-      cartesian_basis[-1] = True
+    # check whether line contains flags for spherical/cartesian basis functions
+    m = regex_flagline.match(line.lower())
+    if m:
+      # get list of all flags in line
+      flags = regex_flag.findall(m.group(1))
+      # check whether cartesian or spherical
+      for flag in flags:
+        if flag in FLAGS_SPH:
+          spherical_basis[-1].append(flag)
+        if flag in FLAGS_CART:
+          cartesian_basis[-1].append(flag)
+      # check for ambiguous flags
+      lsph = [l[-1] for l in spherical_basis[-1]]
+      lcart = [l[-1] for l in cartesian_basis[-1]]
+      if set(lsph) & set(lcart):
+          raise IOError('The input file {} contains ambiguous flags for spherical and cartesian basis functions: {}'.format(filename, ', '.join(spherical_basis[-1]+cartesian_basis[-1])))
     if 'Spin' in line and 'alpha' in line.lower():
       has_alpha[-1] = True
     if 'Spin' in line and 'beta' in line.lower():
@@ -153,12 +165,11 @@ def read_molden(fname, all_mo=False, spin=None, i_md=-1, interactive=True,
   max_l = 0
   start_reading = False
   # Go through the file line by line 
-  for il in range(len(flines)):
-    line = flines[il]              # The current line as string
+  for line in flines:
     thisline = line.split()        # The current line split into segments
     
     # Check the file for keywords 
-    if '[molden format]' in line.lower():
+    if regex_molden.search(line):
       # A new file begins 
       # Initialize the variables 
       if i_md == count:
@@ -230,7 +241,13 @@ def read_molden(fname, all_mo=False, spin=None, i_md=-1, interactive=True,
             # Calculate the degeneracy of this AO and increase basis_count 
             for i_ao in ao_type:
               # Calculate the degeneracy of this AO and increase basis_count 
-              basis_count += l_deg(lquant[i_ao],cartesian_basis=cartesian_basis[i_md])
+              # TODO: check for mixed sph/cart basis 
+              cart = True
+              if cartesian_basis[i_md]:
+                cart = i_ao in [f[-1] for f in cartesian_basis[i_md]]
+              if spherical_basis[i_md]:
+                cart = not i_ao in [f[-1] for f in spherical_basis[i_md]]
+              basis_count += l_deg(lquant[i_ao], cartesian_basis=cart)
               max_l = max(max_l,lquant[i_ao])
               qc.ao_spec.append({'atom': at_num,
                                 'type': i_ao,
@@ -263,9 +280,8 @@ def read_molden(fname, all_mo=False, spin=None, i_md=-1, interactive=True,
               elif info[0] != 'Sym':
                 info[1] = float(info[1])
               elif not '.' in info[1]:
-                from re import search
                 try:
-                  a = search(r'\d+', info[1]).group()
+                  a = re.search(r'\d+', info[1]).group()
                   if a == info[1]:
                     info[1] = '%s.1' % a
                   elif info[1].startswith(a):
@@ -293,14 +309,21 @@ def read_molden(fname, all_mo=False, spin=None, i_md=-1, interactive=True,
                 raise ValueError('Error in coefficient %d of MO %s!' % (index, 
                       qc.mo_spec[-1]['sym']) + '\nSetting this coefficient to zero...')
 
+  # check for mixed spherical/cartesian basis functions
+  if max_l >= 2:
+    # remove flags for unused angular momentum
+    l = orbit[2:max_l+1]
+    sph = [f for f in spherical_basis[i_md] if f[-1] in l]
+    cart = [f for f in cartesian_basis[i_md] if f[-1] in l]
+    if sph and cart:
+      raise IOError('''The input file {} contains mixed spherical and Cartesian function ({}).
+                  ORBKIT does not support these basis functions yet.
+                  Pleas contact us, if you need this feature!'''.format(filename, ', '.join(sph+cart))) 
+
   # Spherical basis?
-  if not cartesian_basis[i_md]:
+  if spherical_basis[i_md]:
     qc.ao_spec.set_lm_dict(p=[1,0])
-  if max_l > 2 and mixed_warning[i_md]:
-    raise IOError('The input file %s contains ' % filename +
-                  'mixed spherical and Cartesian function (%s).' %  mixed_warning[i_md] + 
-                  'ORBKIT does not support these basis functions yet. '+
-                   'Pleas contact us, if you need this feature!')    
+
   # Are all MOs requested for the calculation? 
   if not all_mo:
     for i in range(len(qc.mo_spec))[::-1]:
