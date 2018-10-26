@@ -70,7 +70,7 @@ def gaussian_tddft(fname,select_state=None,threshold=0.0,**kwargs):
         ci[-1].coeffs = []
         ci[-1].occ    = []
         ci[-1].info = {'state': thisline[2][:-1],
-                       'energy': float(thisline[-6])*ev_to_ha,
+                       'energy': float(thisline[-6])*ev_to_ha + ci[0].info['energy'],
                        'fileinfo': filename,
                        'read_threshold': threshold,
                        'spin': thisline[3].split('-')[0]}

@@ -67,12 +67,15 @@ def molpro_mo_order_ci(occ_info,mo_spec,irreps=None,nIRREP=None,order_sym=False)
   #external.update()
   return closed,active,external
 
-def orthonorm(ci):
+def orthonorm(ci,reorth=False,**kwargs):
   '''Orthonomalize CI coefficients after Grahm-Schmidt 
   
   **Parameters:**
   
     ci: 
+    reorth : bool (optional)
+      if True, ci eigenstates will be reorthonormalized.
+      else ci eigenstates will be renormalized.
   
   **Returns:**
   
@@ -83,8 +86,10 @@ def orthonorm(ci):
   for ii in range(len(ci)):
     scal = numpy.dot(ci[ii].coeffs,ci[ii].coeffs)
     ci[ii].coeffs /= numpy.sqrt(scal)
-    for jj in range(ii+1,len(ci)):
-      scal = numpy.dot(ci[ii].coeffs,ci[jj].coeffs)
-      ci[jj].coeffs -= ci[ii].coeffs*scal
-      
+    if reorth:
+      for jj in range(ii+1,len(ci)):
+        scal = numpy.dot(ci[ii].coeffs,ci[jj].coeffs)
+        ci[jj].coeffs -= ci[ii].coeffs*scal
+
   return ci
+
