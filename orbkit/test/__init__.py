@@ -23,7 +23,8 @@ tests = ['units',
          'qcinfo/mo_spec',
          'analytical_properties/analytical_integral_norm',
          'analytical_properties/dipole',
-         'grid_based/rho_compute']
+         'grid_based/rho_compute',
+         'grid_based/cube_files']
 
 def check_import(filename):
   # This defines which modules should be checked for which folders
@@ -72,7 +73,7 @@ class ScriptTestCase(unittest.TestCase):
   @skip_tests()
   def testfile(self):
     with open(self.filename) as fd:
-      exec(compile(fd.read(), self.filename, 'exec'))
+      exec(compile(fd.read(), self.filename, 'exec'), {})
 
   def id(self):
     return self.filename

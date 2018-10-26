@@ -8,7 +8,7 @@ from orbkit.read.tools import descriptor_from_file
 from .tools import multiplicity
 
 def gamess_tddft(fname,select_state=None,threshold=0.0,**kwargs):
-  '''Reads GAMESS-US CIS output. 
+  '''Reads GAMESS-US TDDFT output. 
   
   **Parameters:**
   
@@ -53,8 +53,9 @@ def gamess_tddft(fname,select_state=None,threshold=0.0,**kwargs):
       rhfspin = int(thisline[-1])
     elif 'SINGLET EXCITATIONS' in line:
       spin = 'Singlet'
-    elif ' FINAL RHF ENERGY IS' in line and (select_state is None or 0 in select_state):
-        ci.append(CIinfo(method='cis'))
+    #elif ' FINAL RHF ENERGY IS' in line and (select_state is None or 0 in select_state):
+    elif ' FINAL' in line and ' ENERGY IS' in line and (select_state is None or 0 in select_state):
+        ci.append(CIinfo(method='tddft'))
         ci[-1].info   = []
         ci[-1].coeffs = []
         ci[-1].occ    = []
@@ -76,14 +77,14 @@ def gamess_tddft(fname,select_state=None,threshold=0.0,**kwargs):
         ci[-1].coeffs = []
         ci[-1].occ    = []
         ci[-1].info = {'state': thisline[2],
-                       'energy': float(thisline[-2])*ev_to_ha,
+                       'energy': float(thisline[-2])*ev_to_ha + ci[0].info['energy'],
                        'fileinfo': filename,
                        'read_threshold': threshold,
                        'spin': 'Unknown',
                        'nel': nel}
-    if init_state == True:
+    if init_state == True and line != '\n' and 'WARNING:' not in line:
       if not tddft_skip:
-        if line == '\n':
+        if 'NON-ABELIAN' in line or 'SUMMARY' in line or 'SYMMETRY' in line or 'STATE #' in line:
           init_state = False
         else:
           if abs(float(thisline[2])) > threshold:
@@ -91,7 +92,7 @@ def gamess_tddft(fname,select_state=None,threshold=0.0,**kwargs):
             ci[-1].coeffs.append(thisline[2])
       elif tddft_skip:
         tddft_skip -= 1
-
+          
   fname.close()
           
   #--- Calculating norm of CI states

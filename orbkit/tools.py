@@ -210,3 +210,51 @@ def require(data,dtype='f',requirements='CA'):
   elif dtype == 'i':
     dtype = numpy.intc
   return numpy.require(data, dtype=dtype, requirements='CA')
+
+def convert(data,was_vector,N):
+  data = numpy.array(data,order='C')
+  if not was_vector:
+    data = data.reshape(data.shape[:-1] + N,order='C')
+  return data
+
+def zeros(shape,name,hdf5_file=None,chunks=True):
+  if hdf5_file is None:
+    return numpy.zeros(shape)
+  else:
+    return hdf5_file.create_dataset(name,shape,dtype=numpy.float64,chunks=chunks)
+
+def reshape(data,shape,save_hdf5):
+  if not save_hdf5:
+    return data.reshape(shape)
+  else:
+    data.attrs['shape'] = shape
+    return data[...].reshape(shape)
+  
+def print2D(x,format='%+.2f ',start='\t',end=''):
+  '''Prints a 2D matrix.
+  
+  **Parameters:**
+  
+  x : numpy.ndarray, shape = (n,m)
+    Contains a 2D matrix.
+  
+  format : str
+    Specifies the output format.
+  '''
+  shape = numpy.shape(x)
+  for i in range(shape[0]):
+    s = start
+    for j in range(shape[1]):
+      s += format % x[i,j]
+    print(s + end)
+
+def pmat(matrix,vmax=lambda x: numpy.max(numpy.abs(x))):
+  import matplotlib.pyplot as plt
+  fig = plt.figure()
+  if matrix.dtype == complex:
+    print('plotting real part of matrix')
+    matrix = matrix.real
+  vm = vmax(numpy.abs(matrix)) if callable(vmax) else vmax
+  plt.imshow(matrix,interpolation=None,vmin=-vm,vmax=vm,cmap='seismic_r')
+  plt.colorbar()
+  return fig

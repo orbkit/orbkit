@@ -1,10 +1,10 @@
 import numpy
+from copy import deepcopy
 
 from orbkit.qcinfo import QCinfo
 from orbkit.orbitals import AOClass, MOClass
 from orbkit.display import display
-from orbkit.core import lquant
-from orbkit.core import orbit
+from orbkit.tools import orbit, lquant
 
 from .tools import descriptor_from_file
 
@@ -276,7 +276,7 @@ def read_gaussian_fchk(fname, all_mo=False, spin=None, **kwargs):
     ao_new = []
     for i,ao in enumerate(qc.ao_spec):
       if ao['type'] == 'p' and sum(numpy.abs(ao_sp_coeffs[i])) > 0:
-        ao_new.append(copy.deepcopy(ao))
+        ao_new.append(deepcopy(ao))
         ao_new[-1]['type'] = 's'
         ao_new.append(ao)
         ao_new[-1]['type'] = 'p'

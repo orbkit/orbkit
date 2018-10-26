@@ -4,7 +4,7 @@ from orbkit import grid
 from .tools import meshgrid2
 
 def view_with_mayavi(x,y,z,data,is_vectorfield=False,geo_spec=None,datalabels=None,
-                     iso_min=1e-4,iso_val=0.01,iso_max=10.0):
+                     iso_min=1e-4,iso_val=0.01,iso_max=10.0,**kwargs):
   ''' Creates an interactive mayavi dialog showing isosurface plots of the input
   data. 
   
@@ -47,11 +47,12 @@ def view_with_mayavi(x,y,z,data,is_vectorfield=False,geo_spec=None,datalabels=No
     data = data[numpy.newaxis]
   elif is_vectorfield and data.ndim == 4:
     data = data[numpy.newaxis]
-  if datalabels is not None and len(datalabels) != len(data):
+    
+  if datalabels is not None and len(datalabels) < len(data):
     raise ValueError('`datalabels` has to be a list of strings with the same' +
                      'length as `data`.')
   if datalabels is not None:
-    datalabels = ['%03d: %s' % (i,j) for i,j in enumerate(datalabels)]
+    datalabels = ['%03d: %s' % (i,j) for i,j in enumerate(datalabels[:len(data)])]
   
   Z,Y,X = meshgrid2(z,y,x)
   

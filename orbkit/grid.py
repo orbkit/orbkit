@@ -172,11 +172,11 @@ def set_grid(xnew,ynew,znew,is_vector=None):
     setattr(sys.modules[__name__],'is_vector',is_vector)
     info_string += ('\n\nThe variable `grid.is_vector` has been set to %s.' % 
                     is_vector)
-  #set_boundaries(is_regular=(is_vector==False))
+  #set_boundaries((is_vector==False))
   return info_string
   # set_grid 
 
-def set_boundaries(is_regular=False,Nx=None,Ny=None,Nz=None):
+def set_boundaries(is_regular,Nx=None,Ny=None,Nz=None):
   global is_vector, min_, max_, delta_, N_
   min_ = [x.min(),y.min(),z.min()]
   max_ = [x.max(),y.max(),z.max()]
@@ -558,7 +558,7 @@ def adjust_to_geo(qc,extend=5.0,step=0.1):
     Specifies the grid spacing.
   
   '''
-  global min_, max_, N_,delta_
+  global min_, max_, N_, delta_, is_vector, is_initialized
   
   for i in range(3):
     min_[i] = min(qc.geo_spec[:,i]) - (extend)
@@ -570,6 +570,9 @@ def adjust_to_geo(qc,extend=5.0,step=0.1):
     min_[i] -= rest/2.
     max_[i] += rest/2.
     delta_[i] = step
+  
+  is_vector = False
+  is_initialized = False
 
 def check_atom_select(atom,geo_info,geo_spec,interactive=True,
                       display=sys.stdout.write):

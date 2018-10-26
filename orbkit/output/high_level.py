@@ -33,17 +33,28 @@ from orbkit import grid, options
 from orbkit.display import display
 from orbkit.units import a0_to_aa
 
-from .amira import amira_creator
+from .amira import amira_creator, hx_network_creator
 from .cube import cube_creator
-from .hdf5 import hdf5_creator, hdf5_append, hdf5_write, hx_network_creator
+from .hdf5 import hdf5_creator, hdf5_append, hdf5_write
 from .mayavi_interface import view_with_mayavi
 from .pdb import pdb_creator
 from .vmd import vmd_network_creator
 from .xyz import xyz_creator
 from .native import write_native
 
-def main_output(data,geo_info=None,geo_spec=None,outputname='new',otype='auto',
-                drv=None,omit=[],**kwargs):
+synonyms = {'auto':'auto',
+            'h5':'h5', 'hdf5':'h5',
+            'npz':'npz','numpy':'npz',
+            'cube':'cube', 'cb':'cube',
+            'am':'am', 
+            'hx':'hx',
+            'vmd':'vmd',
+            'mayavi':'mayavi',
+            '':None
+            }
+
+def main_output(data,qc=None,outputname='new',otype='auto', gname='',
+                drv=None,omit=[],datalabels='',geo_info=None,geo_spec=None,**kwargs):
   '''Creates the requested output.
   
   **Parameters:**
@@ -68,17 +79,28 @@ def main_output(data,geo_info=None,geo_spec=None,outputname='new',otype='auto',
   
     All additional keyword arguments are forwarded to the output functions.
   '''
-
+  if otype is None or otype == []:
+    return []
+  
+  if isinstance(outputname, str):
+    if '@' in outputname:
+      outputname,gname = outputname.split('@')
   if isinstance(otype, str):
     if otype == 'auto':
-      filename, otype = path.splitext(outputname)
+      outputname, otype = path.splitext(outputname)
       otype = otype[1:]
     otype = [otype]
+  elif isinstance(otype, list) and len(otype) == 1:
+    if otype[0] == 'auto':
+      outputname, otype = path.splitext(outputname)
+      otype = [otype[1:]]
   else:
     for iot in range(len(otype)):
       if otype[iot] == 'auto':
-        otype[iot] = otype[iot].split('.')[-1]
-
+        outputname, tmp = path.splitext(outputname)
+        if tmp != '':
+          otype[iot] = tmp[1:]
+  
   # Catch our native format before all else
   # We can't figure this out by the file ending alone
   # as we support hdf5 for output of both grid-based data
@@ -86,6 +108,7 @@ def main_output(data,geo_info=None,geo_spec=None,outputname='new',otype='auto',
 
   output_written = []
   internals = [i for i in range(len(otype)) if otype[i] == 'native']
+  
   if len(internals) > 0:
     if not isinstance(data,list):
       data = [data]
@@ -103,120 +126,177 @@ def main_output(data,geo_info=None,geo_spec=None,outputname='new',otype='auto',
       if isinstance(kwargs['group'],str):
         group = [kwargs['group'] for _ in data]
     else:
-      group = ['' for _ in data]
-
+      group = [i.__class__.__name__.lower() for i in data]
+    
+    display('Writing native input file...')
     for i, oname in enumerate(outputname):
-      write_native(data[i], oname, ftype[i])
-      if group[i] != '':
-        output_written.append('{0}_{1}.{2}'.format(oname, group[i], ftype[i]))
-      else:
-        output_written.append('{0}.{1}'.format(oname, ftype[i]))
+      output_written.append(write_native(data[i], oname, ftype[i], mode='w',
+                                         gname=path.join(gname,group[i])))
+    display('\n'.join(['\t' + i for i in output_written]))
 
   else:
     print_waring = False
-    data = numpy.array(data)
-    if not drv:
-      ex_dim = 0
-    else:
-      ex_dim = 1
-    if grid.is_vector:
-      if data.ndim == ex_dim + 1:
-        data = data[numpy.newaxis]
-    else:
-      if data.ndim == ex_dim + 3:
-        data = data[numpy.newaxis]
+    output_not_possible = (grid.is_vector and not grid.is_regular)
     
-    if 'vmd' in otype and not 'cb' in otype:
-      otype.append('cb')
+    # Shape shall be (Ndrv,Ndata,Nx,Ny,Nz) or (Ndrv,Ndata,Nxyz)
+    data = numpy.array(data)
+    dims = 1 if grid.is_vector else 3
+    shape = data.shape
+    
+    if drv is not None and isinstance(drv,str):
+      drv = [drv]
+    
+    if data.ndim < dims:
+      output_not_possible = True
+      display('data.ndim < ndim of grid')
+    elif data.ndim == dims: # 3d data set
+      data = data[numpy.newaxis,numpy.newaxis]
+    elif data.ndim == dims + 1: # 4d data set
+      if drv is not None:
+        data = data[:,numpy.newaxis]
+      else:
+        data = data[numpy.newaxis]
+    elif data.ndim == dims + 2: # 5d data set check if drv matches Ndrv
+      if drv is None or len(drv) != data.shape[0]:
+        drv = list(range(data.shape[0]))
+    elif data.ndim > dims + 2:
+      output_not_possible = True
+      display('data.ndim > (ndim of grid) +2')
+    
+    if 'vmd' in otype and not ('cb' in otype or 'cube' in otype):
+      otype.append('cube')
+    if 'hx' in otype and not 'am' in otype:
+      otype.append('am')
     
     otype = [i for i in otype if i not in omit]
+    otype_synonyms = [synonyms[i] for i in otype]
+    otype_ext = dict(zip(otype_synonyms,otype))
     
-    if otype is None or otype == []:
-      return output_written 
-
     # Convert the data to a regular grid, if possible
-    output_not_possible = (grid.is_vector and not grid.is_regular)
     is_regular_vector = (grid.is_vector and grid.is_regular)
 
     if is_regular_vector:  
       display('\nConverting the regular 1d vector grid to a 3d regular grid.')
       grid.vector2grid(*grid.N_)
-      new_data = []
-      for idata in range(data.shape[0]):
-        new_data.append(grid.mv2g(data=data[idata]))
-      data = numpy.array(new_data)
-
-    if isinstance(outputname, str):
-      isstr = True
-
-    if 'h5' in otype:
-      if not isstr:
-        display('Recived list of output names - writing each dateset' + 
-                '\n\t to separate HDF5 file')
-        for idata in range(data.shape[0]):
-          it = [(0,None)]
-
-          display('\nSaving to Hierarchical Data Format file (HDF5)...' +
-                  '\n\t{0}.h5'.format(outputname[idata]))
-          hdf5_creator(data,outputname[idata],geo_info,geo_spec,**kwargs)
-          output_written.append('{0}.h5'.format(outputname[idata]))
-
+      data = numpy.array(grid.mv2g(data))
+    
+    isstr = isinstance(outputname, str)
+    if isinstance(datalabels, str):
+      if data.shape[1] > 1:
+        datalabels = numpy.array([str(idata) + ',' + datalabels 
+                                  for idata in range(data.shape[1])])
       else:
-        display('\nSaving to Hierarchical Data Format file (HDF5)...' +
-                '\n\t{0}.h5'.format(outputname))
-        hdf5_creator(data,outputname,geo_info,geo_spec,**kwargs)
-        output_written.append('{0}.h5'.format(outputname))
-
-    for idata in range(data.shape[0]):
-      if drv is not None:
-        fid = '%(f)s_d%(d)s'
-        it = enumerate(drv)
+        datalabels = numpy.array([datalabels])
+    elif isinstance(datalabels, list):
+      datalabels = numpy.array(datalabels)
+    
+    if drv is not None:
+      fid = '%(f)s_d%(d)s.'
+      datalabel_id = 'd/d%(d)s %(f)s'
+      contents = {
+        'axis:0': numpy.array(['d/d%s' % i if i is not None else str(i) 
+                               for i in drv]),
+        'axis:1': datalabels}
+      it = enumerate(drv)
+    elif data.shape[0] > 1:
+      fid = '%(f)s_%(d)s.'
+      datalabel_id = '%(d)s %(f)s'
+      it = enumerate(data.shape[0])
+      contents = {
+        'axis:0': numpy.arange(data.shape[0]).astype(str),
+        'axis:1': datalabels}
+    else:
+      fid = '%(f)s.'
+      datalabel_id = '%(f)s'
+      it = [(0,None)]
+      if data.shape[1] > 1:
+        contents = {'axis:0': datalabels}
       else:
-        fid = '%(f)s'
-        it = [(0,None)]
-
-      if isstr:
-        f = {'f': outputname + '_' + str(idata)}
-      else:
-        f = {'f': outputname[idata]}
-
-      for i,j in it:
-        f['d'] = j
-        if 'am' in otype or 'hx' in otype and not print_waring:
+        contents = datalabels
+    
+    cube_files = []
+    all_datalabels = []
+    for idrv,jdrv in it:
+      datasetlabels = []
+      for idata in range(data.shape[1]):
+        if isstr:
+          f = {'f': outputname + '_' + str(idata) if data.shape[1] > 1 else outputname,
+               'd':jdrv}
+        else:
+          f = {'f': outputname[idata], 'd':jdrv}
+        c = {'f': datalabels[idata],'d':jdrv}
+        datalabel = datalabel_id%c
+        datasetlabels.append(datalabel)
+        
+        if 'am' in otype_synonyms and not print_waring:
           if output_not_possible: print_waring = True
           else: 
-            display('\nSaving to ZIBAmiraMesh file...' +
-                           '\n\t%(o)s.am' % {'o': fid % f})
-            amira_creator(data[idata],(fid % f))
-            output_written.append('%s.am' % (fid % f))
-        if 'hx' in otype and not print_waring:
+            filename = fid % f + otype_ext['am']
+            display('\nSaving to ZIBAmiraMesh file...\n\t' + filename)
+            amira_creator(data[idrv,idata],filename)
+            output_written.append(filename)
+        if 'hx' in otype_synonyms and not print_waring:
           if output_not_possible: print_waring = True
           else: 
-            # Create Amira network incl. Alphamap
-            display('\nCreating ZIBAmira network file...')
-            hx_network_creator(data[idata],(fid % f))
-            output_written.append('%s.hx' % (fid % f))
-        if 'cb' in otype or 'vmd' in otype and not print_waring:
+            filename = fid % f + otype_ext['hx']
+            display('\nCreating ZIBAmira network file...\n\t' + filename)
+            hx_network_creator(data[idrv,idata],filename)
+            output_written.append(filename)
+        if 'cube' in otype_synonyms and not print_waring:
           if output_not_possible: print_waring = True
           else: 
-            display('\nSaving to .cb file...' +
-                            '\n\t%(o)s.cb' % {'o': fid % f})
-            cube_creator(data[idata],(fid % f),geo_info,geo_spec,**kwargs)
-            output_written.append('%s.cb' % (fid % f))
-           #else: output_creator(data[idata],(fid % f),geo_info,geo_spec)  # Axel's cube files
-
-    if 'vmd' in otype and not print_waring:
+            filename = fid % f + otype_ext['cube']
+            display('\nSaving to cube file...\n\t' + filename)
+            cube_creator(data[idrv,idata],filename,qc.geo_info,qc.geo_spec,
+                         comments=datalabel,
+                         **kwargs)
+            output_written.append(filename)
+            cube_files.append(filename)
+        
+      all_datalabels.extend(datasetlabels)
+    
+    if 'vmd' in otype_synonyms and not print_waring:
       if output_not_possible: print_waring = True
       else: 
-        # Create VMD network 
-        display('\nCreating VMD network file...' +
-                        '\n\t%(o)s.vmd' % {'o': fid % f})        
-        vmd_network_creator((fid % f),cube_files=['%s.cb' % (fid % f)],**kwargs)
-        output_written.append('%s.vmd' % (fid % f))
+        filename = (outputname if isstr else outputname[-1]) +'.'+ otype_ext['vmd']
+        display('\nCreating VMD network file...\n\t' + filename)
+        vmd_network_creator(filename,cube_files=cube_files,**kwargs)
+        output_written.append(filename)
 
-    if 'mayavi' in otype:
+    
+    if 'h5' in otype_synonyms: 
+      filename = (outputname if isstr else outputname[-1]) +'.'+ otype_ext['h5']
+      display('\nSaving to Hierarchical Data Format file (HDF5)...\n\t' + filename)
+      
+      hdf5_creator(data.reshape(shape),filename,qcinfo=qc,gname=gname,
+                   ftype='hdf5',contents=contents,**kwargs)
+      output_written.append(filename)
+    
+    if 'npz' in otype_synonyms: 
+      filename = (outputname if isstr else outputname[-1]) 
+      display('\nSaving to a compressed .npz archive...\n\t' + filename+'.npz')
+      hdf5_creator(data.reshape(shape),filename,qcinfo=qc,gname=gname,
+                   ftype='numpy',contents=contents,**kwargs)
+      output_written.append(filename)
+    
+    if 'mayavi' in otype_synonyms:
       if output_not_possible: print_waring = True
-      else: view_with_mayavi(grid.x,grid.y,grid.z,data,geo_spec=geo_spec,**kwargs)
+      else: 
+        display('\nDepicting the results with MayaVi...\n\t')
+        if drv == ['x','y','z'] or drv == [0,1,2]:
+          is_vectorfield = True
+          data = numpy.swapaxes(data,0,1)
+          datalabels = datalabels
+        else:
+          is_vectorfield = False
+          data = data.reshape((-1,)+grid.get_shape())
+          datalabels = all_datalabels
+        
+        view_with_mayavi(grid.x,grid.y,grid.z,
+                         data,
+                         is_vectorfield=is_vectorfield,
+                         geo_spec=qc.geo_spec,
+                         datalabels=datalabels,**kwargs)
         
     if print_waring:
       display('For a non-regular vector grid (`if grid.is_vector and not grid.is_regular`)')

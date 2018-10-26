@@ -40,7 +40,7 @@ available = [
   'filename','itype','cclib_parser','outputname','otype',
   'numproc','mo_set','calc_ao','all_mo','calc_mo','spin','drv','laplacian',
   'slice_length','is_vector','grid_file','adjust_grid','center_grid','random_grid',
-  'z_reduced_density','gross_atomic_density','mo_tefd',
+  'gross_atomic_density',
   'quiet','no_log','no_output','no_slice','interactive', 'test'
   ]
 
@@ -59,7 +59,15 @@ itypes = ['auto',
 niotypes = ['npz',
             'hdf5']                         #: Specifies file format for native io
 
-otypes = ['h5', 'cb', 'am', 'hx', 'vmd', 'native', 'mayavi'] #: Specifies possible output types.
+otypes = ['h5', 'hdf5', 
+          'npz', 
+          'cube', 'cb', 
+          'am', 
+          'hx', 
+          'vmd', 
+          'mayavi',
+          'native',
+          'auto'] #: Specifies possible output types.
 
 drv_options = ['None','x','y','z',
                'xx','yy','zz','x2','y2','z2',
@@ -91,8 +99,7 @@ def init_parser():
   #optparse.Option.STORE_ACTIONS += ('call_back',)
   usage = 'Usage: %prog [options] -i INPUT'
   parser = optparse.OptionParser(usage=usage,description=lgpl_short) 
-
-
+  
   parser.add_option("-l", dest="show_lgpl",
                       default=False,action="store_true", 
                       help="show license information and exit")
@@ -125,13 +132,16 @@ def init_parser():
   group.add_option("-t", "--otype", dest="otype",
                       type="choice", action="append", choices=otypes,
                       help='''output formats (multiple calls possible):  
-                      '{0}' (HDF5 file),                             
-                      '{1}' (Gaussian cube file),                     
-                      '{4}' (VMD network),                           
-                      '{2}' (ZIBAmiraMesh file),                     
-                      '{3}' (ZIBAmira network),                      
-                      '{5}' (simple interactive Mayavi interface) 
-                      [default: '{0}']'''.format(*otypes))
+                      '{0}' or '{1}' (HDF5 file),                        
+                      '{2}' (Compressed numpy file),                             
+                      '{3}' or '{4}' (Gaussian cube file),                     
+                      '{5}' (VMD network),                           
+                      '{6}' (ZIBAmiraMesh file),                     
+                      '{7}' (ZIBAmira network),                      
+                      '{8}' (simple interactive Mayavi interface) 
+                      '{10}' (determine from OUTPUTNAME) 
+                      [default: '{10}' if OUTPUTNAME has file extension 
+                      else '{0}']'''.format(*otypes))
   parser.add_option_group(group)
   
   group = optparse.OptionGroup(parser, "Computational Options")
@@ -179,28 +189,15 @@ def init_parser():
   parser.add_option_group(group)
   
   group = optparse.OptionGroup(parser, "Grid-Related Options")
-  group.add_option("-s", "--slice_length",dest="slice_length",
-                      default=1e4, type="int",
-                      help=('''specify how many grid points are computed at once 
-                      (per subprocess).''').replace('  ','').replace('\n',''))
-  group.add_option("-v", "--vector",dest="is_vector",
-                      default=False, action="store_true", 
-                      help=('''store the output in a vector format.''')
-                      #help=('''perform the computations for a vector grid, 
-                      #i.e., with x, y, and z as vectors. Compute successively 
-                      #VECTOR points at once per subprocess
-                      #[default: -v %0.0e]''' % dvec
-                      #).replace('  ','').replace('\n','')
-                      )   
+  group.add_option("--adjust_grid",dest="adjust_grid", 
+                      type="float",nargs=2,default=[5,0.5],
+                      help=('''create a grid using a spacing of X a_0 and having 
+                      the size of the molecule plus D a_0 in each direction, 
+                      e.g., --adjust_grid=D X [default: --adjust_grid=5 0.5]'''
+                      ).replace('  ','').replace('\n',''))
   group.add_option("--grid", dest="grid_file",
                       type="string",
                       help='''read the grid from the plain text file GRID_FILE''')    
-  group.add_option("--adjust_grid",dest="adjust_grid", 
-                      type="float",nargs=2,
-                      help=('''create a grid using a spacing of X a_0 and having 
-                      the size of the molecule plus D a_0 in each direction, 
-                      e.g., --adjust_grid=D X'''
-                      ).replace('  ','').replace('\n',''))
   group.add_option("--random_grid", dest="random_grid",
                       default=False, action="store_true",  
                       help=optparse.SUPPRESS_HELP)
@@ -208,23 +205,20 @@ def init_parser():
                       metavar="ATOM",type="int",
                       help='''center with respect to the origin and the 
                       atom number ATOM (input order)''')
+  group.add_option("-s", "--slice_length",dest="slice_length",
+                      default=1e4, type="int",
+                      help=('''specify how many grid points are computed at once 
+                      (per subprocess).''').replace('  ','').replace('\n',''))
+  group.add_option("-v", "--vector",dest="is_vector",
+                      default=False, action="store_true", 
+                      help=('''store the output in a vector format.''')
+                      )   
   parser.add_option_group(group)
   group = optparse.OptionGroup(parser, "Additional Options")
-  group.add_option("--z_reduced_density",dest="z_reduced_density",
-                      default=False, action="store_true", 
-                      help="reduce the density with respect to the z-axis")
   group.add_option("--gross_atomic_density",dest="gross_atomic_density",
                       metavar="INDEX",action="append",type="int",
                       help='''compute the atom-projected electron density with
                       respect to atom INDEX (multiple calls possible)''')
-  group.add_option("--mo_tefd",dest="mo_tefd", 
-                      type="int",nargs=2,action="append",
-                      help=('''compute the molecular orbital transition electronic 
-                      flux density between the orbitals I and J specify the 
-                      requested component with "--drv", e.g., 
-                      --mo_tefd=I J --drv=x (multiple calls possible)'''
-                      ).replace('  ','').replace('\n',''))
-                      
   # The following parser options are hidden 
   group.add_option("--no_slice",dest="no_slice",
                       default=False, action="store_true",
@@ -245,7 +239,8 @@ def init_parser():
     sys.exit(0)
   
   if kwargs.otype is None:
-    kwargs.otype = ['h5']
+    kwargs.otype = ['auto']
+  
   for i,j in vars(kwargs).items():
     setattr(thismodule,i,j)
   
@@ -254,6 +249,7 @@ def init_parser():
                 interactive=interactive,
                 info=False,
                 check_io=(not len(args)))
+  
   
   if len(args) and args[0] == 'test':
     from orbkit.test import test
@@ -308,7 +304,7 @@ def check_options(error=raise_error,display=print_message,
             'e.g., --cclib_parser=Gaussian')
 
     if niotype not in niotypes:
-      error('Unupported format for native io (choose from "%s")\n' %
+      error('Unsupported format for native io (choose from "%s")\n' %
             '", "'.join(niotypes))
     if niotype == 'hdf5':
       try:
@@ -317,30 +313,35 @@ def check_options(error=raise_error,display=print_message,
         error('External IO to HDF5 file was requested but no\n' +
               'HDF5 module could be found.')
     
-    fid_base = os.path.splitext(filename)[0]
+    fid_base,ext = os.path.splitext(filename)
     
     if outputname is None:
       setattr(thismodule,'outputname',fid_base)
-    elif not (os.path.dirname(outputname) == '' or 
-              os.path.exists(os.path.dirname(outputname))):
-      error('Output path "%s" does not exist!' % os.path.dirname(outputname))
+    else:
+      outpath = os.path.dirname(outputname.split('@')[0])
+      if not (outpath == '' or os.path.exists(outpath)):
+        error('Output path "%s" does not exist!' % outpath)
       
   
-  # Check the output types for correctness
-  if otype is None:
-    setattr(thismodule,'otype',[])
-  elif not isinstance(otype,list):
-    setattr(thismodule,'otype',[otype])
-  if not all(i in otypes for i in otype):
-    error('Invalid output file formats (choose from "%s")\n' % 
-        '", "'.join(otypes))
-  
-  # Check if h5py is installed
-  if 'h5' in otype:
-    try: 
-      import h5py
-    except ImportError:
-      error('ImportError: The module h5py is not installed!\n')  
+    # Check the output types for correctness
+    
+    if otype is None:
+      setattr(thismodule,'otype',[])
+    elif ('auto' in otype and os.path.splitext(outputname)[1] is not None 
+          and os.path.splitext(outputname)[1][1:] not in otypes):
+      setattr(thismodule,'otype',['h5'])
+    elif not isinstance(otype,list):
+      setattr(thismodule,'otype',[otype])
+    if not all(i in otypes for i in otype):
+      error('Invalid output file formats (choose from "%s")\n' % 
+          '", "'.join(otypes))
+    
+    # Check if h5py is installed
+    if 'h5' in otype:
+      try: 
+        import h5py
+      except ImportError:
+        error('ImportError: The module h5py is not installed!\n')  
 
   #--- Grid-Related Options ---#  
   
@@ -389,7 +390,7 @@ def check_options(error=raise_error,display=print_message,
     except ValueError: 
       if len(data) == 1:
         data = data[0]
-        if data.lower() != 'all_mo':   
+        if not any([i != data.lower() for i in ['all_mo','occupied','unoccupied','virtual']]):   
           setattr(thismodule,attr,
                   check_if_exists(data,
                   what='filename for the MO list',
@@ -430,15 +431,7 @@ def check_options(error=raise_error,display=print_message,
   #--- Additional Options ---#
   if gross_atomic_density is not None and drv is not None:
     error('The derivative of the gross atomic density is not implemented.\n')
-    
-  if mo_tefd is not None:
-    setattr(thismodule,'all_mo',True)  
-  
-  if mo_tefd is not None and drv is None:
-    error('The computation of molecular orbital transition electronic \n' + 
-        'flux density between two orbitals requires the selection of \n' +
-        'the component (e.g. --drv=x)\n')
-  
+      
   # The following options cannot be checked before running the main program
   if info:
     string = 'The option %s--center cannot be checked before %s...\n'
@@ -447,9 +440,6 @@ def check_options(error=raise_error,display=print_message,
     if gross_atomic_density is not None:
       display(string % ('--gross_atomic_density',
                         'reading\nthe input file'))
-    if mo_tefd is not None:
-      display(string % ('--mo_tefd',
-                        'reading\nthe input file'))  
   return True
 
 def check_if_exists(fid, what='',error=IOError,display=sys.stdout.write,
@@ -487,7 +477,8 @@ def check_if_exists(fid, what='',error=IOError,display=sys.stdout.write,
   return fid
 
 def check_grid_output_compatibilty(error=raise_error): 
-  if not grid.is_regular and ('cb'     in otype or 
+  if not grid.is_regular and ('cube'   in otype or 
+                              'cb'     in otype or
                               'vmd'    in otype or
                               'am'     in otype or 
                               'hx'     in otype or 
@@ -503,8 +494,8 @@ filename        = ''            #: Specifies input file name. (str)
 itype           = 'auto'        #: Specifies input file type. See :data:`itypes` for details. (str) 
 niotype         = 'npz'         #: Specifies output filetype for native io
 cclib_parser    = None          #: If itype is 'cclib', specifies the cclib.parser. (str)
-outputname      = None          #: Specifies output file (base) name. (str)
-otype           = 'h5'          #: Specifies output file type. See :data:`otypes` for details. (str or list of str or None)
+outputname      = ''            #: Specifies output file (base) name. (str)
+otype           = 'auto'        #: Specifies output file type. See :data:`otypes` for details. (str or list of str or None)
 #--- Computational Options ---
 numproc         = 1             #: Specifies number of subprocesses for multiprocessing. (int)
 mo_set          = False         #: Specifies molecular orbitals used for density calculation. (filename or list of indices)
@@ -523,9 +514,7 @@ adjust_grid     = None          #: If not None, create a grid using a spacing of
 center_grid     = None          #: If not None, grid is centered to specified atom and origin. (int) 
 random_grid     = False         #: If True, creates random grid around atom positions. (bool)
 #--- Additional Options ---
-z_reduced_density = False       #: If True, reduces the density with respect to the z-axis. (bool)
 gross_atomic_density = None     #: Computes the gross atomic electron density with respect to specified atom. (int or list of int)
-mo_tefd         = None          #: Computes the molecular orbital transition electronic flux density between the orbitals I and J specify the requested component with :data:`orbkit.options.drv`. (list of [I, J])
 #--- Options for Advanced Users ---
 quiet           = False         #: If True, omits terminal output. (bool)
 no_log          = False         #: If True, omits logfile output. (bool)

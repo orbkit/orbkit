@@ -2,7 +2,7 @@ import numpy
 
 from orbkit.qcinfo import QCinfo
 from orbkit.orbitals import AOClass, MOClass
-from orbkit.core import l_deg, lquant
+from orbkit.tools import l_deg, lquant
 from orbkit.display import display
 
 from .tools import descriptor_from_file
@@ -228,8 +228,8 @@ def read_gaussian_log(fname,all_mo=False,spin=None,orientation='standard',
           if not cartesian_basis:
             qc.ao_spec.spherical = True
           sec_flag = 'ao_info'
+          basis_count = 0
         c_ao += 1
-        basis_count = 0
         bNew = True                  # Indication for start of new AO section
       elif 'Orbital symmetries:' in line:
           sec_flag = 'mo_sym'
@@ -348,6 +348,15 @@ def read_gaussian_log(fname,all_mo=False,spin=None,orientation='standard',
             for i,j in enumerate(index):
               qc.mo_spec[j][key] = float(coeffs[i])
           else:
+            try:
+              int(info[0])
+            except ValueError:
+              for j in list(range(index[-1]+1,len(qc.mo_spec)))[::-1]:
+                del qc.mo_spec[j]
+              sec_flag = None
+              orb_sym = []
+              bNew = True
+              continue
             coeffs = line[21:].replace('-',' -').split()
             if not cartesian_basis and offset == 0:
               if old_ao != line[:14].split()[-1] or len(line[:14].split()) == 4:

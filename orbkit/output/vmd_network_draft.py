@@ -35,7 +35,9 @@ mol smoothrep top 2 0
 mol drawframes top 2 {now}
 mol rename top "%(n2)s"
 
-%(render)srender TachyonInternal %(n1)s.tga 
+%(mo_options)s
+
+%(render)srender TachyonInternal %(n1)s.tga
 
 molinfo top set drawn 0
 

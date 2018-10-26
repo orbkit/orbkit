@@ -140,7 +140,7 @@ def get_atom_symbol(atom):
     atom = int(atom) - 1
     return nist_mass[atom][0]
   except ValueError:    
-    return atom.upper()
+    return atom.title()
 
 def set_ao_spherical(ao_spec,p=[1,0]):
   ao_spec.spherical = True

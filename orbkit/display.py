@@ -14,9 +14,9 @@ log_fid = None #: Specifies the filename of the oklog file
 def init_display(name=None):
   '''Sets the name of the .oklog file and removes the old .oklog file.'''
   global log_fid,is_initiated
-  if name is not None:
-    log_fid = '%s.oklog' % name
-  if not options.no_log:
+  if name is not None or name != '':
+    log_fid = '%s.oklog' % name if not name.endswith('.oklog') else name
+  if (not options.no_log) or log_fid is not None:
     try:
       remove(log_fid)
     except OSError:
@@ -32,12 +32,12 @@ def display(string):
     print(string)
   if not options.no_log:
     if log_fid is None:
-      if options.outputname is None:
+      if options.outputname is None or options.outputname == '':
         return
       else:
-        log_fid = '%s.oklog' % options.outputname
+        log_fid = '%s.oklog' % options.outputname.split('@')[0]
     if not is_initiated:
-      init_display()
+      init_display(log_fid)
     f = open(log_fid, 'a')
     f.write('%s\n' % string)
     f.close()

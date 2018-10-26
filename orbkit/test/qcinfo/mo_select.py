@@ -5,6 +5,8 @@ from orbkit.qcinfo import QCinfo
 from orbkit.orbitals import MOClass
 from orbkit import options
 import os, inspect
+import warnings
+warnings.filterwarnings("ignore")
 
 options.quiet = True
 

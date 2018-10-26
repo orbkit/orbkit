@@ -1,7 +1,7 @@
 from . import cy_ci
 from ..analytical_integrals import get_nuclear_dipole_moment
 from ..display import display
-from ..core import require
+from ..tools import require
 from .. import omp_functions
 import numpy
 

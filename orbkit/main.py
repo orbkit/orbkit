@@ -94,7 +94,7 @@ def run_orbkit(use_qc=None,check_options=True,standalone=False):
     if not len(options.otype):
       t.append(time.time()) # Final time
       good_bye_message(t)
-      exit()
+      return
   
   display('\nSetting up the grid...')
   if options.grid_file is not None: 
@@ -129,15 +129,9 @@ def run_orbkit(use_qc=None,check_options=True,standalone=False):
   
   # The calculation of all AOs (--calc_ao)
   if options.calc_ao != False:
-    if options.drv is None or not isinstance(options.drv,list):
-      options.drv = [options.drv]
-    
-    data = []
-    for drv in options.drv:
-      data.append(extras.calc_ao(qc,
-                                 drv=drv,
-                                 otype=options.otype))
-    
+    data = extras.calc_ao(qc,
+                          drv=options.drv,
+                          otype=options.otype)
     t.append(time.time()) # Final time
     good_bye_message(t)
     return data
@@ -170,65 +164,17 @@ def run_orbkit(use_qc=None,check_options=True,standalone=False):
 
 
   if options.gross_atomic_density is not None:
-    atom = options.gross_atomic_density
-    rho_atom = extras.numerical_mulliken_charges(atom, qc)
-    
-    if not grid.is_vector:
-      mulliken_num = rho_atom[1]
-      rho_atom = rho_atom[0]      
-    
+    rho_atom = extras.gross_atomic_density(options.gross_atomic_density,qc,
+                                           drv=options.drv)
+
     if not options.no_output:
-      fid = '%s.h5' % options.outputname
-      display('\nSaving to Hierarchical Data Format file (HDF5)...' +
-                '\n\t%(o)s' % {'o': fid})
-      output.hdf5_write(fid,mode='w',gname='',atom=core.numpy.array(atom),
-                        geo_info=qc.geo_info,geo_spec=qc.geo_spec,
-                        gross_atomic_density=rho_atom,
-                        x=grid.x, y=grid.y, z=grid.z)
-      if not options.is_vector:
-        output.hdf5_write(fid,mode='a',gname='/numerical_mulliken_population_analysis',
-                          **mulliken_num)
-    
+      output_written = output.main_output(rho,
+                                          qc,
+                                          outputname=options.outputname,
+                                          otype=options.otype)
     t.append(time.time())
     good_bye_message(t)
     return rho_atom
-  
-  
-  if options.mo_tefd is not None:
-    mos = options.mo_tefd
-    ao_list = core.ao_creator(qc.geo_spec,qc.ao_spec)
-    mo_tefd = []
-    index = []
-    for i,j in mos:
-      mo_tefd.append([])
-      index.append([])
-      for ii_d in options.drv:
-        display('\nMO-TEFD: %s->%s %s-component'%(i,j,ii_d))
-        tefd = extras.mo_transition_flux_density(i, j,
-                                                 qc,
-                                                 drv=ii_d,
-                                                 ao_list=ao_list
-                                                 )
-        mo_tefd[-1].append(tefd)
-        index[-1].append('%s->%s:%s'%(i,j,ii_d))
-    
-    if not options.no_output:
-      from numpy import array
-      fid = '%s.h5' % options.outputname
-      display('\nSaving to Hierarchical Data Format file (HDF5)...' +
-                      '\n\t%(o)s' % {'o': fid})
-      HDF5_File = output.hdf5_open(fid,mode='w')
-      data = {'geo_info': array(qc.geo_info),
-              'geo_spec': array(qc.geo_spec),
-              'mo_tefd:info': array(index),
-              'mo_tefd': array(mo_tefd),
-              'x': grid.x, 'y': grid.y, 'z': grid.z}
-      output.hdf5_append(data,HDF5_File,name='')
-      HDF5_File.close()
-    
-    t.append(time.time())
-    good_bye_message(t)
-    return mo_tefd
   
   t.append(time.time()) # A new time step
   
@@ -251,81 +197,29 @@ def run_orbkit(use_qc=None,check_options=True,standalone=False):
     rho, delta_rho, laplacian_rho = data    
   else:
     rho, delta_rho = data
-  
-  # Compute the reduced electron density if requested 
-  if options.z_reduced_density:
-    if grid.is_vector:
-      display(
-      '\nSo far, reducing the density is not supported for ' + 
-      'vector grids.\nSkipping the reduction...\n')
-    elif options.drv is not None:
-      display(
-      '\nSo far, reducing the density is not supported for ' + 
-      'the derivative of the density.\nSkipping the reduction...\n')
-    else:
-      from scipy import integrate
-      display('\nReducing the density with respect to the z-axis.\n')
-      rho = integrate.simps(rho, grid.x, dx=grid.delta_[0], axis=0, even='avg')
-      rho = integrate.simps(rho, grid.y, dx=grid.delta_[1], axis=0, even='avg')
-  
+    
   t.append(time.time()) # A new time step
 
   # Generate the output requested 
   if not options.no_output:
-    output_written = output.main_output(rho,
-                       geo_info=qc.geo_info,
-                       geo_spec=qc.geo_spec,
-                       outputname=options.outputname,
-                       otype=options.otype,
-                       data_id='rho',
-                       omit=['vmd','mayavi'],
-                       mo_spec=qc.mo_spec)
-    if options.drv is not None:
-      output_written.extend(output.main_output(delta_rho,
-                         geo_info=qc.geo_info,
-                         geo_spec=qc.geo_spec,
-                         outputname=options.outputname,
-                         otype=options.otype,
-                         data_id='delta_rho',
-                         omit=['vmd','mayavi'],
-                         mo_spec=qc.mo_spec,
-                         drv=options.drv))
-    if options.laplacian:
-      output_written.extend(output.main_output(laplacian_rho,
-                         geo_info=qc.geo_info,
-                         geo_spec=qc.geo_spec,
-                         outputname=options.outputname + '_laplacian',
-                         otype=options.otype,
-                         data_id='laplacian_rho',
-                         omit=['vmd','mayavi'],
-                         mo_spec=qc.mo_spec))
-    if 'vmd' in options.otype:
-      # Create VMD network 
-      display('\nCreating VMD network file...' +
-                    '\n\t%(o)s.vmd' % {'o': options.outputname})
-
-      cube_files = []
-      for i in output_written:
-        if i.endswith('.cb'):
-          cube_files.append(i)
-      output.vmd_network_creator(options.outputname,cube_files=cube_files)
+    if not (options.drv is not None or options.laplacian):
+      plt_data = rho
+      datalabels = 'rho'
+    else:
+      plt_data = [rho]
+      datalabels = ['rho']
+      if options.drv is not None:
+        plt_data.extend(delta_rho)    
+        datalabels.extend(['d/d%s of %s' % (ii_d,'rho') for ii_d in options.drv])
+      if options.laplacian:
+        plt_data.append(laplacian_rho)
+        datalabels.append('laplacian of rho')
+    output.main_output(plt_data,qc,outputname=options.outputname,
+                       otype=options.otype,datalabels=datalabels)
     
   t.append(time.time()) # Final time
   
   good_bye_message(t)
-  
-  if 'mayavi' in options.otype:
-    plt_data = [rho]
-    datalabels = ['rho']
-    if options.drv is not None:
-      plt_data.extend(delta_rho)    
-      datalabels.extend(['d/d%s of %s' % (ii_d,'rho') for ii_d in options.drv])
-    if options.laplacian:
-      plt_data.append(laplacian_rho)
-      datalabels.append('laplacian of rho')
-    output.main_output(plt_data,qc.geo_info,qc.geo_spec,
-                       otype='mayavi',
-                       datalabels=datalabels)
   
   # Return the computed data, i.e., rho for standard, and (rho,delta_rho)  
   # for derivative calculations. For laplacian (rho,delta_rho,laplacian_rho) 
@@ -355,4 +249,4 @@ def run_standalone():
   options.init_parser()
   
   # Call the main loop
-  run_orbkit(check_options=False,standalone=True)
+  return run_orbkit(check_options=False,standalone=True)

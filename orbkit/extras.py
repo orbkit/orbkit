@@ -27,11 +27,12 @@ License along with ORBKIT.  If not, see <http://www.gnu.org/licenses/>.
 import os
 
 import numpy
-from scipy import integrate
+
+from .tools import *
 
 # Import orbkit modules
-from orbkit import core,grid, options
-from orbkit.output import vmd_network_creator,main_output,hdf5_creator,hdf5_write,hdf5_append
+from orbkit import core,grid,options
+from orbkit.output import main_output
 from orbkit.display import display
 from orbkit.orbitals import MOClass
 
@@ -72,7 +73,7 @@ def calc_mo(qc, fid_mo_list, drv=None, otype=None, ofid=None,
 
   slice_length = options.slice_length if slice_length is None else slice_length
   numproc = options.numproc if numproc is None else numproc
-
+  
   # Calculate the AOs and MOs 
   mo_list = core.rho_compute(qc_select,
                              calc_mo=True,
@@ -84,50 +85,20 @@ def calc_mo(qc, fid_mo_list, drv=None, otype=None, ofid=None,
     return mo_list
   
   if ofid is None:
-    ofid = '%s_MO' % (options.outputname)
-  
+    if '@' in options.outputname:
+      outputname,group =  options.outputname.split('@')
+    else:
+      outputname,group = options.outputname, ''
+    outputname,autootype = os.path.splitext(outputname)
+    ofid = '%s_MO%s@%s' % (outputname,autootype,group)
   if not options.no_output:
-    if 'h5' in otype:    
-      main_output(mo_list,qc.geo_info,qc.geo_spec,data_id='MO',
-                  outputname=ofid,
-                  mo_spec=qc_select.mo_spec,drv=drv,is_mo_output=True)
-    # Create Output     
-    cube_files = []
-    for i in range(len(qc_select.mo_spec)):
-      outputname = '%s_%s' % (ofid,qc_select.mo_spec.selected_mo[i])
-      comments = ('%s,Occ=%.1f,E=%+.4f' % (qc_select.mo_spec.selected_mo[i],
-                                           qc_select.mo_spec.get_occ()[i],
-                                           qc_select.mo_spec.get_eig()[i]))
-      index = numpy.index_exp[:,i] if drv is not None else i
-      output_written = main_output(mo_list[index],
-                                   qc.geo_info,qc.geo_spec,
-                                   outputname=outputname,
-                                   comments=comments,
-                                   otype=otype,omit=['h5','vmd','mayavi'],
-                                   drv=drv)
-      
-      for i in output_written:
-        if i.endswith('.cb'):
-          cube_files.append(i)
-    
-    if 'vmd' in otype and cube_files != []:
-      display('\nCreating VMD network file...' +
-                      '\n\t%(o)s.vmd' % {'o': ofid})
-      vmd_network_creator(ofid,cube_files=cube_files)
-
-  if 'mayavi' in otype:
-    datalabels = ['MO %(sym)s, Occ=%(occ_num).2f, E=%(energy)+.4f E_h' % 
-                  i for i in qc_select.mo_spec]
-    if drv is not None:
-      tmp = []
-      for i in drv:
-        for j in datalabels:
-          tmp.append('d/d%s of %s' % (i,j))
-      datalabels = tmp
-    data = mo_list.reshape((-1,) + grid.get_shape())
-    
-    main_output(data,qc.geo_info,qc.geo_spec,
-                       otype='mayavi',datalabels=datalabels)
+    output_written = main_output(mo_list,
+                                 qc_select,
+                                 outputname=ofid,
+                                 datalabels=qc_select.mo_spec.get_labels(),
+                                 otype=otype,
+                                 drv=drv)
+  
   return mo_list
   
 def mo_set(qc, fid_mo_list, drv=None, laplacian=None,
@@ -169,9 +140,7 @@ def mo_set(qc, fid_mo_list, drv=None, laplacian=None,
 
   #Can be an mo_spec or a list of mo_spec
   # For later iteration we'll make it into a list here if it is not
-  mo_info_list = qc.mo_spec.select(fid_mo_list)
-  if isinstance(mo_info_list, MOClass):
-    mo_info_list = [mo_info_list]
+  mo_info_list = qc.mo_spec.select(fid_mo_list, flatten_input=False)
     
   drv = options.drv if drv is None else drv
   laplacian = options.laplacian if laplacian is None else laplacian
@@ -180,111 +149,58 @@ def mo_set(qc, fid_mo_list, drv=None, laplacian=None,
   
   if ofid is None:
     ofid = options.outputname
-  if 'h5' in otype and os.path.exists('%s.h5' % ofid):
-    raise IOError('%s.h5 already exists!' % ofid)
   
   datasets = []
+  datalabels = []
   delta_datasets = []
+  delta_datalabels = []
   cube_files = []
-
+  
   for i_file, mo_info in enumerate(mo_info_list):
     qc_select = qc.copy()
     qc_select.mo_spec = mo_info
-    display('Starting with the molecular orbital list'
-            + str(mo_info.selection_string) +
+    label = 'mo_set:'+mo_info.selection_string
+    display('\nStarting with the molecular orbital list \n\t'
+            + label +
             '\n\t(Only regarding existing and occupied mos.)\n')
-      
+    
     data = core.rho_compute(qc_select,
                             drv=drv,
                             laplacian=laplacian,
                             slice_length=slice_length,
                             numproc=numproc)
 
-    datasets.append(data)
-
     if drv is None:
       rho = data
+      delta_datasets = numpy.zeros((0,)+rho.shape)
     elif laplacian:
       rho, delta_rho, laplacian_rho = data 
       delta_datasets.extend(delta_rho)
       delta_datasets.append(laplacian_rho)
+      delta_datalabels.extend(['d^2/d%s^2 %s' % (i,label) for i in 'xyz'])
+      delta_datalabels.append('laplacian_of_' + label)
     else:
       rho, delta_rho = data
-      delta_datasets.append(delta_rho)
+      delta_datasets.extend(delta_rho)
+      delta_datalabels.extend(['d/d%s %s' % (i,label) for i in drv])
+      
     
-    if options.z_reduced_density:
-      if grid.is_vector:
-        display('\nSo far, reducing the density is not supported for vector grids.\n')
-      elif drv is not None:
-        display('\nSo far, reducing the density is not supported for the derivative of the density.\n')
-      else:
-        rho = integrate.simps(rho, grid.x, dx=grid.delta_[0], axis=0, even='avg')
-        rho = integrate.simps(rho, grid.y, dx=grid.delta_[1], axis=0, even='avg')
-    
-    if not options.no_output:
-      if 'h5' in otype:
-        display('Saving to Hierarchical Data Format file (HDF5)...')
-        group = '/mo_set:%03d' % (i_file+1)	
-        display('\n\t%s.h5 in the group "%s"' % (ofid,group))	
-        HDF5_creator(rho,ofid,qc.geo_info,qc.geo_spec,data_id='rho',
-                            mode='w',group=group,mo_spec=qc_select['mo_spec'])
-        if drv is not None:
-          for i,j in enumerate(drv):
-            data_id = 'rho_d%s' % j
-            HDF5_creator(delta_rho[i],ofid,qc.geo_info,qc.geo_spec,
-                                data_id=data_id,data_only=True,mode='a',
-                                group=group,mo_spec=qc_select['mo_spec'])
-          if laplacian:
-            data_id = 'rho_laplacian' 
-            HDF5_creator(laplacian_rho,ofid,qc.geo_info,qc.geo_spec,
-                                data_id=data_id,data_only=True,mode='a',
-                                group=group,mo_spec=qc_select['mo_spec'])
-            
-      fid = '%s_%03d' % (ofid, i_file+1) 
-      cube_files.append('%s.cb' % fid)
-      comments = ('mo_set:'+','.join(mo_info.selection_string))
-
-      main_output(rho,qc.geo_info,qc.geo_spec,outputname=fid,
-                         otype=otype,omit=['h5','vmd','mayavi'],
-                         comments=comments)
-      if drv is not None:
-        for i,j in enumerate(drv):
-          fid = '%s_%03d_d%s' % (ofid, i_file+1, j) 
-          cube_files.append('%s.cb' % fid)
-          comments = ('d%s_of_mo_set:' % j + ','.join(mo_info.selection_string))
-          main_output(delta_rho[i],qc.geo_info,qc.geo_spec,outputname=fid,
-                             otype=otype,omit=['h5','vmd','mayavi'],
-                             comments=comments)  
-        if laplacian:
-          fid = '%s_%03d_laplacian' % (ofid, i_file+1) 
-          cube_files.append('%s.cb' % fid)
-          comments = ('laplacian_of_mo_set:' + ','.join(mo_info.selection_string))
-          main_output(laplacian_rho,qc.geo_info,qc.geo_spec,outputname=fid,
-                             otype=otype,omit=['h5','vmd','mayavi'],
-                             comments=comments)  
-          
-  if 'vmd' in otype and cube_files != []:
-      display('\nCreating VMD network file...' +
-                      '\n\t%(o)s.vmd' % {'o': ofid})
-      vmd_network_creator(ofid,cube_files=cube_files)
-
+    datasets.append(rho)
+    datalabels.append(label)
+  
   datasets = numpy.array(datasets)
-  if drv is None:
-    if 'mayavi' in otype:
-      main_output(datasets,qc.geo_info,qc.geo_spec,
-                       otype='mayavi',datalabels=mo_info.selected_mo)
-    return datasets#, mo_info
-  else:
-    delta_datasets = numpy.array(delta_datasets)
-    if 'mayavi' in otype:
-      datalabels = []
-      for i in mo_info.selected_mo:
-        datalabels.extend(['d/d%s of %s' % (j,i) for j in drv])
-        if laplacian:
-          datalabels.append('laplacian of %s' % i)
-      main_output(delta_datasets.reshape((-1,) + grid.get_shape()),
-                         qc.geo_info,qc.geo_spec,otype='mayavi',datalabels=datalabels)
-    return datasets, delta_datasets
+  delta_datasets = numpy.array(delta_datasets)
+  delta_datalabels.append('mo_set')
+  data = numpy.append(datasets,delta_datasets,axis=0)
+  
+  if not options.no_output:
+    output_written = main_output(data,
+                                 qc,
+                                 outputname=ofid,
+                                 datalabels=datalabels+delta_datalabels,
+                                 otype=otype,
+                                 drv=None)
+  return data
   # mo_set 
 
 
@@ -333,40 +249,13 @@ def calc_ao(qc, drv=None, otype=None, ofid=None,
     ofid = '%s_AO' % (options.outputname)
   
   if not options.no_output:
-    if 'h5' in otype:    
-      output.main_output(mo_list,qc.geo_info,qc.geo_spec,data_id='AO',
-                    outputname=ofid,drv=drv,is_mo_output=False)
-    # Create Output     
-    cube_files = []
-    for i in range(len(datalabels)):
-      outputname = '%s_%03d' % (ofid,i)
-      index = numpy.index_exp[:,i] if drv is not None else i
-      output_written = output.main_output(ao_list[index],
-                                      qc.geo_info,qc.geo_spec,
-                                      outputname=outputname,
-                                      comments=datalabels[i].replace('[','').replace(']',''),
-                                      otype=otype,omit=['h5','vmd','mayavi'],
-                                      drv=drv)
-      
-      for i in output_written:
-        if i.endswith('.cb'):
-          cube_files.append(i)
-          
-    if 'vmd' in otype and cube_files != []:
-      display('\nCreating VMD network file...' +
-                      '\n\t%(o)s.vmd' % {'o': ofid})
-      output.vmd_network_creator(ofid,cube_files=cube_files)
-  if 'mayavi' in otype:
-    if drv is not None:
-      tmp = []
-      for i in drv:
-        for j in datalabels:
-          tmp.append('d/d%s of %s' % (i,j))
-      datalabels = tmp
-    data = ao_list.reshape((-1,) + grid.get_shape())
-    
-    output.main_output(data,qc.geo_info,qc.geo_spec,
-                       otype='mayavi',datalabels=datalabels)
+    output_written = main_output(ao_list,
+                                 qc,
+                                 outputname=ofid,
+                                 datalabels=qc.ao_spec.get_labels(),
+                                 otype=otype,
+                                 drv=drv)
+  
   return ao_list
 
 def atom2index(atom,geo_info=None):
@@ -548,9 +437,7 @@ def numerical_mulliken_charges(atom,qc,
   return rho_atom, mulliken_num
 
 
-def mo_transition_flux_density(i,j,qc,drv='x',
-                    ao_list=None,mo_list=None,
-                    delta_ao_list=None,delta_mo_list=None):
+def calc_jmo(qc, ij, drv=['x','y','z'], numproc=1, otype=None, ofid='',**kwargs):
   '''Calculate one component (e.g. drv='x') of the 
   transition electoronic flux density between the 
   molecular orbitals i and j.
@@ -572,27 +459,34 @@ def mo_transition_flux_density(i,j,qc,drv='x',
   **Returns:**
   
      mo_tefd : numpy.ndarray
-  '''  
-  if mo_list is None:
-    if ao_list is None:
-      display('\tComputing ao_list and ' +
-                    'mo #%d, since it is not given.' % i)
-      ao_list = core.ao_creator(qc.geo_spec,qc.ao_spec)  
-    else:
-      display('\tComputing mo #%d, since it is not given.' % i)
-    mo = core.mo_creator(ao_list,[qc.mo_spec[i]])[0]
-  else:
-    mo = mo_list[i]
-  if delta_mo_list is None:
-    if delta_ao_list is None:
-      display('\tComputing delta_ao_list and the derivative of ' +
-                    'mo #%d, since it is not given.' % j)
-      delta_ao_list = core.ao_creator(qc.geo_spec,qc.ao_spec,drv=drv)
-    else:
-      display('\tComputing mo #%d, since it is not given.' % j)
-    delta_mo = core.mo_creator(delta_ao_list,[qc.mo_spec[j]])[0]
-  else:
-    delta_mo = delta_mo_list[i]
+  '''
+  ij = numpy.asarray(ij)
+  if ij.ndim == 1 and len(ij) == 2:
+    ij.shape = (1,2)
+  assert ij.ndim == 2
+  assert ij.shape[1] == 2
   
-  return mo*delta_mo
-  # mo_transition_flux_density 
+  u, indices = numpy.unique(ij,return_inverse=True)
+  indices.shape = (-1,2)
+
+  mo_spec = qc.mo_spec[u]
+  qc_select = qc.copy()
+  qc_select.mo_spec = mo_spec
+  labels = mo_spec.get_labels(format='short')
+  
+  mo_matrix = core.calc_mo_matrix(qc_select,drv=drv,
+                                  numproc=numproc,**kwargs)
+  jmo = numpy.zeros((len(drv),len(indices)) + grid.get_shape())
+  datalabels = []
+  for n,(i,j) in enumerate(indices):
+    jmo[:,n] = - 0.5 * (mo_matrix[:,i,j] - mo_matrix[:,j,i])
+    datalabels.append('j( %s , %s )'%(labels[i],labels[j]))
+  
+  if not options.no_output:
+    output_written = main_output(jmo,
+                                 qc,
+                                 outputname=ofid,
+                                 datalabels=datalabels,
+                                 otype=otype,
+                                 drv=drv)
+  return jmo
