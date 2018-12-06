@@ -43,7 +43,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'ORBKIT'
-copyright = u'2017, Gunter Hermann, Vincent Pohl, Lukas Eugen Marsoner Steinkasserer, Axel Schild, and Jean Christophe Tremblay'
+copyright = u'2018, Gunter Hermann, Vincent Pohl, Lukas Eugen Marsoner Steinkasserer, Axel Schild, and Jean Christophe Tremblay'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -102,16 +102,16 @@ pygments_style = 'sphinx'
 on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
 
 if not on_rtd:
-  try:
-	import sphinx_rtd_theme
-	if not os.path.exists('_static'):
-	  os.makedirs('_static')
-	html_theme = "sphinx_rtd_theme"
-	html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
-  except ImportError:
-	print('sphinx_rtd_theme is not installed using sphinxdoc')
-	html_theme = 'sphinxdoc'
-	html_theme_path = []
+    try:
+        import sphinx_rtd_theme
+        if not os.path.exists('_static'):
+            os.makedirs('_static')
+        html_theme = "sphinx_rtd_theme"
+        html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
+    except ImportError:
+        print('sphinx_rtd_theme is not installed using sphinxdoc')
+        html_theme = 'sphinxdoc'
+        html_theme_path = []
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
