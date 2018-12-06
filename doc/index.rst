@@ -10,7 +10,7 @@ ORBKIT
 ORBKIT is a parallel Python program package for post-processing
 wave function data from output files of quantum chemical programs.
 
-:ORBKIT: Copyright (C) 2017, Gunter Hermann, Vincent Pohl, Lukas Eugen Marsoner Steinkasserer, Axel Schild, and Jean Christophe Tremblay.
+:ORBKIT: Copyright (C) 2018, Gunter Hermann, Vincent Pohl, Lukas Eugen Marsoner Steinkasserer, Axel Schild, and Jean Christophe Tremblay.
 :Website: https://github.com/orbkit/orbkit
 
 The computational capabilities of ORBKIT range from grid-based quantities, e.g., molecular orbitals or
