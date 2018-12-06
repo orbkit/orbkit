@@ -23,6 +23,13 @@ class Bibliography:
                 'Journal of Molecular Graphics and Modelling': 'J. Mol. Graph. Model.',
                 'The Journal of Chemical Physics': 'J. Chem. Phys.',
                 'Journal of Computer-Aided Molecular Design': 'J. Comput. Aided Mol. Des.',
+                'The Journal of Physical Chemistry Letters': 'J. Phys. Chem. Lett.',
+                'Physica B: Condensed Matter': 'Physica B',
+                'Physical Chemistry Chemical Physics': 'Phys. Chem. Chem. Phys.',
+                'International Journal of Quantum Chemistry':   'Int. J. Quantum Chem.',
+                'Inorganic Chemistry': 'Inorg. Chem.',
+                'Journal of the American Chemical Society': 'J. Am. Chem. Soc.',
+                'Journal of Chemical Theory and Computation': 'J. Chem. Theory Comput.',
                }
 
   def get_template(self):
@@ -68,7 +75,7 @@ class Bibliography:
         entry[i]['journal'] = 'arXiv preprint'
       else:
         entry[i]['journal'] = self.journals[entry[i]['journal']]
-      entry[i]['ym'] = int(entry[i]['year']) + self.months[entry[i]['month'].lower()] / 12
+      entry[i]['ym'] = int(entry[i]['year']) + self.months[entry[i]['month'].lower()] / 12.
     self.entries.append(entry)
     self.filenames.append(filename)
 
