@@ -43,7 +43,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'ORBKIT'
-copyright = u'2017, Gunter Hermann, Vincent Pohl, Lukas Eugen Marsoner Steinkasserer, Axel Schild, and Jean Christophe Tremblay'
+copyright = u'2018, Gunter Hermann, Vincent Pohl, Lukas Eugen Marsoner Steinkasserer, Axel Schild, and Jean Christophe Tremblay'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
