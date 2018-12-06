@@ -1,6 +1,6 @@
 Licence Note
 ============
-:orbkit: Copyright (C) 2017, Gunter Hermann, Vincent Pohl, Lukas Eugen Marsoner Steinkasserer, and Axel Schild.
+:orbkit: Copyright (C) 2018, Gunter Hermann, Vincent Pohl, Lukas Eugen Marsoner Steinkasserer, and Axel Schild.
 
 orbkit is free software: you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License as 
