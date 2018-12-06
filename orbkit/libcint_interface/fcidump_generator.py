@@ -27,8 +27,8 @@ def generate_fcidump(qc, filename='FCIDUMP', core=0, occ=None, sym='c1', spin=1,
   if sym == 'c1':
 
     if occ is None:
-      occ = ao.Norb
-    nmopi = [ao.Norb]
+      occ = qc.mo_spec.coeffs.shape[0]
+    nmopi = [occ]
     MOranges = [range(occ)]
 
   else:

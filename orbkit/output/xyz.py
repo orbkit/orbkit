@@ -1,5 +1,7 @@
 import numpy
 
+from orbkit.units import a0_to_aa
+
 def xyz_creator(geo_info,geo_spec,filename='new',mode='w',charges=None,comments='',
     angstrom=True):
   '''Creates a xyz file containing the molecular coordinates. 
