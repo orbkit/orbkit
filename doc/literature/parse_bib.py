@@ -1,6 +1,6 @@
 from __future__ import division, print_function
 import numpy
-
+import io
 class Bibliography:
   '''Class handling parsing, plotting and printing of ORBKIT bibliographic data for the website'''
   def __init__(self):
@@ -50,7 +50,7 @@ class Bibliography:
     '''Reads a bib file and parses the data.
     '''
 
-    with open(filename + '.bib', 'r') as fd:
+    with io.open(filename + '.bib', 'r',encoding='ISO-8859-1') as fd:
       entry = []
       for line in fd.readlines():
         if '@article' in line:
@@ -66,15 +66,21 @@ class Bibliography:
                   splitline[1] = splitline[1][:-1]
               entry[-1][key] = splitline[1]
     for i in range(len(entry)):
+      name = entry[i]['author'].split('and')[0]
+      if ',' in name:
+        name = name.split(',')
+        name = ' '.join([name[1].strip(),name[0].strip()])
       if len(entry[i]['author'].split('and')) == 1:
-        entry[i]['author'] = entry[i]['author'].split('and')[0] + ' '
+        entry[i]['author'] = name + ' '
       else:
-        entry[i]['author'] = entry[i]['author'].split('and')[0] + ' *et al.* '
+        entry[i]['author'] = name + ' *et al.* '
+      entry[i]['author'] = entry[i]['author']
       if 'arXiv' in entry[i]['journal']:
         entry[i]['pages'] = entry[i]['journal'].split()[-1]
         entry[i]['journal'] = 'arXiv preprint'
       else:
         entry[i]['journal'] = self.journals[entry[i]['journal']]
+      
       entry[i]['ym'] = int(entry[i]['year']) + self.months[entry[i]['month'].lower()] / 12.
     self.entries.append(entry)
     self.filenames.append(filename)
@@ -108,15 +114,15 @@ class Bibliography:
           self.unique_entries.append(item)
   
   def wirte_csv(self):
-    with open('citations.csv', 'w') as fd:
+    with io.open('citations.csv', 'w',encoding='ISO-8859-1') as fd:
       for i, entry in enumerate(self.unique_entries):
         if 'arxiv' in entry['journal'].lower():
-          print('{0},"{1} `{2} <{5}>`__ {3} ({4})"'.format(i+1, entry['author'], entry['journal'], entry['pages'], entry['year'], entry['url']), file=fd)
+          print(u'{i},"{author} `{journal} <{url}>`__ {pages} ({year})."'.format(i=i+1,**entry).replace(u'  ', u' '), file=fd)
         elif entry['volume'] is None or entry['pages'] is None:
-          print('{0},"{1} `{2} <{4}>`__ ({3})"'.format(i+1, entry['author'], entry['journal'], entry['year'], entry['url']), file=fd)
+          print(u'{i},"{author} `{journal} <{url}>`__ {year}."'.format(i=i+1,**entry).replace(u'  ', u' '), file=fd)
         else:
-          print('{0},"{1} `{2} <{6}>`__ **{3}**, {4} ({5})"'.format(i+1, entry['author'], entry['journal'], entry['volume'], entry['pages'], entry['year'], entry['url']), file=fd)
-
+          print(u'{i},"{author} `{journal} <{url}>`__ **{volume}**, {pages} ({year})."'.format(i=i+1,**entry).replace(u'  ', u' '), file=fd)
+          
   def plot(self):
     '''Creates a plot from the .csv files containing the bibliographic data.
     '''
