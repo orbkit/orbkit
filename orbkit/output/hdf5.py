@@ -19,7 +19,7 @@ def hdf5_creator(data, filename, qcinfo=None, gname='', ftype='hdf5', mode='w',a
     Stores all information from qcinfo class (see :ref:`Central Variables` for
     details).
   gname : str, optional
-    Specifies the path where the data is stored.
+    Specifies the path, where the data is stored.
   mode : str, optional
     Specifies the mode used to open the file. ('r', 'w', 'a')
   attrs : dict or dict of dicts, optional

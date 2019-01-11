@@ -123,13 +123,15 @@ def get_shape():
  
  return (len(x),) if is_vector else tuple(N_)
 
-def set_grid(xnew,ynew,znew,is_vector=None):
+def set_grid(xnew,ynew,znew,is_vector):
   '''Sets the x-, y-, z-grid.
   '''
-  global x, y, z, is_initialized
+  global x, y, z, is_initialized, is_regular
   coord = ['x', 'y', 'z']  
   NumberTypes = (int, float) #: Contains the supported types.
   
+  reset_grid() # Reset the current grid parameters
+
   length = []
   grid = [xnew,ynew,znew]
   for i,c in enumerate(grid):
@@ -172,17 +174,21 @@ def set_grid(xnew,ynew,znew,is_vector=None):
     setattr(sys.modules[__name__],'is_vector',is_vector)
     info_string += ('\n\nThe variable `grid.is_vector` has been set to %s.' % 
                     is_vector)
-  #set_boundaries((is_vector==False))
+
+  is_regular = is_vector==False
+  
+  set_boundaries(is_regular)
   return info_string
   # set_grid 
 
 def set_boundaries(is_regular,Nx=None,Ny=None,Nz=None):
-  global is_vector, min_, max_, delta_, N_
+  global min_, max_, delta_, N_
   min_ = [x.min(),y.min(),z.min()]
   max_ = [x.max(),y.max(),z.max()]
+  N_ = [len(x),len(y),len(z)]
   if is_regular:
-    N_ = [len(x),len(y),len(z)]
-    delta_ = [x[1]-x[0],y[1]-y[0],z[1]-z[0]]
+    f = lambda x: 1.0 if len(x) <= 1 else x[1]-x[0]
+    delta_ = [f(x), f(y), f(z)]
   elif all([Nx,Ny,Nz]):
     N_ = [Nx,Ny,Nz]
     grid = numpy.array([x,y,z]).reshape(3,Nx,Ny,Nz)

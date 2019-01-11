@@ -41,14 +41,11 @@ orbkit.grid_init()
 print(orbkit.get_grid())
 
 # define the molecular orbital to be calculated
-selected_MO = ['3.1']
+selected_MO = ['homo','3.1']
 
 # get only the information of selected MO
 qc_select = qc.copy()
 qc_select.mo_spec = qc_select.mo_spec.select(selected_MO)
-
-## Convert the qc class to a dictionary
-#qc_select = qc.todict()
 
 # calculate MO
 mo_list = orbkit.rho_compute(qc_select,calc_mo=True,numproc=numproc)    
@@ -114,7 +111,7 @@ pic3.set_ylabel('x')
 # following options applied for all subplots as they share x- and y-axis
 pic1.xaxis.set_ticks(numpy.arange(-5,6,5))
 pic1.yaxis.set_ticks(numpy.arange(-5,6,5))
-pic1.set_aspect('equal')
+pic1.set_aspect('equal',share=True)
 
 # plot
 f.subplots_adjust(left=0.15,bottom=0.05,top=0.95,right=0.95)

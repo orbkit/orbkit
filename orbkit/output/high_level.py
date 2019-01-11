@@ -53,8 +53,8 @@ synonyms = {'auto':'auto',
             '':None
             }
 
-def main_output(data,qc=None,outputname='new',otype='auto', gname='',
-                drv=None,omit=[],datalabels='',geo_info=None,geo_spec=None,**kwargs):
+def main_output(data,qc=None,outputname='data',otype='auto',gname='',
+                drv=None,omit=[],datalabels='',mode='w',**kwargs):
   '''Creates the requested output.
   
   **Parameters:**
@@ -62,18 +62,30 @@ def main_output(data,qc=None,outputname='new',otype='auto', gname='',
   data : numpy.ndarray, shape=N, shape=((NDRV,) + N), shape=(n, (NDRV,) + N) or list of numpy.ndarrays
     Contains the output data. The shape (N) depends on the grid and the data, i.e.,
     3d for regular grid, 1d for vector grid. 
-  geo_info, geo_spec : 
+  qc : class or dict
+    QCinfo class or dictionary containing the following attributes/keys.
     See :ref:`Central Variables` for details.
   outputname : str or list of str
-    Contains the base name of the output file.
-  otype : str or list of str
+    Contains the base name of the output file. If outputname contains @, string will be split and first 
+    part interpreted as outputname and second as gname (cf. Parameters:gname). 
+  otype : str or list of str, optional
     Contains the output file type. Possible options:
     'auto', 'h5', 'cb', 'am', 'hx', 'vmd', 'mayavi'
-  drv : None, list of str or list of list of str optional
+    
+    If otype='native', a native input file will be written, the type of which may be specifie by
+    ftype='numpy'.
+  gname : str, optional
+    For native, HDF5, or npz output, specifies the group, where the data will be stored.
+  drv : None, list of str or list of list of str, optional
     If not None, a 4d(regular)/2d(vector) input data array will be expected
-    with NDRV = len(drv).
+    with NDRV = len(drv). Specifies the file labels, i.e. e.g., data_d{drv}.cube for 4d array.
+    For 5d arrays i.e., data_0_d{drv}.cube
+  datalabels : list of str, optional
+    If not empty, the output file types specified here are omitted.
   omit : list of str, optional
     If not empty, the output file types specified here are omitted.
+  mode : str={'r', 'w', 'a'}, optional
+    Specifies the mode used to open the file (native, HDF5, or npz). 
   
   **Note:**
   
@@ -128,9 +140,9 @@ def main_output(data,qc=None,outputname='new',otype='auto', gname='',
     else:
       group = [i.__class__.__name__.lower() for i in data]
     
-    display('Writing native input file...')
+    display('Writing native input file...' )
     for i, oname in enumerate(outputname):
-      output_written.append(write_native(data[i], oname, ftype[i], mode='w',
+      output_written.append(write_native(data[i], oname, ftype[i], mode=mode,
                                          gname=path.join(gname,group[i])))
     display('\n'.join(['\t' + i for i in output_written]))
 
@@ -244,6 +256,8 @@ def main_output(data,qc=None,outputname='new',otype='auto', gname='',
             output_written.append(filename)
         if 'cube' in otype_synonyms and not print_waring:
           if output_not_possible: print_waring = True
+          elif qc is None: 
+            display('\nFor cube file output `qc` is a required keyword parameter in `main_output`.')
           else: 
             filename = fid % f + otype_ext['cube']
             display('\nSaving to cube file...\n\t' + filename)
@@ -269,14 +283,14 @@ def main_output(data,qc=None,outputname='new',otype='auto', gname='',
       display('\nSaving to Hierarchical Data Format file (HDF5)...\n\t' + filename)
       
       hdf5_creator(data.reshape(shape),filename,qcinfo=qc,gname=gname,
-                   ftype='hdf5',contents=contents,**kwargs)
+                   ftype='hdf5',contents=contents,mode=mode,**kwargs)
       output_written.append(filename)
     
     if 'npz' in otype_synonyms: 
       filename = (outputname if isstr else outputname[-1]) 
       display('\nSaving to a compressed .npz archive...\n\t' + filename+'.npz')
       hdf5_creator(data.reshape(shape),filename,qcinfo=qc,gname=gname,
-                   ftype='numpy',contents=contents,**kwargs)
+                   ftype='numpy',contents=contents,mode=mode,**kwargs)
       output_written.append(filename)
     
     if 'mayavi' in otype_synonyms:
