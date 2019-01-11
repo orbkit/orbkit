@@ -3,10 +3,8 @@ import numpy
 from orbkit.qcinfo import QCinfo
 from orbkit.orbitals import AOClass, MOClass
 from orbkit.units import aa_to_a0, ev_to_ha
-from orbkit.tools import l_deg, lquant
+from orbkit.tools import l_deg, lquant, get_atom_symbol
 from importlib import import_module
-
-from .tools import get_atom_symbol
 
 def read_with_cclib(filename, cclib_parser=None, all_mo=False, spin=None, 
                     **kwargs):

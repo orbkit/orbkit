@@ -15,8 +15,9 @@ from orbkit.read.wfn import read_wfn
 from orbkit.read.native import read_native
 from orbkit.read.cclib_parser import read_with_cclib
 from orbkit.display import display
+from orbkit.analytical_integrals import check_mo_norm
 
-from .tools import find_itype, descriptor_from_file, check_mo_norm
+from .tools import find_itype, descriptor_from_file
 
 readers = {'molden': read_molden,
            'aomix': read_aomix,

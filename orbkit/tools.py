@@ -1,15 +1,89 @@
-import numpy
 import string
+import numpy
+from os import path
 
-# Compatability function for old numpy versions
-def moveaxis(array, source, target):
-  transpose = array.transpose
-  order = [n for n in range(array.ndim) if n not in source]
-  for dest, src in sorted(zip(target, source)):
-    order.insert(dest, src)
-  result = transpose(order)
-  return result
+from orbkit.units import u_to_me
 
+nist_mass = None
+# Standard atomic masses as "Linearized ASCII Output", see http://physics.nist.gov
+nist_file = path.join(path.dirname(path.realpath(__file__)),
+                      'supporting_data/Atomic_Weights_NIST.html')
+# see http://physics.nist.gov/cgi-bin/Compositions/stand_alone.pl?ele=&all=all&ascii=ascii2&isotype=some
+
+
+def read_nist():
+  '''Reads and converts the atomic masses from the "Linearized ASCII Output", 
+  see http://physics.nist.gov.
+  '''
+  global nist_mass
+
+  f = open(nist_file,'r')
+  flines = f.readlines()
+  f.close()
+  
+  nist_mass = []
+  index = None
+  new = True
+  
+  def rm_brackets(text,rm=['(',')','[',']']):
+    for i in rm:
+      text = text.replace(i,'')
+    return text
+  
+  for line in flines:
+    thisline = line.split()
+    if 'Atomic Number =' in line:
+      i = int(thisline[-1]) - 1
+      new = (i != index)
+      if new:
+        nist_mass.append(['',0])
+      index = i
+    elif 'Atomic Symbol =' in line and new:
+      nist_mass[index][0] = thisline[-1]
+    elif 'Standard Atomic Weight =' in line and new:
+      nist_mass[index][1] = float(rm_brackets(thisline[-1]))
+
+def standard_mass(atom):
+  '''Returns the standard atomic mass of a given atom.
+    
+  **Parameters:**
+  
+  atom : int or str
+    Contains the name or atomic number of the atom.
+  
+  **Returns:**
+  
+  mass : float
+    Contains the atomic mass in atomic units.
+  '''
+  if nist_mass is None:
+    read_nist()  
+  try:
+    atom = int(atom) - 1
+    return nist_mass[atom][1] * u_to_me
+  except ValueError:
+    return dict(nist_mass)[atom.title()] * u_to_me
+    
+def get_atom_symbol(atom):
+  '''Returns the atomic symbol of a given atom.
+    
+  **Parameters:**
+  
+  atom : int or str
+    Contains the atomic number of the atom.
+  
+  **Returns:**
+  
+  symbol : str
+    Contains the atomic symbol.
+  '''
+  if nist_mass is None:
+    read_nist()  
+  try:
+    atom = int(atom) - 1
+    return nist_mass[atom][0]
+  except ValueError:    
+    return atom.title()
 
 # Assign the quantum number l to every AO symbol (s,p,d,etc.) 
 orbit = 'spd' + string.ascii_lowercase[5:].replace('s','').replace('p','')
@@ -203,6 +277,15 @@ def is_mo_spec(mo):
       return_val = False
   
   return return_val
+
+# Compatability function for old numpy versions
+def moveaxis(array, source, target):
+  transpose = array.transpose
+  order = [n for n in range(array.ndim) if n not in source]
+  for dest, src in sorted(zip(target, source)):
+    order.insert(dest, src)
+  result = transpose(order)
+  return result
 
 def require(data,dtype='f',requirements='CA'):
   if dtype == 'f':

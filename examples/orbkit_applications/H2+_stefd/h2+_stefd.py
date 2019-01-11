@@ -29,7 +29,7 @@ grid.grid_init()
 display.display(grid.get_grid())
 
 # Choose the molecular orbitals to be calculated
-selected_MO = ['1.1_a','1.5_a']
+selected_MO = ['1.1 alpha','1.5 alpha']
 qc.mo_spec = qc.mo_spec.select(selected_MO)
 
 # Calculate molecular orbitals

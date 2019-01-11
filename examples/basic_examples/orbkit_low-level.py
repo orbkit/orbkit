@@ -47,8 +47,8 @@ selected_MO = ['3.1']
 qc_select = qc.copy()
 qc_select.mo_spec = qc_select.mo_spec.select(selected_MO)
 
-# Convert the qc class to a dictionary
-qc_select = qc.todict()
+## Convert the qc class to a dictionary
+#qc_select = qc.todict()
 
 # calculate MO
 mo_list = orbkit.rho_compute(qc_select,calc_mo=True,numproc=numproc)    

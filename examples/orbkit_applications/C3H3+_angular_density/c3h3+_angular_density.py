@@ -107,8 +107,7 @@ in_fid  = 'c3h3+.molden'
 qc = read.main_read(in_fid,itype='molden',all_mo=False)
 
 # set nuclear center of mass to zero 
-qc.get_com()
-qc.geo_spec = qc.geo_spec - qc.com
+qc.geo_spec = qc.geo_spec - qc.get_com()
 
 # grid in angular direction
 phi = numpy.linspace(0,2*numpy.pi,361)

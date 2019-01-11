@@ -172,8 +172,8 @@ fig, axs = plt.subplots(nrows=1, ncols=3,sharey=True,sharex=True)
 fig.subplots_adjust(hspace=0.3, wspace=0)
 axs[1].set_title(r'$%s$' % string,fontsize=10)
 axs[0].set_ylabel(r'$y\ [a_0]$')
+axs[0].set_aspect('equal',share=True)
 for ax in axs:
-  ax.axis('equal')
   ax.set_xlabel(r'$x\ [a_0]$')
 
 for i,t in enumerate([2*numpy.pi/4.,2*numpy.pi/2.,2*3*numpy.pi/4]):

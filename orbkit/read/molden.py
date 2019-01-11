@@ -115,6 +115,7 @@ def read_molden(fname, all_mo=False, spin=None, i_md=-1, interactive=True,
       lcart = [l[-1] for l in cartesian_basis[-1]]
       if set(lsph) & set(lcart):
           raise IOError('The input file {} contains ambiguous flags for spherical and cartesian basis functions: {}'.format(filename, ', '.join(spherical_basis[-1]+cartesian_basis[-1])))
+    
     if 'Spin' in line and 'alpha' in line.lower():
       has_alpha[-1] = True
     if 'Spin' in line and 'beta' in line.lower():
@@ -242,12 +243,8 @@ def read_molden(fname, all_mo=False, spin=None, i_md=-1, interactive=True,
             for i_ao in ao_type:
               # Calculate the degeneracy of this AO and increase basis_count 
               # TODO: check for mixed sph/cart basis 
-              cart = True
-              if cartesian_basis[i_md]:
-                cart = i_ao in [f[-1] for f in cartesian_basis[i_md]]
-              if spherical_basis[i_md]:
-                cart = not i_ao in [f[-1] for f in spherical_basis[i_md]]
-              basis_count += l_deg(lquant[i_ao], cartesian_basis=cart)
+              basis_count += l_deg(lquant[i_ao], 
+                                   cartesian_basis= not '5d' in spherical_basis[i_md]) # Check if d-functions are spherical
               max_l = max(max_l,lquant[i_ao])
               qc.ao_spec.append({'atom': at_num,
                                 'type': i_ao,
@@ -319,7 +316,7 @@ def read_molden(fname, all_mo=False, spin=None, i_md=-1, interactive=True,
       raise IOError('''The input file {} contains mixed spherical and Cartesian function ({}).
                   ORBKIT does not support these basis functions yet.
                   Pleas contact us, if you need this feature!'''.format(filename, ', '.join(sph+cart))) 
-
+  
   # Spherical basis?
   if spherical_basis[i_md]:
     qc.ao_spec.set_lm_dict(p=[1,0])

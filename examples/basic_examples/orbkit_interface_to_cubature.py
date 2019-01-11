@@ -142,9 +142,8 @@ try:
                             adaptive='h', abserr=abserr, relerr=relerr, 
                             norm=0, maxEval=0,
                             vectorized=vectorized)
-except:
-  print('Calculation failed.')
-  print('Should work with cubature 0.13.1 which has a different syntax than earlier versions.')
+except TypeError:
+  raise RuntimeError('Calculation failed. Should work with cubature 0.13.1 which has a different syntax than earlier versions.')
 
 print('After %d function calls the integral is %.14f. (Error: %.4e)' % 
       (count_calls,integral,error))
@@ -167,9 +166,8 @@ try:
                                   args=[vectorized,calc_mo], 
                                   adaptive='h', abserr=abserr, relerr=relerr, 
                                   norm=0, maxEval=0, vectorized=vectorized)
-except:
-  print('Calculation failed.')
-  print('Should work with cubature 0.13.1 which has a different syntax than ealier versions.')
+except TypeError:
+  raise RuntimeError('Calculation failed. Should work with cubature 0.13.1 which has a different syntax than earlier versions.')
 
 print('After %d function calls the integral of...' % count_calls)
 for i,(inte,err) in enumerate(zip(integral_mo,error_mo)):

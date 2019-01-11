@@ -34,8 +34,7 @@ s[rho>0.05] = 1e3
 
 # Write a cube file and vmd script for the reduced density gradient 
 output.main_output(s,
-                   qc.geo_info,                 # atomic information
-                   qc.geo_spec,                 # atomic coordinates
+                   qc,                          # atomic information
                    outputname='reduced_drho',
                    otype=['cb','vmd'],
                    iso=(-0.5,0.5)               # isocontour value of s = 0.5 a.u.

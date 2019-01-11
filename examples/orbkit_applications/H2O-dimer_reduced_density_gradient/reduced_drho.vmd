@@ -214,7 +214,9 @@ mol smoothrep top 2 0
 mol drawframes top 2 {now}
 mol rename top "reduced_drho"
 
-#render TachyonInternal reduced_drho.cb.tga 
+
+
+#render TachyonInternal reduced_drho.cb.tga
 
 molinfo top set drawn 0
 

@@ -2,21 +2,12 @@
 Some tools needed by Orbkit functions
 '''
 
-from os import path
 import re
 import numpy
 
 from orbkit.display import display
 from orbkit.tools import *
-from orbkit.units import u_to_me
 from orbkit import options
-from orbkit import analytical_integrals
-
-nist_mass = None
-# Standard atomic masses as "Linearized ASCII Output", see http://physics.nist.gov
-nist_file = path.join(path.dirname(path.realpath(__file__)),
-                      '../supporting_data/Atomic_Weights_NIST.html')
-# see http://physics.nist.gov/cgi-bin/Compositions/stand_alone.pl?ele=&all=all&ascii=ascii2&isotype=some
 
 def descriptor_from_file(filename, index=0, ci_descriptor=False):
   from .tar import is_tar_file, get_file_from_tar
@@ -26,16 +17,6 @@ def descriptor_from_file(filename, index=0, ci_descriptor=False):
   else:
     fname = open(filename, 'r')
   return fname
-
-def check_mo_norm(qc):
-  geo_spec = qc.geo_spec
-  ao_spec = qc.ao_spec
-
-  aoom = analytical_integrals.get_ao_overlap(geo_spec, geo_spec, ao_spec)
-  moom = analytical_integrals.get_mo_overlap_matrix(mo_spec, mo_spec, aoom, numproc=options.numproc)
-
-  deviation = numpy.linalg.norm(moom - numpy.eye(len(moom)))
-  return deviation
 
 def basissize(types, cart_spher):
   assert cart_spher in ['cartesian', 'pure'], 'Must specify eigther cartesian or pure spherical harmonics'
@@ -47,38 +28,6 @@ def basissize(types, cart_spher):
     else:
       size += 2*l+1
   return size
-
-def read_nist():
-  '''Reads and converts the atomic masses from the "Linearized ASCII Output", 
-  see http://physics.nist.gov.
-  '''
-  global nist_mass
-
-  f = open(nist_file,'r')
-  flines = f.readlines()
-  f.close()
-  
-  nist_mass = []
-  index = None
-  new = True
-  
-  def rm_brackets(text,rm=['(',')','[',']']):
-    for i in rm:
-      text = text.replace(i,'')
-    return text
-  
-  for line in flines:
-    thisline = line.split()
-    if 'Atomic Number =' in line:
-      i = int(thisline[-1]) - 1
-      new = (i != index)
-      if new:
-        nist_mass.append(['',0])
-      index = i
-    elif 'Atomic Symbol =' in line and new:
-      nist_mass[index][0] = thisline[-1]
-    elif 'Standard Atomic Weight =' in line and new:
-      nist_mass[index][1] = float(rm_brackets(thisline[-1]))
 
 def spin_check(spin,restricted,has_alpha,has_beta):
   '''Check if `spin` keyword is valid.
@@ -100,47 +49,6 @@ def spin_check(spin,restricted,has_alpha,has_beta):
       raise IOError('You requested `%s` orbitals, but None of them are present.'
                     % spin)
 
-def standard_mass(atom):
-  '''Returns the standard atomic mass of a given atom.
-    
-  **Parameters:**
-  
-  atom : int or str
-    Contains the name or atomic number of the atom.
-  
-  **Returns:**
-  
-  mass : float
-    Contains the atomic mass in atomic units.
-  '''
-  if nist_mass is None:
-    read_nist()  
-  try:
-    atom = int(atom) - 1
-    return nist_mass[atom][1] * u_to_me
-  except ValueError:
-    return dict(nist_mass)[atom.title()] * u_to_me
-    
-def get_atom_symbol(atom):
-  '''Returns the atomic symbol of a given atom.
-    
-  **Parameters:**
-  
-  atom : int or str
-    Contains the atomic number of the atom.
-  
-  **Returns:**
-  
-  symbol : str
-    Contains the atomic symbol.
-  '''
-  if nist_mass is None:
-    read_nist()  
-  try:
-    atom = int(atom) - 1
-    return nist_mass[atom][0]
-  except ValueError:    
-    return atom.title()
 
 def set_ao_spherical(ao_spec,p=[1,0]):
   ao_spec.spherical = True

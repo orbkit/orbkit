@@ -159,6 +159,7 @@ print('Showing the time-independent convergence...')
 # 3a.
 fig, axs = plt.subplots(nrows=len(ci), ncols=3,sharey=True,sharex=True)
 fig.subplots_adjust(hspace=0.3, wspace=0)
+axs[0,0].set_aspect('equal',share=True)
 
 # Plot axis labels
 for i in range(len(axs)):
@@ -166,7 +167,6 @@ for i in range(len(axs)):
   for ax in axs[i]:
     # Plot the molecule
     ax.plot(*qc.geo_spec[[0,1,2,0],:2].T,color='grey',lw=0.5)
-    ax.axis('equal')
 for ax in axs[-1]:
   ax.set_xlabel(r'$x\ [a_0]$')
 

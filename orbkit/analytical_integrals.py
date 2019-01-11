@@ -316,6 +316,16 @@ def get_moom_atoms(atoms,qc,mo_a,mo_b,ao_overlap_matrix,numproc=1):
                                numpy.ascontiguousarray(mo_b[:,indices]),
                                ao_overlap_matrix,numproc=numproc)
 
+def check_mo_norm(qc):
+  geo_spec = qc.geo_spec
+  ao_spec = qc.ao_spec
+
+  aoom = get_ao_overlap(geo_spec, geo_spec, ao_spec)
+  moom = get_mo_overlap_matrix(mo_spec, mo_spec, aoom, numproc=options.numproc)
+
+  deviation = numpy.linalg.norm(moom - numpy.eye(len(moom)))
+  return deviation
+
 def get_dipole_moment(qc,component=['x','y','z']):
   '''Computes the dipole moment analytically.
   

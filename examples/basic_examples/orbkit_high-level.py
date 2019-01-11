@@ -91,7 +91,7 @@ orbkit.init()
 
 # set some options
 orbkit.options.adjust_grid= [5, 0.1]                # adjust the grid to the geometry
-orbkit.options.otype      = ['hx', 'vmd']           # output file types
+orbkit.options.otype      = ['vmd']           # output file types
 orbkit.options.mo_set     = [[1,2,'homo-2'],
                          ['homo-1:lumo']]           # list of MO labels (Molden enumeration)
 orbkit.options.filename   = in_fid                  # input file name

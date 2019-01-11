@@ -31,8 +31,9 @@ from .tools import *
 from multiprocessing import Pool
 
 # Import orbkit modules
-from orbkit import grid,cy_grid,cy_core
+from orbkit import grid, cy_grid, cy_core
 from orbkit.display import display
+from orbkit.qcinfo import QCinfo
 
 def ao_creator(geo_spec,ao_spec,drv=None,
                x=None,y=None,z=None,is_vector=None):
@@ -407,11 +408,12 @@ def rho_compute(qc,calc_ao=False,calc_mo=False,drv=None,laplacian=False,
     is_drv = False
 
   if isinstance(qc, dict):
-    ao_spec = qc['ao_spec']
-    mo_spec = qc['mo_spec']
-  else:
-    ao_spec = qc.ao_spec
-    mo_spec = qc.mo_spec
+    qc = QCinfo(qc)
+    #ao_spec = qc['ao_spec']
+    #mo_spec = qc['mo_spec']
+  #else:
+  ao_spec = qc.ao_spec
+  mo_spec = qc.mo_spec
 
   if calc_ao:
     labels = ao_spec.get_labels()
