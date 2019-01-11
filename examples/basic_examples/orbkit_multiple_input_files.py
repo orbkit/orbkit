@@ -114,7 +114,7 @@ if create_plots:
 
 t.append(time())
 
-npz_fid = 'nacl' # Specifies the filename of the npz file
+npz_fid = 'nacl.npz' # Specifies the filename of the npz file
 
 # Save the results to a hdf5 file
 main_output(mult, outputname=npz_fid, otype='native', ftype='numpy')
@@ -130,14 +130,14 @@ except ImportError:
     pass # Python2.X
 
 # Read in the results
-mult = main_read(npz_fid+'.npz')
+mult = main_read(npz_fid,gname='multi')
 
 t.append(time())
 
 # Perform a standard orbkit computation
 mult.construct_qc() # Construct the qc_info class for every structure
 r = 0                    # Index to be calculated
-out_fid = 'nacl_r%d' % r # Specifies the name of the output file
+outputname = 'nacl_r%d' % r # Specifies the name of the output file
 
 display('Running orbkit for the structure %d' % r)
 import orbkit
@@ -147,12 +147,12 @@ orbkit.init(reset_display=False)
 
 # Set some options
 orbkit.options.adjust_grid= [5, 0.1]                # adjust the grid to the geometry
-orbkit.options.outputname = out_fid                 # output file (base) name
+orbkit.options.outputname = outputname              # output file (base) name
 orbkit.options.otype      = 'h5'                    # output file type [default]
 orbkit.options.numproc    = 4                       # number of processes
 
 # Run orbkit with qc as input
-orbkit.run_orbkit(mult.QC[r])
+data = orbkit.run_orbkit(mult.QC[r])
 
 t.append(time())
 

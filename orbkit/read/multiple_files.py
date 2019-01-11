@@ -675,7 +675,7 @@ class Multi():
       qc.mo_spec.update()
       qc.ao_spec.update()
       self.QC.append(qc)
-    return
+    return self.QC
 
   def compute_mo_list(self,ao_spec,mo_matrix,
                       iter_drv=[None, 'x', 'y', 'z']):

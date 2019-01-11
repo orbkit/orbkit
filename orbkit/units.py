@@ -35,3 +35,6 @@ ha_to_ev = _ha / _e
 
 debye_to_ea0 = _debye / (_e * _a0)
 ea0_to_debye = _e * _a0 / _debye
+
+hbarha_to_fs = _ha/_hbar*1e-15
+fs_to_hbarha = _hbar/_ha*1e15
