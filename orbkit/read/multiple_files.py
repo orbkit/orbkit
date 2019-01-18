@@ -39,7 +39,7 @@ from .tar import is_tar_file, get_all_files_from_tar
 from . import main_read
 
 class Multi():
-  def __init__(self, data= None):
+  def __init__(self, data=None):
     self.geo_spec_all  = [] #: Contains all molecular geometries, i.e., :literal:`geo_spec`. (See :ref:`Central Variables` for details.)
     self.geo_info      = [] #: See :ref:`Central Variables` for details.
     self.ao_spec       = [] #: See :ref:`Central Variables` for details.
@@ -75,14 +75,14 @@ class Multi():
         self.sym = data['sym']
       self.index_list = data['index_list']
 
-  def read(self,fid_list,itype='all',all_mo=True,nosym=False, sort=True, **kwargs_all):
+  def read(self,fid_list,itype='auto',all_mo=True,nosym=False, sort=True, **kwargs_all):
     '''Reads a list of input files.
     
     **Parameters:**
     
       fid_list : list of str
         List of input file names.
-      itype : str, choices={'all', 'tar', 'molden', 'gamess', 'gaussian.log', 'gaussian.fchk'}
+      itype : str, choices={'auto', 'tar', 'molden', 'gamess', 'gaussian.log', 'gaussian.fchk'}
         Specifies the type of the input files.
       sort: bool
         Sort input files by name.
@@ -203,7 +203,7 @@ class Multi():
           epol[i,j] = numpy.poly1d(z)(grid1d[r2])
     return epol
 
-  def order_using_analytical_overlap(self,fid_list,itype=None,deg=0,numproc=1,
+  def order_using_analytical_overlap(self,fid_list=None,itype=None,deg=0,numproc=1,
                                      **kwargs):
     '''Performs an ordering routine using analytical overlap integrals between 
     molecular orbitals. Set fid_list to None to omit the reading of input files.
@@ -218,9 +218,11 @@ class Multi():
       If not None, it contains the list of input file names.
     itype : str, choices={'auto', 'tar', 'molden', 'gamess', 'gaussian.log', 'gaussian.fchk'}
       Specifies the type of the input files.
-    deg : int, optional
-      If greater than zero, specifies the degree of the extrapolation polynomial
-      for the molecular orbital coefficients.  
+    deg : None|int, optional
+      - If deg is None, atomic orbitals of two successive geometries will be assumed 
+        to be on the same positions.
+      - If greater than zero, specifies the degree of the extrapolation polynomial
+        for the molecular orbital coefficients.  
     
     **Returns:**
     
@@ -317,12 +319,12 @@ class Multi():
     tmp = []
     for i in mo_overlap:
       tmp.append(numpy.array(i))
-
+    
     mo_overlap = tmp
     
     return index_list, mo_overlap
 
-  def order_using_extrapolation(self,fid_list,itype=None,deg=1,
+  def order_using_extrapolation(self,fid_list=None,itype=None,deg=1,
                                 use_mo_values=False,matrix=None,**kwargs):
     '''Performs an ordering routine using extrapolation of quantities related to 
     the molecular orbitals. Set fid_list to None to omit the reading of input 
@@ -655,10 +657,11 @@ class Multi():
     data['parent_class_name'] = self.__module__ + '.' + self.__class__.__name__
     return data
 
-  def construct_qc(self):
+  def construct_qc(self, all_mo=True):
     '''Converts all global variables to a list of `QCinfo` classes.
     '''
     self.QC = []
+    ilumo = None
     for rr in range(len(self.geo_spec_all)):
       qc = QCinfo()
       qc.geo_spec = self.geo_spec_all[rr]
@@ -671,10 +674,18 @@ class Multi():
                              'energy' : self.mo_energy_all[ii_s][rr,i],
                              'occ_num' : self.mo_occ_all[ii_s][rr,i],
                              'sym': '%d.%s' % (i+1,s)})
+      qc.ao_spec.update()
       qc.mo_spec = MOClass(qc.mo_spec)
       qc.mo_spec.update()
-      qc.ao_spec.update()
+      if not all_mo:
+        ilumo = max(ilumo,qc.mo_spec.get_lumo())
+      
       self.QC.append(qc)
+    
+    if not all_mo:
+      for i in range(len(self.QC)):
+        self.QC[i].mo_spec = self.QC[i].mo_spec[slice(None,ilumo)]
+    
     return self.QC
 
   def compute_mo_list(self,ao_spec,mo_matrix,

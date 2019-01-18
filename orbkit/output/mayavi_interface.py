@@ -47,7 +47,10 @@ def view_with_mayavi(x,y,z,data,is_vectorfield=False,geo_spec=None,datalabels=No
     data = data[numpy.newaxis]
   elif is_vectorfield and data.ndim == 4:
     data = data[numpy.newaxis]
-    
+
+  if geo_spec is not None and numpy.ndim(geo_spec) == 2:
+      geo_spec = [geo_spec for i in range(len(data))]
+  
   if datalabels is not None and len(datalabels) < len(data):
     raise ValueError('`datalabels` has to be a list of strings with the same' +
                      'length as `data`.')
@@ -59,8 +62,13 @@ def view_with_mayavi(x,y,z,data,is_vectorfield=False,geo_spec=None,datalabels=No
   class MyModel(HasTraits):  
       select  = Range(0, len(data)-1, 0)
       last_select = deepcopy(select)
-      iso_value  = Range(iso_min, iso_max, iso_val,mode='logslider')
-      opacity    = Range(0, 1.0, 1.0)
+      iso_value = Range(iso_min, iso_max, iso_val,mode='logslider',
+                        label='Iso value' if not is_vectorfield else 'Scale factor')
+      if not is_vectorfield:
+        opacity = Range(0, 1.0, 1.0)
+      else:
+        opacity = Range(iso_min, 10*iso_max, 10*iso_val,mode='logslider',
+                        label='Range to ')
       show_atoms = Bool(True)
       label = Str()
       available = List(Str)
@@ -85,23 +93,36 @@ def view_with_mayavi(x,y,z,data,is_vectorfield=False,geo_spec=None,datalabels=No
                         opacity=self.opacity,colormap='blue-red',
                         vmin=-1e-8,vmax=1e-8)
           else:
-            self.plot0 = self.scene.mlab.quiver3d(X,Y,Z,*data[self.select]) #flow
+            self.plot0 = self.scene.mlab.quiver3d(X,Y,Z,*data[self.select],
+                                                  scale_factor=self.iso_value) #flow
           self.plot0.scene.background = (1,1,1)
         elif self.select != self.last_select:
           if not is_vectorfield:
             self.plot0.mlab_source.set(scalars=data[self.select])
           else:
-            self.plot0.mlab_source.set(vectors=data[self.select].reshape((3,-1)).T)
+            self.plot0.mlab_source.set(vectors=data[self.select].reshape((3,-1)).T,
+                                                  scale_factor=self.iso_value)
+          if geo_spec is not None: 
+            self.plot_atoms.mlab_source.set(
+                                      x=geo_spec[self.select][:,0],
+                                      y=geo_spec[self.select][:,1],
+                                      z=geo_spec[self.select][:,2])
         if not is_vectorfield:
           self.plot0.contour.contours = [-self.iso_value,self.iso_value]
-          self.plot0.actor.property.opacity = self.opacity          
+          self.plot0.actor.property.opacity = self.opacity  
+        else:
+          #self.plot0.glyph.glyph.range = numpy.array([ 0., self.opacity])
+          self.plot0.glyph.glyph.scale_factor = self.iso_value
+            
         self.last_select = deepcopy(self.select)
         if datalabels is not None:
           self.label = datalabels[self.select]
         if geo_spec is not None: 
-          if self.plot_atoms is None:            
+          if self.plot_atoms is None:
             self.plot_atoms = self.scene.mlab.points3d(
-                                      geo_spec[:,0],geo_spec[:,1],geo_spec[:,2],
+                                      geo_spec[self.select][:,0],
+                                      geo_spec[self.select][:,1],
+                                      geo_spec[self.select][:,2],
                                       scale_factor=0.75,resolution=20)
           self.plot_atoms.visible = self.show_atoms
       
@@ -122,9 +143,9 @@ def view_with_mayavi(x,y,z,data,is_vectorfield=False,geo_spec=None,datalabels=No
         items0 += (Group('select',
                         HSplit(Item('prev_button', show_label=False),
                                Item('next_button', show_label=False)
-                              )),)               
+                              )),)
       items0 += (Group('iso_value', 'opacity','show_atoms'
-                      ),)
+                        ),)
               
       if datalabels is not None:
         if len(datalabels) > 1:        

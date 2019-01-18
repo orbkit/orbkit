@@ -29,8 +29,7 @@ mo_before = copy.deepcopy(mult.mo_coeff_all)
 
 
 # Run the ordering routine using analytical overlap integrals
-# Input argument None has been used because input files have been read already
-index_list, mo_overlap = mult.order_using_analytical_overlap(None)
+index_list, mo_overlap = mult.order_using_analytical_overlap()
 
 
 import pylab as plt

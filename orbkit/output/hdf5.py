@@ -219,7 +219,7 @@ def hdf5_write(fid,mode='w',gname='',**kwargs):
   '''
   for f in hdf5_open(fid,mode=mode):
     if gname is not '':
-      group = f.create_group(gname)
+      group = f.create_group(gname) if gname not in f.keys() else f[gname]
     else:
       group = f
     for key,data in kwargs.items():
