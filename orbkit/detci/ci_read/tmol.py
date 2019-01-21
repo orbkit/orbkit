@@ -123,21 +123,36 @@ def tmol_tddft(fname,nmoocc=None,nforbs=0,select_state=None,threshold=0.0,
   
   return ci
 
-def tmol_escf(filename,ene_unit='nm'):
+def tmol_escf(filename,ene_unit='nm',read_props=False):
   '''Reads Turbomole TD-DFT output (``escf`` file). 
-  
+
   **Parameters:**
-  
-    filename : str
-      Specifies the filename for the input file.
-    ene_unit : str
-      Specifies in which units the excitation energies are read out.
-      [nm,E_h,eV,cm-1]
-  
+
+  filename : str
+    Specifies the filename for the input file.
+  ene_unit : str
+    Specifies in which units the excitation energies are read out.
+    [nm,E_h,eV,cm-1]
+  read_props : bool
+    If True, reads the transition dipole moments and dominant molecular 
+    orbital contributions.
+
   **Returns:**
   
-    ex_ene,osc_str : Excitation energies and oscillator strength for excited states
-    from Turbomole TD-DFT output. 
+  :if read_props: 
+    - ex_ene,osc_str,tdm,dom_contrib
+  :else:
+    - ex_ene,osc_str
+  
+  ex_ene : numpy.ndarray, shape=(nstates)
+    Contains the excitation energies for excited states.
+  osc_str : numpy.ndarray, shape=(nstates)
+    Contains the excitation energies for excited states.
+  tdm : numpy.ndarray, shape=((nstates,) + 3)
+    Contains the transition dipole moments from ground state to excited 
+    states.
+  dom_contrib : list, shape=((NMO,) + N)
+    Contains the dominant molecular orbital contribution of excited states.
   '''
 
   fid    = open(filename,'r')      # Open the file
@@ -152,6 +167,8 @@ def tmol_escf(filename,ene_unit='nm'):
   # Initialize variables
   osc_str = []
   ex_ene = []
+  tdm = []
+  dom_contrib = []
   ncount = 0
   sec_flag = None
   
@@ -178,6 +195,13 @@ def tmol_escf(filename,ene_unit='nm'):
     elif 'Oscillator strength:' in line:
       sec_flag = 'osc'
       count = 1
+    elif 'Dominant contributions:' in line:
+      sec_flag = 'dcon'
+      count = 2
+      dom_contrib.append([])
+    elif 'Electric transition dipole moment (length rep.):' in line:
+      sec_flag = 'tdm'
+      count = 1
     else:
       if sec_flag == 'osc':
         if count == 0:
@@ -186,5 +210,29 @@ def tmol_escf(filename,ene_unit='nm'):
           sec_flag = None
         else:
           count -= 1
-
-  return numpy.array(ex_ene),numpy.array(osc_str)
+      elif sec_flag == 'tdm':
+        if count == 0:
+          tmp = numpy.zeros(3)
+          for xyz in range(3):
+            tmp[xyz] = float(flines[il+xyz].split()[1])
+          tdm.append(tmp)
+          sec_flag = None
+        else:
+          count -= 1
+      elif sec_flag == 'dcon':
+        if count == 0:
+          if len(thisline) == 7:
+            tmp = []
+            tmp.append(int(thisline[0]))
+            tmp.append(int(thisline[3]))
+            tmp.append(float(thisline[-1]))
+            print tmp,dom_contrib
+            dom_contrib[-1].append(tmp)
+          else:
+            sec_flag = None
+        else:
+          count -= 1
+  if read_props:
+    return numpy.array(ex_ene),numpy.array(osc_str),numpy.array(tdm),numpy.array(dom_contrib)
+  else:
+    return numpy.array(ex_ene),numpy.array(osc_str)
