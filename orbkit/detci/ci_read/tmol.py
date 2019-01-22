@@ -226,7 +226,6 @@ def tmol_escf(filename,ene_unit='nm',read_props=False):
             tmp.append(int(thisline[0]))
             tmp.append(int(thisline[3]))
             tmp.append(float(thisline[-1]))
-            print tmp,dom_contrib
             dom_contrib[-1].append(tmp)
           else:
             sec_flag = None

@@ -21,39 +21,29 @@ def mulliken(qc):
         :charges: - Mulliken charges for each atom.
       
   '''
-  # Calculate AO-overlap matrix
   
+  # Calculate AO-overlap matrix
   S = get_ao_overlap(qc.geo_spec,qc.geo_spec,qc.ao_spec)
 
   # Get MO-coefficients
   mo = qc.mo_spec.get_coeffs()
-  mo_dim,ao_dim = mo.shape
+  modim = mo.shape[0]
 
-  # Calculate density matrix  
-  P = numpy.zeros((ao_dim,ao_dim))
-  P_i = numpy.zeros((mo_dim,ao_dim,ao_dim))
-  for i,m,n in itertools.product(range(mo_dim),range(ao_dim),range(ao_dim)):
-    P_i[i,m,n] = mo[i,m]*mo[i,n]
-    k = qc.mo_spec[i]
-    if k['occ_num'] > 0:
-      P[m,n] += k['occ_num'] * P_i[i,m,n]
-
-  # Calculate Mulliken population
-  N = 0
-  for m in itertools.product(range(ao_dim)):
-    N += (P[:,m] * S[m,:])
-
-  GP = N.diagonal()
+  # Calculate population matrix
   atom2mo = get_atom2mo(qc)
-  GP_A = numpy.zeros(len(qc.geo_spec))
-  for a in range(len(qc.geo_spec)):
-    GP_A[a] = GP[get_lc(a,atom2mo)].sum()
+  mull_pop = numpy.zeros(len(qc.geo_spec))
+  for i in range(len(qc.geo_spec)):
+    for j in range(modim):
+      k = qc.mo_spec[j]
+      if k['occ_num'] > 0:
+        for l in get_lc(i,atom2mo):
+          mull_pop[i] += numpy.sum(k['occ_num'] * mo[j,l]*mo[j,:]*S[l,:])
 
   # Save Mulliken population and charges to dictionary
-  mulliken_pop = {'population': GP_A,
-                  'charge': numpy.array(qc.geo_info[:,2],dtype=float)-GP_A}
-      
-  return mulliken_pop
+  mulliken = {'population': mull_pop,
+                  'charge': numpy.array(qc.geo_info[:,2],dtype=float)-mull_pop}
+  
+  return mulliken
 
 def lowdin(qc):
   '''Calculates the Lowdin populations and charges for each atom
@@ -108,7 +98,7 @@ def lowdin(qc):
   for a in range(len(qc.geo_spec)):
     GP_A[a] = GP[get_lc(a,atom2mo)].sum()
     
-  lowdin_pop = {'population': GP_A,
+  lowdin = {'population': GP_A,
               'charge': numpy.array(qc.geo_info[:,2],dtype=float)-GP_A}
 
-  return lowdin_pop
+  return lowdin
