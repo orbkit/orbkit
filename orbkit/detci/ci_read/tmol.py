@@ -165,11 +165,14 @@ def tmol_escf(filename,ene_unit='nm',read_props=False):
           ' not contain the keyword: e s c f\n')
   
   # Initialize variables
-  osc_str = []
-  ex_ene = []
-  tdm = []
-  dom_contrib = []
-  ncount = 0
+  props = {}
+  props['E_i'] = []
+  props['dom_contrib'] = []
+  props['f_0i'] = []
+  props['mu_0i'] = []
+  props['spin_i'] = []
+  props['sym_i'] = []
+  ncount = 1
   sec_flag = None
   
   # Select the excitation energy
@@ -191,31 +194,34 @@ def tmol_escf(filename,ene_unit='nm',read_props=False):
     thisline = line.split()      # The current line split into segments
     # Check the file for keywords 
     if ene_str in line:
-      ex_ene.append(float(thisline[-1]))
+      props['E_i'].append(float(thisline[-1]))
+    elif ('%s ' % ncount) in line and 'excitation' in line:
+        props['sym_i'].append(thisline[2])
+        props['spin_i'].append(thisline[1])
+        ncount += 1
     elif 'Oscillator strength:' in line:
       sec_flag = 'osc'
       count = 1
     elif 'Dominant contributions:' in line:
       sec_flag = 'dcon'
       count = 2
-      dom_contrib.append([])
+      props['dom_contrib'].append([])
     elif 'Electric transition dipole moment (length rep.):' in line:
-      sec_flag = 'tdm'
+      sec_flag = 'mu_0i'
       count = 1
     else:
       if sec_flag == 'osc':
         if count == 0:
-          osc_str.append(float(thisline[-1]))
-          ncount += 1
+          props['f_0i'].append(float(thisline[-1]))
           sec_flag = None
         else:
           count -= 1
-      elif sec_flag == 'tdm':
+      elif sec_flag == 'mu_0i':
         if count == 0:
           tmp = numpy.zeros(3)
           for xyz in range(3):
             tmp[xyz] = float(flines[il+xyz].split()[1])
-          tdm.append(tmp)
+          props['mu_0i'].append(tmp)
           sec_flag = None
         else:
           count -= 1
@@ -226,12 +232,12 @@ def tmol_escf(filename,ene_unit='nm',read_props=False):
             tmp.append(int(thisline[0]))
             tmp.append(int(thisline[3]))
             tmp.append(float(thisline[-1]))
-            dom_contrib[-1].append(tmp)
+            props['dom_contrib'][-1].append(tmp)
           else:
             sec_flag = None
         else:
           count -= 1
-  if read_props:
-    return numpy.array(ex_ene),numpy.array(osc_str),numpy.array(tdm),numpy.array(dom_contrib)
-  else:
-    return numpy.array(ex_ene),numpy.array(osc_str)
+  for i in props.keys():
+      props[i] = numpy.array(props[i])
+
+  return props
