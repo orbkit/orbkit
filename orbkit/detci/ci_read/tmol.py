@@ -166,7 +166,7 @@ def tmol_escf(filename,ene_unit='nm',read_props=False):
   
   # Initialize variables
   props = {}
-  props['E_i'] = []
+  props['E_0i'] = []
   props['dom_contrib'] = []
   props['f_0i'] = []
   props['mu_0i'] = []
@@ -194,7 +194,7 @@ def tmol_escf(filename,ene_unit='nm',read_props=False):
     thisline = line.split()      # The current line split into segments
     # Check the file for keywords 
     if ene_str in line:
-      props['E_i'].append(float(thisline[-1]))
+      props['E_0i'].append(float(thisline[-1]))
     elif ('%s ' % ncount) in line and 'excitation' in line:
         props['sym_i'].append(thisline[2])
         props['spin_i'].append(thisline[1])
