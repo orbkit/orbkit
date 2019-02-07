@@ -38,3 +38,5 @@ ea0_to_debye = _e * _a0 / _debye
 
 hbarha_to_fs = _ha/_hbar*1e-15
 fs_to_hbarha = _hbar/_ha*1e15
+
+ha_to_kJ_mol = 2625.50
