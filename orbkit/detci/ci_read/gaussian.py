@@ -57,9 +57,11 @@ def gaussian_tddft(fname,select_state=None,threshold=0.0,**kwargs):
         ci[-1].coeffs.append(1.0)
         ci[-1].info = {'state': '0',
                        'energy': float(thisline[4]),
+		       'energy_nm': 0.0,
                        'fileinfo': filename,
                        'read_threshold': threshold,
-                       'spin': spin}
+                       'spin': spin,
+		       'f_0i': 0.0}
     # Initialize new excited state
     elif ' Excited State' in line and 'eV' in line and 'nm' in line:
       if select_state is None or int(thisline[2].replace(':',' ')) in select_state:
@@ -71,9 +73,11 @@ def gaussian_tddft(fname,select_state=None,threshold=0.0,**kwargs):
         ci[-1].occ    = []
         ci[-1].info = {'state': thisline[2][:-1],
                        'energy': float(thisline[-6])*ev_to_ha + ci[0].info['energy'],
+		       'energy_nm': float(thisline[-4]),
                        'fileinfo': filename,
                        'read_threshold': threshold,
-                       'spin': thisline[3].split('-')[0]}
+                       'spin': thisline[3].split('-')[0],
+		       'f_0i': float(thisline[8].replace('=',' ').split()[-1])}
         deex.append([])
     if init_state == True:
       if not tddft_skip:
