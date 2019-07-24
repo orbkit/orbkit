@@ -760,7 +760,7 @@ def meshgrid2(*arrs):
   http://stackoverflow.com/a/1830192
   '''
   arrs = tuple(reversed(arrs)) 
-  lens = map(len, arrs)
+  lens = list(map(len, arrs))
   dim = len(arrs)
   
   sz = 1
