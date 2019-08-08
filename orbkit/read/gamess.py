@@ -7,21 +7,21 @@ from orbkit.orbitals import AOClass, MOClass
 def read_gamess(fname, all_mo=False, spin=None, read_properties=False,
                 **kwargs):
   '''Reads all information desired from a Gamess-US output file.
-  
+
   **Parameters:**
-  
+
   fname : str, file descriptor
     Specifies the filename for the input file.
     fname can also be used with a file descriptor instad of a filename.
   all_mo : bool, optional
       If True, all molecular orbitals are returned.
-  
+
   **Returns:**
-  
+
     qc (class QCinfo) with attributes geo_spec, geo_info, ao_spec, mo_spec, etot :
         See :ref:`Central Variables` for details.
   '''
-  
+
   if isinstance(fname, str):
     filename = fname
     fname = descriptor_from_file(filename, index=0)
@@ -36,8 +36,8 @@ def read_gamess(fname, all_mo=False, spin=None, read_properties=False,
     text = fname.read().decode("iso-8859-1").replace('\n','\n{}'.format(magic))
     flines = text.split(magic)
     flines.pop()
-  
-  # Initialize the variables 
+
+  # Initialize the variables
   qc = QCinfo()
   qc.ao_spec = AOClass([])
   qc.mo_spec = MOClass([])
@@ -46,8 +46,8 @@ def read_gamess(fname, all_mo=False, spin=None, read_properties=False,
   restricted = True                  # Flag for restricted calculation
   sec_flag = None                    # A Flag specifying the current section
   is_pop_ana = True                  # Flag for population analysis for ground state
-  keyword = [' ATOM      ATOMIC                      COORDINATES',''] 
-                                     # Keywords for single point calculation and 
+  keyword = [' ATOM      ATOMIC                      COORDINATES','']
+                                     # Keywords for single point calculation and
                                      # geometry optimization
   mokey = 'EIGENVECTORS'             # Keyword for MOs
   unrestopt = False                  # Flag for unrestricted optimization
@@ -68,18 +68,18 @@ def read_gamess(fname, all_mo=False, spin=None, read_properties=False,
         mokey = ' SET ****'
         restricted = False
       else:
-        mokey = 'MOLECULAR ORBITALS'
+        mokey = 'EIGENVECTORS'
 
     elif keyword[0] in line and keyword[1] in flines[il-1]:
-      # The section containing information about 
-      # the molecular geometry begins 
+      # The section containing information about
+      # the molecular geometry begins
       sec_flag = 'geo_info'
       atom_count = 0  # Counter for Atoms
       angstrom = not '(BOHR)' in line
-        
+
     elif 'ATOMIC BASIS SET' in line:
-      # The section containing information about 
-      # the atomic orbitals begins 
+      # The section containing information about
+      # the atomic orbitals begins
       sec_flag = 'ao_info'
       ao_skip = 6                     # Number of lines to skip
       AO = []                         # Atomic orbitals
@@ -89,19 +89,19 @@ def read_gamess(fname, all_mo=False, spin=None, read_properties=False,
       has_alpha = True
       has_beta = False
       restricted = False
-        
+
     elif '----- BETA SET ' in line:
       # The section for alpha electrons
       restricted = False
       has_alpha = False
       has_beta = True
-      
+
     elif mokey in line and len(thisline) < 3:
-      # The section containing information about 
-      # the molecular orbitals begins 
+      # The section containing information about
+      # the molecular orbitals begins
       sec_flag = 'mo_info'
       mo_skip = 1
-      len_mo = 0                      # Number of MOs 
+      len_mo = 0                      # Number of MOs
       init_mo = False                 # Initialize new MO section
       info_key = None                 # A Flag specifying the energy and symmetry section
       lxlylz = []
@@ -112,10 +112,10 @@ def read_gamess(fname, all_mo=False, spin=None, read_properties=False,
         has_beta = True
         has_alpha = False
         mo_skip = 0
-    
+
     elif 'NATURAL ORBITALS' in line and len(thisline) <= 3:
       display('The natural orbitals are not extracted.')
-      
+
     elif ' NUMBER OF OCCUPIED ORBITALS (ALPHA)          =' in line:
       occ = []                        # occupation number of molecular orbitals
       occ.append(int(thisline[-1]))
@@ -161,7 +161,7 @@ def read_gamess(fname, all_mo=False, spin=None, read_properties=False,
       qc.pop_ana['Lowdin'] = []
       qc.pop_ana['Mulliken'] = []
     else:
-      # Check if we are in a specific section 
+      # Check if we are in a specific section
       if sec_flag == 'geo_info':
         if not geo_skip:
           if len(line) < 2:
@@ -172,14 +172,14 @@ def read_gamess(fname, all_mo=False, spin=None, read_properties=False,
             atom_count += 1
         elif geo_skip:
           geo_skip -= 1
-      
+
       elif sec_flag == 'ao_info':
         if not ao_skip:
           if ' TOTAL NUMBER OF BASIS SET SHELLS' in line:
             sec_flag = None
           else:
             if len(thisline) == 1:
-              # Read atom type 
+              # Read atom type
               at_type = thisline[0]
               AO.append([])
               new_ao = False
@@ -212,9 +212,9 @@ def read_gamess(fname, all_mo=False, spin=None, read_properties=False,
             if thisline == []:
               info_key = None
               init_mo = True
-              try: 
-                int(flines[il+1].split()[0]) 
-              except ValueError: 
+              try:
+                int(flines[il+1].split()[0])
+              except ValueError:
                 sec_flag = None
                 init_mo = False
             elif init_mo:
@@ -273,10 +273,10 @@ def read_gamess(fname, all_mo=False, spin=None, read_properties=False,
           else:
             ii_geo = int(line[35:41].split()[0])-1
             qc.geo_info[ii_geo][2] = str(float(qc.geo_info[ii_geo][2]) - zcore)
-            
+
       elif sec_flag == 'dm_info':
-        # instead of giving the output in a useful human and machine readable 
-        # way, gamess output syntax differs for transitions involving the 
+        # instead of giving the output in a useful human and machine readable
+        # way, gamess output syntax differs for transitions involving the
         # ground state compared to transitions between excited states...
         if 'GROUND STATE (SCF) DIPOLE=' in line:
           # ground state dipole is in debye...convert to atomic units
@@ -314,12 +314,13 @@ def read_gamess(fname, all_mo=False, spin=None, read_properties=False,
           if  line == '\n':
             sec_flag = None
           else:
+            qc.pop_ana = {}
             qc.pop_ana['Lowdin'].append(float(thisline[5]))
             qc.pop_ana['Mulliken'].append(float(thisline[3]))
         elif pop_skip:
-          pop_skip -= 1          
-         
-  # Check usage of same atomic basis sets 
+          pop_skip -= 1
+
+  # Check usage of same atomic basis sets
   basis_set = {}
   for ii in range(len(AO)):
     if not AO[ii][0]['atom_type'] in basis_set.keys():
@@ -328,7 +329,7 @@ def read_gamess(fname, all_mo=False, spin=None, read_properties=False,
       for jj in range(len(AO[ii])):
         if AO[ii][jj]['coeffs'] !=  basis_set[AO[ii][0]['atom_type']][jj]['coeffs']:
           raise IOError('Different basis sets for the same atom.')
-  # Numpy array 
+  # Numpy array
   for ii in basis_set.keys():
     for jj in range(len(basis_set[ii])):
       basis_set[ii][jj]['coeffs'] = numpy.array(basis_set[ii][jj]['coeffs'])
@@ -336,7 +337,7 @@ def read_gamess(fname, all_mo=False, spin=None, read_properties=False,
   for kk in range(len(qc.mo_spec)):
     qc.mo_spec[kk]['coeffs'] = numpy.array(qc.mo_spec[kk]['coeffs'])
 
-  # Complement atomic basis sets 
+  # Complement atomic basis sets
   for kk in range(len(qc.geo_info)):
     for ll in range(len(basis_set[qc.geo_info[kk][0]])):
       qc.ao_spec.append({'atom': qc.geo_info[kk][1]-1,
@@ -347,7 +348,7 @@ def read_gamess(fname, all_mo=False, spin=None, read_properties=False,
                          })
   # Reconstruct exponents list for ao_spec
   count = 0
-  for i,j in enumerate(qc.ao_spec):    
+  for i,j in enumerate(qc.ao_spec):
     l = l_deg(lquant[j['type']])
     j['lxlylz'] = []
     for i in range(l):
@@ -356,7 +357,7 @@ def read_gamess(fname, all_mo=False, spin=None, read_properties=False,
                           lxlylz[count].lower().count('z')))
       count += 1
     j['lxlylz'] = numpy.array(j['lxlylz'],dtype=numpy.int64)
-  
+
   if restricted:
     for ii in range(len(qc.mo_spec)):
       if occ[0] and occ[1]:
@@ -369,7 +370,7 @@ def read_gamess(fname, all_mo=False, spin=None, read_properties=False,
       if not occ[1] and occ[0]:
         qc.mo_spec[ii]['occ_num'] += 1.0
         occ[0] -= 1
-  
+
   if restricted == False:
     for ii in range(len(qc.mo_spec)):
       if qc.mo_spec[ii]['spin'] == 'alpha' and occ[0] > 0:
@@ -380,10 +381,10 @@ def read_gamess(fname, all_mo=False, spin=None, read_properties=False,
         qc.mo_spec[ii]['occ_num'] += 1.0
         occ[1] -= 1
         has_beta = True
-  
+
   if spin is not None:
     if restricted:
-      raise IOError('The keyword `spin` is only supported for unrestricted calculations.')    
+      raise IOError('The keyword `spin` is only supported for unrestricted calculations.')
     if spin != 'alpha' and spin != 'beta':
       raise IOError('`spin=%s` is not a valid option' % spin)
     elif spin == 'alpha' and has_alpha == True:
@@ -393,23 +394,23 @@ def read_gamess(fname, all_mo=False, spin=None, read_properties=False,
     elif (not has_alpha) and (not has_beta):
       raise IOError(
             'No spin molecular orbitals available')
-    elif ((spin == 'alpha' and not has_alpha) or 
+    elif ((spin == 'alpha' and not has_alpha) or
           (spin == 'beta' and not has_beta)):
       raise IOError('You requested `%s` orbitals, but None of them are present.'
                     % spin)
-                    
-  # Are all MOs requested for the calculation? 
+
+  # Are all MOs requested for the calculation?
   if not all_mo:
     for i in range(len(qc.mo_spec))[::-1]:
       if qc.mo_spec[i]['occ_num'] < 0.0000001:
         del qc.mo_spec[i]
-  
+
   # Only molecular orbitals of one spin requested?
   if spin is not None:
     for i in range(len(qc.mo_spec))[::-1]:
       if qc.mo_spec[i]['spin'] != spin:
         del qc.mo_spec[i]
-    
+
   # Convert geo_info and geo_spec to numpy.ndarrays
   qc.format_geo(is_angstrom=angstrom)
 
