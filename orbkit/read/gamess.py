@@ -1,4 +1,5 @@
 import numpy
+import re
 from .tools import *
 from orbkit.qcinfo import QCinfo
 from orbkit.display import display
@@ -257,8 +258,8 @@ def read_gamess(fname, all_mo=False, spin=None, read_properties=False,
               info_key = 'coeffs'
             elif thisline != [] and info_key == 'coeffs':
               lxlylz.append((line[11:17]))
-              for ii in range(init_len,0,-1):
-                qc.mo_spec[-ii]['coeffs'].append(float(line[16:].split()[init_len-ii]))
+              for ii, m in enumerate(re.finditer('-?\d+\.\d+', line[16:])):
+                  qc.mo_spec[-init_len+ii]['coeffs'].append(float(m.group()))
         elif mo_skip:
           mo_skip -= 1
       elif sec_flag == 'ecp_info':
