@@ -241,7 +241,6 @@ def init(reset_display=True):
   if reset_display:
     reload(display_module)
 
-#if __name__ == '__main__':
 def run_standalone():
   '''Starts orbkit as a standalone program using parser options (:mod:`orbkit.core.init_parser`).
   '''  
