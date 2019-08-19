@@ -23,4 +23,4 @@ test_orbkit:
     - pip install -r requirements.txt
     - python setup.py build_ext --inplace clean
     - python -m orbkit test
-    - python -m orbkit test 2
+    - python -m orbkit test -p 2

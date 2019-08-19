@@ -3,6 +3,7 @@ import numpy
 
 from orbkit import options, grid
 from orbkit.display import display
+from orbkit.orbitals import AOClass, MOClass
 
 from .native import write_native
 
@@ -81,7 +82,9 @@ def npz_write(filename,gname='',mode='w',compress=True,**namedict):
       fname = key + '.npy'
       fid = open(tmpfile, 'wb')
       try:
-        numpy.lib.format.write_array(fid, numpy.asanyarray(val))
+        if val is None:
+            continue
+        numpy.lib.format.write_array(fid, numpy.asanyarray(val), allow_pickle=False)
         fid.close()
         fid = None
         zipf.write(tmpfile, arcname=os.path.join(gname,fname))
