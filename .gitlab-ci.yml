@@ -1,0 +1,26 @@
+# ------------------------------------------------------------
+# Use docker-in-docker executor
+# ------------------------------------------------------------
+image: docker:git
+services:
+  - docker:dind
+
+# ------------------------------------------------------------
+# Specify CI stages
+# ------------------------------------------------------------
+
+stages:
+  - test
+
+# ------------------------------------------------------------
+# 'test' stage
+# ------------------------------------------------------------
+
+test_orbkit:
+  image: python:3-slim
+  stage: test
+  script:
+    - pip install -r requirements.txt
+    - python setup.py build_ext --inplace clean
+    - ./tools/orbkit test
+    - ./tools/orbkit test 2
