@@ -17,7 +17,7 @@ stages:
 # ------------------------------------------------------------
 
 test_orbkit:
-  image: python:3-slim
+  image: python:3
   stage: test
   script:
     - pip install -r requirements.txt
