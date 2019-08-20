@@ -84,7 +84,7 @@ def read_native(fname, all_mo=None, spin=None, gname='qcinfo', **kwargs):
     raise NotImplementedError('File format {0} not implemented for reading.'.format(ftype.lower()))
 
   parent_module_instance = import_module(str(data['parent_class_name']))
-  return parent_module_instance(data)
+  return parent_module_instance(data=data)
 
 
 

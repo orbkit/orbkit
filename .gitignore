@@ -30,7 +30,6 @@ examples/basic_examples/Plots/
 *.kate-swp
 *.xyz
 *.pdb
-*.txt
 orbkit/*.html
 
 !grid*.txt

@@ -53,7 +53,12 @@ class AOClass(UserList):
 
     See :ref:`Central Variables` in the manual for details.
   '''
-  def __init__(self, seq = [], restart=None):
+  def __init__(self, data = None, seq = [], restart=None):
+    if isinstance(data, list):
+      seq = data
+    elif isinstance(data, dict):
+      restart = data
+    
     UserList.__init__(self, seq)
     self._up_to_date = False
     self.normalized = False
@@ -104,8 +109,8 @@ class AOClass(UserList):
       self._assign_lxlylz_to_cont        = restart['_assign_lxlylz_to_cont']
       self._nlxlylz_per_cont      = restart['_nlxlylz_per_cont']
 
-      self._lm                   = restart['_lm']
-      self._assign_lm_to_cont            = restart['_assign_lm_to_cont']
+      self._lm                   = restart.get('_lm', None)
+      self._assign_lm_to_cont            = restart.get('_assign_lm_to_cont', None)
 
       self.internal_to_dict()
 
@@ -424,7 +429,11 @@ class MOClass(UserList):
 
     See :ref:`Central Variables` in the manual for details.
   '''
-  def __init__(self, seq = [], restart=None):
+  def __init__(self, seq = [], restart=None, data = None):
+    if isinstance(data, list):
+      seq = data
+    elif isinstance(data, dict):
+      restart = data
     UserList.__init__(self, seq)
     self._up_to_date = False
     self.coeffs = None
@@ -444,8 +453,8 @@ class MOClass(UserList):
       self.sym = restart['sym']
       self.eig = restart['eig']
       self.spinpolarized = restart['spinpolarized']
-      self.selection_string = restart['selection_string']
-      self.selected_mo = restart['selected_mo']
+      self.selection_string = restart.get('selection_string', None)
+      self.selected_mo = restart.get('selected_mo', None)
       self.alpha_index = restart['alpha_index']
       self.beta_index = restart['beta_index']
       try:
