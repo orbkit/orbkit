@@ -328,7 +328,7 @@ class AOClass(UserList):
                       'lxlylz': self._lxlylz[self._assign_lxlylz_to_cont == ic]
                       })
       if self.spherical:
-        ao_spec[-1]['lm'] = [self._lm[i] for i in self._assign_lm_to_cont == ic]
+        ao_spec[-1]['lm'] = self._lm[self._assign_lm_to_cont == ic]
     self.data = ao_spec
 
 

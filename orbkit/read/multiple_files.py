@@ -243,7 +243,7 @@ class Multi():
 
     iterate= list(range(1,len(self.geo_spec_all)))
     
-    if deg > 0:
+    if deg is not None and deg > 0:
       display('\tThe molecular orbital coefficients will be extrapolated')
       display('\tusing a least squares polynomial fit of degree %d.' % deg)
       std = numpy.array([numpy.std(i-self.geo_spec_all[0]) for i in self.geo_spec_all])
@@ -666,7 +666,7 @@ class Multi():
       qc = QCinfo()
       qc.geo_spec = self.geo_spec_all[rr]
       qc.geo_info = self.geo_info
-      qc.ao_spec = AOClass(self.ao_spec)
+      qc.ao_spec = self.ao_spec
       qc.mo_spec = []
       for s,ii_s in self.sym.items():
         for i,coeffs in enumerate(self.mo_coeff_all[ii_s][rr]):
@@ -678,7 +678,7 @@ class Multi():
       qc.mo_spec = MOClass(qc.mo_spec)
       qc.mo_spec.update()
       if not all_mo:
-        ilumo = max(ilumo,qc.mo_spec.get_lumo())
+        ilumo = max(ilumo or 0, qc.mo_spec.get_lumo())
       
       self.QC.append(qc)
     
