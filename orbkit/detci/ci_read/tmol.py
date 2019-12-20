@@ -93,7 +93,6 @@ def tmol_tddft(fname,nmoocc=None,nforbs=0,select_state=None,threshold=0.0,
                      'nel': nel}
       if not i:
         ci[-1].occ.append([-1,-1])
-        ci[-1].coeffs = [1.0]
       else:
         ci[-1].occ.append([0,0])
         for jj in range(states[i-1]['xia'].shape[0]):
