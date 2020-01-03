@@ -19,10 +19,6 @@ jobs:
         pip install Cython
         pip install h5py
         #TODO: Add LibCInt
-        export ORBKITPATH=$(pwd)
-        python setup.py build_ext --inplace clean
-        export PYTHONPATH=$PYHONPATH:$ORBKITPATH
-        export PATH=$PATH:$ORBKITPATH/tools
     - name: Code Quality
       run: |
         pip install flake8
@@ -32,4 +28,7 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Unit Tests
       run: |
-        orbkit test
+        export ORBKITPATH=$(pwd)
+        python setup.py build_ext --inplace clean
+        export PYTHONPATH=$PYHONPATH:$ORBKITPATH
+        ./tools/orbkit test
