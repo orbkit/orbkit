@@ -71,7 +71,7 @@ def read_gaussian_log(fname,all_mo=False,spin=None,orientation='standard',
     
     try:
       if interactive:
-        i = raw_input(message)
+        i = input(message)
         i = default if i == '' else int(i)
       i = range(count)[i]
     except (IndexError,ValueError):

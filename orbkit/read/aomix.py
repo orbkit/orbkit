@@ -66,7 +66,7 @@ def read_aomix(fname, all_mo=False, spin=None, i_md=-1, interactive=True,
     
     try:
       if interactive:
-        i = int(raw_input(message))
+        i = int(input(message))
       i = range(count)[i]
     except (IndexError,ValueError):
       raise IOError(message.replace(':','!'))

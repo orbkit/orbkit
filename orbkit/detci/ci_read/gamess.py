@@ -1,6 +1,7 @@
 import numpy
 from copy import copy
 
+from orbkit.units import ev_to_ha
 from orbkit.display import display
 from orbkit.qcinfo import CIinfo
 from orbkit.read.tools import descriptor_from_file
