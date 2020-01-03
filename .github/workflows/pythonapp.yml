@@ -20,9 +20,9 @@ jobs:
         pip install h5py
         #TODO: Add LibCInt
         export ORBKITPATH=$(pwd)
-        cd $ORBKITPATH
         python setup.py build_ext --inplace clean
         export PYTHONPATH=$PYHONPATH:$ORBKITPATH
+        export PATH=$PATH:$ORBKITPATH/tools
     - name: Code Quality
       run: |
         pip install flake8
