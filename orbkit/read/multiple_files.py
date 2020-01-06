@@ -237,7 +237,7 @@ class Multi():
     '''
     
     if fid_list is not None:
-      read(fid_list,itype=itype,**kwargs)
+      self.read(fid_list,itype=itype,**kwargs)
       
     display('\nStarting the ordering routine using the molecular orbital overlap...')
 
@@ -274,7 +274,7 @@ class Multi():
         mo_coeff = self.mo_coeff_all[s]
         shape = numpy.shape(mo_coeff)
         if deg is not None and deg > 0 and r1 >= deg:
-          mo_r1 = get_extrapolation(r1,r2,mo_coeff,grid1d=std,deg=deg)
+          mo_r1 = self.get_extrapolation(r1,r2,mo_coeff,grid1d=std,deg=deg)
         else:
           mo_r1 = mo_coeff[r1]
 
@@ -363,22 +363,24 @@ class Multi():
       Contains the ordered matrix.
     '''
     
+    mu = 5e-2
+
     # Read all input files
     if fid_list is not None:
-      read(fid_list,itype=itype,**kwargs)
+      self.read(fid_list,itype=itype,**kwargs)
 
     radius = range(len(self.geo_spec_all)) #: We assume an equally spaced grid
     
     if deg < 2:
-      function = order_mo
+      function = self.order_mo
     else:
-      function = order_mo_higher_deg
+      function = self.order_mo_higher_deg
     
     if matrix is not None:
       display('\tOdering backward')
-      matrix, index_list = function(matrix,index_list=index_list[ii_s],backward=True,mu=mu,deg=deg)
+      matrix, index_list = function(matrix,index_list=self.index_list,backward=True,mu=mu,deg=deg)
       display('\tOdering forward')
-      matrix, index_list = function(matrix,index_list=index_list[ii_s],backward=False,mu=mu,deg=deg)
+      matrix, index_list = function(matrix,index_list=self.index_list,backward=False,mu=mu,deg=deg)
       return matrix, index_list
     
     index_list = [None for i in self.sym.keys()]
@@ -388,12 +390,10 @@ class Multi():
       
       shape = numpy.shape(self.mo_coeff_all[ii_s])
       
-      mu = 5e-2
-      
       matrix = self.mo_coeff_all[ii_s]
       if use_mo_values:
         display('\tComputing molecular orbitals at the nuclear positions')
-        matrix = compute_mo_list(self.geo_spec_all,self.ao_spec,matrix,
+        matrix = self.compute_mo_list(self.geo_spec_all,self.ao_spec,matrix,
                                  iter_drv=[None, 'x', 'y', 'z'])
       
       
@@ -746,9 +746,9 @@ class Multi():
       shape = self.mo_coeff_all[i_mo].shape    
       for i in range(shape[1]):
         mo_coeff_tck[-1].append([])
-        mo_energy_tck[-1].append(interpolate.splrep(x,mo_energy_all[i_mo][:,i],
+        mo_energy_tck[-1].append(interpolate.splrep(x,self.mo_energy_all[i_mo][:,i],
                                  k=k,**kwargs))
-        mo_occ_tck[-1].append(interpolate.splrep(x,mo_occ_all[i_mo][:,i],
+        mo_occ_tck[-1].append(interpolate.splrep(x,self.mo_occ_all[i_mo][:,i],
                               k=k,**kwargs))
         for j in range(shape[2]):
           mo_coeff_tck[-1][-1].append(interpolate.splrep(x,
@@ -764,7 +764,7 @@ class Multi():
     tmp = numpy.zeros(shape)  
     for i in range(shape[1]):
       for j in range(shape[2]):
-        tmp[:,i,j] = data_interp(x,self.geo_spec_all[:,i,j],xnew,k=k,**kwargs)
+        tmp[:,i,j] = self.data_interp(x,self.geo_spec_all[:,i,j],xnew,k=k,**kwargs)
     self.geo_spec_all = numpy.copy(tmp)
     
     for i_mo in range(len(self.mo_coeff_all)):
@@ -773,21 +773,21 @@ class Multi():
       tmp = numpy.zeros(shape)  
       for i in range(shape[1]):
         for j in range(shape[2]):
-          tmp[:,i,j] = data_interp(x,self.mo_coeff_all[i_mo][:,i,j],xnew,k=k,**kwargs)
+          tmp[:,i,j] = self.data_interp(x,self.mo_coeff_all[i_mo][:,i,j],xnew,k=k,**kwargs)
       self.mo_coeff_all[i_mo] = numpy.copy(tmp)
       
-      shape = list(mo_energy_all[i_mo].shape)
+      shape = list(self.mo_energy_all[i_mo].shape)
       shape[0] = len(xnew)
       tmp = numpy.zeros(shape)  
       for i in range(shape[1]):
-        tmp[:,i] = data_interp(x,mo_energy_all[i_mo][:,i],xnew,k=k,**kwargs)
+        tmp[:,i] = self.data_interp(x,self.mo_energy_all[i_mo][:,i],xnew,k=k,**kwargs)
       self.mo_energy_all[i_mo] = numpy.copy(tmp)
       
-      shape = list(mo_occ_all[i_mo].shape)
+      shape = list(self.mo_occ_all[i_mo].shape)
       shape[0] = len(xnew)
       tmp = numpy.zeros(shape)  
       for i in range(shape[1]):
-        tmp[:,i] = data_interp(x,mo_occ_all[i_mo][:,i],xnew,k=k,**kwargs)
+        tmp[:,i] = self.data_interp(x,self.mo_occ_all[i_mo][:,i],xnew,k=k,**kwargs)
       self.mo_occ_all[i_mo] = numpy.copy(tmp)
 
   def plot(self,mo_matrix,symmetry='1',title='All',x_label='index',
@@ -892,9 +892,9 @@ class Multi():
       mo = []
       for rr in r:
         ao_list = ao_creator(self.geo_spec_all[rr],self.ao_spec)
-        mo.append(mo_creator(ao_list,mo_coeff_all[self.sym[j]][rr,int(i)-1,numpy.newaxis])[0].reshape(tuple(npts)))
+        mo.append(mo_creator(ao_list,self.mo_coeff_all[self.sym[j]][rr,int(i)-1,numpy.newaxis])[0].reshape(tuple(npts)))
       
-      f, pics = contour_mult_mo(xyz[k[0]],xyz[k[1]],mo,
+      f, pics = self.contour_mult_mo(xyz[k[0]],xyz[k[1]],mo,
                       xlabel=select_slice[0],ylabel=select_slice[1],
                       title='MO:%s' % mo_sel,r0=r0)
       for i,pic in enumerate(pics):

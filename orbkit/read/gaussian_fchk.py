@@ -219,7 +219,7 @@ def read_gaussian_fchk(fname, all_mo=False, spin=None, **kwargs):
       elif sec_flag == 'ao_info':
         for ii in thisline:
           ii = int(ii)
-          if index is 'type':         
+          if index == 'type':         
             ii = orbit[abs(ii)]
             l = lquant[ii]
             if not cartesian_basis:
@@ -228,7 +228,7 @@ def read_gaussian_fchk(fname, all_mo=False, spin=None, **kwargs):
                 qc.ao_spec[count]['lm'].append((l,m))
                 if m != 0:
                   qc.ao_spec[count]['lm'].append((l,-m))
-          elif index is 'atom':
+          elif index == 'atom':
             ii -= 1
           qc.ao_spec[count][index] = ii
           count += 1

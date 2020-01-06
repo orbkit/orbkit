@@ -470,7 +470,7 @@ def check_if_exists(fid, what='',error=IOError,display=sys.stdout.write,
     if fid != '':
       display('%s does not exist!\n' % fid)
     if interactive:
-      fid = raw_input('Please insert a correct %s: ' % what)
+      fid = input('Please insert a correct %s: ' % what)
     else:
       error('Insert a correct %s!\n' % what)
       break 

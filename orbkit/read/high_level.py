@@ -64,7 +64,7 @@ def main_read(fname, all_mo=False, spin=None, itype='auto', check_norm=False, **
   else:
     filename = fname.name
 
-  if itype is 'auto':
+  if itype == 'auto':
     itype = find_itype(fname)
  
   display('Loading data from {0} type file {1}\n'.format(itype, filename))

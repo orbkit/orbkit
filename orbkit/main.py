@@ -168,7 +168,7 @@ def run_orbkit(use_qc=None,check_options=True,standalone=False):
                                            drv=options.drv)
 
     if not options.no_output:
-      output_written = output.main_output(rho,
+      output_written = output.main_output(rho_atom,
                                           qc,
                                           outputname=options.outputname,
                                           otype=options.otype)

@@ -3,6 +3,7 @@ import numpy
 from orbkit.qcinfo import QCinfo
 from orbkit.orbitals import AOClass, MOClass
 from orbkit.units import aa_to_a0, ev_to_ha
+from orbkit.display import display
 from orbkit.tools import l_deg, lquant, get_atom_symbol
 from importlib import import_module
 

@@ -221,7 +221,7 @@ def hdf5_write(fid,mode='w',gname='',**kwargs):
     All additional keyword arguments specify the input data.
   '''
   for f in hdf5_open(fid,mode=mode):
-    if gname is not '':
+    if gname != '':
       group = f.create_group(gname) if gname not in f.keys() else f[gname]
     else:
       group = f
@@ -257,4 +257,4 @@ def hdf5_attributes(filename, gname='', **attrs):
           warning.append('data')
   if warning:
     display('Warning: The following attributes are not datasets in '+filename)
-    display(', '.join([os.path.join(gname,i) for i in data]))
+    display(', '.join([os.path.join(gname,i) for i in warning]))

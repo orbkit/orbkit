@@ -590,7 +590,7 @@ def check_atom_select(atom,geo_info,geo_spec,interactive=True,
     if interactive:
       while not((isinstance(atom, int)) and (0 < atom <= len(geo_spec))):
         try:
-          atom = int(raw_input('Please insert a correct index: '))
+          atom = int(input('Please insert a correct index: '))
         except ValueError:
           pass
     else: 
