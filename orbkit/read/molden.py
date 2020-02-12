@@ -111,6 +111,8 @@ def read_molden(fname, all_mo=False, spin=None, i_md=-1, interactive=True,
               continue
           break
 
+    i_md = list(range(count))[i_md]
+
     # log selected index
     display('\tSelecting the element with index {:d}.'.format(i_md))
 

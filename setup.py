@@ -1,13 +1,16 @@
 #!/usr/bin/env python
 
-from distutils.core import setup
-from distutils.extension import Extension
+from setuptools import find_packages, setup, Extension
 from Cython.Distutils import build_ext
 from os.path import join
 
 import numpy
 
 setup(
+    name='orbkit',
+    packages=find_packages(),
+    include_package_data=True,
+    version='1.1.0',
     cmdclass = {'build_ext': build_ext},
     ext_modules = [Extension("orbkit.cy_grid",
                     sources=["orbkit/cy_grid.pyx"],
