@@ -20,8 +20,7 @@ setup(
   url='https://github.com/orbkit/orbkit',
   cmdclass={'build_ext': build_ext},
   entry_points={'console_scripts': ['orbkit = orbkit.main:run_standalone']},
-  install_requires=['numpy', 'scipy', 'matplotlib', 'h5py',
-                    'pytest', 'pytest-xdist'],
+  install_requires=['numpy', 'scipy', 'matplotlib', 'h5py'],
   ext_modules=[
     Extension(
       'orbkit.cy_grid',

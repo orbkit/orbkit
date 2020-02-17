@@ -699,6 +699,12 @@ class MOClass(UserList):
       return ['%(sym)s, Occ=%(occ_num).2f, E=%(energy)+.4f E_h' %
                     i for i in self.data]
 
+  def get_indices(self):
+    if self.selected_mo is not None:
+      return self.selected_mo
+    else:
+      return list(range(len(self.data)))
+  
   def set_coeffs(self, item):
     '''Set function for numpy array version of molecular orbital coefficients.
 

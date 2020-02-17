@@ -54,7 +54,7 @@ synonyms = {'auto':'auto',
             }
 
 def main_output(data,qc=None,outputname='data',otype='auto',gname='',
-                drv=None,omit=[],datalabels='',mode='w',**kwargs):
+                drv=None,omit=[],datalabels='',dataindices=None,mode='w',**kwargs):
   '''Creates the requested output.
   
   **Parameters:**
@@ -81,6 +81,8 @@ def main_output(data,qc=None,outputname='data',otype='auto',gname='',
     with NDRV = len(drv). Specifies the file labels, i.e. e.g., data_d{drv}.cube for 4d array.
     For 5d arrays i.e., data_0_d{drv}.cube
   datalabels : list of str, optional
+    If not empty, the output file types specified here are omitted.
+  dataindices : list of int, optional
     If not empty, the output file types specified here are omitted.
   omit : list of str, optional
     If not empty, the output file types specified here are omitted.
@@ -232,7 +234,8 @@ def main_output(data,qc=None,outputname='data',otype='auto',gname='',
       datasetlabels = []
       for idata in range(data.shape[1]):
         if isstr:
-          f = {'f': outputname + '_' + str(idata) if data.shape[1] > 1 else outputname,
+          index = str(idata) if dataindices is None else str(dataindices[idata])
+          f = {'f': outputname + '_' + index if data.shape[1] > 1 else outputname,
                'd':jdrv}
         else:
           f = {'f': outputname[idata], 'd':jdrv}

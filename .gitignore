@@ -5,6 +5,8 @@
 *.DS_Store
 .*.swp
 *.nfs*
+dist
+*egg-info*
 
 *build/
 */.*
