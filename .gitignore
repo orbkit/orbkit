@@ -22,6 +22,8 @@ examples/basic_examples/Plots/
 *.h5am
 *.cb
 *.cube
+*.cb.gz
+*.cube.gz
 *.hx
 *.md
 *.am
