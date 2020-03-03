@@ -6,8 +6,6 @@ from os.path import join
 
 import numpy
 
-from orbkit import __version__
-
 with open('README.rst', 'r') as fh:
   # Remove header
   for line in fh:
@@ -32,7 +30,7 @@ setup(
   name='orbkit',
   packages=find_packages(),
   include_package_data=True,
-  version=__version__ + '.dev1',
+  version='1.1.0.dev1',
   license='lgpl-3.0',
   description='A Toolbox for Post-Processing Quantum Chemical Wavefunction Data',
   long_description=long_description,
