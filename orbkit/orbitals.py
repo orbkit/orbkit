@@ -556,7 +556,7 @@ class MOClass(UserList):
 
   def splinsplit_array(self, array):
     array_alpha = array[self.alpha_index]
-    array_beta = array[self.alpha_index]
+    array_beta = array[self.beta_index]
     return array_alpha, array_beta
 
   @property
