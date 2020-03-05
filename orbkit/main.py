@@ -63,8 +63,11 @@ def run_orbkit(use_qc=None,check_options=True,standalone=False):
   # Display program information
   display(lgpl_short)
   
-  # Check for the correctness of orbkit.options
-  if check_options:
+  if standalone:
+    # Call the parser
+    options.init_parser()
+  elif check_options:
+    # Check for the correctness of orbkit.options
     display('Checking orbkit.options...\n')
     options.check_options(display=display,
                           interactive=False,
@@ -244,8 +247,5 @@ def init(reset_display=True):
 def run_standalone():
   '''Starts orbkit as a standalone program using parser options (:mod:`orbkit.core.init_parser`).
   '''  
-  # Call the parser
-  options.init_parser()
   
-  # Call the main loop
-  return run_orbkit(check_options=False,standalone=True)
+  run_orbkit(standalone=True)
