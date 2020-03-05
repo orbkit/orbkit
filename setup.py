@@ -30,7 +30,7 @@ setup(
   name='orbkit',
   packages=find_packages(),
   include_package_data=True,
-  version='1.1.0.dev1',
+  version='1.1.0.dev2',
   license='lgpl-3.0',
   description='A Toolbox for Post-Processing Quantum Chemical Wavefunction Data',
   long_description=long_description,
