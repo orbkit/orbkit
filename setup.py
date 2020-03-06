@@ -13,7 +13,7 @@ with open('README.rst', 'r') as fh:
       next(fh)
       next(fh)
       break
-  
+
   long_description = fh.read()
 
 
