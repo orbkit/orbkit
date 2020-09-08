@@ -556,7 +556,7 @@ class MOClass(UserList):
 
   def splinsplit_array(self, array):
     array_alpha = array[self.alpha_index]
-    array_beta = array[self.alpha_index]
+    array_beta = array[self.beta_index]
     return array_alpha, array_beta
 
   @property
@@ -699,6 +699,12 @@ class MOClass(UserList):
       return ['%(sym)s, Occ=%(occ_num).2f, E=%(energy)+.4f E_h' %
                     i for i in self.data]
 
+  def get_indices(self):
+    if self.selected_mo is not None:
+      return self.selected_mo
+    else:
+      return list(range(len(self.data)))
+  
   def set_coeffs(self, item):
     '''Set function for numpy array version of molecular orbital coefficients.
 
@@ -984,13 +990,13 @@ class MOClass(UserList):
               'last_bound': str(self.get_lastbound()),
               'lastbound': str(self.get_lastbound())}
             
-      warnings = {'homo': 'occupied',
+      warnings_str = {'homo': 'occupied',
                   'lumo': 'unoccupied',
                   'last_bound': 'bound'}
       
       for key in keys:
-        if key in item and key in warnings.keys() and keys[key] == 'None':
-          print('No {0} orbitals are present. Ignoring respective entries...'.format(warnings[key]))
+        if key in item and key in warnings_str.keys() and keys[key] == 'None':
+          print('No {0} orbitals are present. Ignoring respective entries...'.format(warnings_str[key]))
         item = item.replace(key, keys[key])
 
       #This seems quite insane to me... I don't really know what else to do though...
@@ -1026,9 +1032,11 @@ class MOClass(UserList):
         else:
           raise ValueError('Format not recognized')
         if a < 0:
-          raise ValueError('Lower index or range out of bounds')
+          a = 0
+          warnings.warn('Lower index or index range out of bounds. Setting to zero', UserWarning)
         if b > len(self.data):
-          raise ValueError('Upper index or range out of bounds')
+          b = len(self.data) - 1
+          warnings.warn('Upper index or index range out of bounds. Setting to maximum index', UserWarning)
         item = [k for k in range(a, b, s)]
       else:
         item = [int(k) for k in item]
@@ -1136,7 +1144,7 @@ class MOClass(UserList):
         for item in sublist:
           if '.' not in item and '*' not in item:
             if isinstance(item, str):
-              tmp.extend(parse_nosym(item))
+              tmp.extend(parse_nosym(item.lower()))
             else:
               tmp.extend(item)
           else:

@@ -62,6 +62,7 @@ niotypes = ['npz',
 otypes = ['h5', 'hdf5', 
           'npz', 
           'cube', 'cb', 
+          'cube.gz', 'cb.gz', 
           'am', 
           'hx', 
           'vmd', 
@@ -134,13 +135,13 @@ def init_parser():
                       help='''output formats (multiple calls possible):  
                       '{0}' or '{1}' (HDF5 file),                        
                       '{2}' (Compressed numpy file),                             
-                      '{3}' or '{4}' (Gaussian cube file),                     
-                      '{5}' (VMD network),                           
-                      '{6}' (ZIBAmiraMesh file),                     
-                      '{7}' (ZIBAmira network),                      
-                      '{8}' (simple interactive Mayavi interface) 
-                      '{10}' (determine from OUTPUTNAME) 
-                      [default: '{10}' if OUTPUTNAME has file extension 
+                      '{3}' or '{5}' (Gaussian cube file),                     
+                      '{7}' (VMD network),                           
+                      '{8}' (ZIBAmiraMesh file),                     
+                      '{9}' (ZIBAmira network),                      
+                      '{10}' (simple interactive Mayavi interface) 
+                      '{11}' (determine from OUTPUTNAME) 
+                      [default: '{11}' if OUTPUTNAME has file extension 
                       else '{0}']'''.format(*otypes))
   parser.add_option_group(group)
   

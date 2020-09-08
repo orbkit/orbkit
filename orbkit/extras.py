@@ -86,7 +86,7 @@ def calc_mo(qc, fid_mo_list, drv=None, otype=None, ofid=None,
   
   if ofid is None:
     if '@' in options.outputname:
-      outputname,group =  options.outputname.split('@')
+      outputname,group = options.outputname.split('@')
     else:
       outputname,group = options.outputname, ''
     outputname,autootype = os.path.splitext(outputname)
@@ -96,6 +96,7 @@ def calc_mo(qc, fid_mo_list, drv=None, otype=None, ofid=None,
                                  qc_select,
                                  outputname=ofid,
                                  datalabels=qc_select.mo_spec.get_labels(),
+                                 dataindices=qc_select.mo_spec.get_indices(),
                                  otype=otype,
                                  drv=drv)
   

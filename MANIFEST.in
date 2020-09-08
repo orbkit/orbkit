@@ -1,0 +1,6 @@
+include requirements.txt
+include MANIFEST.in
+include LICENSE README.rst 
+include orbkit/supporting_data/*
+recursive-include orbkit/test *
+include bin/orbkit

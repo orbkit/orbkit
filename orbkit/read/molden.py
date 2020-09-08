@@ -20,11 +20,11 @@ re_float = r'([-+]?\d+\.?\d*[ed]?[+-]?\d+|NaN)'
 
 # [Atoms] section (geo_info)
 regex_atoms = re.compile(r'\[atoms\]\s*\(?(angs|au)\)?', re.I)
-regex_atom = re.compile(r'([a-z]+)\s+(\d+)\s+(\d+)\s+' + r'\s+'.join((re_float,)*3), re.I)
+regex_atom = re.compile(r'\s*([a-z]+)\s+(\d+)\s+(\d+)\s+' + r'\s+'.join((re_float,)*3), re.I)
 
 # [GTO] section (ao_info)
 regex_basis = re.compile(r'\s*(\d+)\s+(\d+)$', re.I)
-regex_contraction = re.compile(r'\s*([a-z]+)\s+(\d+)\s+' + re_float, re.I)
+regex_contraction = re.compile(r'\s*([a-z]+)\s+(\d+)\s+(\d+(\.\d+)?)($)', re.I)
 regex_primitive = re.compile(r'\s*'+r'\s+'.join((re_float,)*2), re.I)
 
 # flags for use of spherical/cartesian basis functions
@@ -110,6 +110,8 @@ def read_molden(fname, all_mo=False, spin=None, i_md=-1, interactive=True,
               # invalid index
               continue
           break
+
+    i_md = list(range(count))[i_md]
 
     # log selected index
     display('\tSelecting the element with index {:d}.'.format(i_md))

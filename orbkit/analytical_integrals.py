@@ -95,7 +95,6 @@ def get_ao_overlap(coord_a, coord_b, ao_spec, lxlylz_b=None,
     raise ValueError('Only first derivatives are currently supported for ' +
                      'analytical integrals.')
   
-  
   ao_overlap_matrix = cy_overlap.aooverlap(coord_a,
                                            coord_b,
                                            lxlylz_a,

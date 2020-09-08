@@ -1,3 +1,4 @@
+import gzip
 import numpy
 from orbkit import grid
 
@@ -38,13 +39,12 @@ def cube_creator(data,filename,geo_info,geo_spec,comments='',labels=None,**kwarg
       raise AssertionError('labels has to be list of integers.')
 
   assert data.shape[1:] == tuple(grid.N_), 'The grid does not fit the data.'
-  # Open an empty file 
-  if not (filename.endswith('cube'),filename.endswith('cb')):
+  
+  if not any([filename.endswith(ext)
+              for ext in ['cube', 'cb', 'cube.gz', 'cb.gz']]):
     filename += '.cube'
   
-  fid = open(filename, 'w')
-  
-  # Write the type and the position of the atoms in the header 
+  # Write the type and the position of the atoms in the header
   string = 'orbkit calculation\n'
   string += ' %(f)s\n'  % {'f': comments}
   # How many atoms 
@@ -91,8 +91,11 @@ def cube_creator(data,filename,geo_info,geo_spec,comments='',labels=None,**kwarg
           if (c % 6 == 5): 
             string += '\n'
           c += 1
-      string += '\n' 
-  fid.write(string)
+      string += '\n'
   
-  # Close the file 
-  fid.close()
+  if filename.endswith('gz'):
+    with gzip.open(filename, 'wb') as f:
+      f.write(string.encode('utf-8'))
+  else:
+    with open(filename, 'w') as f:
+      f.write(string)

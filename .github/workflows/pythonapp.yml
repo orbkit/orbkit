@@ -15,10 +15,9 @@ jobs:
         python-version: 3.7
     - name: Install
       run: |
-        python -m pip install --upgrade pip
-        pip install Cython
-        pip install h5py
-        #TODO: Add LibCInt
+        pip install -r requirements.txt
+        #TODO: Add Install LibCInt
+        python setup.py install
     - name: Code Quality
       run: |
         pip install flake8
@@ -28,7 +27,8 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Unit Tests
       run: |
-        export ORBKITPATH=$(pwd)
-        python setup.py build_ext --inplace clean
-        export PYTHONPATH=$PYHONPATH:$ORBKITPATH
-        ./tools/orbkit test
+        orbkit test
+    - name: Unit Tests Parallel
+      run: |
+        orbkit test -p 2
+
