@@ -2,8 +2,10 @@
 Some tools needed by Orbkit functions
 '''
 
-import re
+import gzip
 import numpy
+import os
+import re
 
 from orbkit.display import display
 from orbkit.tools import *
@@ -14,6 +16,8 @@ def descriptor_from_file(filename, index=0, ci_descriptor=False):
 
   if is_tar_file(filename):
     fname, _ = get_file_from_tar(filename, index=index, ci_descriptor=ci_descriptor)
+  elif os.path.splitext(filename)[1] == '.gz':
+    fname = gzip.open(filename, 'rt')
   else:
     fname = open(filename, 'r')
   return fname
@@ -129,6 +133,7 @@ def find_itype(fname, extension=None):
     text = fname.read()
   else:
     text = fname.read().decode("iso-8859-1")
+  fname.seek(0)
 
   for regname in itypes:
     if regexes[regname].search(text):
