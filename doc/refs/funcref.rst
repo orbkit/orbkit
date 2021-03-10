@@ -79,6 +79,7 @@ orbkit.output
 .. autofunction:: orbkit.output.amira_creator
 .. autofunction:: orbkit.output.hx_network_creator
 .. autofunction:: orbkit.output.cube_creator
+.. autofunction:: orbkit.output.obj_creator
 
 orbkit.extras
 -------------
