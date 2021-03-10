@@ -48,7 +48,7 @@ synonyms = {'auto':'auto',
             'npz':'npz','numpy':'npz',
             'cube':'cube', 'cb':'cube',
             'cube.gz':'cube', 'cb.gz':'cube',
-            'obj':'obj',
+            'obj':'obj', 'obj.gz':'obj',
             'am':'am', 
             'hx':'hx',
             'vmd':'vmd',
@@ -272,6 +272,17 @@ def main_output(data,qc=None,outputname='data',otype='auto',gname='',
                          **kwargs)
             output_written.append(filename)
             cube_files.append(filename)
+
+        if 'obj' in otype_synonyms and not print_warning:
+          if output_not_possible: print_warning = True
+          elif qc is None: 
+            display('\nFor obj file output `qc` is a required keyword parameter in `main_output`.')
+          else: 
+            filename = fid % f + otype_ext['obj']
+            display('\nSaving to obj file...\n\t' + filename)
+            obj_creator(data[idrv,idata],filename,qc.geo_info,qc.geo_spec,
+                         **kwargs)
+            output_written.append(filename)
         
       all_datalabels.extend(datasetlabels)
     
