@@ -2,7 +2,7 @@
 Build new ORBKIT io interface
 '''
 
-__all__ = ['main_output','amira_creator_old','cube_creator','obj_creator','hdf5_creator',
+__all__ = ['main_output','cube_creator','obj_creator','hdf5_creator',
            'view_with_mayavi','pdb_creator','vmd_network_creator',
            'pdb_creator','hdf5_append','xyz_creator','amira_creator',
            'hdf5_open', 'hdf5_write', 'hdf5_attributes', 'hdf52dict',
