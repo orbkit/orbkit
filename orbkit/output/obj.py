@@ -25,7 +25,7 @@ def obj_creator(data,filename,geo_info,geo_spec,iso=(-0.01,0.01),**kwargs):
     
   if data.ndim < dims:
     raise AssertionError('data.ndim < ndim of grid')
-  elif data.ndim > dims + 1:
+  if data.ndim > dims + 1:
     raise AssertionError('data.ndim > (ndim of grid) +2')
 
   if shape != tuple(grid.N_):
