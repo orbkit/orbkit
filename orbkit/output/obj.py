@@ -37,7 +37,10 @@ def obj_creator(data,filename,geo_info,geo_spec,iso=(-0.01,0.01),**kwargs):
   for i in iso:
         
     # Data conversion    
-    verts, faces, normals, values = measure.marching_cubes(data, level=i,spacing=spacing,step_size=1)
+    verts, faces, normals, values = measure.marching_cubes(data,
+                                                           level=i,
+                                                           spacing=spacing,
+                                                           step_size=1)
     faces = faces + 1
     
     # Define filename for plus and minus surfaces
