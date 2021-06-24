@@ -24,7 +24,7 @@ regex_atom = re.compile(r'\s*([a-z]+)\s+(\d+)\s+(\d+)\s+' + r'\s+'.join((re_floa
 
 # [GTO] section (ao_info)
 regex_basis = re.compile(r'\s*(\d+)\s+(\d+)$', re.I)
-regex_contraction = re.compile(r'\s*([a-z]+)\s+(\d+)\s+(\d+(\.\d+)?)($)', re.I)
+regex_contraction = re.compile(r'\s*([a-z]+)\s+(\d+)\s+(\d+(\.\d+)?)\s*($)', re.I)
 regex_primitive = re.compile(r'\s*'+r'\s+'.join((re_float,)*2), re.I)
 
 # flags for use of spherical/cartesian basis functions
