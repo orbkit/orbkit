@@ -35,6 +35,7 @@ from orbkit.units import a0_to_aa
 
 from .amira import amira_creator, hx_network_creator
 from .cube import cube_creator
+from .obj import obj_creator
 from .hdf5 import hdf5_creator, hdf5_append, hdf5_write
 from .mayavi_interface import view_with_mayavi
 from .pdb import pdb_creator
@@ -47,6 +48,7 @@ synonyms = {'auto':'auto',
             'npz':'npz','numpy':'npz',
             'cube':'cube', 'cb':'cube',
             'cube.gz':'cube', 'cb.gz':'cube',
+            'obj':'obj', 'obj.gz':'obj',
             'am':'am', 
             'hx':'hx',
             'vmd':'vmd',
@@ -71,7 +73,7 @@ def main_output(data,qc=None,outputname='data',otype='auto',gname='',
     part interpreted as outputname and second as gname (cf. Parameters:gname). 
   otype : str or list of str, optional
     Contains the output file type. Possible options:
-    'auto', 'h5', 'cb', 'am', 'hx', 'vmd', 'mayavi'
+    'auto', 'h5', 'cb', 'am', 'hx', 'vmd', 'mayavi', 'obj'
     
     If otype='native', a native input file will be written, the type of which may be specifie by
     ftype='numpy'.
@@ -150,7 +152,7 @@ def main_output(data,qc=None,outputname='data',otype='auto',gname='',
     display('\n'.join(['\t' + i for i in output_written]))
 
   else:
-    print_waring = False
+    print_warning = False
     output_not_possible = (grid.is_vector and not grid.is_regular)
     
     # Shape shall be (Ndrv,Ndata,Nx,Ny,Nz) or (Ndrv,Ndata,Nxyz)
@@ -244,22 +246,22 @@ def main_output(data,qc=None,outputname='data',otype='auto',gname='',
         datalabel = datalabel_id%c
         datasetlabels.append(datalabel)
         
-        if 'am' in otype_synonyms and not print_waring:
-          if output_not_possible: print_waring = True
+        if 'am' in otype_synonyms and not print_warning:
+          if output_not_possible: print_warning = True
           else: 
             filename = fid % f + otype_ext['am']
             display('\nSaving to ZIBAmiraMesh file...\n\t' + filename)
             amira_creator(data[idrv,idata],filename)
             output_written.append(filename)
-        if 'hx' in otype_synonyms and not print_waring:
-          if output_not_possible: print_waring = True
+        if 'hx' in otype_synonyms and not print_warning:
+          if output_not_possible: print_warning = True
           else: 
             filename = fid % f + otype_ext['hx']
             display('\nCreating ZIBAmira network file...\n\t' + filename)
             hx_network_creator(data[idrv,idata],filename)
             output_written.append(filename)
-        if 'cube' in otype_synonyms and not print_waring:
-          if output_not_possible: print_waring = True
+        if 'cube' in otype_synonyms and not print_warning:
+          if output_not_possible: print_warning = True
           elif qc is None: 
             display('\nFor cube file output `qc` is a required keyword parameter in `main_output`.')
           else: 
@@ -270,11 +272,22 @@ def main_output(data,qc=None,outputname='data',otype='auto',gname='',
                          **kwargs)
             output_written.append(filename)
             cube_files.append(filename)
+
+        if 'obj' in otype_synonyms and not print_warning:
+          if output_not_possible: print_warning = True
+          elif qc is None: 
+            display('\nFor obj file output `qc` is a required keyword parameter in `main_output`.')
+          else: 
+            filename = fid % f + otype_ext['obj']
+            display('\nSaving to obj file...\n\t' + filename)
+            obj_creator(data[idrv,idata],filename,qc.geo_info,qc.geo_spec,
+                         **kwargs)
+            output_written.append(filename)
         
       all_datalabels.extend(datasetlabels)
     
-    if 'vmd' in otype_synonyms and not print_waring:
-      if output_not_possible: print_waring = True
+    if 'vmd' in otype_synonyms and not print_warning:
+      if output_not_possible: print_warning = True
       else: 
         filename = (outputname if isstr else outputname[-1]) +'.'+ otype_ext['vmd']
         display('\nCreating VMD network file...\n\t' + filename)
@@ -298,7 +311,7 @@ def main_output(data,qc=None,outputname='data',otype='auto',gname='',
       output_written.append(filename)
     
     if 'mayavi' in otype_synonyms:
-      if output_not_possible: print_waring = True
+      if output_not_possible: print_warning = True
       else: 
         display('\nDepicting the results with MayaVi...\n\t')
         if drv == ['x','y','z'] or drv == [0,1,2]:
@@ -316,7 +329,7 @@ def main_output(data,qc=None,outputname='data',otype='auto',gname='',
                          geo_spec=qc.geo_spec,
                          datalabels=datalabels,**kwargs)
         
-    if print_waring:
+    if print_warning:
       display('For a non-regular vector grid (`if grid.is_vector and not grid.is_regular`)')
       display('only HDF5 is available as output format...')
       display('Skipping all other formats...')
