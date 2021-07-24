@@ -260,16 +260,17 @@ def read_molden(fname, all_mo=False, spin=None, i_md=-1, interactive=True,
 
         # infer incomplete data
         MO_spin = MO_spin or 'alpha'
-        m2 = re.search(r'\d+', MO_sym)
-        if m2:
+        if MO_sym is not None:
+          m2 = re.search(r'\d+', MO_sym)
+          if m2:
             a = m2.group()
             if MO_sym == a:
-                MO_sym = '{:s}.1'.format(a)
+              MO_sym = '{:s}.1'.format(a)
             elif MO_sym.startswith(a):
-                MO_sym.replace(a, '{:s}.'.format(a), 1)
+              MO_sym.replace(a, '{:s}.'.format(a), 1)
             else:
-                sym[a] += 1
-                MO_sym = '{:d}.{:s}'.format(sym[a], MO_sym)
+              sym[a] += 1
+              MO_sym = '{:d}.{:s}'.format(sym[a], MO_sym)
         MO_sym = MO_sym or '%d.1' % (len(qc.mo_spec)+1)
 
         # create a new MO entry
