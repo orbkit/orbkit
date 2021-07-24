@@ -49,7 +49,7 @@ setup(
   cmdclass={'build_ext': build_ext},
   entry_points={'console_scripts': ['orbkit = orbkit.main:run_standalone']},
   build_requires=['numpy'],
-  install_requires=['numpy', 'scipy', 'matplotlib', 'h5py', 'setuptools'],
+  install_requires=['numpy', 'scipy', 'matplotlib', 'h5py', 'scikit-image', 'setuptools'],
   ext_modules=[
     Extension(
       'orbkit.cy_grid',
